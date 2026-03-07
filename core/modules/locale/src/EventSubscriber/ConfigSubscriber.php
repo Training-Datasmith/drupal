@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class ConfigSubscriber implements EventSubscriberInterface {
 
-  public function __construct(#[Autowire(service: 'kernel')] private DrupalKernel $kernel) {
+  public function __construct(#[Autowire(service: 'kernel')] private readonly DrupalKernel $kernel) {
   }
 
   /**

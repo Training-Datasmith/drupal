@@ -45,27 +45,6 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
 class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface {
 
   /**
-   * Entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The current active user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a MediaLibraryWidget widget.
    *
    * @param string $plugin_id
@@ -78,24 +57,21 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    *   The widget settings.
    * @param array $third_party_settings
    *   Any third party settings.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager service.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current active user.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user, ModuleHandlerInterface $module_handler) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->currentUser = $current_user;
-    $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -111,7 +87,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     return $field_definition->getSetting('target_type') === 'media';
   }
 
@@ -172,8 +148,9 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
 
   /**
    * {@inheritdoc}
+   * @return mixed[]|array<'media_types', non-empty-array<('table' | array{0?: (array{action: 'order', relationship: 'sibling', group: 'weight'} | class-string<static> | Drupal\Core\StringTranslation\TranslatableMarkup), 1?: ('setMediaTypesValue' | Drupal\Core\StringTranslation\TranslatableMarkup), label?: array{'#markup': mixed}, weight?: array{'#type': 'weight', '#title': Drupal\Core\StringTranslation\TranslatableMarkup, '#title_display': 'invisible', '#default_value': int<0, max>, '#attributes': array{class: array{'weight'}}}, '#weight'?: int<0, max>, '#attributes'?: array{class: array{'draggable'}}})>>
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $elements = [];
     $media_type_ids = $this->getAllowedMediaTypeIdsSorted();
 
@@ -242,7 +219,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
     }
 
     // Sort the media types by weight value and set the value in the form state.
-    uasort($input, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
+    uasort($input, Drupal\Component\Utility\SortArray::sortByWeightElement(...));
     $sorted_media_type_ids = array_keys($input);
     $form_state->setValue($element['#parents'], $sorted_media_type_ids);
 
@@ -258,8 +235,9 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
     $media_type_labels = [];
     $media_types = $this->entityTypeManager->getStorage('media_type')->loadMultiple($this->getAllowedMediaTypeIdsSorted());
@@ -279,7 +257,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
     // Load the items for form rebuilds from the field state.
     $field_state = static::getWidgetState($form['#parents'], $this->fieldDefinition->getName(), $form_state);
     if (isset($field_state['items'])) {
-      usort($field_state['items'], [SortArray::class, 'sortByWeightElement']);
+      usort($field_state['items'], SortArray::sortByWeightElement(...));
       $items->setValue($field_state['items']);
     }
 
@@ -289,7 +267,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
   /**
    * {@inheritdoc}
    */
-  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
+  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state): void {
     parent::extractFormValues($items, $form, $form_state);
 
     // Update reference to 'items' stored during add or remove to take into
@@ -304,8 +282,9 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $items */
     $referenced_entities = $items->referencedEntities();
     $view_builder = $this->entityTypeManager->getViewBuilder('media');
@@ -328,7 +307,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
         'class' => ['js-media-library-widget'],
       ],
       '#pre_render' => [
-        [$this, 'preRenderWidget'],
+        $this->preRenderWidget(...),
       ],
       '#attached' => [
         'library' => ['media_library/widget'],
@@ -595,7 +574,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['preRenderWidget'];
   }
 
@@ -610,7 +589,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    *
    * @see ::formElement()
    */
-  public function preRenderWidget(array $element) {
+  public function preRenderWidget(array $element): array {
     if (isset($element['open_button'])) {
       $element['#field_suffix']['open_button'] = $element['open_button'];
       unset($element['open_button']);
@@ -669,7 +648,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    */
   public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
     if (isset($values['selection'])) {
-      usort($values['selection'], [SortArray::class, 'sortByWeightElement']);
+      usort($values['selection'], SortArray::sortByWeightElement(...));
       return $values['selection'];
     }
     return [];
@@ -686,7 +665,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   An AJAX response to update the selection.
    */
-  public static function updateWidget(array $form, FormStateInterface $form_state) {
+  public static function updateWidget(array $form, FormStateInterface $form_state): \Drupal\Core\Ajax\AjaxResponse {
     $triggering_element = $form_state->getTriggeringElement();
     $wrapper_id = $triggering_element['#ajax']['wrapper'];
 
@@ -766,7 +745,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function removeItem(array $form, FormStateInterface $form_state) {
+  public static function removeItem(array $form, FormStateInterface $form_state): void {
     // During the form rebuild, formElement() will create field item widget
     // elements using re-indexed deltas, so clear out FormState::$input to
     // avoid a mismatch between old and new deltas. The rebuilt elements will
@@ -834,7 +813,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function validateItems(array $form, FormStateInterface $form_state) {
+  public static function validateItems(array $form, FormStateInterface $form_state): void {
     $button = $form_state->getTriggeringElement();
     $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -1));
 
@@ -871,7 +850,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function addItems(array $form, FormStateInterface $form_state) {
+  public static function addItems(array $form, FormStateInterface $form_state): void {
     // During the form rebuild, formElement() will create field item widget
     // elements using re-indexed deltas, so clear out FormState::$input to
     // avoid a mismatch between old and new deltas. The rebuilt elements will
@@ -928,8 +907,8 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
     $value = NestedArray::getValue($values, $path);
 
     if (!empty($value['media_library_selection'])) {
-      $ids = explode(',', $value['media_library_selection']);
-      $ids = array_filter($ids, 'is_numeric');
+      $ids = explode(',', (string) $value['media_library_selection']);
+      $ids = array_filter($ids, is_numeric(...));
       if (!empty($ids)) {
         return Media::loadMultiple($ids);
       }
@@ -961,7 +940,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
     $selection = $values['selection'] ?? [];
 
     $widget_state = static::getWidgetState($element['#field_parents'], $element['#field_name'], $form_state);
-    $widget_state['items'] = $widget_state['items'] ?? $selection;
+    $widget_state['items'] ??= $selection;
     return $widget_state;
   }
 
@@ -992,7 +971,7 @@ class MediaLibraryWidget extends WidgetBase implements TrustedCallbackInterface 
    * @param array $form
    *   The form array.
    */
-  public static function validateRequired(array $element, FormStateInterface $form_state, array $form) {
+  public static function validateRequired(array $element, FormStateInterface $form_state, array $form): void {
     // If a remove button triggered submit, this validation isn't needed.
     if (in_array([static::class, 'removeItem'], $form_state->getSubmitHandlers(), TRUE)) {
       return;

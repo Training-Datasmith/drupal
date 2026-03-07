@@ -41,9 +41,7 @@ class SvgExtractor extends IconExtractorWithFinder {
     // remote sources before.
     $this->checkRequiredConfigSources();
 
-    $this->configuration['config']['sources'] = array_filter($this->configuration['config']['sources'], function ($source) {
-      return empty(parse_url($source, PHP_URL_SCHEME));
-    });
+    $this->configuration['config']['sources'] = array_filter($this->configuration['config']['sources'], fn($source) => empty(parse_url((string) $source, PHP_URL_SCHEME)));
 
     if (empty($this->configuration['config']['sources'])) {
       return [];
@@ -57,10 +55,12 @@ class SvgExtractor extends IconExtractorWithFinder {
 
     $icons = [];
     foreach ($files as $file) {
-      if (!isset($file['absolute_path']) || empty($file['absolute_path'])) {
-        continue;
+      if (!isset($file['absolute_path'])) {
+          continue;
       }
-
+      if (empty($file['absolute_path'])) {
+          continue;
+      }
       $id = IconDefinition::createIconId($this->configuration['id'], $file['icon_id']);
       $icons[$id] = [
         'absolute_path' => $file['absolute_path'],

@@ -66,13 +66,6 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
   const NOJS_COOKIE = 'big_pipe_nojs';
 
   /**
-   * The session configuration.
-   *
-   * @var \Drupal\Core\Session\SessionConfigurationInterface
-   */
-  protected $sessionConfiguration;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -80,26 +73,17 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
   protected $requestStack;
 
   /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructs a new BigPipeStrategy class.
    *
-   * @param \Drupal\Core\Session\SessionConfigurationInterface $session_configuration
+   * @param \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration
    *   The session configuration.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
    */
-  public function __construct(SessionConfigurationInterface $session_configuration, RequestStack $request_stack, RouteMatchInterface $route_match) {
-    $this->sessionConfiguration = $session_configuration;
+  public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration, RequestStack $request_stack, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch) {
     $this->requestStack = $request_stack;
-    $this->routeMatch = $route_match;
   }
 
   /**
@@ -138,7 +122,7 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
    * @return array
    *   The BigPipe placeholders.
    */
-  protected function doProcessPlaceholders(array $placeholders) {
+  protected function doProcessPlaceholders(array $placeholders): array {
     $overridden_placeholders = [];
     foreach ($placeholders as $placeholder => $placeholder_elements) {
       // BigPipe uses JavaScript and the DOM to find the placeholder to replace.
@@ -183,7 +167,7 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
    *   Whether the placeholder is safe for use in an HTML attribute (in case
    *   it's a placeholder for an HTML attribute value or a subset of it).
    */
-  protected static function placeholderIsAttributeSafe($placeholder) {
+  protected static function placeholderIsAttributeSafe($placeholder): bool {
     assert(is_string($placeholder));
     return $placeholder[0] !== '<' || $placeholder !== Html::normalize($placeholder);
   }
@@ -199,7 +183,7 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
    * @return array
    *   The resulting BigPipe JS placeholder render array.
    */
-  protected static function createBigPipeJsPlaceholder($original_placeholder, array $placeholder_render_array) {
+  protected static function createBigPipeJsPlaceholder($original_placeholder, array $placeholder_render_array): array {
     $big_pipe_placeholder_id = static::generateBigPipePlaceholderId($original_placeholder, $placeholder_render_array);
 
     $interface_preview = [];
@@ -254,7 +238,7 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
    * @return array
    *   The resulting BigPipe no-JS placeholder render array.
    */
-  protected static function createBigPipeNoJsPlaceholder($original_placeholder, array $placeholder_render_array, $placeholder_must_be_attribute_safe = FALSE) {
+  protected static function createBigPipeNoJsPlaceholder($original_placeholder, array $placeholder_render_array, $placeholder_must_be_attribute_safe = FALSE): array {
     if (!$placeholder_must_be_attribute_safe) {
       $big_pipe_placeholder = '<span data-big-pipe-nojs-placeholder-id="' . Html::escape(static::generateBigPipePlaceholderId($original_placeholder, $placeholder_render_array)) . '"></span>';
     }
@@ -289,7 +273,7 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
    * @return string
    *   The generated BigPipe placeholder ID.
    */
-  protected static function generateBigPipePlaceholderId($original_placeholder, array $placeholder_render_array) {
+  protected static function generateBigPipePlaceholderId($original_placeholder, array $placeholder_render_array): string|array|null {
     // Generate a BigPipe placeholder ID (to be used by BigPipe's JavaScript).
     // @see \Drupal\Core\Render\PlaceholderGenerator::createPlaceholder()
     if (isset($placeholder_render_array['#lazy_builder'])) {
@@ -308,13 +292,7 @@ class BigPipeStrategy implements PlaceholderStrategyInterface {
       $token = Crypt::hashBase64(serialize($placeholder_render_array));
       return UrlHelper::buildQuery(['callback' => $callback, 'args' => $arguments, 'token' => $token]);
     }
-    // When the placeholder's render array is not using a #lazy_builder,
-    // anything could be in there: only #lazy_builder has a strict contract that
-    // allows us to create a more sane selector. Therefore, simply the original
-    // placeholder into a usable placeholder ID, at the cost of it being obtuse.
-    else {
-      return Html::getId($original_placeholder);
-    }
+    return Html::getId($original_placeholder);
   }
 
 }

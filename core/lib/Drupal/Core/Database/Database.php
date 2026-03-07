@@ -198,13 +198,13 @@ abstract class Database {
     }
 
     // Prefix information, default to an empty prefix.
-    $info['prefix'] = $info['prefix'] ?? '';
+    $info['prefix'] ??= '';
 
     // Backwards compatibility layer for Drupal 8 style database connection
     // arrays. Those have the wrong 'namespace' key set, or not set at all
     // for core supported database drivers.
-    if (empty($info['namespace']) || str_starts_with($info['namespace'], 'Drupal\\Core\\Database\\Driver\\')) {
-      switch (strtolower($info['driver'])) {
+    if (empty($info['namespace']) || str_starts_with((string) $info['namespace'], 'Drupal\\Core\\Database\\Driver\\')) {
+      switch (strtolower((string) $info['driver'])) {
         case 'mysql':
           $info['namespace'] = 'Drupal\\mysql\\Driver\\Database\\mysql';
           break;
@@ -222,7 +222,7 @@ abstract class Database {
     // arrays. Those do not have the 'autoload' key set for core database
     // drivers.
     if (empty($info['autoload'])) {
-      switch (trim($info['namespace'], '\\')) {
+      switch (trim((string) $info['namespace'], '\\')) {
         case "Drupal\\mysql\\Driver\\Database\\mysql":
           $info['autoload'] = "core/modules/mysql/src/Driver/Database/mysql/";
           break;
@@ -270,7 +270,7 @@ abstract class Database {
    *
    * @see \Drupal\Core\Database\Database::setActiveConnection
    */
-  final public static function addConnectionInfo($key, $target, array $info, $class_loader = NULL, $app_root = NULL) {
+  final public static function addConnectionInfo($key, $target, array $info, $class_loader = NULL, $app_root = NULL): void {
     if (empty(self::$databaseInfo[$key][$target])) {
       $info = self::parseConnectionInfo($info);
       self::$databaseInfo[$key][$target] = $info;
@@ -337,7 +337,7 @@ abstract class Database {
    * @param string $app_root
    *   The app root.
    */
-  final public static function setMultipleConnectionInfo(array $databases, $class_loader = NULL, $app_root = NULL) {
+  final public static function setMultipleConnectionInfo(array $databases, $class_loader = NULL, $app_root = NULL): void {
     foreach ($databases as $key => $targets) {
       foreach ($targets as $target => $info) {
         self::addConnectionInfo($key, $target, $info, $class_loader, $app_root);
@@ -370,9 +370,7 @@ abstract class Database {
 
       return TRUE;
     }
-    else {
-      return FALSE;
-    }
+    return FALSE;
   }
 
   /**
@@ -390,9 +388,7 @@ abstract class Database {
       unset(self::$databaseInfo[$key]);
       return TRUE;
     }
-    else {
-      return FALSE;
-    }
+    return FALSE;
   }
 
   /**
@@ -444,7 +440,7 @@ abstract class Database {
    * @param string $key
    *   The database connection key. Defaults to NULL which means the active key.
    */
-  public static function closeConnection($target = NULL, $key = NULL) {
+  public static function closeConnection($target = NULL, $key = NULL): void {
     // Gets the active connection by default.
     if (!isset($key)) {
       $key = self::$activeKey;
@@ -488,7 +484,7 @@ abstract class Database {
    * @param string $target
    *   The target of the specified key to ignore.
    */
-  public static function ignoreTarget($key, $target) {
+  public static function ignoreTarget($key, $target): void {
     self::$ignoreTargets[$key][$target] = TRUE;
   }
 
@@ -581,9 +577,7 @@ abstract class Database {
     if (\Drupal::hasContainer() && \Drupal::hasService('extension.list.database_driver')) {
       return \Drupal::service('extension.list.database_driver');
     }
-    else {
-      return new DatabaseDriverList(DRUPAL_ROOT, 'database_driver', new NullBackend('database_driver'));
-    }
+    return new DatabaseDriverList(DRUPAL_ROOT, 'database_driver', new NullBackend('database_driver'));
   }
 
   /**
@@ -607,7 +601,7 @@ abstract class Database {
     // Add the module name to the connection options to make it easy for the
     // connection class's createUrlFromConnectionOptions() method to add it to
     // the URL.
-    $db_info['default']['module'] = explode('\\', $namespace)[1];
+    $db_info['default']['module'] = explode('\\', (string) $namespace)[1];
     $connection_class = $namespace . '\\Connection';
     return $connection_class::createUrlFromConnectionOptions($db_info['default']);
   }

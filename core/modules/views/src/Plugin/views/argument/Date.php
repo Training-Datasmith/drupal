@@ -44,20 +44,6 @@ class Date extends Formula implements ContainerFactoryPluginInterface {
   protected $argFormat = 'Y-m-d';
 
   /**
-   * The route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * Constructs a new Date instance.
    *
    * @param array $configuration
@@ -66,9 +52,9 @@ class Date extends Formula implements ContainerFactoryPluginInterface {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
@@ -77,20 +63,17 @@ class Date extends Formula implements ContainerFactoryPluginInterface {
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    RouteMatchInterface $route_match,
-    DateFormatterInterface $date_formatter,
+    protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch,
+    protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter,
     protected TimeInterface $time,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->routeMatch = $route_match;
-    $this->dateFormatter = $date_formatter;
   }
 
   /**
    * Add an option to set the default value to the current date.
    */
-  public function defaultArgumentForm(&$form, FormStateInterface $form_state) {
+  public function defaultArgumentForm(&$form, FormStateInterface $form_state): void {
     parent::defaultArgumentForm($form, $form_state);
     $form['default_argument_type']['#options'] += [
       'date' => $this->t('Current date'),
@@ -104,20 +87,19 @@ class Date extends Formula implements ContainerFactoryPluginInterface {
    */
   public function getDefaultArgument($raw = FALSE) {
     if (!$raw && $this->options['default_argument_type'] == 'date') {
-      return date($this->argFormat, $this->time->getRequestTime());
+        return date($this->argFormat, $this->time->getRequestTime());
     }
-    elseif (!$raw && in_array($this->options['default_argument_type'], ['node_created', 'node_changed'])) {
-      $node = $this->routeMatch->getParameter('node');
-
-      if (!($node instanceof NodeInterface)) {
-        return parent::getDefaultArgument();
-      }
-      elseif ($this->options['default_argument_type'] == 'node_created') {
-        return date($this->argFormat, $node->getCreatedTime());
-      }
-      elseif ($this->options['default_argument_type'] == 'node_changed') {
-        return date($this->argFormat, $node->getChangedTime());
-      }
+    if (!$raw && in_array($this->options['default_argument_type'], ['node_created', 'node_changed'])) {
+        $node = $this->routeMatch->getParameter('node');
+        if (!($node instanceof NodeInterface)) {
+            return parent::getDefaultArgument();
+        }
+        if ($this->options['default_argument_type'] == 'node_created') {
+            return date($this->argFormat, $node->getCreatedTime());
+        }
+        if ($this->options['default_argument_type'] == 'node_changed') {
+            return date($this->argFormat, $node->getChangedTime());
+        }
     }
 
     return parent::getDefaultArgument();
@@ -126,14 +108,14 @@ class Date extends Formula implements ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSortName() {
+  public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Date', [], ['context' => 'Sort order']);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormula() {
+  public function getFormula(): string {
     $this->formula = $this->getDateFormat($this->argFormat);
     return parent::getFormula();
   }

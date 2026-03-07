@@ -29,8 +29,7 @@ class DynamicPageCacheHooks {
         $output .= '<dt>' . $this->t('Speeding up your site') . '</dt>';
         $output .= '<dd>' . $this->t('Pages which are suitable for caching are cached the first time they are requested, then the cached version is served for all later requests. Dynamic content is handled automatically so that both cache correctness and hit ratio is maintained.') . '</dd>';
         $output .= '<dd>' . $this->t('The module requires no configuration. Every part of the page contains metadata that allows Internal Dynamic Page Cache to figure this out on its own.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

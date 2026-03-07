@@ -40,7 +40,7 @@ class EntityDeleteForm extends EntityConfirmFormBase {
    * @return \Drupal\Core\Config\ConfigManager
    *   The configuration manager.
    */
-  protected function getConfigManager() {
+  protected function getConfigManager(): object {
     return \Drupal::service('config.manager');
   }
 
@@ -53,7 +53,7 @@ class EntityDeleteForm extends EntityConfirmFormBase {
    * @return string[]
    *   A list of configuration names that will be deleted by this form.
    */
-  protected function getConfigNamesToDelete(ConfigEntityInterface $entity) {
+  protected function getConfigNamesToDelete(ConfigEntityInterface $entity): array {
     return [$entity->getConfigDependencyName()];
   }
 

@@ -24,7 +24,7 @@ class ShortcutThemeHooks {
    * Implements hook_preprocess_HOOK() for block templates.
    */
   #[Hook('preprocess_block')]
-  public function preprocessBlock(&$variables): void {
+  public function preprocessBlock(array &$variables): void {
     if ($variables['configuration']['provider'] == 'shortcut') {
       $variables['attributes']['role'] = 'navigation';
     }
@@ -34,7 +34,7 @@ class ShortcutThemeHooks {
    * Implements hook_preprocess_HOOK() for page title templates.
    */
   #[Hook('preprocess_page_title')]
-  public function preprocessPageTitle(&$variables): void {
+  public function preprocessPageTitle(array &$variables): void {
     // Only display the shortcut link if the user has the ability to edit
     // shortcuts, the feature is enabled for the current theme and if the
     // page's actual content is being shown (for example, we do not want to

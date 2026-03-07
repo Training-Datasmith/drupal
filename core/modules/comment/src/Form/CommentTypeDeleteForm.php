@@ -17,20 +17,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class CommentTypeDeleteForm extends EntityDeleteForm {
 
   /**
-   * The comment manager service.
-   *
-   * @var \Drupal\comment\CommentManagerInterface
-   */
-  protected $commentManager;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * The entity being used by this form.
    *
    * @var \Drupal\comment\CommentTypeInterface
@@ -40,20 +26,19 @@ class CommentTypeDeleteForm extends EntityDeleteForm {
   /**
    * Constructs a query factory object.
    *
-   * @param \Drupal\comment\CommentManagerInterface $comment_manager
+   * @param \Drupal\comment\CommentManagerInterface $commentManager
    *   The comment manager service.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(CommentManagerInterface $comment_manager, LoggerInterface $logger) {
-    $this->commentManager = $comment_manager;
-    $this->logger = $logger;
+  public function __construct(protected \Drupal\comment\CommentManagerInterface $commentManager, protected \Psr\Log\LoggerInterface $logger)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('comment.manager'),
       $container->get('logger.factory')->get('comment')
@@ -88,9 +73,7 @@ class CommentTypeDeleteForm extends EntityDeleteForm {
       $form['description'] = ['#markup' => $caption];
       return $form;
     }
-    else {
-      return parent::buildForm($form, $form_state);
-    }
+    return parent::buildForm($form, $form_state);
   }
 
 }

@@ -36,9 +36,13 @@ trait DependencySerializationTrait {
       $container = \Drupal::getContainer();
       $reverse_container = $container->get(ReverseContainer::class);
       foreach ($vars as $key => $value) {
-        if (!is_object($value) || $value instanceof TranslatableMarkup) {
-          // Ignore properties that cannot be services.
-          continue;
+        if (!is_object($value)) {
+            // Ignore properties that cannot be services.
+            continue;
+        }
+        if ($value instanceof TranslatableMarkup) {
+            // Ignore properties that cannot be services.
+            continue;
         }
         if ($value instanceof EntityStorageInterface) {
           // If a class member is an entity storage, only store the entity type

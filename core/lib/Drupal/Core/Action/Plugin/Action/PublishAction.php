@@ -20,7 +20,7 @@ class PublishAction extends EntityActionBase {
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
+  public function execute($entity = NULL): void {
     $entity->setPublished()->save();
   }
 

@@ -54,8 +54,7 @@ class ViewsUiHooks {
             'name' => 'config',
           ])->toString() : '#',
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -66,7 +65,7 @@ class ViewsUiHooks {
   #[Hook('entity_type_build')]
   public function entityTypeBuild(array &$entity_types): void {
     /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
-    $entity_types['view']->setFormClass('edit', 'Drupal\views_ui\ViewEditForm')->setFormClass('add', 'Drupal\views_ui\ViewAddForm')->setFormClass('preview', 'Drupal\views_ui\ViewPreviewForm')->setFormClass('duplicate', 'Drupal\views_ui\ViewDuplicateForm')->setFormClass('delete', 'Drupal\Core\Entity\EntityDeleteForm')->setFormClass('break_lock', 'Drupal\views_ui\Form\BreakLockForm')->setListBuilderClass('Drupal\views_ui\ViewListBuilder')->setLinkTemplate('edit-form', '/admin/structure/views/view/{view}')->setLinkTemplate('edit-display-form', '/admin/structure/views/view/{view}/edit/{display_id}')->setLinkTemplate('preview-form', '/admin/structure/views/view/{view}/preview/{display_id}')->setLinkTemplate('duplicate-form', '/admin/structure/views/view/{view}/duplicate')->setLinkTemplate('delete-form', '/admin/structure/views/view/{view}/delete')->setLinkTemplate('enable', '/admin/structure/views/view/{view}/enable')->setLinkTemplate('disable', '/admin/structure/views/view/{view}/disable')->setLinkTemplate('break-lock-form', '/admin/structure/views/view/{view}/break-lock')->setLinkTemplate('collection', '/admin/structure/views');
+    $entity_types['view']->setFormClass('edit', \Drupal\views_ui\ViewEditForm::class)->setFormClass('add', \Drupal\views_ui\ViewAddForm::class)->setFormClass('preview', \Drupal\views_ui\ViewPreviewForm::class)->setFormClass('duplicate', \Drupal\views_ui\ViewDuplicateForm::class)->setFormClass('delete', \Drupal\Core\Entity\EntityDeleteForm::class)->setFormClass('break_lock', \Drupal\views_ui\Form\BreakLockForm::class)->setListBuilderClass(\Drupal\views_ui\ViewListBuilder::class)->setLinkTemplate('edit-form', '/admin/structure/views/view/{view}')->setLinkTemplate('edit-display-form', '/admin/structure/views/view/{view}/edit/{display_id}')->setLinkTemplate('preview-form', '/admin/structure/views/view/{view}/preview/{display_id}')->setLinkTemplate('duplicate-form', '/admin/structure/views/view/{view}/duplicate')->setLinkTemplate('delete-form', '/admin/structure/views/view/{view}/delete')->setLinkTemplate('enable', '/admin/structure/views/view/{view}/enable')->setLinkTemplate('disable', '/admin/structure/views/view/{view}/disable')->setLinkTemplate('break-lock-form', '/admin/structure/views/view/{view}/break-lock')->setLinkTemplate('collection', '/admin/structure/views');
   }
 
   /**
@@ -91,7 +90,7 @@ class ViewsUiHooks {
    * Implements hook_contextual_links_view_alter().
    */
   #[Hook('contextual_links_view_alter')]
-  public function contextualLinksViewAlter(&$element, $items): void {
+  public function contextualLinksViewAlter(array &$element, array $items): void {
     // Remove contextual links from being rendered, when so desired, such as
     // within a View preview.
     if (views_ui_contextual_links_suppress()) {
@@ -143,7 +142,7 @@ class ViewsUiHooks {
     if ($entity instanceof BlockInterface) {
       $plugin = $entity->getPlugin();
       if ($plugin->getBaseId() === 'views_block') {
-        $view_id_parts = explode('-', $plugin->getDerivativeId());
+        $view_id_parts = explode('-', (string) $plugin->getDerivativeId());
         $view_id = $view_id_parts[0] ?? '';
         $display_id = $view_id_parts[1] ?? '';
         $view = View::load($view_id);

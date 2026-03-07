@@ -27,12 +27,12 @@ class StringListField extends StringArgument {
    *
    * @var array
    */
-  protected $allowedValues = NULL;
+  protected $allowedValues;
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $field_storage = $this->getFieldStorageDefinition();
@@ -53,7 +53,7 @@ class StringListField extends StringArgument {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['summary']['human'] = [
@@ -71,7 +71,7 @@ class StringListField extends StringArgument {
   /**
    * {@inheritdoc}
    */
-  public function summaryName($data) {
+  public function summaryName($data): string|\Drupal\Core\Field\FieldFilteredMarkup {
     $value = $data->{$this->name_alias};
     // If the list element has a human readable name show it.
     if (isset($this->allowedValues[$value]) && !empty($this->options['summary']['human'])) {

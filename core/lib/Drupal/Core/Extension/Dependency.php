@@ -10,27 +10,6 @@ use Drupal\Component\Version\Constraint;
 class Dependency {
 
   /**
-   * The name of the dependency.
-   *
-   * @var string
-   */
-  protected $name;
-
-  /**
-   * The project namespace for the dependency.
-   *
-   * @var string
-   */
-  protected $project;
-
-  /**
-   * The constraint string.
-   *
-   * @var \Drupal\Component\Version\Constraint
-   */
-  protected $constraintString;
-
-  /**
    * The Constraint object from the constraint string.
    *
    * @var \Drupal\Component\Version\Constraint
@@ -44,13 +23,24 @@ class Dependency {
    *   The name of the dependency.
    * @param string $project
    *   The project namespace for the dependency.
-   * @param string $constraint
+   * @param string $constraintString
    *   The constraint string. For example, '>8.x-1.1'.
    */
-  public function __construct($name, $project, $constraint) {
-    $this->name = $name;
-    $this->project = $project;
-    $this->constraintString = $constraint;
+  public function __construct(
+      /**
+       * The name of the dependency.
+       */
+      protected $name,
+      /**
+       * The project namespace for the dependency.
+       */
+      protected $project,
+      /**
+       * The constraint string.
+       */
+      protected $constraintString
+  )
+  {
   }
 
   /**
@@ -105,7 +95,7 @@ class Dependency {
    * @return bool
    *   TRUE if compatible with the provided version, FALSE if not.
    */
-  public function isCompatible($version) {
+  public function isCompatible($version): bool {
     return $this->getConstraint()->isCompatible($version);
   }
 
@@ -119,10 +109,8 @@ class Dependency {
    *   - 'module'
    *   - 'project:module'
    *   - 'project:module (>=version, <=version)'.
-   *
-   * @return static
    */
-  public static function createFromString($dependency) {
+  public static function createFromString($dependency): static {
     if (str_contains($dependency, ':')) {
       [$project, $dependency] = explode(':', $dependency);
     }

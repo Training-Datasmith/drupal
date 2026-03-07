@@ -40,7 +40,7 @@ class BatchMemory extends Memory {
    * @return array
    *   An array of queue items.
    */
-  public function getAllItems() {
+  public function getAllItems(): array {
     $result = [];
     foreach ($this->queue as $item) {
       $result[] = $item->data;

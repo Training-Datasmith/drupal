@@ -17,7 +17,7 @@ class TaxonomyViewsHooks {
    * Implements hook_views_data_alter().
    */
   #[Hook('views_data_alter')]
-  public function viewsDataAlter(&$data): void {
+  public function viewsDataAlter(array &$data): void {
     $data['node_field_data']['term_node_tid'] = [
       'title' => $this->t('Taxonomy terms on node'),
       'help' => $this->t('Relate nodes to taxonomy terms, specifying which vocabulary or vocabularies to use. This relationship will cause duplicated records if there are multiple terms.'),

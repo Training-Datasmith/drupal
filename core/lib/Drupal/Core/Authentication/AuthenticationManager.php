@@ -18,26 +18,19 @@ use Symfony\Component\HttpFoundation\Request;
 class AuthenticationManager implements AuthenticationProviderInterface, AuthenticationProviderFilterInterface, AuthenticationProviderChallengeInterface {
 
   /**
-   * The authentication provider collector.
-   *
-   * @var \Drupal\Core\Authentication\AuthenticationCollectorInterface
-   */
-  protected $authCollector;
-
-  /**
    * Creates a new authentication manager instance.
    *
-   * @param \Drupal\Core\Authentication\AuthenticationCollectorInterface $auth_collector
+   * @param \Drupal\Core\Authentication\AuthenticationCollectorInterface $authCollector
    *   The authentication provider collector.
    */
-  public function __construct(AuthenticationCollectorInterface $auth_collector) {
-    $this->authCollector = $auth_collector;
+  public function __construct(protected \Drupal\Core\Authentication\AuthenticationCollectorInterface $authCollector)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(Request $request) {
+  public function applies(Request $request): bool {
     return (bool) $this->getProvider($request);
   }
 
@@ -147,13 +140,10 @@ class AuthenticationManager implements AuthenticationProviderInterface, Authenti
     $provider = $this->authCollector->getProvider($provider_id);
 
     if ($provider && ($provider instanceof AuthenticationProviderFilterInterface)) {
-      $result = $provider->appliesToRoutedRequest($request, $authenticated);
-    }
-    else {
-      $result = $this->defaultFilter($request, $provider_id);
+      return $provider->appliesToRoutedRequest($request, $authenticated);
     }
 
-    return $result;
+    return $this->defaultFilter($request, $provider_id);
   }
 
   /**
@@ -181,9 +171,7 @@ class AuthenticationManager implements AuthenticationProviderInterface, Authenti
     if ($has_auth_option) {
       return in_array($provider_id, $route->getOption('_auth'));
     }
-    else {
-      return $this->authCollector->isGlobal($provider_id);
-    }
+    return $this->authCollector->isGlobal($provider_id);
   }
 
 }

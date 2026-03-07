@@ -17,7 +17,7 @@ class LanguageConfiguration extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#tree' => TRUE,
@@ -30,7 +30,7 @@ class LanguageConfiguration extends FormElementBase {
   /**
    * Process handler for the language_configuration form element.
    */
-  public static function processLanguageConfiguration(&$element, FormStateInterface $form_state, &$form) {
+  public static function processLanguageConfiguration(array &$element, FormStateInterface $form_state, array &$form): array {
     $options = $element['#options'] ?? [];
     // Avoid validation failure since we are moving the '#options' key in the
     // nested 'language' select element.
@@ -48,7 +48,7 @@ class LanguageConfiguration extends FormElementBase {
     $element['language_alterable'] = [
       '#type' => 'checkbox',
       '#title' => t('Show language selector on create and edit pages'),
-      '#default_value' => ($default_config != NULL) ? $default_config->isLanguageAlterable() : FALSE,
+      '#default_value' => $default_config != NULL && $default_config->isLanguageAlterable(),
     ];
 
     // Add the entity type and bundle information to the form if they are set.
@@ -88,7 +88,7 @@ class LanguageConfiguration extends FormElementBase {
    * @return array
    *   An array containing the default options.
    */
-  protected static function getDefaultOptions() {
+  protected static function getDefaultOptions(): array {
     $language_options = [
       LanguageInterface::LANGCODE_SITE_DEFAULT => t("Site's default language (@language)", ['@language' => static::languageManager()->getDefaultLanguage()->getName()]),
       'current_interface' => t('Interface text language selected for page'),

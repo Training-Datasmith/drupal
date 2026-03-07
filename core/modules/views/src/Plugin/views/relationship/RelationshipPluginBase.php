@@ -63,7 +63,7 @@ abstract class RelationshipPluginBase extends HandlerBase {
    * Init handler to let relationships live on tables other than
    * the table they operate on.
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if (isset($this->definition['relationship table'])) {
@@ -109,7 +109,7 @@ abstract class RelationshipPluginBase extends HandlerBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     unset($form['admin_label']['#fieldset']);
@@ -126,7 +126,7 @@ abstract class RelationshipPluginBase extends HandlerBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if (!empty($this->definition['deprecated'])) {
       @trigger_error($this->definition['deprecated'], E_USER_DEPRECATED);
     }

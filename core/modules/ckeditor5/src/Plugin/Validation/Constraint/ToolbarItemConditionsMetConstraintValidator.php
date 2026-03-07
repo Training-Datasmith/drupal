@@ -87,11 +87,9 @@ class ToolbarItemConditionsMetConstraintValidator extends ConstraintValidator im
             $required_plugin_ids = $definition->getConditions()['plugins'];
             $missing_plugin_ids = array_diff($required_plugin_ids, array_keys($enabled_definitions));
             $all_plugins = $this->pluginManager->getDefinitions();
-            $missing_plugin_labels = array_map(function (string $plugin_id) use ($all_plugins): TranslatableMarkup {
-              return !array_key_exists($plugin_id, $all_plugins)
-                ? $plugin_id
-                : $all_plugins[$plugin_id]->label();
-            }, $missing_plugin_ids);
+            $missing_plugin_labels = array_map(fn(string $plugin_id): TranslatableMarkup => !array_key_exists($plugin_id, $all_plugins)
+              ? $plugin_id
+              : $all_plugins[$plugin_id]->label(), $missing_plugin_ids);
             if (count($missing_plugin_ids) === 1) {
               $message = $constraint->singleMissingRequiredPluginMessage;
               $parameter = '%plugin';

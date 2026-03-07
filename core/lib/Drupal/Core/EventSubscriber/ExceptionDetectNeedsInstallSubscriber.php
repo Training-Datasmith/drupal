@@ -16,20 +16,13 @@ class ExceptionDetectNeedsInstallSubscriber implements EventSubscriberInterface 
   use InstallerRedirectTrait;
 
   /**
-   * The default database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a new ExceptionDetectNeedsInstallSubscriber.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   The default database connection.
    */
-  public function __construct(Connection $connection) {
-    $this->connection = $connection;
+  public function __construct(protected \Drupal\Core\Database\Connection $connection)
+  {
   }
 
   /**
@@ -38,7 +31,7 @@ class ExceptionDetectNeedsInstallSubscriber implements EventSubscriberInterface 
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     if ($this->shouldRedirectToInstaller($exception, $this->connection)) {
       // Only redirect if this is an HTML response (i.e., a user trying to view

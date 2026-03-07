@@ -18,7 +18,7 @@ class RedirectLeadingSlashesSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The RequestEvent to process.
    */
-  public function redirect(RequestEvent $event) {
+  public function redirect(RequestEvent $event): void {
     $request = $event->getRequest();
     // Get the requested path minus the base path.
     $path = $request->getPathInfo();
@@ -28,8 +28,8 @@ class RedirectLeadingSlashesSubscriber implements EventSubscriberInterface {
     // submits back to the same URI this presents an open redirect
     // vulnerability. Also, Drupal 7 renders the same page for
     // http://www.example.org/foo and http://www.example.org////foo.
-    if (str_contains($path, '//')) {
-      $path = preg_replace('/\/+/', '/', $path);
+    if (str_contains((string) $path, '//')) {
+      $path = preg_replace('/\/+/', '/', (string) $path);
       $qs = $request->getQueryString();
       if ($qs) {
         $qs = '?' . $qs;

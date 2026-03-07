@@ -32,7 +32,7 @@ class MediaRouteProvider extends AdminHtmlRouteProvider {
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_field.manager'),
@@ -47,9 +47,7 @@ class MediaRouteProvider extends AdminHtmlRouteProvider {
     if ($this->config->get('standalone_url')) {
       return parent::getCanonicalRoute($entity_type);
     }
-    else {
-      return parent::getEditFormRoute($entity_type);
-    }
+    return parent::getEditFormRoute($entity_type);
   }
 
 }

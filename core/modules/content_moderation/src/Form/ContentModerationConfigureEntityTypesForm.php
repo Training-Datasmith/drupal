@@ -25,27 +25,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ContentModerationConfigureEntityTypesForm extends FormBase {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity type bundle information service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $bundleInfo;
-
-  /**
-   * The moderation information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInformation;
-
-  /**
    * The workflow entity object.
    *
    * @var \Drupal\workflows\WorkflowInterface
@@ -69,7 +48,7 @@ class ContentModerationConfigureEntityTypesForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
@@ -81,24 +60,30 @@ class ContentModerationConfigureEntityTypesForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $bundle_info, ModerationInformationInterface $moderation_information, MessengerInterface $messenger) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->bundleInfo = $bundle_info;
-    $this->moderationInformation = $moderation_information;
+  public function __construct(/**
+   * The entity type manager service.
+   */
+  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
+   * The entity type bundle information service.
+   */
+  protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, /**
+   * The moderation information service.
+   */
+  protected \Drupal\content_moderation\ModerationInformationInterface $moderationInformation, MessengerInterface $messenger) {
     $this->messenger = $messenger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'workflow_type_edit_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?WorkflowInterface $workflow = NULL, $entity_type_id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?WorkflowInterface $workflow = NULL, $entity_type_id = NULL): array {
     $this->workflow = $workflow;
     try {
       $this->entityType = $this->entityTypeManager->getDefinition($entity_type_id);
@@ -161,14 +146,14 @@ class ContentModerationConfigureEntityTypesForm extends FormBase {
       '#button_type' => 'primary',
       '#value' => $this->t('Save'),
       '#ajax' => [
-        'callback' => [$this, 'ajaxCallback'],
+        'callback' => $this->ajaxCallback(...),
       ],
     ];
     $form['actions']['cancel'] = [
       '#type' => 'button',
       '#value' => $this->t('Cancel'),
       '#ajax' => [
-        'callback' => [$this, 'ajaxCallback'],
+        'callback' => $this->ajaxCallback(...),
       ],
     ];
 
@@ -178,7 +163,7 @@ class ContentModerationConfigureEntityTypesForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     foreach ($form_state->getValue('bundles') as $bundle_id => $checked) {
       if ($checked) {
         $this->workflow->getTypePlugin()->addEntityTypeAndBundle($this->entityType->id(), $bundle_id);
@@ -196,7 +181,7 @@ class ContentModerationConfigureEntityTypesForm extends FormBase {
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   An ajax response object.
    */
-  public function ajaxCallback() {
+  public function ajaxCallback(): \Drupal\Core\Ajax\AjaxResponse {
     $selected_bundles = [];
     foreach ($this->bundleInfo->getBundleInfo($this->entityType->id()) as $bundle_id => $bundle) {
       if ($this->workflow->getTypePlugin()->appliesToEntityTypeAndBundle($this->entityType->id(), $bundle_id)) {
@@ -218,21 +203,19 @@ class ContentModerationConfigureEntityTypesForm extends FormBase {
   /**
    * Route title callback.
    */
-  public function getTitle(WorkflowInterface $workflow, $entity_type_id) {
+  public function getTitle(WorkflowInterface $workflow, $entity_type_id): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $this->entityType = $this->entityTypeManager->getDefinition($entity_type_id);
-
-    $title = $this->t('Select the @entity_type types for the @workflow workflow', [
-      '@entity_type' => $this->entityType->getLabel(),
-      '@workflow' => $workflow->label(),
-    ]);
     if ($bundle_entity_type_id = $this->entityType->getBundleEntityType()) {
-      $title = $this->t('Select the @entity_type_plural_label for the @workflow workflow', [
+      return $this->t('Select the @entity_type_plural_label for the @workflow workflow', [
         '@entity_type_plural_label' => $this->entityTypeManager->getDefinition($bundle_entity_type_id)->getPluralLabel(),
         '@workflow' => $workflow->label(),
       ]);
     }
 
-    return $title;
+    return $this->t('Select the @entity_type types for the @workflow workflow', [
+      '@entity_type' => $this->entityType->getLabel(),
+      '@workflow' => $workflow->label(),
+    ]);
   }
 
 }

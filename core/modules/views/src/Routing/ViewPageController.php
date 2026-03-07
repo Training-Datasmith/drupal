@@ -39,10 +39,8 @@ class ViewPageController {
       if (isset($map[$attribute])) {
         $attribute = $map[$attribute];
       }
-      if ($arg = $route_match->getRawParameter($attribute)) {
-      }
-      else {
-        $arg = $route_match->getParameter($attribute);
+      if (!$arg = $route_match->getRawParameter($attribute)) {
+          $arg = $route_match->getParameter($attribute);
       }
 
       if (isset($arg)) {
@@ -55,15 +53,11 @@ class ViewPageController {
       /** @var \Drupal\views\Plugin\views\display\ResponseDisplayPluginInterface $class */
       return $class::buildResponse($view_id, $display_id, $args);
     }
-    else {
-      /** @var \Drupal\views\Plugin\views\display\Page $class */
-      $build = $class::buildBasicRenderable($view_id, $display_id, $args, $route);
-      Page::setPageRenderArray($build);
-
-      views_add_contextual_links($build, 'page', $display_id, $build);
-
-      return $build;
-    }
+    /** @var \Drupal\views\Plugin\views\display\Page $class */
+    $build = $class::buildBasicRenderable($view_id, $display_id, $args, $route);
+    Page::setPageRenderArray($build);
+    views_add_contextual_links($build, 'page', $display_id, $build);
+    return $build;
   }
 
   /**
@@ -77,7 +71,7 @@ class ViewPageController {
    * @return string|\Drupal\Component\Render\MarkupInterface
    *   The title of the display of the view.
    */
-  public function getTitle($view_id, $display_id = 'default') {
+  public function getTitle($view_id, $display_id = 'default'): \Drupal\Component\Render\MarkupInterface|string {
     $view = Views::getView($view_id);
     $view->setDisplay($display_id);
 

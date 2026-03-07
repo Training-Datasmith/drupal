@@ -56,15 +56,15 @@ class LayoutSectionItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName() {
+  public static function mainPropertyName(): string {
     return 'section';
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
-    $schema = [
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
+    return [
       'columns' => [
         'section' => [
           'type' => 'blob',
@@ -73,8 +73,6 @@ class LayoutSectionItem extends FieldItemBase {
         ],
       ],
     ];
-
-    return $schema;
   }
 
   /**
@@ -89,7 +87,7 @@ class LayoutSectionItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     return empty($this->section);
   }
 

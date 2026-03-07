@@ -25,8 +25,9 @@ trait DateTimeRangeTrait {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
     $separator = $this->getSetting('separator');
 
@@ -132,14 +133,12 @@ trait DateTimeRangeTrait {
    * @return bool
    *   True if the start date should be displayed. False otherwise.
    */
-  protected function startDateIsDisplayed(): bool {
-    switch ($this->getSetting('from_to')) {
-      case DateTimeRangeDisplayOptions::Both->value:
-      case DateTimeRangeDisplayOptions::StartDate->value:
-        return TRUE;
-    }
-
-    return FALSE;
+  protected function startDateIsDisplayed(): bool
+  {
+      return match ($this->getSetting('from_to')) {
+          DateTimeRangeDisplayOptions::Both->value, DateTimeRangeDisplayOptions::StartDate->value => TRUE,
+          default => FALSE,
+      };
   }
 
   /**
@@ -148,14 +147,12 @@ trait DateTimeRangeTrait {
    * @return bool
    *   True if the end date should be displayed. False otherwise.
    */
-  protected function endDateIsDisplayed(): bool {
-    switch ($this->getSetting('from_to')) {
-      case DateTimeRangeDisplayOptions::Both->value:
-      case DateTimeRangeDisplayOptions::EndDate->value:
-        return TRUE;
-    }
-
-    return FALSE;
+  protected function endDateIsDisplayed(): bool
+  {
+      return match ($this->getSetting('from_to')) {
+          DateTimeRangeDisplayOptions::Both->value, DateTimeRangeDisplayOptions::EndDate->value => TRUE,
+          default => FALSE,
+      };
   }
 
   /**

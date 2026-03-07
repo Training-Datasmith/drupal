@@ -12,21 +12,21 @@ trait UnchangingCacheableDependencyTrait {
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 

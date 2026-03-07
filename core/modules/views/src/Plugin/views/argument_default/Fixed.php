@@ -33,7 +33,7 @@ class Fixed extends ArgumentDefaultPluginBase implements CacheableDependencyInte
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['argument'] = [
       '#type' => 'textfield',
@@ -52,14 +52,14 @@ class Fixed extends ArgumentDefaultPluginBase implements CacheableDependencyInte
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return [];
   }
 

@@ -210,9 +210,9 @@ class ValidKeysConstraintValidator extends ConstraintValidator {
     // $unresolved_type must be a dynamic type and the resolved type must be
     // different and not be dynamic.
     // @see \Drupal\Core\Config\TypedConfigManager::buildDataDefinition()
-    assert(strpos($unresolved_type, ']'));
+    assert(strpos((string) $unresolved_type, ']'));
     assert($unresolved_type !== $resolved_type);
-    assert(!strpos($resolved_type, ']'));
+    assert(!strpos((string) $resolved_type, ']'));
 
     $message_parameters = [
       '@unresolved_dynamic_type' => $unresolved_type,
@@ -224,12 +224,12 @@ class ValidKeysConstraintValidator extends ConstraintValidator {
     assert($config instanceof Mapping);
     // Find the relative property path where this mapping starts.
     assert(str_starts_with($mapping->getPropertyPath(), $config->getName() . '.'));
-    $property_path_mapping = substr($mapping->getPropertyPath(), strlen($config->getName()) + 1);
+    $property_path_mapping = substr($mapping->getPropertyPath(), strlen((string) $config->getName()) + 1);
 
     // Extract the expressions stored in the dynamic type name.
     $matches = [];
     // @see \Drupal\Core\Config\TypedConfigManager::replaceDynamicTypeName()
-    $result = preg_match("/\[(.*)\]/U", $unresolved_type, $matches);
+    $result = preg_match("/\[(.*)\]/U", (string) $unresolved_type, $matches);
     assert($result === 1);
     // @see \Drupal\Core\Config\TypedConfigManager::replaceExpression()
     $expression = $matches[1];

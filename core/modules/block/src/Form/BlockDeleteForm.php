@@ -15,21 +15,21 @@ class BlockDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('block.admin_display');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Remove');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $entity = $this->getEntity();
     $regions = $this->systemRegionList($entity->getTheme(), REGIONS_VISIBLE);
     return $this->t('Are you sure you want to remove the @entity-type %label from the %region region?', [
@@ -42,7 +42,7 @@ class BlockDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('This will remove the block placement. You will need to <a href=":url">place it again</a> in order to undo this action.', [
       ':url' => Url::fromRoute('block.admin_display_theme', ['theme' => $this->getEntity()->getTheme()])->toString(),
     ]);
@@ -51,7 +51,7 @@ class BlockDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  protected function getDeletionMessage() {
+  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $entity = $this->getEntity();
     $regions = $this->systemRegionList($entity->getTheme(), REGIONS_VISIBLE);
     return $this->t('The @entity-type %label has been removed from the %region region.', [

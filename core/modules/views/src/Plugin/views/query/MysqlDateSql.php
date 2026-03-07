@@ -15,13 +15,6 @@ use Drupal\Core\Database\Connection;
 class MysqlDateSql implements DateSqlInterface {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * An array of PHP-to-MySQL replacement patterns.
    *
    * @var string[]
@@ -52,8 +45,8 @@ class MysqlDateSql implements DateSqlInterface {
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(Connection $database) {
-    $this->database = $database;
+  public function __construct(protected \Drupal\Core\Database\Connection $database)
+  {
   }
 
   /**
@@ -72,7 +65,7 @@ class MysqlDateSql implements DateSqlInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDateFormat($field, $format) {
+  public function getDateFormat($field, $format): string {
     $format = strtr($format, static::$replace);
     return "DATE_FORMAT($field, '$format')";
   }
@@ -80,14 +73,14 @@ class MysqlDateSql implements DateSqlInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTimezoneOffset($offset) {
+  public function setTimezoneOffset($offset): void {
     $this->database->query("SET @@session.time_zone = '$offset'");
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setFieldTimezoneOffset(&$field, $offset) {
+  public function setFieldTimezoneOffset(&$field, $offset): void {
     if (!empty($offset)) {
       $field = "($field + INTERVAL $offset SECOND)";
     }

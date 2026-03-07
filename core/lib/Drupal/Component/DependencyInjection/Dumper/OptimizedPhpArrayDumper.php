@@ -392,57 +392,50 @@ class OptimizedPhpArrayDumper extends Dumper {
    */
   protected function dumpValue($value) {
     if (is_array($value)) {
-      $code = [];
-      foreach ($value as $k => $v) {
-        $code[$k] = $this->dumpValue($v);
-      }
-
-      return $code;
+        $code = [];
+        foreach ($value as $k => $v) {
+          $code[$k] = $this->dumpValue($v);
+        }
+        return $code;
     }
-    elseif ($value instanceof Reference) {
-      return $this->getReferenceCall((string) $value, $value);
+    if ($value instanceof Reference) {
+        return $this->getReferenceCall((string) $value, $value);
     }
-    elseif ($value instanceof Definition) {
-      return $this->getPrivateServiceCall(NULL, $value);
+    if ($value instanceof Definition) {
+        return $this->getPrivateServiceCall(NULL, $value);
     }
-    elseif ($value instanceof Parameter) {
-      return $this->getParameterCall((string) $value);
+    if ($value instanceof Parameter) {
+        return $this->getParameterCall((string) $value);
     }
-    elseif (is_string($value) && str_contains($value, '%')) {
-      if (preg_match('/^%([^%]+)%$/', $value, $matches)) {
-        return $this->getParameterCall($matches[1]);
-      }
-      else {
-        $replaceParameters = function ($matches) {
-          return $this->getParameterCall($matches[2]);
-        };
-
+    if (is_string($value) && str_contains($value, '%')) {
+        if (preg_match('/^%([^%]+)%$/', $value, $matches)) {
+          return $this->getParameterCall($matches[1]);
+        }
+        $replaceParameters = (fn($matches) => $this->getParameterCall($matches[2]));
         // We cannot directly return the string value because it would
         // potentially not always be resolved in the dumpCollection() method.
         return (object) [
           'type' => 'raw',
           'value' => str_replace('%%', '%', preg_replace_callback('/(?<!%)(%)([^%]+)\1/', $replaceParameters, $value)),
         ];
-      }
     }
-    elseif ($value instanceof Expression) {
-      throw new RuntimeException('Unable to use expressions as the Symfony ExpressionLanguage component is not installed.');
+    if ($value instanceof Expression) {
+        throw new RuntimeException('Unable to use expressions as the Symfony ExpressionLanguage component is not installed.');
     }
-    elseif ($value instanceof ServiceClosureArgument) {
-      $reference = $value->getValues();
-      /** @var \Symfony\Component\DependencyInjection\Reference $reference */
-      $reference = reset($reference);
-
-      return $this->getServiceClosureCall((string) $reference, $reference->getInvalidBehavior());
+    if ($value instanceof ServiceClosureArgument) {
+        $reference = $value->getValues();
+        /** @var \Symfony\Component\DependencyInjection\Reference $reference */
+        $reference = reset($reference);
+        return $this->getServiceClosureCall((string) $reference, $reference->getInvalidBehavior());
     }
-    elseif ($value instanceof IteratorArgument) {
-      return $this->getIterator($value);
+    if ($value instanceof IteratorArgument) {
+        return $this->getIterator($value);
     }
-    elseif (is_object($value)) {
-      throw new RuntimeException('Unable to dump a service container if a parameter is an object.');
+    if (is_object($value)) {
+        throw new RuntimeException('Unable to dump a service container if a parameter is an object.');
     }
-    elseif (is_resource($value)) {
-      throw new RuntimeException('Unable to dump a service container if a parameter is a resource.');
+    if (is_resource($value)) {
+        throw new RuntimeException('Unable to dump a service container if a parameter is a resource.');
     }
 
     return $value;

@@ -19,20 +19,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SiteMaintenanceModeForm extends ConfigFormBase {
 
   /**
-   * The state keyvalue collection.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * The permission handler.
-   *
-   * @var \Drupal\user\PermissionHandlerInterface
-   */
-  protected $permissionHandler;
-
-  /**
    * Constructs a new SiteMaintenanceModeForm.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -41,19 +27,17 @@ class SiteMaintenanceModeForm extends ConfigFormBase {
    *   The typed config manager.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state keyvalue collection to use.
-   * @param \Drupal\user\PermissionHandlerInterface $permission_handler
+   * @param \Drupal\user\PermissionHandlerInterface $permissionHandler
    *   The permission handler.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, StateInterface $state, PermissionHandlerInterface $permission_handler) {
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\State\StateInterface $state, protected \Drupal\user\PermissionHandlerInterface $permissionHandler) {
     parent::__construct($config_factory, $typedConfigManager);
-    $this->state = $state;
-    $this->permissionHandler = $permission_handler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -65,14 +49,14 @@ class SiteMaintenanceModeForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_site_maintenance_mode';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['system.maintenance'];
   }
 
@@ -105,7 +89,7 @@ class SiteMaintenanceModeForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->state->set('system.maintenance_mode', $form_state->getValue('maintenance_mode'));
     parent::submitForm($form, $form_state);
   }

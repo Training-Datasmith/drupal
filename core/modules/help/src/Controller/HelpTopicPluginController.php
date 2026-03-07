@@ -38,7 +38,7 @@ class HelpTopicPluginController extends ControllerBase {
    * @return array
    *   A render array with the contents of a help topic page.
    */
-  public function viewHelpTopic($id) {
+  public function viewHelpTopic($id): array {
     $build = [];
 
     if (!$this->helpTopicPluginManager->hasDefinition($id)) {
@@ -69,7 +69,7 @@ class HelpTopicPluginController extends ControllerBase {
     }
 
     if (count($links)) {
-      uasort($links, [SortArray::class, 'sortByTitleElement']);
+      uasort($links, SortArray::sortByTitleElement(...));
       $build['#related'] = [
         '#theme' => 'links__related',
         '#heading' => [

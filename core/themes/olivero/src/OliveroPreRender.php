@@ -14,7 +14,7 @@ class OliveroPreRender implements TrustedCallbackInterface {
   /**
    * Prerender callback for text_format elements.
    */
-  public static function textFormat($element) {
+  public static function textFormat(array $element): array {
     $element['format']['#attributes']['class'][] = 'filter-wrapper';
     $element['format']['format']['#wrapper_attributes']['class'][] = 'form-item--editor-format';
     $element['format']['format']['#attributes']['class'][] = 'filter-list';
@@ -34,7 +34,7 @@ class OliveroPreRender implements TrustedCallbackInterface {
    * @return array
    *   The updated renderable array containing the placeholder.
    */
-  public static function messagePlaceholder(array $element) {
+  public static function messagePlaceholder(array $element): array {
     if (isset($element['fallback']['#markup'])) {
       $element['fallback']['#markup'] = '<div data-drupal-messages-fallback class="hidden messages-list"></div>';
     }
@@ -44,7 +44,7 @@ class OliveroPreRender implements TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return [
       'textFormat',
       'messagePlaceholder',

@@ -5,14 +5,7 @@ namespace Drupal\Component\Version;
 /**
  * A value object representing a Drupal version constraint.
  */
-class Constraint {
-
-  /**
-   * The constraint represented as a string. For example '>=8.x-5.x'.
-   *
-   * @var string
-   */
-  protected $constraint;
+class Constraint implements \Stringable {
 
   /**
    * A list of associative arrays representing the constraint.
@@ -34,9 +27,11 @@ class Constraint {
    *   Core compatibility declared for the current version of Drupal core.
    *   Normally this is set to \Drupal::CORE_COMPATIBILITY by the caller.
    */
-  public function __construct($constraint, $core_compatibility) {
-    $this->constraint = $constraint;
-    $this->parseConstraint($constraint, $core_compatibility);
+  public function __construct(/**
+   * The constraint represented as a string. For example '>=8.x-5.x'.
+   */
+  protected $constraint, $core_compatibility) {
+    $this->parseConstraint($this->constraint, $core_compatibility);
   }
 
   /**
@@ -47,7 +42,7 @@ class Constraint {
    * @return string
    *   The constraint as a string.
    */
-  public function __toString() {
+  public function __toString(): string {
     return $this->constraint;
   }
 
@@ -61,7 +56,7 @@ class Constraint {
    *   TRUE if the provided version is satisfied by this constraint, FALSE if
    *   not.
    */
-  public function isCompatible($version) {
+  public function isCompatible($version): bool {
     foreach ($this->constraintArray as $constraint) {
       if (!version_compare($version, $constraint['version'], $constraint['op'])) {
         return FALSE;
@@ -79,7 +74,7 @@ class Constraint {
    *   Core compatibility declared for the current version of Drupal core.
    *   Normally this is set to \Drupal::CORE_COMPATIBILITY by the caller.
    */
-  private function parseConstraint($constraint_string, $core_compatibility) {
+  private function parseConstraint($constraint_string, $core_compatibility): void {
     // We use named sub-patterns and support every op that version_compare
     // supports. Also, op is optional and defaults to equals.
     $p_op = '(?<operation>!=|==|=|<|<=|>|>=|<>)?';

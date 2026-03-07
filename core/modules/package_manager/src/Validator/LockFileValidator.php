@@ -37,8 +37,6 @@ final class LockFileValidator implements EventSubscriberInterface {
 
   /**
    * The key-value store.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
    */
   private readonly KeyValueStoreInterface $keyValue;
 

@@ -41,7 +41,7 @@ class Radios extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#process' => [
@@ -57,7 +57,7 @@ class Radios extends FormElementBase {
   /**
    * Expands a radios element into individual radio elements.
    */
-  public static function processRadios(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processRadios(array &$element, FormStateInterface $form_state, &$complete_form): array {
     if (count($element['#options']) > 0) {
       $weight = 0;
       $child_attributes = $element['#attributes'];
@@ -114,18 +114,16 @@ class Radios extends FormElementBase {
       }
       return $input;
     }
-    else {
-      // For default value handling, simply return #default_value. Additionally,
-      // for a NULL default value, set #has_garbage_value to prevent
-      // FormBuilder::handleInputElement() converting the NULL to an empty
-      // string, so that code can distinguish between nothing selected and the
-      // selection of a radio button whose value is an empty string.
-      $value = $element['#default_value'] ?? NULL;
-      if (!isset($value)) {
-        $element['#has_garbage_value'] = TRUE;
-      }
-      return $value;
+    // For default value handling, simply return #default_value. Additionally,
+    // for a NULL default value, set #has_garbage_value to prevent
+    // FormBuilder::handleInputElement() converting the NULL to an empty
+    // string, so that code can distinguish between nothing selected and the
+    // selection of a radio button whose value is an empty string.
+    $value = $element['#default_value'] ?? NULL;
+    if (!isset($value)) {
+      $element['#has_garbage_value'] = TRUE;
     }
+    return $value;
   }
 
 }

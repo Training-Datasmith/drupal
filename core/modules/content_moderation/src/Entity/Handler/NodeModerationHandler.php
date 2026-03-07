@@ -15,26 +15,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class NodeModerationHandler extends ModerationHandler {
 
   /**
-   * The moderation information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInfo;
-
-  /**
    * NodeModerationHandler constructor.
    *
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderation_info
+   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
    *   The moderation information service.
    */
-  public function __construct(ModerationInformationInterface $moderation_info) {
-    $this->moderationInfo = $moderation_info;
+  public function __construct(protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $container->get('content_moderation.moderation_information')
     );
@@ -43,7 +36,7 @@ class NodeModerationHandler extends ModerationHandler {
   /**
    * {@inheritdoc}
    */
-  public function enforceRevisionsEntityFormAlter(array &$form, FormStateInterface $form_state, $form_id) {
+  public function enforceRevisionsEntityFormAlter(array &$form, FormStateInterface $form_state, $form_id): void {
     $form['revision']['#disabled'] = TRUE;
     $form['revision']['#default_value'] = TRUE;
     $form['revision']['#description'] = $this->t('Revisions are required.');
@@ -52,7 +45,7 @@ class NodeModerationHandler extends ModerationHandler {
   /**
    * {@inheritdoc}
    */
-  public function enforceRevisionsBundleFormAlter(array &$form, FormStateInterface $form_state, $form_id) {
+  public function enforceRevisionsBundleFormAlter(array &$form, FormStateInterface $form_state, $form_id): void {
     // Force the revision checkbox on.
     $form['workflow']['options']['revision']['#value'] = 'revision';
     $form['workflow']['options']['revision']['#disabled'] = TRUE;

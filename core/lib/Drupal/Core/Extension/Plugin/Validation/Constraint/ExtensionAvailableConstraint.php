@@ -19,8 +19,6 @@ class ExtensionAvailableConstraint extends SymfonyConstraint {
 
   /**
    * The type of extension to look for. Can be 'module', 'theme' or 'profile'.
-   *
-   * @var string
    */
   public string $type;
 

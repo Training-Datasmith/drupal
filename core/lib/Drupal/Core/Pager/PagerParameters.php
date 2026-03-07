@@ -32,7 +32,7 @@ class PagerParameters implements PagerParametersInterface {
   /**
    * {@inheritdoc}
    */
-  public function getQueryParameters() {
+  public function getQueryParameters(): array {
     $request = $this->requestStack->getCurrentRequest();
     if ($request) {
       return UrlHelper::filterQueryParameters(
@@ -45,7 +45,7 @@ class PagerParameters implements PagerParametersInterface {
   /**
    * {@inheritdoc}
    */
-  public function findPage($pager_id = 0) {
+  public function findPage($pager_id = 0): int {
     $pages = $this->getPagerQuery();
     return (int) ($pages[$pager_id] ?? 0);
   }

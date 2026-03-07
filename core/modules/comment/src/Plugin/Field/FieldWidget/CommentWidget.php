@@ -23,7 +23,7 @@ class CommentWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $entity = $items->getEntity();
 
     $element['status'] = [
@@ -88,7 +88,7 @@ class CommentWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
     // Add default values for statistics properties because we don't want to
     // have them in form.
     foreach ($values as &$value) {

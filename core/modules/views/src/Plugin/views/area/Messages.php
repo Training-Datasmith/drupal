@@ -25,7 +25,7 @@ class Messages extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($empty = FALSE) {
+  public function render($empty = FALSE): array {
     if (!$empty || !empty($this->options['empty'])) {
       return [
         '#type' => 'status_messages',

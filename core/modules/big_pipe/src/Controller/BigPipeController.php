@@ -33,7 +33,7 @@ class BigPipeController {
    *
    * @see \Drupal\big_pipe\Render\Placeholder\BigPipeStrategy
    */
-  public function setNoJsCookie(Request $request) {
+  public function setNoJsCookie(Request $request): \Drupal\Core\Routing\LocalRedirectResponse {
     // This controller may only be accessed when the browser does not support
     // JavaScript. It is accessed automatically when that's the case thanks to
     // big_pipe_page_attachments(). When this controller is executed, deny

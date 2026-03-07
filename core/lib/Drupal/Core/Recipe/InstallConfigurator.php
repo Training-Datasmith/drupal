@@ -13,7 +13,7 @@ use Drupal\Core\Extension\ThemeExtensionList;
  * @internal
  *   This API is experimental.
  */
-final class InstallConfigurator {
+final readonly class InstallConfigurator {
 
   /**
    * The list of modules to install.
@@ -23,7 +23,7 @@ final class InstallConfigurator {
    *
    * @var string[]
    */
-  public readonly array $modules;
+  public array $modules;
 
   /**
    * The list of themes to install.
@@ -33,7 +33,7 @@ final class InstallConfigurator {
    *
    * @var string[]
    */
-  public readonly array $themes;
+  public array $themes;
 
   /**
    * @param string[] $extensions
@@ -45,7 +45,7 @@ final class InstallConfigurator {
    */
   public function __construct(array $extensions, ModuleExtensionList $module_list, ThemeExtensionList $theme_list) {
     assert(Inspector::assertAllStrings($extensions), 'Extension names must be strings.');
-    $extensions = array_map(fn($extension) => Dependency::createFromString($extension)->getName(), $extensions);
+    $extensions = array_map(fn(string $extension) => Dependency::createFromString($extension)->getName(), $extensions);
     $extensions = array_combine($extensions, $extensions);
     $module_data = $module_list->reset()->getList();
     $theme_data = $theme_list->reset()->getList();

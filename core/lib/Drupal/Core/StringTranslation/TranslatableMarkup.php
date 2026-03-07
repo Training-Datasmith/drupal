@@ -30,13 +30,6 @@ class TranslatableMarkup extends FormattableMarkup {
   protected $translatedMarkup;
 
   /**
-   * The translation options.
-   *
-   * @var array
-   */
-  protected $options;
-
-  /**
    * The string translation service.
    *
    * @var \Drupal\Core\StringTranslation\TranslationInterface
@@ -126,13 +119,12 @@ class TranslatableMarkup extends FormattableMarkup {
    *
    * @ingroup sanitization
    */
-  public function __construct($string, array $arguments = [], array $options = [], ?TranslationInterface $string_translation = NULL) {
+  public function __construct($string, array $arguments = [], protected array $options = [], ?TranslationInterface $string_translation = NULL) {
     if (!is_string($string)) {
-      $message = $string instanceof TranslatableMarkup ? '$string ("' . $string->getUntranslatedString() . '") must be a string.' : '$string ("' . (string) $string . '") must be a string.';
+      $message = $string instanceof TranslatableMarkup ? '$string ("' . $string->getUntranslatedString() . '") must be a string.' : '$string ("' . $string . '") must be a string.';
       throw new \InvalidArgumentException($message);
     }
     parent::__construct($string, $arguments);
-    $this->options = $options;
     $this->stringTranslation = $string_translation;
   }
 
@@ -142,7 +134,7 @@ class TranslatableMarkup extends FormattableMarkup {
    * @return string
    *   The string stored in this wrapper.
    */
-  public function getUntranslatedString() {
+  public function getUntranslatedString(): string {
     return $this->string;
   }
 
@@ -175,7 +167,7 @@ class TranslatableMarkup extends FormattableMarkup {
    * @return mixed[]
    *   The array of arguments.
    */
-  public function getArguments() {
+  public function getArguments(): array {
     return $this->arguments;
   }
 

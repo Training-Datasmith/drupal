@@ -42,20 +42,16 @@ class AnnotationException extends Exception
 {
     /**
      * Creates a new AnnotationException describing a Syntax error.
-     *
-     * @return AnnotationException
      */
-    public static function syntaxError(string $message)
+    public static function syntaxError(string $message): self
     {
         return new self('[Syntax Error] ' . $message);
     }
 
     /**
      * Creates a new AnnotationException describing a Semantical error.
-     *
-     * @return AnnotationException
      */
-    public static function semanticalError(string $message)
+    public static function semanticalError(string $message): self
     {
         return new self('[Semantical Error] ' . $message);
     }
@@ -63,20 +59,16 @@ class AnnotationException extends Exception
     /**
      * Creates a new AnnotationException describing an error which occurred during
      * the creation of the annotation.
-     *
-     * @return AnnotationException
      */
-    public static function creationError(string $message, ?Throwable $previous = null)
+    public static function creationError(string $message, ?Throwable $previous = null): self
     {
         return new self('[Creation Error] ' . $message, 0, $previous);
     }
 
     /**
      * Creates a new AnnotationException describing a type error.
-     *
-     * @return AnnotationException
      */
-    public static function typeError(string $message)
+    public static function typeError(string $message): self
     {
         return new self('[Type Error] ' . $message);
     }
@@ -115,7 +107,7 @@ class AnnotationException extends Exception
             $annotationName,
             $context,
             $expected,
-            is_object($actual) ? 'an instance of ' . get_class($actual) : gettype($actual)
+            is_object($actual) ? 'an instance of ' . $actual::class : gettype($actual)
         ));
     }
 
@@ -144,8 +136,6 @@ class AnnotationException extends Exception
      *
      * @param mixed $given
      * @phpstan-param list<string> $available
-     *
-     * @return AnnotationException
      */
     public static function enumeratorError(
         string $attributeName,
@@ -153,27 +143,25 @@ class AnnotationException extends Exception
         string $context,
         array $available,
         $given
-    ) {
+    ): self {
         return new self(sprintf(
             '[Enum Error] Attribute "%s" of @%s declared on %s accepts only [%s], but got %s.',
             $attributeName,
             $annotationName,
             $context,
             implode(', ', $available),
-            is_object($given) ? get_class($given) : $given
+            is_object($given) ? $given::class : $given
         ));
     }
 
-    /** @return AnnotationException */
-    public static function optimizerPlusSaveComments()
+    public static function optimizerPlusSaveComments(): self
     {
         return new self(
             'You have to enable opcache.save_comments=1 or zend_optimizerplus.save_comments=1.'
         );
     }
 
-    /** @return AnnotationException */
-    public static function optimizerPlusLoadComments()
+    public static function optimizerPlusLoadComments(): self
     {
         return new self(
             'You have to enable opcache.load_comments=1 or zend_optimizerplus.load_comments=1.'

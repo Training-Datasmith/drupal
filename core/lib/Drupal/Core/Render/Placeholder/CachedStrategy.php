@@ -19,11 +19,12 @@ class CachedStrategy implements PlaceholderStrategyInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function processPlaceholders(array $placeholders) {
+  public function processPlaceholders(array $placeholders): array {
     $return = $this->renderCache->getMultiple($placeholders);
     if ($return) {
-      $return = $this->processNestedPlaceholders($return);
+      return $this->processNestedPlaceholders($return);
     }
 
     return $return;

@@ -19,7 +19,7 @@ trait ExtensionListTrait {
   /**
    * @see \Drupal\Core\Extension\ExtensionList::setPathname()
    */
-  public function setPathname($extension_name, $pathname) {
+  public function setPathname($extension_name, $pathname): void {
     parent::setPathname($extension_name, $pathname);
 
     // In the early installer the container is rebuilt multiple times. Therefore
@@ -35,20 +35,20 @@ trait ExtensionListTrait {
    */
   public function getPathname($extension_name) {
     if (isset($this->addedPathNames[$extension_name])) {
-      return $this->addedPathNames[$extension_name];
+        return $this->addedPathNames[$extension_name];
     }
-    elseif (isset($this->pathNames[$extension_name])) {
-      return $this->pathNames[$extension_name];
+    if (isset($this->pathNames[$extension_name])) {
+        return $this->pathNames[$extension_name];
     }
-    elseif (isset(static::$staticAddedPathNames[$extension_name])) {
-      return static::$staticAddedPathNames[$extension_name];
+    if (isset(static::$staticAddedPathNames[$extension_name])) {
+        return static::$staticAddedPathNames[$extension_name];
     }
-    elseif (($path_names = $this->getPathNames()) && isset($path_names[$extension_name])) {
-      // Ensure we don't have to do path scanning more than really needed.
-      foreach ($path_names as $extension => $path_name) {
-        static::$staticAddedPathNames[$extension] = $path_name;
-      }
-      return $path_names[$extension_name];
+    if (($path_names = $this->getPathNames()) && isset($path_names[$extension_name])) {
+        // Ensure we don't have to do path scanning more than really needed.
+        foreach ($path_names as $extension => $path_name) {
+          static::$staticAddedPathNames[$extension] = $path_name;
+        }
+        return $path_names[$extension_name];
     }
     throw new \InvalidArgumentException("The {$this->type} $extension_name does not exist.");
   }

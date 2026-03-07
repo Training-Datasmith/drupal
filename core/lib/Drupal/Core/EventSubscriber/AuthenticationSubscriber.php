@@ -20,46 +20,30 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class AuthenticationSubscriber implements EventSubscriberInterface {
 
   /**
-   * Authentication provider.
-   *
-   * @var \Drupal\Core\Authentication\AuthenticationProviderInterface
-   */
-  protected $authenticationProvider;
-
-  /**
    * Authentication provider filter.
    *
    * @var \Drupal\Core\Authentication\AuthenticationProviderFilterInterface|null
    */
-  protected $filter;
+  protected (\Drupal\Core\Authentication\AuthenticationProviderFilterInterface&\Drupal\Core\Authentication\AuthenticationProviderInterface)|null $filter;
 
   /**
    * Authentication challenge provider.
    *
    * @var \Drupal\Core\Authentication\AuthenticationProviderChallengeInterface|null
    */
-  protected $challengeProvider;
-
-  /**
-   * Account proxy.
-   *
-   * @var \Drupal\Core\Session\AccountProxyInterface
-   */
-  protected $accountProxy;
+  protected (\Drupal\Core\Authentication\AuthenticationProviderChallengeInterface&\Drupal\Core\Authentication\AuthenticationProviderInterface)|null $challengeProvider;
 
   /**
    * Constructs an authentication subscriber.
    *
-   * @param \Drupal\Core\Authentication\AuthenticationProviderInterface $authentication_provider
+   * @param \Drupal\Core\Authentication\AuthenticationProviderInterface $authenticationProvider
    *   An authentication provider.
-   * @param \Drupal\Core\Session\AccountProxyInterface $account_proxy
+   * @param \Drupal\Core\Session\AccountProxyInterface $accountProxy
    *   Account proxy.
    */
-  public function __construct(AuthenticationProviderInterface $authentication_provider, AccountProxyInterface $account_proxy) {
-    $this->authenticationProvider = $authentication_provider;
-    $this->filter = ($authentication_provider instanceof AuthenticationProviderFilterInterface) ? $authentication_provider : NULL;
-    $this->challengeProvider = ($authentication_provider instanceof AuthenticationProviderChallengeInterface) ? $authentication_provider : NULL;
-    $this->accountProxy = $account_proxy;
+  public function __construct(protected \Drupal\Core\Authentication\AuthenticationProviderInterface $authenticationProvider, protected \Drupal\Core\Session\AccountProxyInterface $accountProxy) {
+    $this->filter = ($this->authenticationProvider instanceof AuthenticationProviderFilterInterface) ? $this->authenticationProvider : NULL;
+    $this->challengeProvider = ($this->authenticationProvider instanceof AuthenticationProviderChallengeInterface) ? $this->authenticationProvider : NULL;
   }
 
   /**
@@ -70,7 +54,7 @@ class AuthenticationSubscriber implements EventSubscriberInterface {
    *
    * @see \Drupal\Core\Authentication\AuthenticationProviderInterface::authenticate()
    */
-  public function onKernelRequestAuthenticate(RequestEvent $event) {
+  public function onKernelRequestAuthenticate(RequestEvent $event): void {
     if ($event->isMainRequest()) {
       $request = $event->getRequest();
       if ($this->authenticationProvider->applies($request)) {
@@ -89,7 +73,7 @@ class AuthenticationSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The request event.
    */
-  public function onKernelRequestFilterProvider(RequestEvent $event) {
+  public function onKernelRequestFilterProvider(RequestEvent $event): void {
     if (isset($this->filter) && $event->isMainRequest()) {
       $request = $event->getRequest();
       if ($this->authenticationProvider->applies($request) && !$this->filter->appliesToRoutedRequest($request, TRUE)) {
@@ -108,7 +92,7 @@ class AuthenticationSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The exception event.
    */
-  public function onExceptionSendChallenge(ExceptionEvent $event) {
+  public function onExceptionSendChallenge(ExceptionEvent $event): void {
     if (isset($this->challengeProvider) && $event->isMainRequest()) {
       $request = $event->getRequest();
       $exception = $event->getThrowable();
@@ -127,7 +111,7 @@ class AuthenticationSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event.
    */
-  public function onExceptionAccessDenied(ExceptionEvent $event) {
+  public function onExceptionAccessDenied(ExceptionEvent $event): void {
     if (isset($this->filter) && $event->isMainRequest()) {
       $request = $event->getRequest();
       $exception = $event->getThrowable();

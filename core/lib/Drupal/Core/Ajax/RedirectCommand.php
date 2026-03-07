@@ -10,27 +10,25 @@ namespace Drupal\Core\Ajax;
 class RedirectCommand implements CommandInterface {
 
   /**
-   * The URL that will be loaded into window.location.
-   *
-   * @var string
-   */
-  protected $url;
-
-  /**
    * Constructs an RedirectCommand object.
    *
    * @param string $url
    *   The URL that will be loaded into window.location. This should be a full
    *   URL.
    */
-  public function __construct($url) {
-    $this->url = $url;
+  public function __construct(
+      /**
+       * The URL that will be loaded into window.location.
+       */
+      protected $url
+  )
+  {
   }
 
   /**
    * Implements \Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
     return [
       'command' => 'redirect',
       'url' => $this->url,

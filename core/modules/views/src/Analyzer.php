@@ -20,20 +20,13 @@ class Analyzer {
   use StringTranslationTrait;
 
   /**
-   * A module handler that invokes the 'views_analyze' hook.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs an Analyzer object.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler that invokes the 'views_analyze' hook.
    */
-  public function __construct(ModuleHandlerInterface $module_handler) {
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
@@ -48,9 +41,8 @@ class Analyzer {
    */
   public function getMessages(ViewExecutable $view) {
     $view->initDisplay();
-    $messages = $this->moduleHandler->invokeAll('views_analyze', [$view]);
 
-    return $messages;
+    return $this->moduleHandler->invokeAll('views_analyze', [$view]);
   }
 
   /**
@@ -60,7 +52,7 @@ class Analyzer {
    * \Drupal\Core\Messenger\MessengerInterface::addMessage() which uses separate
    * boxes for "ok", "warning" and "error".
    */
-  public function formatMessages(array $messages) {
+  public function formatMessages(array $messages): string {
     if (empty($messages)) {
       $messages = [static::formatMessage($this->t('View analysis can find nothing to report.'), 'ok')];
     }
@@ -121,7 +113,7 @@ class Analyzer {
    * @return array
    *   A single formatted message, consisting of a key message and a key type.
    */
-  public static function formatMessage($message, $type = 'error') {
+  public static function formatMessage($message, $type = 'error'): array {
     return ['message' => $message, 'type' => $type];
   }
 

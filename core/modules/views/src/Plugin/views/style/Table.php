@@ -106,7 +106,7 @@ class Table extends StylePluginBase implements CacheableDependencyInterface {
   /**
    * Add our actual sort criteria.
    */
-  public function buildSortPost() {
+  public function buildSortPost(): void {
     $query = $this->view->getRequest()->query;
     $order = $query->get('order');
     if (!isset($order)) {
@@ -126,7 +126,7 @@ class Table extends StylePluginBase implements CacheableDependencyInterface {
       $sort = $order;
       // Store the $order for later use.
       $request_sort = $query->get('sort');
-      $this->order = !empty($request_sort) ? strtolower($request_sort) : 'asc';
+      $this->order = !empty($request_sort) ? strtolower((string) $request_sort) : 'asc';
     }
 
     // If a sort we don't know anything about gets through, exit gracefully.
@@ -172,7 +172,7 @@ class Table extends StylePluginBase implements CacheableDependencyInterface {
    * @return array
    *   An array of all the sanitized columns.
    */
-  public function sanitizeColumns($columns, $fields = NULL) {
+  public function sanitizeColumns(array $columns, $fields = NULL): array {
     $sanitized = [];
     if ($fields === NULL) {
       $fields = $this->displayHandler->getOption('fields');
@@ -206,7 +206,7 @@ class Table extends StylePluginBase implements CacheableDependencyInterface {
   /**
    * Render the given style.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $handlers = $this->displayHandler->getHandlers('field');
     if (empty($handlers)) {
@@ -431,14 +431,18 @@ class Table extends StylePluginBase implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function evenEmpty() {
-    return parent::evenEmpty() || !empty($this->options['empty_table']);
+  public function evenEmpty(): bool
+  {
+      if (parent::evenEmpty()) {
+          return true;
+      }
+      return !empty($this->options['empty_table']);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function wizardSubmit(&$form, FormStateInterface $form_state, WizardInterface $wizard, &$display_options, $display_type) {
+  public function wizardSubmit(&$form, FormStateInterface $form_state, WizardInterface $wizard, &$display_options, $display_type): void {
     // If any of the displays use the table style, make sure that the fields
     // always have a labels by unsetting the override.
     foreach ($display_options['default']['fields'] as &$field) {
@@ -449,14 +453,15 @@ class Table extends StylePluginBase implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
+   * @return list<'url.query_args'>
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     $contexts = [];
 
     foreach ($this->options['info'] as $info) {
@@ -474,7 +479,7 @@ class Table extends StylePluginBase implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return [];
   }
 

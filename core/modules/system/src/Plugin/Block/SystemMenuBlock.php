@@ -29,20 +29,6 @@ use Drupal\system\Plugin\Derivative\SystemMenuBlock as SystemMenuBlockDeriver;
 class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The menu link tree service.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkTreeInterface
-   */
-  protected $menuTree;
-
-  /**
-   * The active menu trail service.
-   *
-   * @var \Drupal\Core\Menu\MenuActiveTrailInterface
-   */
-  protected $menuActiveTrail;
-
-  /**
    * Constructs a new SystemMenuBlock.
    *
    * @param array $configuration
@@ -51,21 +37,19 @@ class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterfa
    *   The plugin ID for the plugin instance.
    * @param array $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Menu\MenuLinkTreeInterface $menu_tree
+   * @param \Drupal\Core\Menu\MenuLinkTreeInterface $menuTree
    *   The menu tree service.
-   * @param \Drupal\Core\Menu\MenuActiveTrailInterface $menu_active_trail
+   * @param \Drupal\Core\Menu\MenuActiveTrailInterface $menuActiveTrail
    *   The active menu trail service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MenuLinkTreeInterface $menu_tree, MenuActiveTrailInterface $menu_active_trail) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Menu\MenuLinkTreeInterface $menuTree, protected \Drupal\Core\Menu\MenuActiveTrailInterface $menuActiveTrail) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->menuTree = $menu_tree;
-    $this->menuActiveTrail = $menu_active_trail;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     $config = $this->configuration;
 
     $defaults = $this->defaultConfiguration();
@@ -145,7 +129,7 @@ class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterfa
    *
    * Adjusts the #parents of menu_levels to save its children at the top level.
    */
-  public static function processMenuLevelParents(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processMenuLevelParents(array &$element, FormStateInterface $form_state, &$complete_form): array {
     array_pop($element['#parents']);
     return $element;
   }
@@ -167,7 +151,7 @@ class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     $this->configuration['level'] = $form_state->getValue('level');
     $this->configuration['depth'] = $form_state->getValue('depth') ?: NULL;
     $this->configuration['expand_all_items'] = $form_state->getValue('expand_all_items');
@@ -244,7 +228,7 @@ class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'level' => 1,
       'depth' => NULL,
@@ -255,7 +239,7 @@ class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     // Even when the menu block renders to the empty string for a user, we want
     // the cache tag for this menu to be set: whenever the menu is changed, this
     // menu block must also be re-rendered for that user, because maybe a menu
@@ -268,7 +252,7 @@ class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     // ::build() uses MenuLinkTreeInterface::getCurrentRouteMenuTreeParameters()
     // to generate menu tree parameters, and those take the active menu trail
     // into account. Therefore, we must vary the rendered menu by the active
@@ -283,7 +267,7 @@ class SystemMenuBlock extends BlockBase implements ContainerFactoryPluginInterfa
     // if any of those conditions are not true, the active trail context is
     // added.
     if ($this->shouldSetActiveTrail()) {
-      $contexts = Cache::mergeContexts($contexts, ['route.menu_active_trails:' . $menu_name]);
+      return Cache::mergeContexts($contexts, ['route.menu_active_trails:' . $menu_name]);
     }
     return $contexts;
   }

@@ -18,49 +18,25 @@ class FieldUiLocalTask extends DeriverBase implements ContainerDeriverInterface 
   use StringTranslationTrait;
 
   /**
-   * The route provider.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
    * Creates a FieldUiLocalTask object.
    *
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    */
-  public function __construct(RouteProviderInterface $route_provider, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, EntityDisplayRepositoryInterface $entity_display_repository) {
-    $this->routeProvider = $route_provider;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
     $this->stringTranslation = $string_translation;
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('router.route_provider'),
       $container->get('entity_type.manager'),
@@ -130,7 +106,7 @@ class FieldUiLocalTask extends DeriverBase implements ContainerDeriverInterface 
         // One local task for each form mode.
         $form_modes = $this->entityDisplayRepository->getFormModes($entity_type_id);
         // Sort all form modes by title.
-        $form_modes_titles = array_values(array_map(fn($item) => (string) $item['label'], $form_modes));
+        $form_modes_titles = array_values(array_map(fn(array $item): string => (string) $item['label'], $form_modes));
         sort($form_modes_titles, SORT_NATURAL);
         foreach ($form_modes as $form_mode => $form_mode_info) {
           $this->derivatives['field_form_display_' . $form_mode . '_' . $entity_type_id] = [
@@ -148,7 +124,7 @@ class FieldUiLocalTask extends DeriverBase implements ContainerDeriverInterface 
         // One local task for each view mode.
         $view_modes = $this->entityDisplayRepository->getViewModes($entity_type_id);
         // Sort all view modes by title.
-        $view_modes_titles = array_values(array_map(fn($item) => (string) $item['label'], $view_modes));
+        $view_modes_titles = array_values(array_map(fn(array $item): string => (string) $item['label'], $view_modes));
         sort($view_modes_titles, SORT_NATURAL);
         foreach ($view_modes as $view_mode => $form_mode_info) {
           $this->derivatives['field_display_' . $view_mode . '_' . $entity_type_id] = [
@@ -178,7 +154,7 @@ class FieldUiLocalTask extends DeriverBase implements ContainerDeriverInterface 
    * @param array $local_tasks
    *   An array of local tasks plugin definitions, keyed by plugin ID.
    */
-  public function alterLocalTasks(&$local_tasks) {
+  public function alterLocalTasks(array &$local_tasks): void {
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
       if ($route_name = $entity_type->get('field_ui_base_route')) {
         $local_tasks["field_ui.fields:overview_$entity_type_id"]['base_route'] = $route_name;

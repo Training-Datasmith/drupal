@@ -62,20 +62,13 @@ class LinkCollectionNormalizer extends NormalizerBase {
   protected $hashSalt;
 
   /**
-   * The current user making the request.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * LinkCollectionNormalizer constructor.
    *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(AccountInterface $current_user) {
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\Session\AccountInterface $currentUser)
+  {
   }
 
   /**
@@ -125,7 +118,7 @@ class LinkCollectionNormalizer extends NormalizerBase {
    * @return string
    *   A 7 character alphanumeric hash.
    */
-  protected function hashByHref(Link $link) {
+  protected function hashByHref(Link $link): string {
     // Generate a salt unique to each instance of this class.
     if (!$this->hashSalt) {
       $this->hashSalt = Crypt::randomBytesBase64();

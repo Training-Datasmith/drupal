@@ -34,7 +34,7 @@ class SimplePageVariant extends VariantBase implements PageVariantInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMainContent(array $main_content) {
+  public function setMainContent(array $main_content): static {
     $this->mainContent = $main_content;
     return $this;
   }
@@ -42,15 +42,16 @@ class SimplePageVariant extends VariantBase implements PageVariantInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title) {
+  public function setTitle($title): static {
     $this->title = $title;
     return $this;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function build() {
+  public function build(): array {
     $build = [
       'content' => [
         'messages' => [

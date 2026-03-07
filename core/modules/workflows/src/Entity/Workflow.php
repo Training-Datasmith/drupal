@@ -116,7 +116,7 @@ class Workflow extends ConfigEntityBase implements WorkflowInterface, EntityWith
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     $workflow_type = $this->getTypePlugin();
     $missing_states = array_diff($workflow_type->getRequiredStates(), array_keys($this->getTypePlugin()->getStates()));
     if (!empty($missing_states)) {
@@ -135,7 +135,7 @@ class Workflow extends ConfigEntityBase implements WorkflowInterface, EntityWith
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return ['type_settings' => $this->getPluginCollection()];
   }
 
@@ -171,7 +171,7 @@ class Workflow extends ConfigEntityBase implements WorkflowInterface, EntityWith
   /**
    * {@inheritdoc}
    */
-  public function status() {
+  public function status(): bool {
     // In order for a workflow to be usable it must have at least one state.
     return !empty($this->status) && !empty($this->getTypePlugin()->getStates());
   }
@@ -179,7 +179,7 @@ class Workflow extends ConfigEntityBase implements WorkflowInterface, EntityWith
   /**
    * {@inheritdoc}
    */
-  public function onDependencyRemoval(array $dependencies) {
+  public function onDependencyRemoval(array $dependencies): bool {
     // Give the parent method and the workflow type plugin a chance to react
     // to removed dependencies and report if either of these two made a change.
     $parent_changed_entity = parent::onDependencyRemoval($dependencies);

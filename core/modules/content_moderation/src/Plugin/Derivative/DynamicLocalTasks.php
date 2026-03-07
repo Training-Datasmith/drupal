@@ -20,27 +20,6 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
   use StringTranslationTrait;
 
   /**
-   * The base plugin ID.
-   *
-   * @var string
-   */
-  protected $basePluginId;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The moderation information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInfo;
-
-  /**
    * The router.
    *
    * @var \Symfony\Component\Routing\RouterInterface
@@ -50,29 +29,29 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
   /**
    * Creates a FieldUiLocalTask object.
    *
-   * @param string $base_plugin_id
+   * @param string $basePluginId
    *   The base plugin ID.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderation_information
+   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
    *   The moderation information service.
    * @param \Symfony\Component\Routing\RouterInterface $router
    *   The router.
    */
-  public function __construct($base_plugin_id, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, ModerationInformationInterface $moderation_information, RouterInterface $router) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(/**
+   * The base plugin ID.
+   */
+  protected $basePluginId, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation, protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, RouterInterface $router) {
     $this->stringTranslation = $string_translation;
-    $this->basePluginId = $base_plugin_id;
-    $this->moderationInfo = $moderation_information;
     $this->router = $router;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $base_plugin_id,
       $container->get('entity_type.manager'),
@@ -99,9 +78,7 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
     }
 
     // Add the latest version tab to entities.
-    $latest_version_entities = array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $type) {
-      return $this->moderationInfo->canModerateEntitiesOfEntityType($type) && $type->hasLinkTemplate('latest-version');
-    });
+    $latest_version_entities = array_filter($this->entityTypeManager->getDefinitions(), fn(EntityTypeInterface $type) => $this->moderationInfo->canModerateEntitiesOfEntityType($type) && $type->hasLinkTemplate('latest-version'));
 
     foreach ($latest_version_entities as $entity_type_id => $entity_type) {
       $this->derivatives["$entity_type_id.latest_version_tab"] = [

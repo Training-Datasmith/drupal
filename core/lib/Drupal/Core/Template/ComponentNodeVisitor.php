@@ -203,7 +203,7 @@ class ComponentNodeVisitor implements NodeVisitorInterface {
     $input = substr($input, 0, $max_length);
     $chars = str_split($input);
     $chars = array_pad($chars, 20, '0');
-    $sum = array_reduce($chars, static fn(int $total, string $char) => $total + ord($char), 0);
+    $sum = array_reduce($chars, static fn(int $total, string $char): int => $total + ord($char), 0);
     $num = $sum / 4880;
 
     // Compute an int between 129338 and 129431, which is the sequential emoji

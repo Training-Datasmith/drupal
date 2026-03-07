@@ -18,20 +18,18 @@ use Composer\Util\Filesystem;
 class ManageOptions {
 
   /**
-   * The Composer service.
-   *
-   * @var \Composer\Composer
-   */
-  protected $composer;
-
-  /**
    * ManageOptions constructor.
    *
    * @param \Composer\Composer $composer
    *   The Composer service.
    */
-  public function __construct(Composer $composer) {
-    $this->composer = $composer;
+  public function __construct(
+      /**
+       * The Composer service.
+       */
+      protected \Composer\Composer $composer
+  )
+  {
   }
 
   /**
@@ -78,15 +76,13 @@ class ManageOptions {
    *
    * Create them on the filesystem if they do not.
    */
-  protected function ensureLocations() {
+  protected function ensureLocations(): array {
     $fs = new Filesystem();
     $locations = $this->getOptions()->locations() + ['web_root' => './'];
-    $locations = array_map(function ($location) use ($fs) {
+    return array_map(function ($location) use ($fs) {
       $fs->ensureDirectoryExists($location);
-      $location = realpath($location);
-      return $location;
+      return realpath($location);
     }, $locations);
-    return $locations;
   }
 
 }

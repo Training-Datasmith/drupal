@@ -41,7 +41,7 @@ class ChangedItem extends CreatedItem {
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     parent::preSave();
 
     // Set the timestamp to request time if it is not set.

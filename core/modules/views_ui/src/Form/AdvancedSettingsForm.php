@@ -16,14 +16,14 @@ class AdvancedSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_admin_settings_advanced';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['views.settings'];
   }
 
@@ -81,7 +81,7 @@ class AdvancedSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config('views.settings')
       ->set('sql_signature', $form_state->getValue('sql_signature'))
       ->set('display_extenders', $form_state->getValue('display_extenders', []))
@@ -93,7 +93,7 @@ class AdvancedSettingsForm extends ConfigFormBase {
   /**
    * Submission handler to clear the Views cache.
    */
-  public function cacheSubmit() {
+  public function cacheSubmit(): void {
     views_invalidate_cache();
     $this->messenger()->addStatus($this->t('The cache has been cleared.'));
   }

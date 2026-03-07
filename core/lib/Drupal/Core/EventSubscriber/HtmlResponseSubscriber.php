@@ -14,20 +14,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class HtmlResponseSubscriber implements EventSubscriberInterface {
 
   /**
-   * The HTML response attachments processor service.
-   *
-   * @var \Drupal\Core\Render\AttachmentsResponseProcessorInterface
-   */
-  protected $htmlResponseAttachmentsProcessor;
-
-  /**
    * Constructs a HtmlResponseSubscriber object.
    *
-   * @param \Drupal\Core\Render\AttachmentsResponseProcessorInterface $html_response_attachments_processor
+   * @param \Drupal\Core\Render\AttachmentsResponseProcessorInterface $htmlResponseAttachmentsProcessor
    *   The HTML response attachments processor service.
    */
-  public function __construct(AttachmentsResponseProcessorInterface $html_response_attachments_processor) {
-    $this->htmlResponseAttachmentsProcessor = $html_response_attachments_processor;
+  public function __construct(protected \Drupal\Core\Render\AttachmentsResponseProcessorInterface $htmlResponseAttachmentsProcessor)
+  {
   }
 
   /**
@@ -36,7 +29,7 @@ class HtmlResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespond(ResponseEvent $event) {
+  public function onRespond(ResponseEvent $event): void {
     $response = $event->getResponse();
     if (!$response instanceof HtmlResponse) {
       return;

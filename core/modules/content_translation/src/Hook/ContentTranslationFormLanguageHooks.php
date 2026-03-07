@@ -237,7 +237,7 @@ class ContentTranslationFormLanguageHooks {
    * @return bool
    *   TRUE if field translatability can be configured, FALSE otherwise.
    */
-  protected function isFieldTranslatabilityConfigurable(EntityTypeInterface $entity_type, FieldStorageDefinitionInterface $definition) {
+  protected function isFieldTranslatabilityConfigurable(EntityTypeInterface $entity_type, FieldStorageDefinitionInterface $definition): bool {
     // Allow to configure only fields supporting multilingual storage. We skip
     // our own fields as they are always translatable. Additionally we skip a
     // set of well-known fields implementing entity system business logic.

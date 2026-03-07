@@ -35,7 +35,7 @@ class Number extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#step' => 1,
@@ -58,7 +58,7 @@ class Number extends FormElementBase {
    *
    * Note that #required is validated by _form_validate() already.
    */
-  public static function validateNumber(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateNumber(array &$element, FormStateInterface $form_state, &$complete_form): void {
     $value = $element['#value'];
     if ($value === '') {
       return;
@@ -110,7 +110,7 @@ class Number extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderNumber($element) {
+  public static function preRenderNumber(array $element): array {
     $element['#attributes']['type'] = 'number';
     Element::setAttributes($element, ['id', 'name', 'value', 'step', 'min', 'max', 'placeholder', 'size']);
     static::setAttributes($element, ['form-number']);

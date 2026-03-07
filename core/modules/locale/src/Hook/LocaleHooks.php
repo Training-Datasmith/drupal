@@ -62,8 +62,7 @@ class LocaleHooks {
           ':translate' => Url::fromRoute('locale.translate_page')->toString(),
           ':languages' => Url::fromRoute('entity.configurable_language.collection')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.configurable_language.collection':
         return '<p>' . $this->t('Interface translations are automatically imported when a language is added, or when new modules or themes are installed. The report <a href=":update">Available translation updates</a> shows the status. Interface text can be customized in the <a href=":translate">user interface translation</a> page.', [
@@ -72,8 +71,7 @@ class LocaleHooks {
         ]) . '</p>';
 
       case 'locale.translate_page':
-        $output = '<p>' . $this->t('This page allows a translator to search for specific translated and untranslated strings, and is used when creating or editing translations. (Note: Because translation tasks involve many strings, it may be more convenient to <a title="User interface translation export" href=":export">export</a> strings for offline editing in a desktop Gettext translation editor.) Searches may be limited to strings in a specific language.', [':export' => Url::fromRoute('locale.translate_export')->toString()]) . '</p>';
-        return $output;
+        return '<p>' . $this->t('This page allows a translator to search for specific translated and untranslated strings, and is used when creating or editing translations. (Note: Because translation tasks involve many strings, it may be more convenient to <a title="User interface translation export" href=":export">export</a> strings for offline editing in a desktop Gettext translation editor.) Searches may be limited to strings in a specific language.', [':export' => Url::fromRoute('locale.translate_export')->toString()]) . '</p>';
 
       case 'locale.translate_import':
         $output = '<p>' . $this->t('Translation files are automatically downloaded and imported when <a title="Languages" href=":language">languages</a> are added, or when modules or themes are installed.', [
@@ -83,8 +81,7 @@ class LocaleHooks {
           ':url' => 'https://localize.drupal.org',
           ':export' => Url::fromRoute('locale.translate_export')->toString(),
         ]) . '</p>';
-        $output .= '<p>' . $this->t('Note that importing large .po files may take several minutes.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Note that importing large .po files may take several minutes.') . '</p>');
 
       case 'locale.translate_export':
         return '<p>' . $this->t('This page exports the translated strings used by your site. An export file may be in Gettext Portable Object (<em>.po</em>) form, which includes both the original string and the translation (used to share translations with others), or in Gettext Portable Object Template (<em>.pot</em>) form, which includes the original strings only (used to create new translations with a Gettext translation editor).') . '</p>';
@@ -192,9 +189,7 @@ class LocaleHooks {
       $request_time = \Drupal::time()->getRequestTime();
       $last = $request_time - $config->get('translation.update_interval_days') * 3600 * 24;
       $projects = \Drupal::service('locale.project')->getAll();
-      $projects = array_filter($projects, function ($project) {
-        return $project['status'] == 1;
-      });
+      $projects = array_filter($projects, fn(array $project) => $project['status'] == 1);
       $connection = \Drupal::database();
       $files = $connection->select('locale_file', 'f')
         ->condition('f.project', array_keys($projects), 'IN')
@@ -242,7 +237,7 @@ class LocaleHooks {
    * Implements hook_js_alter().
    */
   #[Hook('js_alter')]
-  public function jsAlter(&$javascript, AttachedAssetsInterface $assets, LanguageInterface $language): void {
+  public function jsAlter(array &$javascript, AttachedAssetsInterface $assets, LanguageInterface $language): void {
     $files = [];
     foreach ($javascript as $item) {
       if (isset($item['type']) && $item['type'] == 'file') {
@@ -291,7 +286,7 @@ class LocaleHooks {
    * Implements hook_form_FORM_ID_alter() for language_admin_overview_form().
    */
   #[Hook('form_language_admin_overview_form_alter')]
-  public function formLanguageAdminOverviewFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formLanguageAdminOverviewFormAlter(array &$form, FormStateInterface $form_state) : void {
     $languages = $form['languages']['#languages'];
     $total_strings = \Drupal::service('locale.storage')->countStrings();
     $stats = array_fill_keys(array_keys($languages), []);
@@ -331,7 +326,7 @@ class LocaleHooks {
    * Implements hook_form_FORM_ID_alter() for language_admin_add_form().
    */
   #[Hook('form_language_admin_add_form_alter')]
-  public function formLanguageAdminAddFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formLanguageAdminAddFormAlter(array &$form, FormStateInterface $form_state) : void {
     $form['predefined_submit']['#submit'][] = 'locale_form_language_admin_add_form_alter_submit';
     $form['custom_language']['submit']['#submit'][] = 'locale_form_language_admin_add_form_alter_submit';
   }
@@ -340,7 +335,7 @@ class LocaleHooks {
    * Implements hook_form_FORM_ID_alter() for language_admin_edit_form().
    */
   #[Hook('form_language_admin_edit_form_alter')]
-  public function formLanguageAdminEditFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formLanguageAdminEditFormAlter(array &$form, FormStateInterface $form_state) : void {
     /** @var \Drupal\language\ConfigurableLanguageInterface $language */
     $language = $form_state->getFormObject()->getEntity();
     if ($language->id() == 'en') {
@@ -359,7 +354,7 @@ class LocaleHooks {
    * Add interface translation directory setting to directories configuration.
    */
   #[Hook('form_system_file_system_settings_alter')]
-  public function formSystemFileSystemSettingsAlter(&$form, FormStateInterface $form_state) : void {
+  public function formSystemFileSystemSettingsAlter(array &$form, FormStateInterface $form_state) : void {
     $form['translation_path'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Interface translations directory'),

@@ -19,30 +19,6 @@ final class ExtensionVersion {
   const CORE_PREFIX = '8.x-';
 
   /**
-   * The major version.
-   *
-   * @var string
-   */
-  protected $majorVersion;
-
-  /**
-   * The minor version.
-   *
-   * @var string|null
-   */
-  protected $minorVersion;
-
-  /**
-   * The version extra string.
-   *
-   * For example, if the extension version is '2.0.3-alpha1', then the version
-   * extra string is 'alpha1'.
-   *
-   * @var string|null
-   */
-  protected $versionExtra;
-
-  /**
    * Constructs an extension version object from a version string.
    *
    * @param string $version_string
@@ -66,7 +42,7 @@ final class ExtensionVersion {
         }
       }
     }
-    $version_parts = explode('.', $version_string);
+    $version_parts = explode('.', (string) $version_string);
     $major_version = $version_parts[0];
     $version_parts_count = count($version_parts);
     if ($version_parts_count === 2) {
@@ -93,17 +69,31 @@ final class ExtensionVersion {
   /**
    * Constructs an ExtensionVersion object.
    *
-   * @param string $major_version
+   * @param string $majorVersion
    *   The major version.
-   * @param string|null $minor_version
+   * @param string|null $minorVersion
    *   The minor version.
-   * @param string|null $version_extra
+   * @param string|null $versionExtra
    *   The extra version string.
    */
-  private function __construct(string $major_version, ?string $minor_version, ?string $version_extra) {
-    $this->majorVersion = $major_version;
-    $this->minorVersion = $minor_version;
-    $this->versionExtra = $version_extra;
+  private function __construct(
+      /**
+       * The major version.
+       */
+      protected string $majorVersion,
+      /**
+       * The minor version.
+       */
+      protected ?string $minorVersion,
+      /**
+       * The version extra string.
+       *
+       * For example, if the extension version is '2.0.3-alpha1', then the version
+       * extra string is 'alpha1'.
+       */
+      protected ?string $versionExtra
+  )
+  {
   }
 
   /**

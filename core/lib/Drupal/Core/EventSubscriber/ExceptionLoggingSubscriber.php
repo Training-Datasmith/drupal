@@ -15,20 +15,13 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class ExceptionLoggingSubscriber implements EventSubscriberInterface {
 
   /**
-   * The logger channel factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a new ExceptionLoggingSubscriber.
    *
    * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger
    *   The logger channel factory.
    */
-  public function __construct(LoggerChannelFactoryInterface $logger) {
-    $this->logger = $logger;
+  public function __construct(protected \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger)
+  {
   }
 
   /**
@@ -37,7 +30,7 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on403(ExceptionEvent $event) {
+  public function on403(ExceptionEvent $event): void {
     // Log the exception with the page where it happened so that admins know
     // why access was denied.
     $exception = $event->getThrowable();
@@ -53,7 +46,7 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on404(ExceptionEvent $event) {
+  public function on404(ExceptionEvent $event): void {
     $request = $event->getRequest();
     $this->logger->get('page not found')->warning('@uri', ['@uri' => $request->getRequestUri()]);
   }
@@ -64,14 +57,14 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function onError(ExceptionEvent $event) {
+  public function onError(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     $error = Error::decodeException($exception);
     $this->logger->get('php')->log($error['severity_level'], Error::DEFAULT_ERROR_MESSAGE, $error);
 
     $is_critical = !$exception instanceof HttpExceptionInterface || $exception->getStatusCode() >= 500;
     if ($is_critical) {
-      error_log(sprintf('Uncaught PHP Exception %s: "%s" at %s line %s', get_class($exception), $exception->getMessage(), $exception->getFile(), $exception->getLine()));
+      error_log(sprintf('Uncaught PHP Exception %s: "%s" at %s line %s', $exception::class, $exception->getMessage(), $exception->getFile(), $exception->getLine()));
     }
   }
 
@@ -81,7 +74,7 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function onClientError(ExceptionEvent $event) {
+  public function onClientError(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     $error = Error::decodeException($exception);
     $error += [
@@ -98,7 +91,7 @@ class ExceptionLoggingSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
 
     $method = 'onError';

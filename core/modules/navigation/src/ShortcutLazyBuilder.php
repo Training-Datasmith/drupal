@@ -13,7 +13,7 @@ use Drupal\shortcut\ShortcutLazyBuilders;
  * @internal
  * @see \Drupal\shortcut\ShortcutLazyBuilders
  */
-final class ShortcutLazyBuilder {
+final readonly class ShortcutLazyBuilder {
 
   /**
    * Constructs a ShortcutLazyBuilders object.
@@ -22,7 +22,7 @@ final class ShortcutLazyBuilder {
    *   The original shortcuts lazy builder service.
    */
   public function __construct(
-    protected readonly ShortcutLazyBuilders $shortcutLazyBuilder,
+    protected ShortcutLazyBuilders $shortcutLazyBuilder,
   ) {}
 
   /**
@@ -35,7 +35,7 @@ final class ShortcutLazyBuilder {
    *   A renderable array of shortcut links.
    */
   #[TrustedCallback]
-  public function lazyLinks(string $label = 'Shortcuts') {
+  public function lazyLinks(string $label = 'Shortcuts'): array {
     $shortcut_links = $this->shortcutLazyBuilder->lazyLinks();
 
     if (empty($shortcut_links['shortcuts']['#links'])) {

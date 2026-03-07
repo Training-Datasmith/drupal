@@ -23,41 +23,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class InstallHelper implements ContainerInjectionInterface {
 
   /**
-   * Entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * Module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * State.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * The file system.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Enabled languages.
    *
    * List of all enabled languages.
-   *
-   * @var array
    */
-  protected $enabledLanguages;
+  protected array $enabledLanguages;
 
   /**
    * Term ID map.
@@ -65,10 +35,8 @@ class InstallHelper implements ContainerInjectionInterface {
    * Used to store term IDs created in the import process against
    * vocabulary and row in the source CSV files. This allows the created terms
    * to be cross referenced when creating articles and recipes.
-   *
-   * @var array
    */
-  protected $termIdMap;
+  protected array $termIdMap;
 
   /**
    * Media Image CSV ID map.
@@ -76,20 +44,16 @@ class InstallHelper implements ContainerInjectionInterface {
    * Used to store media image CSV IDs created in the import process.
    * This allows the created media images to be cross referenced when creating
    * article, recipes and blocks.
-   *
-   * @var array
    */
-  protected $mediaImageIdMap;
+  protected array $mediaImageIdMap;
 
   /**
    * Node CSV ID map.
    *
    * Used to store node CSV IDs created in the import process. This allows the
    * created nodes to be cross referenced when creating blocks.
-   *
-   * @var array
    */
-  protected $nodeIdMap;
+  protected array $nodeIdMap;
 
   /**
    * The module's path.
@@ -109,11 +73,7 @@ class InstallHelper implements ContainerInjectionInterface {
    * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, ModuleHandlerInterface $moduleHandler, StateInterface $state, FileSystemInterface $fileSystem) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->moduleHandler = $moduleHandler;
-    $this->state = $state;
-    $this->fileSystem = $fileSystem;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\State\StateInterface $state, protected \Drupal\Core\File\FileSystemInterface $fileSystem) {
     $this->termIdMap = [];
     $this->mediaImageIdMap = [];
     $this->nodeIdMap = [];
@@ -123,7 +83,7 @@ class InstallHelper implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('module_handler'),
@@ -139,7 +99,7 @@ class InstallHelper implements ContainerInjectionInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function importContent() {
+  public function importContent(): void {
     $this->getModulePath()
       ->importUsers()
       ->importContentFromFile('taxonomy_term', 'tags')
@@ -158,7 +118,7 @@ class InstallHelper implements ContainerInjectionInterface {
    *
    * @return $this
    */
-  protected function getModulePath() {
+  protected function getModulePath(): static {
     $this->module_path = $this->moduleHandler->getModule('demo_umami_content')->getPath();
     return $this;
   }
@@ -174,7 +134,7 @@ class InstallHelper implements ContainerInjectionInterface {
    *     1. All multilingual content that was read from the files.
    *     2. List of language codes that need to be imported.
    */
-  protected function readMultilingualContent($filename) {
+  protected function readMultilingualContent($filename): array {
     $default_content_path = $this->module_path . "/default_content/languages/";
 
     // Get all enabled languages.
@@ -309,7 +269,7 @@ class InstallHelper implements ContainerInjectionInterface {
    *
    * @return $this
    */
-  protected function importUsers() {
+  protected function importUsers(): static {
     $user_storage = $this->entityTypeManager->getStorage('user');
     $users = [
       'Gregorio Sánchez' => [
@@ -356,8 +316,8 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as a term.
    */
-  protected function processTerm(array $data, $vocabulary) {
-    $term_name = trim($data['term']);
+  protected function processTerm(array $data, $vocabulary): array {
+    $term_name = trim((string) $data['term']);
 
     // Prepare content.
     $values = [
@@ -378,7 +338,7 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as a image.
    */
-  protected function processImage(array $data) {
+  protected function processImage(array $data): array {
     // Set article author.
     if (!empty($data['author'])) {
       $values['uid'] = $this->getUser($data['author']);
@@ -409,7 +369,7 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as a page node.
    */
-  protected function processPage(array $data, $langcode) {
+  protected function processPage(array $data, $langcode): array {
     // Prepare content.
     $values = [
       'type' => 'page',
@@ -447,7 +407,7 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as a recipe node.
    */
-  protected function processRecipe(array $data, $langcode) {
+  protected function processRecipe(array $data, string $langcode): array {
     $values = [
       'type' => 'recipe',
       // Title field.
@@ -479,7 +439,7 @@ class InstallHelper implements ContainerInjectionInterface {
     // Set field_recipe_category if exists.
     if (!empty($data['recipe_category'])) {
       $values['field_recipe_category'] = [];
-      $tags = array_filter(explode(',', $data['recipe_category']));
+      $tags = array_filter(explode(',', (string) $data['recipe_category']));
       foreach ($tags as $tag_id) {
         if ($tid = $this->getTermId('recipe_category', $tag_id)) {
           $values['field_recipe_category'][] = ['target_id' => $tid];
@@ -504,7 +464,7 @@ class InstallHelper implements ContainerInjectionInterface {
     }
     // Set field_ingredients field.
     if (!empty($data['ingredients'])) {
-      $ingredients = explode(',', $data['ingredients']);
+      $ingredients = explode(',', (string) $data['ingredients']);
       $values['field_ingredients'] = [];
       foreach ($ingredients as $ingredient) {
         $values['field_ingredients'][] = ['value' => $ingredient];
@@ -521,7 +481,7 @@ class InstallHelper implements ContainerInjectionInterface {
     // Set field_tags if exists.
     if (!empty($data['tags'])) {
       $values['field_tags'] = [];
-      $tags = array_filter(explode(',', $data['tags']));
+      $tags = array_filter(explode(',', (string) $data['tags']));
       foreach ($tags as $tag_id) {
         if ($tid = $this->getTermId('tags', $tag_id)) {
           $values['field_tags'][] = ['target_id' => $tid];
@@ -542,7 +502,7 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as an article node.
    */
-  protected function processArticle(array $data, $langcode) {
+  protected function processArticle(array $data, string $langcode): array {
     // Prepare content.
     $values = [
       'type' => 'article',
@@ -579,7 +539,7 @@ class InstallHelper implements ContainerInjectionInterface {
     // Set field_tags if exists.
     if (!empty($data['tags'])) {
       $values['field_tags'] = [];
-      $tags = explode(',', $data['tags']);
+      $tags = explode(',', (string) $data['tags']);
       foreach ($tags as $tag_id) {
         if ($tid = $this->getTermId('tags', $tag_id)) {
           $values['field_tags'][] = ['target_id' => $tid];
@@ -600,9 +560,9 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as a block.
    */
-  protected function processBannerBlock(array $data, $langcode) {
+  protected function processBannerBlock(array $data, string $langcode): array {
     $node_url = $this->getNodePath($langcode, $data['content_type'], $data['node_id']);
-    $values = [
+    return [
       'uuid' => $data['uuid'],
       'info' => $data['info'],
       'type' => $data['type'],
@@ -621,7 +581,6 @@ class InstallHelper implements ContainerInjectionInterface {
         'target_id' => $this->getMediaImageId($data['image_reference']),
       ],
     ];
-    return $values;
   }
 
   /**
@@ -633,8 +592,8 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as a block.
    */
-  protected function processDisclaimerBlock(array $data) {
-    $values = [
+  protected function processDisclaimerBlock(array $data): array {
+    return [
       'uuid' => $data['uuid'],
       'info' => $data['info'],
       'type' => $data['type'],
@@ -648,7 +607,6 @@ class InstallHelper implements ContainerInjectionInterface {
         'format' => 'basic_html',
       ],
     ];
-    return $values;
   }
 
   /**
@@ -662,9 +620,9 @@ class InstallHelper implements ContainerInjectionInterface {
    * @return array
    *   Data structured as a block.
    */
-  protected function processFooterPromoBlock(array $data, $langcode) {
+  protected function processFooterPromoBlock(array $data, $langcode): array {
     $node_url = $this->getNodePath($langcode, $data['content_type'], $data['node_id']);
-    $values = [
+    return [
       'uuid' => $data['uuid'],
       'info' => $data['info'],
       'type' => $data['type'],
@@ -683,7 +641,6 @@ class InstallHelper implements ContainerInjectionInterface {
         'target_id' => $this->getMediaImageId($data['image_reference']),
       ],
     ];
-    return $values;
   }
 
   /**
@@ -750,7 +707,7 @@ class InstallHelper implements ContainerInjectionInterface {
    *
    * @return $this
    */
-  protected function importContentFromFile($entity_type, $bundle_machine_name) {
+  protected function importContentFromFile(string $entity_type, string $bundle_machine_name): static {
     $filename = $entity_type . '/' . $bundle_machine_name . '.csv';
 
     // Read all multilingual content from the file.
@@ -810,9 +767,9 @@ class InstallHelper implements ContainerInjectionInterface {
    *
    * @return $this
    */
-  public function deleteImportedContent() {
+  public function deleteImportedContent(): static {
     $uuids = $this->state->get('demo_umami_content_uuids', []);
-    $by_entity_type = array_reduce(array_keys($uuids), function ($carry, $uuid) use ($uuids) {
+    $by_entity_type = array_reduce(array_keys($uuids), function (array $carry, int|string $uuid) use ($uuids): array {
       $entity_type_id = $uuids[$uuid];
       $carry[$entity_type_id][] = $uuid;
       return $carry;

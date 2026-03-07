@@ -18,30 +18,15 @@ use Symfony\Component\Routing\Route;
 class ContentTranslationManageAccessCheck implements AccessInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a ContentTranslationManageAccessCheck object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+  {
   }
 
   /**
@@ -73,7 +58,7 @@ class ContentTranslationManageAccessCheck implements AccessInterface {
       if ($language !== NULL) {
         $language = $this->languageManager->getLanguage($language);
       }
-      $language = $language ?? $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT);
+      $language ??= $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT);
 
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
 

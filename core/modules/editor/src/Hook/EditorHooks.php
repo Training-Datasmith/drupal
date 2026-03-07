@@ -56,8 +56,7 @@ class EditorHooks {
         $output .= '<dd>' . $this->t('Once a text editor is associated with a text format, you can configure it by clicking on the <em>Configure</em> link for this format. Depending on the specific text editor, you can configure it for example by adding buttons to its toolbar. Typically these buttons provide formatting or editing tools, and they often insert HTML tags into the field source. For details, see the help page of the specific text editor.') . '</dd>';
         $output .= '<dt>' . $this->t('Using different text editors and formats') . '</dt>';
         $output .= '<dd>' . $this->t('If you change the text format on a text field, the text editor will change as well because the text editor configuration is associated with the individual text format. This allows the use of the same text editor with different options for different text formats. It also allows users to choose between text formats with different text editors if they are installed.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -84,7 +83,7 @@ class EditorHooks {
    * @see \Drupal\filter\Element\TextFormat
    */
   #[Hook('element_info_alter')]
-  public function elementInfoAlter(&$types): void {
+  public function elementInfoAlter(array &$types): void {
     $types['text_format']['#pre_render'][] = 'element.editor:preRenderTextFormat';
   }
 
@@ -92,7 +91,7 @@ class EditorHooks {
    * Implements hook_form_FORM_ID_alter().
    */
   #[Hook('form_filter_admin_overview_alter')]
-  public function formFilterAdminOverviewAlter(&$form, FormStateInterface $form_state) : void {
+  public function formFilterAdminOverviewAlter(array &$form, FormStateInterface $form_state) : void {
     // @todo Cleanup column injection: https://www.drupal.org/node/1876718.
     // Splice in the column for "Text editor" into the header.
     $position = array_search('name', $form['formats']['#header']) + 1;
@@ -114,7 +113,7 @@ class EditorHooks {
    * Implements hook_form_BASE_FORM_ID_alter() for \Drupal\filter\FilterFormatEditForm.
    */
   #[Hook('form_filter_format_form_alter')]
-  public function formFilterFormatFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formFilterFormatFormAlter(array &$form, FormStateInterface $form_state) : void {
     $editor = $form_state->get('editor');
     if ($editor === NULL) {
       $format = $form_state->getFormObject()->getEntity();
@@ -276,7 +275,7 @@ class EditorHooks {
    * @see file_get_file_references()
    */
   #[Hook('file_download')]
-  public function fileDownload($uri): array|int|null {
+  public function fileDownload(string $uri): array|int|null {
     // Get the file record based on the URI. If not in the database just return.
     /** @var \Drupal\file\FileRepositoryInterface $file_repository */
     $file_repository = \Drupal::service('file.repository');
@@ -458,7 +457,7 @@ class EditorHooks {
     // Only return formatted text fields.
     // @todo improve as part of https://www.drupal.org/node/2732429
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-    return array_keys(array_filter($field_definitions, function (FieldDefinitionInterface $definition) use ($field_type_manager) {
+    return array_keys(array_filter($field_definitions, function (FieldDefinitionInterface $definition) use ($field_type_manager): bool {
       $type = $definition->getType();
       $plugin_class = $field_type_manager->getPluginClass($type);
       return is_subclass_of($plugin_class, TextItemBase::class);

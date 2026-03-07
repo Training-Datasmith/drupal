@@ -25,7 +25,7 @@ class FileUploadSanitizeNameEvent extends Event {
    *
    * @var string[]
    */
-  protected $allowedExtensions = [];
+  protected array $allowedExtensions = [];
 
   /**
    * Indicates the filename has changed for security reasons.

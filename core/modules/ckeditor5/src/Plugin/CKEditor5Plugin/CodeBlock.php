@@ -23,7 +23,7 @@ class CodeBlock extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['languages'] = [
       '#title' => $this->t('Programming languages'),
       '#type' => 'textarea',
@@ -43,7 +43,7 @@ class CodeBlock extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $form_value = $form_state->getValue('languages');
     [$styles, $not_parseable_lines] = self::parseLanguagesFromValue($form_value);
     if (!empty($not_parseable_lines)) {
@@ -83,7 +83,7 @@ class CodeBlock extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
       }
 
       // Parse the line.
-      [$language, $label] = array_map('trim', explode('|', $line));
+      [$language, $label] = array_map(trim(...), explode('|', $line));
 
       $languages[] = [
         'label' => $label,
@@ -96,14 +96,14 @@ class CodeBlock extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['languages'] = $form_state->getValue('languages');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'languages' => [
         ['language' => 'plaintext', 'label' => 'Plain text'],

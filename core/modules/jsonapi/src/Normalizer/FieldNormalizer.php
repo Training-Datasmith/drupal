@@ -49,9 +49,7 @@ class FieldNormalizer extends NormalizerBase implements DenormalizerInterface {
     // If $data contains items (recognizable by numerical array keys, which
     // Drupal's Field API calls "deltas"), then it already is itemized; it's not
     // using the simplified JSON structure that JSON:API generates.
-    $is_already_itemized = is_array($data) && array_reduce(array_keys($data), function ($carry, $index) {
-      return $carry && is_numeric($index);
-    }, TRUE);
+    $is_already_itemized = is_array($data) && array_reduce(array_keys($data), fn(true $carry, int|string $index) => $carry && is_numeric($index), TRUE);
 
     $itemized_data = $is_already_itemized
       ? $data
@@ -84,7 +82,7 @@ class FieldNormalizer extends NormalizerBase implements DenormalizerInterface {
    * @return \Drupal\jsonapi\Normalizer\Value\CacheableNormalization[]
    *   The array of normalized field items.
    */
-  protected function normalizeFieldItems(FieldItemListInterface $field, $format, array $context) {
+  protected function normalizeFieldItems(FieldItemListInterface $field, $format, array $context): array {
     $normalizer_items = [];
     if (!$field->isEmpty()) {
       foreach ($field as $field_item) {

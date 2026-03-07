@@ -43,14 +43,14 @@ class DiffFormatter extends DiffFormatterBase {
   /**
    * {@inheritdoc}
    */
-  protected function _end_diff() {
+  protected function _end_diff(): string|false {
     return $this->rows;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function _block_header($xbeg, $xlen, $ybeg, $ylen) {
+  protected function _block_header($xbeg, $xlen, $ybeg, $ylen): string {
     return [
       [
         'data' => $xbeg + $this->line_stats['offset']['x'],
@@ -87,7 +87,7 @@ class DiffFormatter extends DiffFormatterBase {
    * @return array
    *   An array representing a table row.
    */
-  protected function addedLine($line) {
+  protected function addedLine($line): array {
     return [
       [
         'data' => '+',
@@ -109,7 +109,7 @@ class DiffFormatter extends DiffFormatterBase {
    * @return array
    *   An array representing a table row.
    */
-  protected function deletedLine($line) {
+  protected function deletedLine($line): array {
     return [
       [
         'data' => '-',
@@ -131,7 +131,7 @@ class DiffFormatter extends DiffFormatterBase {
    * @return array
    *   An array representing a table row.
    */
-  protected function contextLine($line) {
+  protected function contextLine($line): array {
     return [
       ' ',
       [
@@ -147,7 +147,7 @@ class DiffFormatter extends DiffFormatterBase {
    * @return array
    *   An array representing a table row.
    */
-  protected function emptyLine() {
+  protected function emptyLine(): array {
     return [
       ' ',
       ' ',
@@ -185,8 +185,8 @@ class DiffFormatter extends DiffFormatterBase {
    * {@inheritdoc}
    */
   protected function _changed($orig, $closing) {
-    $orig = array_map('\Drupal\Component\Utility\Html::escape', $orig);
-    $closing = array_map('\Drupal\Component\Utility\Html::escape', $closing);
+    $orig = array_map(\Drupal\Component\Utility\Html::escape(...), $orig);
+    $closing = array_map(\Drupal\Component\Utility\Html::escape(...), $closing);
     $diff = new WordLevelDiff($orig, $closing);
     $del = $diff->orig();
     $add = $diff->closing();

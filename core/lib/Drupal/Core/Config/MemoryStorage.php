@@ -9,17 +9,8 @@ class MemoryStorage implements StorageInterface {
 
   /**
    * The configuration, an object shared by reference across collections.
-   *
-   * @var \ArrayObject
    */
-  protected $config;
-
-  /**
-   * The storage collection.
-   *
-   * @var string
-   */
-  protected $collection;
+  protected \ArrayObject $config;
 
   /**
    * Constructs a new MemoryStorage.
@@ -28,16 +19,18 @@ class MemoryStorage implements StorageInterface {
    *   (optional) The collection to store configuration in. Defaults to the
    *   default collection.
    */
-  public function __construct($collection = StorageInterface::DEFAULT_COLLECTION) {
-    $this->collection = $collection;
+  public function __construct(/**
+   * The storage collection.
+   */
+  protected $collection = StorageInterface::DEFAULT_COLLECTION) {
     $this->config = new \ArrayObject();
-    $this->config[$collection] = [];
+    $this->config[$this->collection] = [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return isset($this->config[$this->collection][$name]);
   }
 
@@ -55,14 +48,14 @@ class MemoryStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function readMultiple(array $names) {
+  public function readMultiple(array $names): array {
     return array_intersect_key($this->config[$this->collection], array_flip($names));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function write($name, array $data) {
+  public function write($name, array $data): bool {
     $this->config[$this->collection][$name] = $data;
     return TRUE;
   }
@@ -70,7 +63,7 @@ class MemoryStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($name) {
+  public function delete($name): bool {
     if (isset($this->config[$this->collection][$name])) {
       unset($this->config[$this->collection][$name]);
       // Remove the collection if it is empty.
@@ -85,7 +78,7 @@ class MemoryStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function rename($name, $new_name) {
+  public function rename($name, $new_name): bool {
     if (!$this->exists($name)) {
       return FALSE;
     }
@@ -110,17 +103,16 @@ class MemoryStorage implements StorageInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function listAll($prefix = '') {
+  public function listAll($prefix = ''): array {
     if (empty($this->config[$this->collection])) {
       // If the collection is empty no keys are set.
       return [];
     }
     $names = array_keys($this->config[$this->collection]);
     if ($prefix !== '') {
-      $names = array_filter($names, function ($name) use ($prefix) {
-        return str_starts_with($name, $prefix);
-      });
+      return array_filter($names, fn(int|string $name) => str_starts_with((string) $name, $prefix));
     }
     return $names;
   }
@@ -139,7 +131,7 @@ class MemoryStorage implements StorageInterface {
     }
     $success = FALSE;
     foreach (array_keys($this->config[$this->collection]) as $name) {
-      if (str_starts_with($name, $prefix)) {
+      if (str_starts_with((string) $name, $prefix)) {
         $success = TRUE;
         unset($this->config[$this->collection][$name]);
       }
@@ -155,7 +147,7 @@ class MemoryStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function createCollection($collection) {
+  public function createCollection($collection): static {
     $collection = new static($collection);
     $collection->config = $this->config;
     return $collection;
@@ -163,8 +155,9 @@ class MemoryStorage implements StorageInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getAllCollectionNames() {
+  public function getAllCollectionNames(): array {
     $collection_names = [];
     foreach ($this->config as $collection_name => $data) {
       // Exclude the default collection and empty collections.

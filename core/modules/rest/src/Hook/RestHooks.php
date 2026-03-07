@@ -55,8 +55,7 @@ class RestHooks {
           ':jsonapi-docs' => 'https://www.drupal.org/docs/8/modules/json-api',
           ':comparison' => 'https://www.drupal.org/docs/8/modules/jsonapi/jsonapi-vs-cores-rest-module',
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

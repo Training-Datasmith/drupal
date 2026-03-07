@@ -99,7 +99,7 @@ class Language extends CKEditor5PluginDefault implements CKEditor5PluginConfigur
    *
    * @see editor_image_upload_settings_form()
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $configured = count($this->languageManager->getLanguages());
     $predefined = count(LanguageManager::getStandardLanguageList());
     $united_nations = count(LanguageManager::getUnitedNationsLanguageList());
@@ -143,14 +143,14 @@ class Language extends CKEditor5PluginDefault implements CKEditor5PluginConfigur
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['language_list'] = $form_state->getValue('language_list');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return ['language_list' => 'un'];
   }
 

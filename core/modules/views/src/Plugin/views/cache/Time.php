@@ -27,13 +27,6 @@ class Time extends CachePluginBase {
   protected $usesOptions = TRUE;
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * Constructs a Time cache plugin object.
    *
    * @param array $configuration
@@ -42,14 +35,13 @@ class Time extends CachePluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, DateFormatterInterface $date_formatter, protected TimeInterface $time) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected TimeInterface $time) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->dateFormatter = $date_formatter;
   }
 
   /**
@@ -68,10 +60,10 @@ class Time extends CachePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $options = [60, 300, 1800, 3600, 21600, 518400];
-    $options = array_map([$this->dateFormatter, 'formatInterval'], array_combine($options, $options));
+    $options = array_map($this->dateFormatter->formatInterval(...), array_combine($options, $options));
     $options = [0 => $this->t('Never cache')] + $options + ['custom' => $this->t('Custom')];
 
     $form['results_lifespan'] = [
@@ -119,7 +111,7 @@ class Time extends CachePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     $custom_fields = ['output_lifespan', 'results_lifespan'];
     foreach ($custom_fields as $field) {
       $cache_options = $form_state->getValue('cache_options');
@@ -132,7 +124,7 @@ class Time extends CachePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): string {
     $results_lifespan = $this->getLifespan('results');
     $output_lifespan = $this->getLifespan('output');
     return $this->dateFormatter->formatInterval($results_lifespan, 1) . '/' . $this->dateFormatter->formatInterval($output_lifespan, 1);
@@ -141,23 +133,19 @@ class Time extends CachePluginBase {
   /**
    * Gets the value for the lifespan of the given type.
    */
-  protected function getLifespan($type) {
-    $lifespan = $this->options[$type . '_lifespan'] == 'custom' ? $this->options[$type . '_lifespan_custom'] : $this->options[$type . '_lifespan'];
-    return $lifespan;
+  protected function getLifespan(string $type) {
+    return $this->options[$type . '_lifespan'] == 'custom' ? $this->options[$type . '_lifespan_custom'] : $this->options[$type . '_lifespan'];
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function cacheExpire($type) {
+  protected function cacheExpire($type): int|float|false {
     $lifespan = $this->getLifespan($type);
     if ($lifespan) {
-      $cutoff = $this->time->getRequestTime() - $lifespan;
-      return $cutoff;
+      return $this->time->getRequestTime() - $lifespan;
     }
-    else {
-      return FALSE;
-    }
+    return FALSE;
   }
 
   /**
@@ -168,15 +156,13 @@ class Time extends CachePluginBase {
     if ($lifespan) {
       return $lifespan;
     }
-    else {
-      return Cache::PERMANENT;
-    }
+    return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultCacheMaxAge() {
+  protected function getDefaultCacheMaxAge(): int {
     // The max age, unless overridden by some other piece of the rendered code
     // is determined by the output time setting.
     return (int) $this->cacheSetMaxAge('output');

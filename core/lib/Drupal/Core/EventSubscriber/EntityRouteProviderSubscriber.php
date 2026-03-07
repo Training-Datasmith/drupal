@@ -14,20 +14,13 @@ use Symfony\Component\Routing\RouteCollection;
 class EntityRouteProviderSubscriber implements EventSubscriberInterface {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new EntityRouteProviderSubscriber instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -36,7 +29,7 @@ class EntityRouteProviderSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The route build event.
    */
-  public function onDynamicRouteEvent(RouteBuildEvent $event) {
+  public function onDynamicRouteEvent(RouteBuildEvent $event): void {
     $route_collection = $event->getRouteCollection();
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
       if ($entity_type->hasRouteProviders()) {

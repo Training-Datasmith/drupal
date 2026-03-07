@@ -69,7 +69,7 @@ class DateFormat extends ConfigEntityBase implements DateFormatInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPattern($pattern) {
+  public function setPattern($pattern): static {
     $this->pattern = $pattern;
     return $this;
   }
@@ -77,14 +77,14 @@ class DateFormat extends ConfigEntityBase implements DateFormatInterface {
   /**
    * {@inheritdoc}
    */
-  public function isLocked() {
+  public function isLocked(): bool {
     return (bool) $this->locked;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b) {
+  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b): int {
     if ($a->isLocked() == $b->isLocked()) {
       $a_label = $a->label();
       $b_label = $b->label();
@@ -96,7 +96,7 @@ class DateFormat extends ConfigEntityBase implements DateFormatInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheTagsToInvalidate() {
+  public function getCacheTagsToInvalidate(): array {
     return ['rendered'];
   }
 

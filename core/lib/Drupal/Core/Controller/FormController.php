@@ -23,23 +23,15 @@ abstract class FormController {
   protected $argumentResolver;
 
   /**
-   * The form builder.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-
-  /**
    * Constructs a new \Drupal\Core\Controller\FormController object.
    *
    * @param \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface $argument_resolver
    *   The argument resolver.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    *   The form builder.
    */
-  public function __construct(ArgumentResolverInterface $argument_resolver, FormBuilderInterface $form_builder) {
+  public function __construct(ArgumentResolverInterface $argument_resolver, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder) {
     $this->argumentResolver = $argument_resolver;
-    $this->formBuilder = $form_builder;
   }
 
   /**
@@ -62,7 +54,7 @@ abstract class FormController {
     $form_state = new FormState();
     $request->attributes->set('form', []);
     $request->attributes->set('form_state', $form_state);
-    $args = $this->argumentResolver->getArguments($request, [$form_object, 'buildForm']);
+    $args = $this->argumentResolver->getArguments($request, $form_object->buildForm(...));
     $request->attributes->remove('form');
     $request->attributes->remove('form_state');
 

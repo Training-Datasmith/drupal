@@ -22,13 +22,10 @@ class ReflectionFactory extends DefaultFactory {
     $reflector = new \ReflectionClass($plugin_class);
     if ($reflector->hasMethod('__construct')) {
       $arguments = $this->getInstanceArguments($reflector, $plugin_id, $plugin_definition, $configuration);
-      $instance = $reflector->newInstanceArgs($arguments);
-    }
-    else {
-      $instance = new $plugin_class();
+      return $reflector->newInstanceArgs($arguments);
     }
 
-    return $instance;
+    return new $plugin_class();
   }
 
   /**
@@ -49,7 +46,7 @@ class ReflectionFactory extends DefaultFactory {
    * @return array
    *   An array of arguments to be passed to the constructor.
    */
-  protected function getInstanceArguments(\ReflectionClass $reflector, $plugin_id, $plugin_definition, array $configuration) {
+  protected function getInstanceArguments(\ReflectionClass $reflector, $plugin_id, $plugin_definition, array $configuration): array {
 
     $arguments = [];
     foreach ($reflector->getMethod('__construct')->getParameters() as $param) {

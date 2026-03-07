@@ -79,7 +79,7 @@ class ViewsBlock extends ViewsBlockBase {
       // render system knows the reasons (cache contexts & tags) why this Views
       // block is empty, and can cache it accordingly.
       if (empty($output['view_build'])) {
-        $output = ['#cache' => $output['#cache']];
+        return ['#cache' => $output['#cache']];
       }
 
       return $output;
@@ -105,7 +105,7 @@ class ViewsBlock extends ViewsBlockBase {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     $settings = parent::defaultConfiguration();
 
     if ($this->displaySet) {
@@ -123,7 +123,7 @@ class ViewsBlock extends ViewsBlockBase {
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     if ($this->displaySet) {
       return $this->view->display_handler->blockForm($this, $form, $form_state);
     }
@@ -134,7 +134,7 @@ class ViewsBlock extends ViewsBlockBase {
   /**
    * {@inheritdoc}
    */
-  public function blockValidate($form, FormStateInterface $form_state) {
+  public function blockValidate($form, FormStateInterface $form_state): void {
     if ($this->displaySet) {
       $this->view->display_handler->blockValidate($this, $form, $form_state);
     }
@@ -143,7 +143,7 @@ class ViewsBlock extends ViewsBlockBase {
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     parent::blockSubmit($form, $form_state);
     if ($this->displaySet) {
       $this->view->display_handler->blockSubmit($this, $form, $form_state);
@@ -153,7 +153,7 @@ class ViewsBlock extends ViewsBlockBase {
   /**
    * {@inheritdoc}
    */
-  public function getMachineNameSuggestion() {
+  public function getMachineNameSuggestion(): string|array|null {
     $this->view->setDisplay($this->displayID);
     return 'views_block__' . $this->view->storage->id() . '_' . $this->view->current_display;
   }

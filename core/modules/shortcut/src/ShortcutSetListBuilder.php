@@ -24,7 +24,7 @@ class ShortcutSetListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = parent::getDefaultOperations($entity, $cacheability);

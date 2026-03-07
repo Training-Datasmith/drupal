@@ -35,10 +35,8 @@ class StorageComparer implements StorageComparerInterface {
 
   /**
    * The target storage used to write configuration changes.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
    */
-  protected $targetStorage;
+  protected \Drupal\Core\Config\StorageInterface $targetStorage;
 
   /**
    * The target storages keyed by collection.
@@ -76,15 +74,11 @@ class StorageComparer implements StorageComparerInterface {
 
   /**
    * A memory cache backend to statically cache source configuration data.
-   *
-   * @var \Drupal\Core\Cache\MemoryBackend
    */
-  protected $sourceCacheStorage;
+  protected \Drupal\Core\Cache\NullBackend|\Drupal\Core\Cache\MemoryBackend $sourceCacheStorage;
 
   /**
    * A memory cache backend to statically cache target configuration data.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
    */
   protected CacheBackendInterface $targetCacheStorage;
 
@@ -94,8 +88,6 @@ class StorageComparer implements StorageComparerInterface {
    * In write mode the StorageComparer no longer wraps the target storage in a
    * static cache. When writing to active configuration, the target storage must
    * reflect any secondary writes to configuration that occur.
-   *
-   * @var bool
    */
   protected bool $writeMode = FALSE;
 
@@ -189,7 +181,7 @@ class StorageComparer implements StorageComparerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getEmptyChangelist() {
+  public function getEmptyChangelist(): array {
     return [
       'create' => [],
       'update' => [],
@@ -239,7 +231,7 @@ class StorageComparer implements StorageComparerInterface {
   /**
    * {@inheritdoc}
    */
-  public function createChangelist() {
+  public function createChangelist(): static {
     foreach ($this->getAllCollectionNames() as $collection) {
       $this->changelist[$collection] = $this->getEmptyChangelist();
       $this->getAndSortConfigData($collection);
@@ -395,7 +387,7 @@ class StorageComparer implements StorageComparerInterface {
   /**
    * {@inheritdoc}
    */
-  public function moveRenameToUpdate($rename, $collection = StorageInterface::DEFAULT_COLLECTION) {
+  public function moveRenameToUpdate($rename, $collection = StorageInterface::DEFAULT_COLLECTION): void {
     $names = $this->extractRenameNames($rename);
     $this->removeFromChangelist($collection, 'rename', $rename);
     $this->addChangeList($collection, 'update', [$names['new_name']], $this->sourceNames[$collection]);
@@ -416,7 +408,7 @@ class StorageComparer implements StorageComparerInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasChanges() {
+  public function hasChanges(): bool {
     foreach ($this->getAllCollectionNames() as $collection) {
       foreach (['delete', 'create', 'update', 'rename'] as $op) {
         if (!empty($this->changelist[$collection][$op])) {
@@ -430,7 +422,7 @@ class StorageComparer implements StorageComparerInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateSiteUuid() {
+  public function validateSiteUuid(): bool {
     $source = $this->sourceStorage->read('system.site');
     $target = $this->targetStorage->read('system.site');
     // It is possible that the storage does not contain system.site
@@ -476,14 +468,14 @@ class StorageComparer implements StorageComparerInterface {
    *
    * @see \Drupal\Core\Config\StorageComparerInterface::extractRenameNames()
    */
-  protected function createRenameName($old_name, $new_name) {
+  protected function createRenameName(string $old_name, string $new_name): string {
     return $old_name . '::' . $new_name;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function extractRenameNames($name) {
+  public function extractRenameNames($name): array {
     $names = explode('::', $name, 2);
     return [
       'old_name' => $names[0],
@@ -493,8 +485,9 @@ class StorageComparer implements StorageComparerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getAllCollectionNames($include_default = TRUE) {
+  public function getAllCollectionNames($include_default = TRUE): array {
     $collections = array_unique(array_merge($this->sourceStorage->getAllCollectionNames(), $this->targetStorage->getAllCollectionNames()));
     if ($include_default) {
       array_unshift($collections, StorageInterface::DEFAULT_COLLECTION);

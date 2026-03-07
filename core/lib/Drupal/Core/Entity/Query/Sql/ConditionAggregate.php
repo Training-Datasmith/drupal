@@ -14,15 +14,13 @@ class ConditionAggregate extends ConditionAggregateBase {
 
   /**
    * The current SQL query, set by parent condition compile() method calls.
-   *
-   * @var \Drupal\Core\Database\Query\SelectInterface
    */
   protected SelectInterface $sqlQuery;
 
   /**
    * {@inheritdoc}
    */
-  public function compile($conditionContainer) {
+  public function compile($conditionContainer): void {
     // If this is not the top level condition group then the sql query is
     // added to the $conditionContainer object by this function itself. The
     // SQL query object is only necessary to pass to Query::addField() so it

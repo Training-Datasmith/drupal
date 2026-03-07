@@ -45,48 +45,6 @@ use Drupal\media\MediaInterface;
 class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, TrustedCallbackInterface, RemovableDependentPluginInterface {
 
   /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The entity type bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * The logger factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerFactory;
-
-  /**
    * Constructs a MediaEmbed object.
    *
    * @param array $configuration
@@ -95,33 +53,27 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
    *   The logger factory.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityRepositoryInterface $entity_repository, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, EntityTypeBundleInfoInterface $bundle_info, RendererInterface $renderer, LoggerChannelFactoryInterface $logger_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityRepository = $entity_repository;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityDisplayRepository = $entity_display_repository;
-    $this->entityTypeBundleInfo = $bundle_info;
-    $this->renderer = $renderer;
-    $this->loggerFactory = $logger_factory;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $view_mode_options = $this->entityDisplayRepository->getViewModeOptions('media');
 
     $form['default_view_mode'] = [
@@ -161,7 +113,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function validateOptions(array &$element, FormStateInterface $form_state) {
+  public static function validateOptions(array &$element, FormStateInterface $form_state): void {
     // Filters the #value property so only selected values appear in the
     // config.
     $form_state->setValueForElement($element, array_filter($element['#value']));
@@ -214,7 +166,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
    * @return array
    *   A render array.
    */
-  protected function renderMissingMediaIndicator() {
+  protected function renderMissingMediaIndicator(): array {
     return [
       '#theme' => 'media_embed_error',
       '#message' => $this->t('The referenced media source is missing and needs to be re-embedded.'),
@@ -224,7 +176,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     $result = new FilterProcessResult($text);
 
     if (stristr($text, '<drupal-media') === FALSE) {
@@ -281,7 +233,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
           // indicator). But, we need to merge in CSS classes added by other
           // filters, such as filter_align, in order for those filters to work
           // properly.
-          $build['#attributes']['class'] = array_unique(array_merge($build['#attributes']['class'], explode(' ', $attribute->nodeValue)));
+          $build['#attributes']['class'] = array_unique(array_merge($build['#attributes']['class'], explode(' ', (string) $attribute->nodeValue)));
         }
         else {
           $build['#attributes'][$attribute->nodeName] = $attribute->nodeValue;
@@ -299,7 +251,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
   /**
    * {@inheritdoc}
    */
-  public function tips($long = FALSE) {
+  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if ($long) {
       return $this->t('
       <p>You can embed media items:</p>
@@ -309,9 +261,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
         <li>The <code>data-entity-type="media"</code> attribute is required for consistency.</li>
       </ul>');
     }
-    else {
-      return $this->t('You can embed media items (using the <code>&lt;drupal-media&gt;</code> tag).');
-    }
+    return $this->t('You can embed media items (using the <code>&lt;drupal-media&gt;</code> tag).');
   }
 
   /**
@@ -381,7 +331,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
    *
    * @see \Drupal\Core\Entity\EntityViewBuilder::addContextualLinks()
    */
-  public static function disableContextualLinks(array $build) {
+  public static function disableContextualLinks(array $build): array {
     unset($build['#contextual_links']);
     return $build;
   }
@@ -459,14 +409,15 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['disableContextualLinks'];
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     $dependencies = [];
     // Combine the view modes from both config parameters.
     $view_modes = $this->settings['allowed_view_modes'] + [$this->settings['default_view_mode']];
@@ -493,7 +444,7 @@ class MediaEmbed extends FilterBase implements ContainerFactoryPluginInterface, 
     // If view modes for media are deleted, remove the view mode from the plugin
     // settings and return that the plugin settings have changed.
     foreach ($dependencies['config'] as $config) {
-      if (($config instanceof EntityViewModeInterface) && str_starts_with($config->id(), 'media.')) {
+      if (($config instanceof EntityViewModeInterface) && str_starts_with((string) $config->id(), 'media.')) {
         $view_mode_id = substr_replace($config->id(), '', 0, 6);
         if (isset($this->settings['allowed_view_modes'][$view_mode_id])) {
           unset($this->settings['allowed_view_modes'][$view_mode_id]);

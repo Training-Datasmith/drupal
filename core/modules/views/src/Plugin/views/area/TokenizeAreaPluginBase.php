@@ -29,7 +29,7 @@ abstract class TokenizeAreaPluginBase extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     // Add tokenization form elements.
@@ -39,7 +39,7 @@ abstract class TokenizeAreaPluginBase extends AreaPluginBase {
   /**
    * Adds tokenization form elements.
    */
-  public function tokenForm(&$form, FormStateInterface $form_state) {
+  public function tokenForm(array &$form, FormStateInterface $form_state): void {
     $form['tokenize'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Include tokens from the first row'),
@@ -112,7 +112,7 @@ abstract class TokenizeAreaPluginBase extends AreaPluginBase {
     $value = $this->globalTokenReplace($value);
 
     if ($this->options['tokenize']) {
-      $value = $this->view->getStyle()->tokenizeValue($value, 0);
+      return $this->view->getStyle()->tokenizeValue($value, 0);
     }
 
     return $value;

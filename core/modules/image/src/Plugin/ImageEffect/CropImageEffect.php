@@ -21,8 +21,8 @@ class CropImageEffect extends ResizeImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
-    [$x, $y] = explode('-', $this->configuration['anchor']);
+  public function applyEffect(ImageInterface $image): bool {
+    [$x, $y] = explode('-', (string) $this->configuration['anchor']);
     $x = Image::getKeywordOffset($x, $image->getWidth(), (int) $this->configuration['width']);
     $y = Image::getKeywordOffset($y, $image->getHeight(), (int) $this->configuration['height']);
     if (!$image->crop($x, $y, $this->configuration['width'], $this->configuration['height'])) {
@@ -45,15 +45,14 @@ class CropImageEffect extends ResizeImageEffect {
       '#theme' => 'image_crop_summary',
       '#data' => $this->configuration,
     ];
-    $summary += parent::getSummary();
 
-    return $summary;
+    return $summary + parent::getSummary();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return parent::defaultConfiguration() + [
       'anchor' => 'center-center',
     ];
@@ -88,7 +87,7 @@ class CropImageEffect extends ResizeImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['anchor'] = $form_state->getValue('anchor');

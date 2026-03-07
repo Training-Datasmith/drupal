@@ -26,13 +26,6 @@ class ViewsData {
   protected $baseCid = 'views_data';
 
   /**
-   * The cache backend to use.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cacheBackend;
-
-  /**
    * Table data storage.
    *
    * This is used for explicitly requested tables.
@@ -71,33 +64,16 @@ class ViewsData {
   protected $langcode;
 
   /**
-   * Stores a module manager to invoke hooks.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs this ViewsData object.
    *
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cacheBackend
    *   The cache backend to use.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler class to use for invoking hooks.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager) {
-    $this->cacheBackend = $cache_backend;
-    $this->moduleHandler = $module_handler;
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Cache\CacheBackendInterface $cacheBackend, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager) {
     $this->langcode = $this->languageManager->getCurrentLanguage()->getId();
   }
 
@@ -136,7 +112,7 @@ class ViewsData {
    * @return array
    *   An array of table data.
    */
-  public function get($key) {
+  public function get(?string $key) {
     if (!$key) {
       throw new \InvalidArgumentException('A valid cache entry key is required. Use getAll() to get all table data.');
     }
@@ -217,7 +193,7 @@ class ViewsData {
    * @return string
    *   The prepared cache ID.
    */
-  protected function prepareCid($cid) {
+  protected function prepareCid(string $cid): string {
     return $cid . ':' . $this->langcode;
   }
 
@@ -241,7 +217,7 @@ class ViewsData {
       // finish loading.
       $this->loading = TRUE;
       $data = [];
-      $this->moduleHandler->invokeAllWith('views_data', function (callable $hook, string $module) use (&$data) {
+      $this->moduleHandler->invokeAllWith('views_data', function (callable $hook, string $module) use (&$data): void {
         $views_data = $hook();
         // Set the provider key for each base table.
         foreach ($views_data as &$table) {
@@ -299,7 +275,7 @@ class ViewsData {
    *     - help: The help text for the base table.
    *     - weight: The weight of the base table.
    */
-  public function fetchBaseTables() {
+  public function fetchBaseTables(): array {
     $tables = [];
 
     foreach ($this->getAll() as $table => $info) {
@@ -313,7 +289,7 @@ class ViewsData {
     }
 
     // Sorts by the 'weight' and then by 'title' element.
-    uasort($tables, function ($a, $b) {
+    uasort($tables, function (array $a, array $b): int {
       if ($a['weight'] != $b['weight']) {
         return $a['weight'] <=> $b['weight'];
       }
@@ -326,7 +302,7 @@ class ViewsData {
   /**
    * Clears the class storage and cache.
    */
-  public function clear() {
+  public function clear(): void {
     $this->storage = [];
     $this->allStorage = [];
     $this->fullyLoaded = FALSE;

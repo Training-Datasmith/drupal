@@ -27,8 +27,6 @@ class ViewsOperations {
 
   /**
    * An array of tables adjusted for workspace_association join.
-   *
-   * @var \WeakMap
    */
   private \WeakMap $adjustedTables;
 
@@ -95,12 +93,8 @@ class ViewsOperations {
     /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $this->entityTypeManager->getStorage($entity_type->id())->getTableMapping();
     $field_storage_definitions = $this->entityFieldManager->getFieldStorageDefinitions($entity_type->id());
-    $dedicated_field_storage_definitions = array_filter($field_storage_definitions, function ($definition) use ($table_mapping) {
-      return $table_mapping->requiresDedicatedTableStorage($definition);
-    });
-    $dedicated_field_data_tables = array_map(function ($definition) use ($table_mapping) {
-      return $table_mapping->getDedicatedDataTableName($definition);
-    }, $dedicated_field_storage_definitions);
+    $dedicated_field_storage_definitions = array_filter($field_storage_definitions, fn(\Drupal\Core\Field\FieldStorageDefinitionInterface $definition) => $table_mapping->requiresDedicatedTableStorage($definition));
+    $dedicated_field_data_tables = array_map(fn(\Drupal\Core\Field\FieldStorageDefinitionInterface $definition) => $table_mapping->getDedicatedDataTableName($definition), $dedicated_field_storage_definitions);
 
     $move_workspace_tables = [];
     $table_queue =& $query->getTableQueue();

@@ -54,28 +54,28 @@ class BatchBuilder {
    *
    * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
    */
-  protected $title;
+  protected \Drupal\Core\StringTranslation\TranslatableMarkup $title;
 
   /**
    * The initializing message for the batch.
    *
    * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
    */
-  protected $initMessage;
+  protected \Drupal\Core\StringTranslation\TranslatableMarkup $initMessage;
 
   /**
    * The message to be shown while the batch is in progress.
    *
    * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
    */
-  protected $progressMessage;
+  protected \Drupal\Core\StringTranslation\TranslatableMarkup $progressMessage;
 
   /**
    * The message to be shown if a problem occurs.
    *
    * @var string|\Drupal\Core\StringTranslation\TranslatableMarkup
    */
-  protected $errorMessage;
+  protected \Drupal\Core\StringTranslation\TranslatableMarkup $errorMessage;
 
   /**
    * The name of a function / method to be called when the batch finishes.
@@ -152,7 +152,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setTitle($title) {
+  public function setTitle($title): static {
     $this->title = $title;
     return $this;
   }
@@ -167,7 +167,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setFinishCallback(callable $callback) {
+  public function setFinishCallback(callable $callback): static {
     $this->finished = $callback;
     return $this;
   }
@@ -182,7 +182,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setInitMessage($message) {
+  public function setInitMessage($message): static {
     $this->initMessage = $message;
     return $this;
   }
@@ -203,7 +203,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setProgressMessage($message) {
+  public function setProgressMessage($message): static {
     $this->progressMessage = $message;
     return $this;
   }
@@ -218,7 +218,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setErrorMessage($message) {
+  public function setErrorMessage($message): static {
     $this->errorMessage = $message;
     return $this;
   }
@@ -239,7 +239,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setFile($filename) {
+  public function setFile($filename): static {
     include_once $filename;
 
     $this->file = $filename;
@@ -257,7 +257,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setLibraries(array $libraries) {
+  public function setLibraries(array $libraries): static {
     $this->libraries = $libraries;
     return $this;
   }
@@ -272,7 +272,7 @@ class BatchBuilder {
    *
    * @see \Drupal\Core\Url
    */
-  public function setUrlOptions(array $options) {
+  public function setUrlOptions(array $options): static {
     $this->urlOptions = $options;
     return $this;
   }
@@ -288,7 +288,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setProgressive($is_progressive = TRUE) {
+  public function setProgressive($is_progressive = TRUE): static {
     $this->progressive = $is_progressive;
     return $this;
   }
@@ -308,7 +308,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function setQueue($name, $class) {
+  public function setQueue($name, $class): static {
     if (!class_exists($class)) {
       throw new \InvalidArgumentException('Class ' . $class . ' does not exist.');
     }
@@ -336,7 +336,7 @@ class BatchBuilder {
    *
    * @return $this
    */
-  public function addOperation(callable $callback, array $arguments = []) {
+  public function addOperation(callable $callback, array $arguments = []): static {
     $this->operations[] = [$callback, $arguments];
     return $this;
   }
@@ -373,7 +373,7 @@ class BatchBuilder {
    * @return array
    *   The array representation of the object.
    */
-  public function toArray() {
+  public function toArray(): array {
     $array = [
       'operations' => $this->operations ?: [],
       'title' => $this->title ?: '',

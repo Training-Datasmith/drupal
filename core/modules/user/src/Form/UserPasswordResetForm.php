@@ -20,7 +20,7 @@ class UserPasswordResetForm extends FormBase implements WorkspaceSafeFormInterfa
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'user_pass_reset';
   }
 
@@ -41,7 +41,7 @@ class UserPasswordResetForm extends FormBase implements WorkspaceSafeFormInterfa
    * @param string $hash
    *   Login link hash.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?AccountInterface $user = NULL, $expiration_date = NULL, $timestamp = NULL, $hash = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?AccountInterface $user = NULL, $expiration_date = NULL, $timestamp = NULL, $hash = NULL): array {
     if ($expiration_date) {
       $form['message'] = [
         '#markup' => $this->t('<p>This is a one-time login for %user_name and will expire on %expiration_date.</p><p>Click on this button to log in to the site and change your password.</p>', [
@@ -74,7 +74,7 @@ class UserPasswordResetForm extends FormBase implements WorkspaceSafeFormInterfa
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // This form works by submitting the hash and timestamp to the user.reset
     // route with a 'login' action.
   }

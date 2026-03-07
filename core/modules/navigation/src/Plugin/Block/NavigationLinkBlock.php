@@ -65,7 +65,7 @@ final class NavigationLinkBlock extends BlockBase {
       '#type' => 'entity_autocomplete',
       '#title' => $this->t('URL'),
       '#default_value' => $display_uri,
-      '#element_validate' => [[static::class, 'validateUriElement']],
+      '#element_validate' => [[self::class, 'validateUriElement']],
       '#attributes' => [
         'data-autocomplete-first-character-denylist' => '/#?',
       ],
@@ -89,7 +89,7 @@ final class NavigationLinkBlock extends BlockBase {
       '#type' => 'textfield',
       '#title' => $this->t('Icon CSS class'),
       '#default_value' => $config['icon_class'],
-      '#element_validate' => [[static::class, 'validateIconClassElement']],
+      '#element_validate' => [[self::class, 'validateIconClassElement']],
       '#required' => TRUE,
       '#maxlength' => 64,
     ];
@@ -105,7 +105,7 @@ final class NavigationLinkBlock extends BlockBase {
   public static function validateIconClassElement(array $element, FormStateInterface $form_state, array $form): void {
     $icon = $element['#value'];
 
-    if (!preg_match('/^[a-z0-9_-]+$/', $icon)) {
+    if (!preg_match('/^[a-z0-9_-]+$/', (string) $icon)) {
       $form_state->setError($element, t('The machine-readable name must contain only lowercase letters, numbers, underscores and hyphens.'));
     }
   }
@@ -115,7 +115,7 @@ final class NavigationLinkBlock extends BlockBase {
    *
    * Disallows saving inaccessible or untrusted URLs.
    */
-  public static function validateUriElement($element, FormStateInterface $form_state, $form): void {
+  public static function validateUriElement(array $element, FormStateInterface $form_state, $form): void {
     $uri = static::getUserEnteredStringAsUri($element['#value']);
     $form_state->setValueForElement($element, $uri);
 
@@ -123,7 +123,7 @@ final class NavigationLinkBlock extends BlockBase {
     // URI , ensure the raw value begins with '/', '?' or '#'.
     // @todo '<front>' is valid input for BC reasons, may be removed by
     //   https://www.drupal.org/node/2421941
-    if (parse_url($uri, PHP_URL_SCHEME) === 'internal' && !in_array($element['#value'][0], ['/', '?', '#'], TRUE) && !str_starts_with($element['#value'], '<front>')) {
+    if (parse_url($uri, PHP_URL_SCHEME) === 'internal' && !in_array($element['#value'][0], ['/', '?', '#'], TRUE) && !str_starts_with((string) $element['#value'], '<front>')) {
       $form_state->setError($element, new TranslatableMarkup('Manually entered paths should start with one of the following characters: / ? #'));
       return;
     }

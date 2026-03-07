@@ -104,7 +104,7 @@ class SchemaCompatibilityChecker {
     );
     return array_reduce(
       $shared_properties,
-      function (array $errors, string $property_name) use ($original_properties, $new_properties) {
+      function (array $errors, string $property_name) use ($original_properties, $new_properties): array {
         $original_types = $original_properties[$property_name]['type'] ?? [];
         $new_types = $new_properties[$property_name]['type'] ?? [];
         // The type for the new property should, at least, accept all types for

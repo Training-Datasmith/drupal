@@ -52,8 +52,7 @@ class ViewsHooks {
         $output .= '<dd>' . $this->t('If your site has multiple languages and translated entities, each result row in a view will contain one translation of each involved entity (a view can involve multiple entities if it uses relationships). You can use a filter to restrict your view to one language: without filtering, if an entity has three translations it will add three rows to the results; if you filter by language, at most one result will appear (it could be zero if that particular entity does not have a translation matching your language filter choice). If a view uses relationships, each entity in the relationship needs to be filtered separately. You can filter a view to a fixed language choice, such as English or Spanish, or to the language selected by the page the view is displayed on (the language that is selected for the page by the language detection settings either for Content or User interface).') . '</dd>';
         $output .= '<dd>' . $this->t('Because each result row contains a specific translation of each entity, field-level filters are also relative to these entity translations. For example, if your view has a filter that specifies that the entity title should contain a particular English word, you will presumably filter out all rows containing Chinese translations, since they will not contain the English word. If your view also has a second filter specifying that the title should contain a particular Chinese word, and if you are using "And" logic for filtering, you will presumably end up with no results in the view, because there are probably not any entity translations containing both the English and Chinese words in the title.') . '</dd>';
         $output .= '<dd>' . $this->t('Independent of filtering, you can choose the display language (the language used to display the entities and their fields) via a setting on the display. Your language choices are the same as the filter language choices, with an additional choice of "Content language of view row" and "Original language of content in view row", which means to display each entity in the result row using the language that entity has or in which it was originally created. In theory, this would give you the flexibility to filter to French translations, for instance, and then display the results in Spanish. The more usual choices would be to use the same language choices for the display language and each entity filter in the view, or to use the Row language setting for the display.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -186,7 +185,7 @@ class ViewsHooks {
    * variety of information.
    */
   #[Hook('form_views_exposed_form_alter')]
-  public function formViewsExposedFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formViewsExposedFormAlter(array &$form, FormStateInterface $form_state) : void {
     $form['form_build_id']['#access'] = FALSE;
     $form['form_token']['#access'] = FALSE;
     $form['form_id']['#access'] = FALSE;

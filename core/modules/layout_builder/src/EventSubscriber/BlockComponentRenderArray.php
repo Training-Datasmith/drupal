@@ -28,20 +28,13 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
   use StringTranslationTrait;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * Creates a BlockComponentRenderArray object.
    *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(AccountInterface $current_user) {
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\Session\AccountInterface $currentUser)
+  {
   }
 
   /**
@@ -58,7 +51,7 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
    * @param \Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent $event
    *   The section component render event.
    */
-  public function onBuildRender(SectionComponentBuildRenderArrayEvent $event) {
+  public function onBuildRender(SectionComponentBuildRenderArrayEvent $event): void {
     $block = $event->getPlugin();
     if (!$block instanceof BlockPluginInterface) {
       return;
@@ -106,7 +99,7 @@ class BlockComponentRenderArray implements EventSubscriberInterface {
       $content = $block->build();
       // @todo Remove when https://www.drupal.org/node/3164389 is resolved.
       if (!is_array($content)) {
-        throw new \UnexpectedValueException(sprintf('The block "%s" did not return an array', get_class($block)));
+        throw new \UnexpectedValueException(sprintf('The block "%s" did not return an array', $block::class));
       }
 
       // We don't output the block render data if there are no render elements

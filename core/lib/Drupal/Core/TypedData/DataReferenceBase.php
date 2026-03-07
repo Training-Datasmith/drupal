@@ -42,7 +42,7 @@ abstract class DataReferenceBase extends TypedData implements DataReferenceInter
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     $this->target = $this->getTypedDataManager()->create($this->definition->getTargetDefinition(), $value);
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {
@@ -55,9 +55,9 @@ abstract class DataReferenceBase extends TypedData implements DataReferenceInter
    */
   public function getString() {
     if (!method_exists($this, 'getType')) {
-      throw new \BadMethodCallException(get_class($this) . '::getType() not implemented');
+      throw new \BadMethodCallException(static::class . '::getType() not implemented');
     }
-    return (string) $this->getType() . ':' . $this->getTargetIdentifier();
+    return $this->getType() . ':' . $this->getTargetIdentifier();
   }
 
 }

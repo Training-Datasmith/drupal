@@ -78,7 +78,7 @@ class InstallStorage extends FileStorage {
    *   searched in the profile first (whereas the profile is never the owner);
    *   only afterwards check for a corresponding module or theme.
    */
-  public function getFilePath($name) {
+  public function getFilePath($name): string {
     $folders = $this->getAllFolders();
     if (isset($folders[$name])) {
       return $folders[$name] . '/' . $name . '.' . $this->getFileExtension();
@@ -91,7 +91,7 @@ class InstallStorage extends FileStorage {
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return array_key_exists($name, $this->getAllFolders());
   }
 
@@ -100,7 +100,7 @@ class InstallStorage extends FileStorage {
    *
    * @throws \Drupal\Core\Config\StorageException
    */
-  public function write($name, array $data) {
+  public function write($name, array $data): never {
     throw new StorageException('Write operation is not allowed.');
   }
 
@@ -109,7 +109,7 @@ class InstallStorage extends FileStorage {
    *
    * @throws \Drupal\Core\Config\StorageException
    */
-  public function delete($name) {
+  public function delete($name): never {
     throw new StorageException('Delete operation is not allowed.');
   }
 
@@ -118,27 +118,26 @@ class InstallStorage extends FileStorage {
    *
    * @throws \Drupal\Core\Config\StorageException
    */
-  public function rename($name, $new_name) {
+  public function rename($name, $new_name): never {
     throw new StorageException('Rename operation is not allowed.');
   }
 
   /**
    * {@inheritdoc}
+   * @return int[]|string[]
    */
-  public function listAll($prefix = '') {
+  public function listAll($prefix = ''): array {
     $names = array_keys($this->getAllFolders());
     if (!$prefix) {
       return $names;
     }
-    else {
-      $return = [];
-      foreach ($names as $index => $name) {
-        if (str_starts_with($name, $prefix)) {
-          $return[$index] = $names[$index];
-        }
+    $return = [];
+    foreach ($names as $index => $name) {
+      if (str_starts_with((string) $name, $prefix)) {
+        $return[$index] = $names[$index];
       }
-      return $return;
     }
+    return $return;
   }
 
   /**
@@ -186,7 +185,7 @@ class InstallStorage extends FileStorage {
    * @return array
    *   Folders indexed by configuration name.
    */
-  public function getComponentNames(array $list) {
+  public function getComponentNames(array $list): array {
     $extension = '.' . $this->getFileExtension();
     $pattern = '/' . preg_quote($extension, '/') . '$/';
     $folders = [];
@@ -217,7 +216,7 @@ class InstallStorage extends FileStorage {
    * @return array
    *   Folders indexed by configuration name.
    */
-  public function getCoreNames() {
+  public function getCoreNames(): array {
     $extension = '.' . $this->getFileExtension();
     $pattern = '/' . preg_quote($extension, '/') . '$/';
     $folders = [];
@@ -247,7 +246,7 @@ class InstallStorage extends FileStorage {
    * @return string
    *   The configuration folder name for this component.
    */
-  protected function getComponentFolder(Extension $extension) {
+  protected function getComponentFolder(Extension $extension): string {
     return $extension->getPath() . '/' . $this->getCollectionDirectory();
   }
 
@@ -257,7 +256,7 @@ class InstallStorage extends FileStorage {
    * @return string
    *   The configuration folder name for core.
    */
-  protected function getCoreFolder() {
+  protected function getCoreFolder(): string {
     return 'core/' . $this->getCollectionDirectory();
   }
 
@@ -266,14 +265,14 @@ class InstallStorage extends FileStorage {
    *
    * @throws \Drupal\Core\Config\StorageException
    */
-  public function deleteAll($prefix = '') {
+  public function deleteAll($prefix = ''): never {
     throw new StorageException('Delete operation is not allowed.');
   }
 
   /**
    * Resets the static cache.
    */
-  public function reset() {
+  public function reset(): void {
     $this->folders = NULL;
   }
 

@@ -13,36 +13,27 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ConfigTranslationLocalTasks extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The mapper plugin discovery service.
-   *
-   * @var \Drupal\config_translation\ConfigMapperManagerInterface
-   */
-  protected $mapperManager;
-
-  /**
-   * The base plugin ID.
-   *
-   * @var string
-   */
-  protected $basePluginId;
-
-  /**
    * Constructs a new ConfigTranslationLocalTasks.
    *
-   * @param string $base_plugin_id
+   * @param string $basePluginId
    *   The base plugin ID.
-   * @param \Drupal\config_translation\ConfigMapperManagerInterface $mapper_manager
+   * @param \Drupal\config_translation\ConfigMapperManagerInterface $mapperManager
    *   The mapper plugin discovery service.
    */
-  public function __construct($base_plugin_id, ConfigMapperManagerInterface $mapper_manager) {
-    $this->basePluginId = $base_plugin_id;
-    $this->mapperManager = $mapper_manager;
+  public function __construct(
+      /**
+       * The base plugin ID.
+       */
+      protected $basePluginId,
+      protected \Drupal\config_translation\ConfigMapperManagerInterface $mapperManager
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $base_plugin_id,
       $container->get('plugin.manager.config_translation.mapper')
@@ -61,7 +52,7 @@ class ConfigTranslationLocalTasks extends DeriverBase implements ContainerDerive
       if (!empty($base_route)) {
         $this->derivatives[$route_name] = $base_plugin_definition;
         $this->derivatives[$route_name]['config_translation_plugin_id'] = $plugin_id;
-        $this->derivatives[$route_name]['class'] = '\Drupal\config_translation\Plugin\Menu\LocalTask\ConfigTranslationLocalTask';
+        $this->derivatives[$route_name]['class'] = \Drupal\config_translation\Plugin\Menu\LocalTask\ConfigTranslationLocalTask::class;
         $this->derivatives[$route_name]['route_name'] = $route_name;
         $this->derivatives[$route_name]['base_route'] = $base_route;
       }

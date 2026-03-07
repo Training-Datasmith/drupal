@@ -25,7 +25,7 @@ trait EntityOwnerTrait {
    *   Thrown when the entity type does not implement EntityOwnerInterface or
    *   if it does not have an "owner" entity key.
    */
-  public static function ownerBaseFieldDefinitions(EntityTypeInterface $entity_type) {
+  public static function ownerBaseFieldDefinitions(EntityTypeInterface $entity_type): array {
     if (!is_subclass_of($entity_type->getClass(), EntityOwnerInterface::class)) {
       throw new UnsupportedEntityTypeDefinitionException('The entity type ' . $entity_type->id() . ' does not implement \Drupal\user\EntityOwnerInterface.');
     }

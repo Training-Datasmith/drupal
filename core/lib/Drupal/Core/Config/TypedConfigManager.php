@@ -22,20 +22,6 @@ use Drupal\Core\Validation\Plugin\Validation\Constraint\FullyValidatableConstrai
 class TypedConfigManager extends TypedDataManager implements TypedConfigManagerInterface {
 
   /**
-   * A storage instance for reading configuration data.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  protected $configStorage;
-
-  /**
-   * A storage instance for reading configuration schema data.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  protected $schemaStorage;
-
-  /**
    * The array of plugin definitions, keyed by plugin id.
    *
    * @var array
@@ -56,9 +42,7 @@ class TypedConfigManager extends TypedDataManager implements TypedConfigManagerI
    * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
    *   (optional) The class resolver.
    */
-  public function __construct(StorageInterface $configStorage, StorageInterface $schemaStorage, CacheBackendInterface $cache, ModuleHandlerInterface $module_handler, ?ClassResolverInterface $class_resolver = NULL) {
-    $this->configStorage = $configStorage;
-    $this->schemaStorage = $schemaStorage;
+  public function __construct(protected \Drupal\Core\Config\StorageInterface $configStorage, protected \Drupal\Core\Config\StorageInterface $schemaStorage, CacheBackendInterface $cache, ModuleHandlerInterface $module_handler, ?ClassResolverInterface $class_resolver = NULL) {
     $this->setCacheBackend($cache, 'typed_config_definitions');
     $this->alterInfo('config_schema_info');
     $this->moduleHandler = $module_handler;
@@ -96,7 +80,7 @@ class TypedConfigManager extends TypedDataManager implements TypedConfigManagerI
 
     $replace = [];
     $type = $definition['type'];
-    if (strpos($type, ']')) {
+    if (strpos((string) $type, ']')) {
       // Replace variable names in definition.
       $replace = is_array($value) ? $value : [];
       if (isset($parent)) {
@@ -216,7 +200,7 @@ class TypedConfigManager extends TypedDataManager implements TypedConfigManagerI
 
       // If this mapping's type was dynamically defined, then this is the static
       // type root inside which all types are statically defined.
-      if (str_contains($original_mapping_type, ']')) {
+      if (str_contains((string) $original_mapping_type, ']')) {
         $static_type_root = $object;
         break;
       }
@@ -284,7 +268,7 @@ class TypedConfigManager extends TypedDataManager implements TypedConfigManagerI
       $definition = NestedArray::mergeDeepArray([$merge, $definition], TRUE);
 
       // Replace dynamic portions of the definition type.
-      if (!empty($replacements) && strpos($definition['type'], ']')) {
+      if (!empty($replacements) && strpos((string) $definition['type'], ']')) {
         $sub_type = $this->determineType(TypeResolver::resolveDynamicTypeName($definition['type'], $replacements), $definitions);
         $sub_definition = $definitions[$sub_type];
         if (isset($definitions[$sub_type]['type'])) {
@@ -302,7 +286,7 @@ class TypedConfigManager extends TypedDataManager implements TypedConfigManagerI
     }
     // Add type and default definition class.
     $definition += [
-      'definition_class' => '\Drupal\Core\TypedData\DataDefinition',
+      'definition_class' => \Drupal\Core\TypedData\DataDefinition::class,
       'type' => $type,
       'unwrap_for_canonical_representation' => TRUE,
     ];
@@ -319,7 +303,7 @@ class TypedConfigManager extends TypedDataManager implements TypedConfigManagerI
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     $this->schemaStorage->reset();
     parent::clearCachedDefinitions();
   }
@@ -373,25 +357,23 @@ class TypedConfigManager extends TypedDataManager implements TypedConfigManagerI
       if (isset($this->definitions[$replaced])) {
         return $replaced;
       }
-      else {
-        // No definition for this level. Collapse multiple wildcards to a single
-        // wildcard to see if there is a greedy match. For example,
-        // "breakpoint.breakpoint.*.*" becomes "breakpoint.breakpoint.*".
-        $one_star = preg_replace('/\.([:\.\*]*)$/', '.*', $replaced);
-        if ($one_star != $replaced && isset($this->definitions[$one_star])) {
-          return $one_star;
-        }
-        // Check for next level. For example, if "breakpoint.breakpoint.*" has
-        // been checked and no match found then check "breakpoint.*.*".
-        return $this->getFallbackName($replaced);
+      // No definition for this level. Collapse multiple wildcards to a single
+      // wildcard to see if there is a greedy match. For example,
+      // "breakpoint.breakpoint.*.*" becomes "breakpoint.breakpoint.*".
+      $one_star = preg_replace('/\.([:\.\*]*)$/', '.*', (string) $replaced);
+      if ($one_star != $replaced && isset($this->definitions[$one_star])) {
+        return $one_star;
       }
+      // Check for next level. For example, if "breakpoint.breakpoint.*" has
+      // been checked and no match found then check "breakpoint.*.*".
+      return $this->getFallbackName($replaced);
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasConfigSchema($name) {
+  public function hasConfigSchema($name): bool {
     // The schema system falls back on the Undefined class for unknown types.
     $definition = $this->getDefinition($name);
     return is_array($definition) && ($definition['class'] != Undefined::class);

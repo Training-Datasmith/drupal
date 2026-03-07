@@ -31,8 +31,7 @@ class AnnouncementsFeedHelpHooks {
         $output .= '<dd>' . $this->t('Users with the "View drupal.org announcements" permission may click on the "Announcements" item in the administration toolbar, or access @link, to see all announcements relevant to the Drupal version of your site.', [
           '@link' => Link::createFromRoute($this->t('Announcements'), 'announcements_feed.announcement')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

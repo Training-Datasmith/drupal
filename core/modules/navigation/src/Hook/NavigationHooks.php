@@ -62,17 +62,15 @@ class NavigationHooks {
         $output = '';
         $output .= '<h3>' . $this->t('About') . '</h3>';
         $output .= '<p>' . $this->t('The Navigation module provides a left-aligned, collapsible, vertical sidebar navigation.') . '</p>';
-        $output .= '<p>' . $this->t('For more information, see the <a href=":docs">online documentation for the Navigation module</a>.', [':docs' => 'https://www.drupal.org/docs/develop/core-modules-and-themes/core-modules/navigation-module']) . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('For more information, see the <a href=":docs">online documentation for the Navigation module</a>.', [':docs' => 'https://www.drupal.org/docs/develop/core-modules-and-themes/core-modules/navigation-module']) . '</p>');
     }
     $configuration_route = 'layout_builder.navigation.';
-    if (!$route_match->getRouteObject()->getOption('_layout_builder') || !str_starts_with($route_name, $configuration_route)) {
+    if (!$route_match->getRouteObject()->getOption('_layout_builder') || !str_starts_with((string) $route_name, $configuration_route)) {
       return $this->moduleHandler->invoke('layout_builder', 'help', [$route_name, $route_match]);
     }
-    if (str_starts_with($route_name, $configuration_route)) {
+    if (str_starts_with((string) $route_name, $configuration_route)) {
       $output = '<p>' . $this->t('This layout builder tool allows you to configure the blocks in the navigation toolbar.') . '</p>';
-      $output .= '<p>' . $this->t('Forms and links inside the content of the layout builder tool are disabled in Edit mode.') . '</p>';
-      return $output;
+      return $output . ('<p>' . $this->t('Forms and links inside the content of the layout builder tool are disabled in Edit mode.') . '</p>');
     }
     return NULL;
   }
@@ -94,7 +92,7 @@ class NavigationHooks {
    * Implements hook_menu_links_discovered_alter().
    */
   #[Hook('menu_links_discovered_alter')]
-  public function menuLinksDiscoveredAlter(&$links): void {
+  public function menuLinksDiscoveredAlter(array &$links): void {
     $navigation_links = \Drupal::classResolver(NavigationContentLinks::class);
     assert($navigation_links instanceof NavigationContentLinks);
     $navigation_links->addMenuLinks($links);
@@ -143,7 +141,7 @@ class NavigationHooks {
    */
   #[Hook('block_alter')]
   public function blockAlter(&$definitions) : void {
-    array_walk($definitions, function (&$definition, $block_id) {
+    array_walk($definitions, function (array &$definition, $block_id): void {
       [$base_plugin_id] = explode(PluginBase::DERIVATIVE_SEPARATOR, $block_id);
 
       // Add the allow_in_navigation attribute to those blocks valid for
@@ -173,7 +171,7 @@ class NavigationHooks {
   #[Hook('element_info_alter')]
   public function elementInfoAlter(array &$info): void {
     if (array_key_exists('layout_builder', $info)) {
-      $info['layout_builder']['#pre_render'][] = [RenderCallbacks::class, 'alterLayoutBuilder'];
+      $info['layout_builder']['#pre_render'][] = RenderCallbacks::alterLayoutBuilder(...);
     }
   }
 

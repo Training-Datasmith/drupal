@@ -17,26 +17,19 @@ class CommentBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs the CommentBreadcrumbBuilder.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata) {
+  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool {
     $cacheable_metadata->addCacheContexts(['route']);
     return $route_match->getRouteName() == 'comment.reply' && $route_match->getParameter('entity');
   }
@@ -44,7 +37,7 @@ class CommentBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function build(RouteMatchInterface $route_match) {
+  public function build(RouteMatchInterface $route_match): \Drupal\Core\Breadcrumb\Breadcrumb {
     $breadcrumb = new Breadcrumb();
     $breadcrumb->addLink(Link::createFromRoute($this->t('Home'), '<front>'));
 

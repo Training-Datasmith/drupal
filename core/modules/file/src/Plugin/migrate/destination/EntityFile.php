@@ -34,9 +34,7 @@ class EntityFile extends EntityContentBase {
     if ($entity) {
       return reset($entity);
     }
-    else {
-      return parent::getEntity($row, $old_destination_id_values);
-    }
+    return parent::getEntity($row, $old_destination_id_values);
   }
 
   /**
@@ -56,7 +54,7 @@ class EntityFile extends EntityContentBase {
       $value = reset($value);
       // Make it into a proper public file uri, stripping off the existing
       // scheme if present.
-      $value = 'public://' . preg_replace('|^[a-z]+://|i', '', $value);
+      $value = 'public://' . preg_replace('|^[a-z]+://|i', '', (string) $value);
       $value = mb_substr($value, 0, $field_definitions['uri']->getSetting('max_length'));
       // Create a real file, so File::preSave() can do filesize() on it.
       touch($value);

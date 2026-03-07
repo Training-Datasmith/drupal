@@ -25,7 +25,7 @@ class EntityReferenceTaxonomyTermRssFormatter extends EntityReferenceFormatterBa
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $parent_entity = $items->getEntity();
     $elements = [];
 
@@ -45,7 +45,7 @@ class EntityReferenceTaxonomyTermRssFormatter extends EntityReferenceFormatterBa
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     // This formatter is only available for taxonomy terms.
     return $field_definition->getFieldStorageDefinition()->getSetting('target_type') == 'taxonomy_term';
   }

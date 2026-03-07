@@ -40,7 +40,7 @@ class RequestSanitizer {
    * @return \Symfony\Component\HttpFoundation\Request
    *   The sanitized request.
    */
-  public static function sanitize(Request $request, array $safe_keys, $log_sanitized_keys = FALSE) {
+  public static function sanitize(Request $request, array $safe_keys, $log_sanitized_keys = FALSE): Request {
     if ($request->getMethod() !== $request->getRealMethod() && $request->isMethodSafe()) {
       throw new BadRequestHttpException("Changing a request's method to a safe method is not supported.");
     }
@@ -131,7 +131,7 @@ class RequestSanitizer {
    * @return array
    *   The dangerous keys found in the destination parameter.
    */
-  protected static function checkDestination($destination, array $safe_keys) {
+  protected static function checkDestination(string $destination, array $safe_keys): array {
     $dangerous_keys = [];
     $parts = UrlHelper::parse($destination);
     // If there is a query string, check its query parameters.

@@ -19,20 +19,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class HtmlResponseBigPipeSubscriber implements EventSubscriberInterface {
 
   /**
-   * The BigPipe service.
-   *
-   * @var \Drupal\big_pipe\Render\BigPipe
-   */
-  protected $bigPipe;
-
-  /**
    * Constructs a HtmlResponseBigPipeSubscriber object.
    *
-   * @param \Drupal\big_pipe\Render\BigPipe $big_pipe
+   * @param \Drupal\big_pipe\Render\BigPipe $bigPipe
    *   The BigPipe service.
    */
-  public function __construct(BigPipe $big_pipe) {
-    $this->bigPipe = $big_pipe;
+  public function __construct(protected \Drupal\big_pipe\Render\BigPipe $bigPipe)
+  {
   }
 
   /**
@@ -41,7 +34,7 @@ class HtmlResponseBigPipeSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespondEarly(ResponseEvent $event) {
+  public function onRespondEarly(ResponseEvent $event): void {
     $response = $event->getResponse();
     if (!$response instanceof HtmlResponse) {
       return;
@@ -66,7 +59,7 @@ class HtmlResponseBigPipeSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespond(ResponseEvent $event) {
+  public function onRespond(ResponseEvent $event): void {
     $response = $event->getResponse();
     if (!$response instanceof HtmlResponse) {
       return;

@@ -57,7 +57,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLangcode($langcode) {
+  public function setLangcode($langcode): void {
     $this->langcode = $langcode;
   }
 
@@ -92,17 +92,15 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function filterEmptyItems() {
-    $this->filter(function ($item) {
-      return !$item->isEmpty();
-    });
+  public function filterEmptyItems(): static {
+    $this->filter(fn($item) => !$item->isEmpty());
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     // Support passing in only the value of the first item, either as a literal
     // (value of the first property) or as an array of properties.
     if (isset($values) && (!is_array($values) || (!empty($values) && !is_numeric(current(array_keys($values)))))) {
@@ -169,7 +167,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     if ($value = $this->getFieldDefinition()->getDefaultValue($this->getEntity())) {
       $this->setValue($value, $notify);
     }
@@ -188,7 +186,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     // Filter out empty items.
     $this->filterEmptyItems();
 
@@ -198,7 +196,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave($update) {
+  public function postSave($update): bool {
     $result = $this->delegateMethod('postSave', $update);
     return (bool) array_filter($result);
   }
@@ -206,14 +204,14 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     $this->delegateMethod('delete');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteRevision() {
+  public function deleteRevision(): void {
     $this->delegateMethod('deleteRevision');
   }
 
@@ -228,7 +226,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
    * @return array
    *   An array of results keyed by delta.
    */
-  protected function delegateMethod($method) {
+  protected function delegateMethod($method): array {
     $result = [];
     $args = array_slice(func_get_args(), 1);
     foreach ($this->list as $delta => $item) {
@@ -250,7 +248,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function generateSampleItems($count = 1) {
+  public function generateSampleItems($count = 1): void {
     $field_definition = $this->getFieldDefinition();
     $field_type_class = $field_definition->getItemDefinition()->getClass();
     for ($delta = 0; $delta < $count; $delta++) {
@@ -292,20 +290,17 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
       if ($widget = $this->defaultValueWidget($form_state)) {
         // Place the input in a separate place in the submitted values tree.
         $element = ['#parents' => ['default_value_input']];
-        $element += $widget->form($this, $element, $form_state);
 
-        return $element;
+        return $element + $widget->form($this, $element, $form_state);
       }
-      else {
-        return ['#markup' => $this->t('No widget available for: %type.', ['%type' => $this->getFieldDefinition()->getType()])];
-      }
+      return ['#markup' => $this->t('No widget available for: %type.', ['%type' => $this->getFieldDefinition()->getType()])];
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state) {
+  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state): void {
     // Extract the submitted value, and validate it.
     if ($widget = $this->defaultValueWidget($form_state)) {
       $widget->extractFormValues($this, $element, $form_state);
@@ -419,10 +414,8 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
     // If the values are not equal ensure a consistent order of field item
     // properties and remove properties which will not be saved.
     $property_definitions = $this->getFieldDefinition()->getFieldStorageDefinition()->getPropertyDefinitions();
-    $non_computed_properties = array_filter($property_definitions, function (DataDefinitionInterface $property) {
-      return !$property->isComputed();
-    });
-    $callback = function (&$value) use ($non_computed_properties) {
+    $non_computed_properties = array_filter($property_definitions, fn(DataDefinitionInterface $property) => !$property->isComputed());
+    $callback = function (&$value) use ($non_computed_properties): void {
       if (is_array($value)) {
         $value = array_intersect_key($value, $non_computed_properties);
 
@@ -430,9 +423,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
         // one field item and not in the other, depending on how the values are
         // set. Do not filter out empty strings or other false-y values as e.g.
         // a NULL or FALSE in a boolean field is not the same.
-        $value = array_filter($value, function ($property) {
-          return $property !== NULL;
-        });
+        $value = array_filter($value, fn($property) => $property !== NULL);
 
         ksort($value);
       }
@@ -446,7 +437,7 @@ class FieldItemList extends ItemList implements FieldItemListInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasAffectingChanges(FieldItemListInterface $original_items, $langcode) {
+  public function hasAffectingChanges(FieldItemListInterface $original_items, $langcode): bool {
     return !$this->equals($original_items);
   }
 

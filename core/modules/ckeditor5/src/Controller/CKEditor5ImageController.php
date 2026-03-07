@@ -94,7 +94,7 @@ class CKEditor5ImageController extends ControllerBase {
     $file_uri = $this->fileSystem->getDestinationFilename($file_uri, FileExists::Rename);
 
     // Lock based on the prepared file URI.
-    $lock_id = $this->generateLockIdFromFileUri($file_uri);
+    $lock_id = static::generateLockIdFromFileUri($file_uri);
 
     if (!$this->lock->acquire($lock_id)) {
       throw new HttpException(503, sprintf('File "%s" is already locked for writing.', $file_uri), NULL, ['Retry-After' => 1]);
@@ -185,7 +185,7 @@ class CKEditor5ImageController extends ControllerBase {
    * @return string
    *   The generated lock ID.
    */
-  protected static function generateLockIdFromFileUri($file_uri) {
+  protected static function generateLockIdFromFileUri($file_uri): string {
     return 'file:ckeditor5:' . Crypt::hashBase64($file_uri);
   }
 

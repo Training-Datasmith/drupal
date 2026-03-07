@@ -25,7 +25,7 @@ class EntityViewDisplayEditForm extends EntityDisplayFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.field.field_type'),
       $container->get('plugin.manager.field.formatter'),
@@ -80,9 +80,8 @@ class EntityViewDisplayEditForm extends EntityDisplayFormBase {
       ],
     ];
     $label_position = array_search('plugin', array_keys($extra_field_row));
-    $extra_field_row = array_slice($extra_field_row, 0, $label_position, TRUE) + $label + array_slice($extra_field_row, $label_position, count($extra_field_row) - 1, TRUE);
 
-    return $extra_field_row;
+    return array_slice($extra_field_row, 0, $label_position, TRUE) + $label + array_slice($extra_field_row, $label_position, count($extra_field_row) - 1, TRUE);
   }
 
   /**
@@ -116,7 +115,7 @@ class EntityViewDisplayEditForm extends EntityDisplayFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getDisplayModesLink() {
+  protected function getDisplayModesLink(): array {
     return [
       '#type' => 'link',
       '#title' => $this->t('Manage view modes'),
@@ -127,7 +126,7 @@ class EntityViewDisplayEditForm extends EntityDisplayFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getTableHeader() {
+  protected function getTableHeader(): array {
     return [
       $this->t('Field'),
       [
@@ -145,7 +144,7 @@ class EntityViewDisplayEditForm extends EntityDisplayFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getOverviewUrl($mode) {
+  protected function getOverviewUrl($mode): \Drupal\Core\Url {
     $entity_type = $this->entityTypeManager->getDefinition($this->entity->getTargetEntityTypeId());
     return Url::fromRoute('entity.entity_view_display.' . $this->entity->getTargetEntityTypeId() . '.view_mode', [
       'view_mode_name' => $mode,
@@ -154,14 +153,15 @@ class EntityViewDisplayEditForm extends EntityDisplayFormBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[][]
    */
-  protected function thirdPartySettingsForm(PluginSettingsInterface $plugin, FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state) {
+  protected function thirdPartySettingsForm(PluginSettingsInterface $plugin, FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state): array {
     $settings_form = [];
     // Invoke hook_field_formatter_third_party_settings_form(), keying resulting
     // subforms by module name.
     $this->moduleHandler->invokeAllWith(
       'field_formatter_third_party_settings_form',
-      function (callable $hook, string $module) use (&$settings_form, &$plugin, &$field_definition, &$form, &$form_state) {
+      function (callable $hook, string $module) use (&$settings_form, &$plugin, &$field_definition, &$form, &$form_state): void {
         $settings_form[$module] = ($settings_form[$module] ?? []) + ($hook(
           $plugin,
           $field_definition,

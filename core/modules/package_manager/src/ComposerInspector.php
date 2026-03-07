@@ -35,8 +35,6 @@ class ComposerInspector implements LoggerAwareInterface {
 
   /**
    * The process output callback.
-   *
-   * @var \Drupal\package_manager\ProcessOutputCallback
    */
   private ProcessOutputCallback $processCallback;
 
@@ -306,8 +304,8 @@ class ComposerInspector implements LoggerAwareInterface {
       // which will cause an exception if we try to parse it as a legitimate
       // semantic version. Since we don't need the abbreviated commit hash, just
       // remove it.
-      if (str_contains($package['version'], '-dev ')) {
-        $packages_data[$name]['version'] = explode(' ', $package['version'], 2)[0];
+      if (str_contains((string) $package['version'], '-dev ')) {
+        $packages_data[$name]['version'] = explode(' ', (string) $package['version'], 2)[0];
       }
 
       // We expect Composer to report that metapackages' install paths are the
@@ -472,7 +470,7 @@ class ComposerInspector implements LoggerAwareInterface {
 
     // Try to convert the value we got back to a boolean. If it's not a boolean,
     // it should be an array of plugin-specific flags.
-    $value = json_decode($value, TRUE, flags: JSON_THROW_ON_ERROR);
+    $value = json_decode((string) $value, TRUE, flags: JSON_THROW_ON_ERROR);
 
     // An empty array indicates that no plugins are allowed.
     return $value ?: [];

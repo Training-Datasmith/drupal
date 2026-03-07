@@ -14,30 +14,15 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 class BundleConfigImportValidate extends ConfigImportValidateEventSubscriberBase {
 
   /**
-   * The config manager.
-   *
-   * @var \Drupal\Core\Config\ConfigManagerInterface
-   */
-  protected $configManager;
-
-  /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs the event subscriber.
    *
-   * @param \Drupal\Core\Config\ConfigManagerInterface $config_manager
+   * @param \Drupal\Core\Config\ConfigManagerInterface $configManager
    *   The config manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    */
-  public function __construct(ConfigManagerInterface $config_manager, EntityTypeManagerInterface $entity_type_manager) {
-    $this->configManager = $config_manager;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Config\ConfigManagerInterface $configManager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -46,7 +31,7 @@ class BundleConfigImportValidate extends ConfigImportValidateEventSubscriberBase
    * @param \Drupal\Core\Config\ConfigImporterEvent $event
    *   The config import event.
    */
-  public function onConfigImporterValidate(ConfigImporterEvent $event) {
+  public function onConfigImporterValidate(ConfigImporterEvent $event): void {
     foreach ($event->getChangelist('delete') as $config_name) {
       // Get the config entity type ID. This also ensure we are dealing with a
       // configuration entity.

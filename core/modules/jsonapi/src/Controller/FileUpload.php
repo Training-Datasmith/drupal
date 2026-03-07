@@ -210,9 +210,7 @@ class FileUpload {
 
     if ($result->hasViolations()) {
       $message = "Unprocessable Entity: file validation failed.\n";
-      $message .= implode("\n", array_map(function (ConstraintViolationInterface $violation) {
-        return PlainTextOutput::renderFromHtml($violation->getMessage());
-      }, (array) $result->getViolations()->getIterator()));
+      $message .= implode("\n", array_map(fn(ConstraintViolationInterface $violation) => PlainTextOutput::renderFromHtml($violation->getMessage()), (array) $result->getViolations()->getIterator()));
       throw new UnprocessableEntityHttpException($message);
     }
 

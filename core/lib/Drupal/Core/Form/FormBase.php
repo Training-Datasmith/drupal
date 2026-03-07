@@ -87,7 +87,7 @@ abstract class FormBase implements FormInterface, ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // Validation is optional.
   }
 
@@ -143,7 +143,7 @@ abstract class FormBase implements FormInterface, ContainerInjectionInterface {
   /**
    * Resets the configuration factory.
    */
-  public function resetConfigFactory() {
+  public function resetConfigFactory(): void {
     $this->configFactory = NULL;
   }
 

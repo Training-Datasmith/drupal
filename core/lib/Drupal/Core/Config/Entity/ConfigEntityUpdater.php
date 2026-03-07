@@ -34,36 +34,27 @@ class ConfigEntityUpdater implements ContainerInjectionInterface {
   const SANDBOX_KEY = 'config_entity_updater';
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The number of entities to process in each batch.
-   *
-   * @var int
-   */
-  protected $batchSize;
-
-  /**
    * ConfigEntityUpdater constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param int $batch_size
+   * @param int $batchSize
    *   The number of entities to process in each batch.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, $batch_size) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->batchSize = $batch_size;
+  public function __construct(
+      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+      /**
+       * The number of entities to process in each batch.
+       */
+      protected $batchSize
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('settings')->get('entity_update_batch_size', 50)
@@ -126,7 +117,7 @@ class ConfigEntityUpdater implements ContainerInjectionInterface {
 
     // The default behavior is to fix dependencies.
     if ($callback === NULL) {
-      $callback = function ($entity) {
+      $callback = function ($entity): bool {
         /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
         $original_dependencies = $entity->getDependencies();
         return $original_dependencies !== $entity->calculateDependencies()->getDependencies();
@@ -170,12 +161,10 @@ class ConfigEntityUpdater implements ContainerInjectionInterface {
           ':url' => Url::fromRoute('dblog.overview')->toString(),
         ]);
       }
-      else {
-        return new TranslatableMarkup("Updates failed for the entity type %entity_type, for %entity_ids. Check the logs.", [
-          '%entity_type' => $entity_type->getLabel(),
-          '%entity_ids' => implode(', ', $sandbox[self::SANDBOX_KEY]['failed_entity_ids']),
-        ]);
-      }
+      return new TranslatableMarkup("Updates failed for the entity type %entity_type, for %entity_ids. Check the logs.", [
+        '%entity_type' => $entity_type->getLabel(),
+        '%entity_ids' => implode(', ', $sandbox[self::SANDBOX_KEY]['failed_entity_ids']),
+      ]);
     }
   }
 

@@ -88,7 +88,7 @@ final class DuplicateInfoFileValidator implements EventSubscriberInterface {
       /**
        * {@inheritdoc}
        */
-      protected function process(array $all_files) {
+      protected function process(array $all_files): array {
         // Unlike parent implementation: no processing, to retain duplicates.
         return $all_files;
       }
@@ -104,7 +104,7 @@ final class DuplicateInfoFileValidator implements EventSubscriberInterface {
 
     $info_files = [];
     foreach ($extension_info_files as $info_file) {
-      $file_name = basename($info_file);
+      $file_name = basename((string) $info_file);
       $info_files[$file_name] = ($info_files[$file_name] ?? 0) + 1;
     }
     return $info_files;

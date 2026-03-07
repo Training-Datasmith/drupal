@@ -36,10 +36,10 @@ class ChainRequestPolicy implements ChainRequestPolicyInterface {
     foreach ($this->rules as $rule) {
       $result = $rule->check($request);
       if ($result === static::DENY) {
-        return $result;
+          return $result;
       }
-      elseif ($result === static::ALLOW) {
-        $final_result = $result;
+      if ($result === static::ALLOW) {
+          $final_result = $result;
       }
       elseif (isset($result)) {
         throw new \UnexpectedValueException('Return value of RequestPolicyInterface::check() must be one of RequestPolicyInterface::ALLOW, RequestPolicyInterface::DENY or NULL');
@@ -52,7 +52,7 @@ class ChainRequestPolicy implements ChainRequestPolicyInterface {
   /**
    * {@inheritdoc}
    */
-  public function addPolicy(RequestPolicyInterface $policy) {
+  public function addPolicy(RequestPolicyInterface $policy): static {
     $this->rules[] = $policy;
     return $this;
   }

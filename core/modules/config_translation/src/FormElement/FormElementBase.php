@@ -17,13 +17,6 @@ abstract class FormElementBase implements ElementInterface {
   use StringTranslationTrait;
 
   /**
-   * The schema element this form is for.
-   *
-   * @var \Drupal\Core\TypedData\TypedDataInterface
-   */
-  protected $element;
-
-  /**
    * The data definition of the element this form element is for.
    *
    * @var \Drupal\Core\TypedData\DataDefinitionInterface
@@ -36,9 +29,8 @@ abstract class FormElementBase implements ElementInterface {
    * @param \Drupal\Core\TypedData\TypedDataInterface $element
    *   The schema element this form element is for.
    */
-  public function __construct(TypedDataInterface $element) {
-    $this->element = $element;
-    $this->definition = $element->getDataDefinition();
+  public function __construct(protected \Drupal\Core\TypedData\TypedDataInterface $element) {
+    $this->definition = $this->element->getDataDefinition();
   }
 
   /**
@@ -174,7 +166,7 @@ abstract class FormElementBase implements ElementInterface {
   /**
    * {@inheritdoc}
    */
-  public function setConfig(Config $base_config, LanguageConfigOverride $config_translation, $config_values, $base_key = NULL) {
+  public function setConfig(Config $base_config, LanguageConfigOverride $config_translation, $config_values, $base_key = NULL): void {
     // Save the configuration values, if they are different from the source
     // values in the base configuration. Otherwise remove the override.
     if ($base_config->get($base_key) !== $config_values) {

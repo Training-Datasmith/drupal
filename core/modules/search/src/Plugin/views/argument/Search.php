@@ -23,7 +23,7 @@ class Search extends ArgumentPluginBase {
    *
    * @var \Drupal\search\ViewsSearchQuery
    */
-  protected $searchQuery = NULL;
+  protected $searchQuery;
 
   /**
    * The search type name (value of {search_index}.type in the database).
@@ -41,7 +41,7 @@ class Search extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->searchType = $this->definition['search_type'];
@@ -64,7 +64,7 @@ class Search extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $required = FALSE;
     $this->queryParseSearchExpression($this->argument);
     if (!isset($this->searchQuery)) {

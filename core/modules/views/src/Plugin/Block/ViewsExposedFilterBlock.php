@@ -21,7 +21,7 @@ class ViewsExposedFilterBlock extends ViewsBlockBase {
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     $contexts = $this->view->display_handler->getCacheMetadata()->getCacheContexts();
     return Cache::mergeContexts(parent::getCacheContexts(), $contexts);
   }

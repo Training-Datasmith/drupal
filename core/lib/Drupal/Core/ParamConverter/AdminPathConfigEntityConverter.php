@@ -26,36 +26,19 @@ use Symfony\Component\Routing\Route;
 class AdminPathConfigEntityConverter extends EntityConverter {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The route admin context to determine whether a route is an admin one.
-   *
-   * @var \Drupal\Core\Routing\AdminContext
-   */
-  protected $adminContext;
-
-  /**
    * Constructs a new EntityConverter.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\Routing\AdminContext $admin_context
+   * @param \Drupal\Core\Routing\AdminContext $adminContext
    *   The route admin context service.
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, AdminContext $admin_context, $entity_repository = NULL) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Routing\AdminContext $adminContext, \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository = NULL) {
     parent::__construct($entity_type_manager, $entity_repository);
-
-    $this->configFactory = $config_factory;
-    $this->adminContext = $admin_context;
   }
 
   /**
@@ -68,7 +51,7 @@ class AdminPathConfigEntityConverter extends EntityConverter {
     }
     // If the entity type is dynamic, confirm it to be a config entity. Static
     // entity types will have performed this check in self::applies().
-    if (str_starts_with($definition['type'], 'entity:{')) {
+    if (str_starts_with((string) $definition['type'], 'entity:{')) {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
       if (!$entity_type->entityClassImplements(ConfigEntityInterface::class)) {
         return parent::convert($value, $definition, $name, $defaults);
@@ -90,7 +73,7 @@ class AdminPathConfigEntityConverter extends EntityConverter {
     }
 
     if (parent::applies($definition, $name, $route)) {
-      $entity_type_id = substr($definition['type'], strlen('entity:'));
+      $entity_type_id = substr((string) $definition['type'], strlen('entity:'));
       // If the entity type is dynamic, defer checking to self::convert().
       if (str_starts_with($entity_type_id, '{')) {
         return TRUE;

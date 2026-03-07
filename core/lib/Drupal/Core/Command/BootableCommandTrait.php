@@ -21,8 +21,6 @@ trait BootableCommandTrait {
 
   /**
    * The class loader.
-   *
-   * @var object
    */
   protected object $classLoader;
 

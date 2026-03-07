@@ -51,69 +51,6 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The CKEditor plugin manager.
-   *
-   * @var \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface
-   */
-  protected $ckeditor5PluginManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * Smart default settings utility.
-   *
-   * @var \Drupal\ckeditor5\SmartDefaultSettings
-   */
-  protected $smartDefaultSettings;
-
-  /**
-   * The set of configured CKEditor 5 plugins.
-   *
-   * @var \Drupal\ckeditor5\Plugin\CKEditor5PluginInterface[]
-   */
-  private $plugins = [];
-
-  /**
-   * The submitted editor.
-   *
-   * @var \Drupal\editor\EditorInterface
-   */
-  private $submittedEditor;
-
-  /**
-   * The cache.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
-   * The ckeditor language mapper.
-   *
-   * @var \Drupal\ckeditor5\LanguageMapper
-   */
-  protected LanguageMapper $languageMapper;
-
-  /**
    * Constructs a CKEditor 5 editor plugin.
    *
    * @param array $configuration
@@ -122,13 +59,13 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface $ckeditor5_plugin_manager
+   * @param \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface $ckeditor5PluginManager
    *   The CKEditor 5 plugin manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\ckeditor5\SmartDefaultSettings $smart_default_settings
+   * @param \Drupal\ckeditor5\SmartDefaultSettings $smartDefaultSettings
    *   The smart default settings utility.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache.
@@ -141,30 +78,26 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    CKEditor5PluginManagerInterface $ckeditor5_plugin_manager,
-    LanguageManagerInterface $language_manager,
-    ModuleHandlerInterface $module_handler,
-    SmartDefaultSettings $smart_default_settings,
+    protected \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface $ckeditor5PluginManager,
+    protected \Drupal\Core\Language\LanguageManagerInterface $languageManager,
+    protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
+    protected \Drupal\ckeditor5\SmartDefaultSettings $smartDefaultSettings,
     #[Autowire(service: 'cache.default')]
-    CacheBackendInterface $cache,
+    protected \Drupal\Core\Cache\CacheBackendInterface $cache,
     #[Autowire(service: 'logger.channel.ckeditor5')]
-    LoggerInterface $logger,
-    LanguageMapper $languageMapper,
+    protected \Psr\Log\LoggerInterface $logger,
+    /**
+     * The ckeditor language mapper.
+     */
+    protected LanguageMapper $languageMapper,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->ckeditor5PluginManager = $ckeditor5_plugin_manager;
-    $this->languageManager = $language_manager;
-    $this->moduleHandler = $module_handler;
-    $this->smartDefaultSettings = $smart_default_settings;
-    $this->cache = $cache;
-    $this->logger = $logger;
-    $this->languageMapper = $languageMapper;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDefaultSettings() {
+  public function getDefaultSettings(): array {
     return [
       'toolbar' => [
         'items' => ['heading', 'bold', 'italic'],
@@ -254,7 +187,7 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $editor = $form_state->get('editor');
     assert($editor instanceof EditorEntity);
     $language = $this->languageManager->getCurrentLanguage();
@@ -421,24 +354,24 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
     if ($definition->hasConditions()) {
       $conditions = $definition->getConditions();
       if (!array_key_exists('toolbarItem', $conditions)) {
-        $conclusion = TRUE;
-        // The filter this plugin depends on must be enabled.
-        if (array_key_exists('filter', $conditions)) {
-          $required_filter = $conditions['filter'];
-          $format_filters = $editor->getFilterFormat()->filters();
-          $conclusion = $conclusion && $format_filters->has($required_filter) && $format_filters->get($required_filter)->status;
-        }
-        // The CKEditor 5 plugins this plugin depends on must be enabled.
-        if (array_key_exists('plugins', $conditions)) {
-          $all_plugins = $this->ckeditor5PluginManager->getDefinitions();
-          $dependencies = array_intersect_key($all_plugins, array_flip($conditions['plugins']));
-          $unmet_dependencies = array_diff_key($dependencies, $enabled_plugins);
-          $conclusion = $conclusion && empty($unmet_dependencies);
-        }
-        return $conclusion;
+          $conclusion = TRUE;
+          // The filter this plugin depends on must be enabled.
+          if (array_key_exists('filter', $conditions)) {
+            $required_filter = $conditions['filter'];
+            $format_filters = $editor->getFilterFormat()->filters();
+            $conclusion = $conclusion && $format_filters->has($required_filter) && $format_filters->get($required_filter)->status;
+          }
+          // The CKEditor 5 plugins this plugin depends on must be enabled.
+          if (array_key_exists('plugins', $conditions)) {
+            $all_plugins = $this->ckeditor5PluginManager->getDefinitions();
+            $dependencies = array_intersect_key($all_plugins, array_flip($conditions['plugins']));
+            $unmet_dependencies = array_diff_key($dependencies, $enabled_plugins);
+            $conclusion = $conclusion && empty($unmet_dependencies);
+          }
+          return $conclusion;
       }
-      elseif (in_array($conditions['toolbarItem'], $editor->getSettings()['toolbar']['items'], TRUE)) {
-        return TRUE;
+      if (in_array($conditions['toolbarItem'], $editor->getSettings()['toolbar']['items'], TRUE)) {
+          return TRUE;
       }
     }
 
@@ -563,18 +496,16 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
       $configuration = $validated_format->filters()->get('filter_html')->getConfiguration();
       return $configuration['settings']['allowed_html'];
     }
-    else {
-      if ($input !== FALSE) {
-        return $input;
-      }
-      return $element['#default_value'];
+    if ($input !== FALSE) {
+      return $input;
     }
+    return $element['#default_value'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $json = $form_state->getValue(['toolbar', 'items']);
     $toolbar_items = Json::decode($json);
 
@@ -657,7 +588,7 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
     $eventual_editor_and_format = $this->getEventualEditorWithPrimedFilterFormat($form_state, $submitted_editor);
     $violations = CKEditor5::validatePair($eventual_editor_and_format, $eventual_editor_and_format->getFilterFormat());
     foreach ($violations as $violation) {
-      $property_path_parts = explode('.', $violation->getPropertyPath());
+      $property_path_parts = explode('.', (string) $violation->getPropertyPath());
 
       // Special case: AJAX updates that do not submit the form (that cannot
       // result in configuration being saved).
@@ -903,7 +834,7 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // @see ::validateConfigurationForm()
     $editor = $form_state->get('editor');
 
@@ -921,8 +852,9 @@ class CKEditor5 extends EditorBase implements ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getJSSettings(EditorEntity $editor) {
+  public function getJSSettings(EditorEntity $editor): array {
     $toolbar_items = $editor->getSettings()['toolbar']['items'];
     $plugin_config = $this->ckeditor5PluginManager->getCKEditor5PluginConfig($editor);
 

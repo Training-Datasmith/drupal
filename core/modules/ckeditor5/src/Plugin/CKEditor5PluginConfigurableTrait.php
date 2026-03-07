@@ -19,7 +19,7 @@ trait CKEditor5PluginConfigurableTrait {
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration(array $configuration) {
+  public function setConfiguration(array $configuration): void {
     $this->configuration = $configuration + $this->defaultConfiguration();
   }
 

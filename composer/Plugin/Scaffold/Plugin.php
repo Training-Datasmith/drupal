@@ -56,7 +56,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable {
   /**
    * {@inheritdoc}
    */
-  public function activate(Composer $composer, IOInterface $io) {
+  public function activate(Composer $composer, IOInterface $io): void {
     $this->composer = $composer;
     $this->io = $io;
     $this->requireWasCalled = FALSE;
@@ -77,14 +77,14 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable {
   /**
    * {@inheritdoc}
    */
-  public function getCapabilities() {
+  public function getCapabilities(): array {
     return [CommandProvider::class => ScaffoldCommandProvider::class];
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     // Important note: We only instantiate our handler on "post" events.
     return [
       ScriptEvents::POST_UPDATE_CMD => 'postCmd',
@@ -101,7 +101,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable {
    * @param \Composer\Script\Event $event
    *   The Composer event.
    */
-  public function postCmd(Event $event) {
+  public function postCmd(Event $event): void {
     $this->handler()->scaffold();
   }
 
@@ -111,7 +111,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable {
    * @param \Composer\Installer\PackageEvent $event
    *   Composer package event sent on install/update/remove.
    */
-  public function postPackage(PackageEvent $event) {
+  public function postPackage(PackageEvent $event): void {
     $this->handler()->onPostPackageEvent($event);
   }
 
@@ -121,7 +121,7 @@ class Plugin implements PluginInterface, EventSubscriberInterface, Capable {
    * @param \Composer\Plugin\CommandEvent $event
    *   The Composer command event.
    */
-  public function onCommand(CommandEvent $event) {
+  public function onCommand(CommandEvent $event): void {
     if ($event->getCommandName() == 'require') {
       if ($this->handler) {
         throw new \Error('Core Scaffold Plugin handler instantiated too early. See https://www.drupal.org/project/drupal/issues/3104922');

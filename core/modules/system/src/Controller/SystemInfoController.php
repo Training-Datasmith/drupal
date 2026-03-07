@@ -17,16 +17,9 @@ class SystemInfoController implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * System Manager Service.
-   *
-   * @var \Drupal\system\SystemManager
-   */
-  protected $systemManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('system.manager')
     );
@@ -38,8 +31,8 @@ class SystemInfoController implements ContainerInjectionInterface {
    * @param \Drupal\system\SystemManager $systemManager
    *   System manager service.
    */
-  public function __construct(SystemManager $systemManager) {
-    $this->systemManager = $systemManager;
+  public function __construct(protected \Drupal\system\SystemManager $systemManager)
+  {
   }
 
   /**
@@ -49,7 +42,7 @@ class SystemInfoController implements ContainerInjectionInterface {
    *   A render array containing a list of system requirements for the Drupal
    *   installation and whether this installation meets the requirements.
    */
-  public function status() {
+  public function status(): array {
     $requirements = $this->systemManager->listRequirements();
     return ['#type' => 'status_report_page', '#requirements' => $requirements];
   }

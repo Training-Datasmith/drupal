@@ -58,16 +58,16 @@ class DateRangeFieldItemList extends DateTimeFieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state) {
+  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state): void {
     if ($form_state->getValue(['default_value_input', 'default_date_type']) == static::DEFAULT_VALUE_CUSTOM) {
-      $is_strtotime = @strtotime($form_state->getValue(['default_value_input', 'default_date']));
+      $is_strtotime = @strtotime((string) $form_state->getValue(['default_value_input', 'default_date']));
       if (!$is_strtotime) {
         $form_state->setErrorByName('default_value_input][default_date', $this->t('The relative start date value entered is invalid.'));
       }
     }
 
     if ($form_state->getValue(['default_value_input', 'default_end_date_type']) == static::DEFAULT_VALUE_CUSTOM) {
-      $is_strtotime = @strtotime($form_state->getValue(['default_value_input', 'default_end_date']));
+      $is_strtotime = @strtotime((string) $form_state->getValue(['default_value_input', 'default_end_date']));
       if (!$is_strtotime) {
         $form_state->setErrorByName('default_value_input][default_end_date', $this->t('The relative end date value entered is invalid.'));
       }
@@ -77,7 +77,7 @@ class DateRangeFieldItemList extends DateTimeFieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function defaultValuesFormSubmit(array $element, array &$form, FormStateInterface $form_state) {
+  public function defaultValuesFormSubmit(array $element, array &$form, FormStateInterface $form_state): array {
     if ($form_state->getValue(['default_value_input', 'default_date_type'])
       || $form_state->getValue(['default_value_input', 'default_end_date_type'])) {
       if ($form_state->getValue(['default_value_input', 'default_date_type']) == static::DEFAULT_VALUE_NOW) {

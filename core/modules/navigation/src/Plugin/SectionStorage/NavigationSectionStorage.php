@@ -48,13 +48,6 @@ final class NavigationSectionStorage extends PluginBase implements SectionStorag
   use SectionListTrait;
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-  /**
    * An array of sections.
    *
    * @var \Drupal\layout_builder\Section[]|null
@@ -64,9 +57,11 @@ final class NavigationSectionStorage extends PluginBase implements SectionStorag
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The config factory.
+   */
+  protected ConfigFactoryInterface $configFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->configFactory = $config_factory;
   }
 
   /**
@@ -120,9 +115,7 @@ final class NavigationSectionStorage extends PluginBase implements SectionStorag
    * {@inheritdoc}
    */
   public function save(): int {
-    $sections = array_map(function (Section $section) {
-      return $section->toArray();
-    }, $this->getSections());
+    $sections = array_map(fn(Section $section) => $section->toArray(), $this->getSections());
 
     $config = $this->configFactory->getEditable($this->getConfigName());
     $return = $config->get('sections') ? SAVED_UPDATED : SAVED_NEW;

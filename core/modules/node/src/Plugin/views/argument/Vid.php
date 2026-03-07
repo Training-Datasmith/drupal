@@ -16,13 +16,6 @@ use Drupal\node\NodeStorageInterface;
 class Vid extends NumericArgument {
 
   /**
-   * The node storage.
-   *
-   * @var \Drupal\node\NodeStorageInterface
-   */
-  protected $nodeStorage;
-
-  /**
    * Constructs a \Drupal\node\Plugin\views\argument\Vid object.
    *
    * @param array $configuration
@@ -31,18 +24,17 @@ class Vid extends NumericArgument {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\node\NodeStorageInterface $node_storage
+   * @param \Drupal\node\NodeStorageInterface $nodeStorage
    *   The node storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, NodeStorageInterface $node_storage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\node\NodeStorageInterface $nodeStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->nodeStorage = $node_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -53,8 +45,9 @@ class Vid extends NumericArgument {
 
   /**
    * Override the behavior of title(). Get the title of the revision.
+   * @return mixed[]
    */
-  public function titleQuery() {
+  public function titleQuery(): array {
     $titles = [];
 
     $results = $this->nodeStorage->getAggregateQuery()

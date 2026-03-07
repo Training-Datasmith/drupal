@@ -61,8 +61,7 @@ class UserHooks {
           ])->toString() : '#',
           ':accounts' => Url::fromRoute('entity.user.admin_form')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'user.admin_create':
         return '<p>' . $this->t("This web page allows administrators to register new users. Users' email addresses and usernames must be unique.") . '</p>';
@@ -94,7 +93,7 @@ class UserHooks {
    * Implements hook_js_settings_alter().
    */
   #[Hook('js_settings_alter')]
-  public function jsSettingsAlter(&$settings, AttachedAssetsInterface $assets): void {
+  public function jsSettingsAlter(array &$settings, AttachedAssetsInterface $assets): void {
     // Provide the user ID in drupalSettings to allow JavaScript code to
     // customize the experience for the end user, rather than the server side,
     // which would break the render cache.
@@ -158,13 +157,18 @@ class UserHooks {
   public function userViewAlter(array &$build, UserInterface $account, EntityViewDisplayInterface $display): void {
     if (!empty($build['user_picture']) && user_picture_enabled()) {
       foreach (Element::children($build['user_picture']) as $key) {
-        if (!isset($build['user_picture'][$key]['#item']) || !$build['user_picture'][$key]['#item'] instanceof ImageItem) {
-          // User picture field is provided by standard profile install. If the
-          // display is configured to use a different formatter, the #item
-          // render key may not exist, or may not be an image field.
-          continue;
+        if (!isset($build['user_picture'][$key]['#item'])) {
+            // User picture field is provided by standard profile install. If the
+            // display is configured to use a different formatter, the #item
+            // render key may not exist, or may not be an image field.
+            continue;
         }
-        /** @var \Drupal\image\Plugin\Field\FieldType\ImageItem $item */
+        if (!$build['user_picture'][$key]['#item'] instanceof ImageItem) {
+            // User picture field is provided by standard profile install. If the
+            // display is configured to use a different formatter, the #item
+            // render key may not exist, or may not be an image field.
+            continue;
+        }
         $item = $build['user_picture'][$key]['#item'];
         if (!$item->get('alt')->getValue()) {
           $item->get('alt')->setValue(\Drupal::translation()->translate('Profile picture for user @username', ['@username' => $account->getAccountName()]));
@@ -180,7 +184,7 @@ class UserHooks {
    * @see user_user_logout()
    */
   #[Hook('template_preprocess_default_variables_alter')]
-  public function templatePreprocessDefaultVariablesAlter(&$variables): void {
+  public function templatePreprocessDefaultVariablesAlter(array &$variables): void {
     $user = \Drupal::currentUser();
     $variables['user'] = clone $user;
     // Remove password and session IDs, since themes should not need nor see
@@ -223,7 +227,7 @@ class UserHooks {
    * Implements hook_mail().
    */
   #[Hook('mail')]
-  public function mail($key, &$message, $params): void {
+  public function mail(string $key, array &$message, array $params): void {
     $token_service = \Drupal::token();
     $language_manager = \Drupal::languageManager();
     $langcode = $message['langcode'];
@@ -408,7 +412,7 @@ class UserHooks {
    * Implements hook_form_FORM_ID_alter() for \Drupal\system\Form\RegionalForm.
    */
   #[Hook('form_system_regional_settings_alter')]
-  public function formSystemRegionalSettingsAlter(&$form, FormStateInterface $form_state) : void {
+  public function formSystemRegionalSettingsAlter(array &$form, FormStateInterface $form_state) : void {
     $form['timezone']['configurable_timezones'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Users may set their own time zone'),
@@ -435,7 +439,7 @@ class UserHooks {
     $form['timezone']['configurable_timezones_wrapper']['user_default_timezone'] = [
       '#type' => 'radios',
       '#title' => $this->t('Time zone for new users'),
-      '#config_target' => new ConfigTarget('system.date', 'timezone.user.default', toConfig: fn($v) => (int) $v),
+      '#config_target' => new ConfigTarget('system.date', 'timezone.user.default', toConfig: fn($v): int => (int) $v),
       '#options' => [
         UserInterface::TIMEZONE_DEFAULT => $this->t('Default time zone'),
         UserInterface::TIMEZONE_EMPTY => $this->t('Empty time zone'),

@@ -109,7 +109,7 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
    *   Implementations, as theme names keyed by theme, hook name and
    *   "$class::$method" identifier.
    */
-  protected function sortByTheme(array $implementationsByHook) {
+  protected function sortByTheme(array $implementationsByHook): array {
     $implementationsByTheme = [];
     foreach ($implementationsByHook as $hook => $identifiers) {
       foreach ($identifiers as $identifier => $theme) {
@@ -159,7 +159,7 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
 
     $skipProcedural = array_filter(
       array_keys($themeList),
-      static fn(string $theme) => !empty($parameters["$theme.skip_procedural_hook_scan"]),
+      static fn(string $theme): bool => !empty($parameters["$theme.skip_procedural_hook_scan"]),
     );
     $themes = array_keys($themeList);
     $allThemesPreg = static::getThemeListPattern($themes);
@@ -167,7 +167,7 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
     foreach ($themeList as $theme => $info) {
       $shouldSkipProceduralScan = in_array($theme, $skipProcedural);
       $currentThemePreg = static::getThemeListPattern([$theme]);
-      $collector->collectThemeHookImplementations(dirname($info['pathname']), $theme, $currentThemePreg, $allThemesPreg, $shouldSkipProceduralScan);
+      $collector->collectThemeHookImplementations(dirname((string) $info['pathname']), $theme, $currentThemePreg, $allThemesPreg, $shouldSkipProceduralScan);
     }
     return $collector;
   }
@@ -185,9 +185,9 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
    *   The pattern used to match hooks for the given theme list.
    */
   protected static function getThemeListPattern(array $themeList): string {
-    usort($themeList, static fn($a, $b) => strlen($b) - strlen($a));
+    usort($themeList, static fn($a, $b): int => strlen((string) $b) - strlen((string) $a));
     $themePattern = implode('|', array_map(
-      static fn($x) => preg_quote($x, '/'),
+      static fn(string $x): string => preg_quote($x, '/'),
       $themeList,
     ));
     return '/^(?<function>(?<theme>' . $themePattern . ')_(?!update_\d)(?<hook>[a-zA-Z0-9_\x80-\xff]+$))/';
@@ -208,7 +208,7 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
    * @param bool $shouldSkipProceduralScan
    *   Skip the procedural check for the current theme.
    */
-  protected function collectThemeHookImplementations($dir, $theme, $currentThemePreg, $allThemesPreg, bool $shouldSkipProceduralScan): void {
+  protected function collectThemeHookImplementations($dir, $theme, $currentThemePreg, string $allThemesPreg, bool $shouldSkipProceduralScan): void {
     $hookFileCache = FileCacheFactory::get('theme_hook_implementations');
     $proceduralHookFileCache = FileCacheFactory::get('theme_procedural_hook_implementations:' . $allThemesPreg);
 
@@ -265,7 +265,7 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
             if (StaticReflectionParser::hasAttribute($attributes, ProceduralHookScanStop::class)) {
               break;
             }
-            if (!StaticReflectionParser::hasAttribute($attributes, LegacyHook::class) && (preg_match($currentThemePreg, $function, $matches) || preg_match($allThemesPreg, $function, $matches))) {
+            if (!StaticReflectionParser::hasAttribute($attributes, LegacyHook::class) && (preg_match($currentThemePreg, (string) $function, $matches) || preg_match($allThemesPreg, (string) $function, $matches))) {
               assert($function === $matches['theme'] . '_' . $matches['hook']);
               $implementations[] = ['theme' => $matches['theme'], 'hook' => $matches['hook']];
             }
@@ -344,14 +344,17 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
     $subPathName = $iterator->getSubPathname();
     $extension = $fileInfo->getExtension();
     if (str_starts_with($subPathName, 'src/Hook/')) {
-      return $iterator->isDir() || $extension === 'php';
+        if ($iterator->isDir()) {
+            return true;
+        }
+        return $extension === 'php';
     }
     if ($iterator->isDir()) {
       if ($subPathName === 'src' || $subPathName === 'src/Hook') {
         return TRUE;
       }
       // glob() doesn't support streams but scandir() does.
-      return !in_array($fileInfo->getFilename(), ['tests', 'js', 'css', 'templates']) && !array_filter(scandir($key), static fn($filename) => str_ends_with($filename, '.info.yml'));
+      return !in_array($fileInfo->getFilename(), ['tests', 'js', 'css', 'templates']) && !array_filter(scandir($key), static fn($filename): bool => str_ends_with((string) $filename, '.info.yml'));
     }
     if ($fileInfo->getFilename() === 'theme-settings.php') {
       return TRUE;
@@ -394,7 +397,7 @@ class ThemeHookCollectorPass implements CompilerPassInterface {
     foreach ($reflections as $reflection) {
       if ($reflectionAttributes = $reflection->getAttributes(HookAttributeInterface::class, \ReflectionAttribute::IS_INSTANCEOF)) {
         $method = $reflection instanceof \ReflectionMethod ? $reflection->getName() : '__invoke';
-        $attributes[$method] = array_map(static fn(\ReflectionAttribute $ra) => $ra->newInstance(), $reflectionAttributes);
+        $attributes[$method] = array_map(static fn(\ReflectionAttribute $ra): \Drupal\Core\Hook\Attribute\HookAttributeInterface => $ra->newInstance(), $reflectionAttributes);
       }
     }
     return $attributes;

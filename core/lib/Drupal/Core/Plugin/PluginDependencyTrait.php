@@ -69,7 +69,7 @@ trait PluginDependencyTrait {
 
     // If a plugin is dependent, calculate its dependencies.
     if ($instance instanceof DependentPluginInterface && $plugin_dependencies = $instance->calculateDependencies()) {
-      $dependencies = NestedArray::mergeDeep($dependencies, $plugin_dependencies);
+      return NestedArray::mergeDeep($dependencies, $plugin_dependencies);
     }
     return $dependencies;
   }
@@ -105,7 +105,7 @@ trait PluginDependencyTrait {
    * @return \Drupal\Core\Extension\ThemeHandlerInterface
    *   The theme handler.
    */
-  protected function themeHandler() {
+  protected function themeHandler(): object {
     return \Drupal::service('theme_handler');
   }
 

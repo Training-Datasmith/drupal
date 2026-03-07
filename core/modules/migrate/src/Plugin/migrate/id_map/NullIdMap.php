@@ -20,161 +20,161 @@ class NullIdMap extends PluginBase implements MigrateIdMapInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMessage(MigrateMessageInterface $message) {
+  public function setMessage(MigrateMessageInterface $message): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRowBySource(array $source_id_values) {
+  public function getRowBySource(array $source_id_values): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRowByDestination(array $destination_id_values) {
+  public function getRowByDestination(array $destination_id_values): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRowsNeedingUpdate($count) {
+  public function getRowsNeedingUpdate($count): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function lookupSourceId(array $destination_id_values) {
+  public function lookupSourceId(array $destination_id_values): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function lookupDestinationIds(array $source_id_values) {
+  public function lookupDestinationIds(array $source_id_values): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function saveIdMapping(Row $row, array $destination_id_values, $source_row_status = MigrateIdMapInterface::STATUS_IMPORTED, $rollback_action = MigrateIdMapInterface::ROLLBACK_DELETE) {
+  public function saveIdMapping(Row $row, array $destination_id_values, $source_row_status = MigrateIdMapInterface::STATUS_IMPORTED, $rollback_action = MigrateIdMapInterface::ROLLBACK_DELETE): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function saveMessage(array $source_id_values, $message, $level = MigrationInterface::MESSAGE_ERROR) {
+  public function saveMessage(array $source_id_values, $message, $level = MigrationInterface::MESSAGE_ERROR): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMessages(array $source_id_values = [], $level = NULL) {
+  public function getMessages(array $source_id_values = [], $level = NULL): \ArrayIterator {
     return new \ArrayIterator([]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function prepareUpdate() {
+  public function prepareUpdate(): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function processedCount() {
+  public function processedCount(): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function importedCount() {
+  public function importedCount(): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function updateCount() {
+  public function updateCount(): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function errorCount() {
+  public function errorCount(): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function messageCount() {
+  public function messageCount(): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete(array $source_id_values, $messages_only = FALSE) {
+  public function delete(array $source_id_values, $messages_only = FALSE): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteDestination(array $destination_id_values) {
+  public function deleteDestination(array $destination_id_values): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setUpdate(array $source_id_values) {
+  public function setUpdate(array $source_id_values): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearMessages() {
+  public function clearMessages(): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function destroy() {
+  public function destroy(): void {
     // Do nothing.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function currentDestination() {
+  public function currentDestination(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function currentSource() {
+  public function currentSource(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQualifiedMapTableName() {
+  public function getQualifiedMapTableName(): string {
     return '';
   }
 

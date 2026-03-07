@@ -30,18 +30,11 @@ abstract class FileProcessBase extends ProcessPluginBase {
    */
   public function __construct(array $configuration, $plugin_id, array $plugin_definition) {
     if (array_key_exists('file_exists', $configuration)) {
-      switch ($configuration['file_exists']) {
-        case 'use existing':
-          $configuration['file_exists'] = FileExists::Error;
-          break;
-
-        case 'rename':
-          $configuration['file_exists'] = FileExists::Rename;
-          break;
-
-        default:
-          $configuration['file_exists'] = FileExists::Replace;
-      }
+      $configuration['file_exists'] = match ($configuration['file_exists']) {
+          'use existing' => FileExists::Error,
+          'rename' => FileExists::Rename,
+          default => FileExists::Replace,
+      };
     }
     $configuration += ['file_exists' => FileExists::Replace];
     parent::__construct($configuration, $plugin_id, $plugin_definition);

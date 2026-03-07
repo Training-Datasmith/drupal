@@ -26,7 +26,7 @@ class AccessGroupAnd implements AccessibleInterface {
    *
    * @return $this
    */
-  public function addDependency(AccessibleInterface $dependency) {
+  public function addDependency(AccessibleInterface $dependency): static {
     $this->dependencies[] = $dependency;
     return $this;
   }

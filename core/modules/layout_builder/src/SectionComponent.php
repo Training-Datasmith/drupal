@@ -21,39 +21,11 @@ use Drupal\layout_builder\Event\SectionComponentBuildRenderArrayEvent;
 class SectionComponent {
 
   /**
-   * The UUID of the component.
-   *
-   * @var string
-   */
-  protected $uuid;
-
-  /**
-   * The region the component is placed in.
-   *
-   * @var string
-   */
-  protected $region;
-
-  /**
-   * An array of plugin configuration.
-   *
-   * @var mixed[]
-   */
-  protected $configuration;
-
-  /**
    * The weight of the component.
    *
    * @var int
    */
   protected $weight = 0;
-
-  /**
-   * Any additional properties and values.
-   *
-   * @var mixed[]
-   */
-  protected $additional = [];
 
   /**
    * Constructs a new SectionComponent.
@@ -67,11 +39,25 @@ class SectionComponent {
    * @param mixed[] $additional
    *   An additional values.
    */
-  public function __construct($uuid, $region, array $configuration = [], array $additional = []) {
-    $this->uuid = $uuid;
-    $this->region = $region;
-    $this->configuration = $configuration;
-    $this->additional = $additional;
+  public function __construct(
+      /**
+       * The UUID of the component.
+       */
+      protected $uuid,
+      /**
+       * The region the component is placed in.
+       */
+      protected $region,
+      /**
+       * An array of plugin configuration.
+       */
+      protected array $configuration = [],
+      /**
+       * Any additional properties and values.
+       */
+      protected array $additional = []
+  )
+  {
   }
 
   /**
@@ -104,12 +90,9 @@ class SectionComponent {
    */
   public function get($property) {
     if (property_exists($this, $property)) {
-      $value = $this->{$property} ?? NULL;
+      return $this->{$property} ?? NULL;
     }
-    else {
-      $value = $this->additional[$property] ?? NULL;
-    }
-    return $value;
+    return $this->additional[$property] ?? NULL;
   }
 
   /**
@@ -122,7 +105,7 @@ class SectionComponent {
    *
    * @return $this
    */
-  public function set($property, $value) {
+  public function set($property, $value): static {
     if (property_exists($this, $property)) {
       $this->{$property} = $value;
     }
@@ -150,7 +133,7 @@ class SectionComponent {
    *
    * @return $this
    */
-  public function setRegion($region) {
+  public function setRegion($region): static {
     $this->region = $region;
     return $this;
   }
@@ -176,7 +159,7 @@ class SectionComponent {
    *
    * @return $this
    */
-  public function setWeight($weight) {
+  public function setWeight($weight): static {
     $this->weight = $weight;
     return $this;
   }
@@ -199,7 +182,7 @@ class SectionComponent {
    *
    * @return $this
    */
-  public function setConfiguration(array $configuration) {
+  public function setConfiguration(array $configuration): static {
     $this->configuration = $configuration;
     return $this;
   }
@@ -253,7 +236,7 @@ class SectionComponent {
    * @return \Drupal\Core\Block\BlockManagerInterface
    *   The plugin manager.
    */
-  protected function pluginManager() {
+  protected function pluginManager(): object {
     // @todo Figure out the best way to unify fields and blocks and components
     //   in https://www.drupal.org/node/1875974.
     return \Drupal::service('plugin.manager.block');
@@ -265,7 +248,7 @@ class SectionComponent {
    * @return \Drupal\Core\Plugin\Context\ContextHandlerInterface
    *   The context handler.
    */
-  protected function contextHandler() {
+  protected function contextHandler(): object {
     return \Drupal::service('context.handler');
   }
 
@@ -275,7 +258,7 @@ class SectionComponent {
    * @return \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
    *   The event dispatcher.
    */
-  protected function eventDispatcher() {
+  protected function eventDispatcher(): object {
     return \Drupal::service('event_dispatcher');
   }
 
@@ -287,7 +270,7 @@ class SectionComponent {
    * @return array
    *   An array representation of the section component.
    */
-  public function toArray() {
+  public function toArray(): array {
     return [
       'uuid' => $this->getUuid(),
       'region' => $this->getRegion(),

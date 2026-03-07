@@ -12,14 +12,14 @@ class LinkRelationType extends PluginBase implements LinkRelationTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function isRegistered() {
+  public function isRegistered(): bool {
     return !$this->isExtension();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isExtension() {
+  public function isExtension(): bool {
     return isset($this->pluginDefinition['uri']);
   }
 

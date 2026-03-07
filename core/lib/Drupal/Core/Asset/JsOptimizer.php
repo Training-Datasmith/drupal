@@ -79,7 +79,7 @@ class JsOptimizer implements AssetOptimizerInterface {
    * @return string
    *   Contents of the javascript asset.
    */
-  public function clean($contents) {
+  public function clean($contents): string|array|null {
     // Remove JS source and source mapping URLs or these may cause 404 errors.
     $contents = preg_replace('/\/\/(#|@)\s(sourceURL|sourceMappingURL)=\s*(\S*?)\s*$/m', '', $contents);
 

@@ -35,26 +35,19 @@ class AccountProxy implements AccountProxyInterface {
   protected $id = 0;
 
   /**
-   * Event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * AccountProxy constructor.
    *
    * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   Event dispatcher.
    */
-  public function __construct(EventDispatcherInterface $eventDispatcher) {
-    $this->eventDispatcher = $eventDispatcher;
+  public function __construct(protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setAccount(AccountInterface $account) {
+  public function setAccount(AccountInterface $account): void {
     // If the passed account is already proxied, use the actual account instead
     // to prevent loops.
     if ($account instanceof static) {
@@ -184,7 +177,7 @@ class AccountProxy implements AccountProxyInterface {
   /**
    * {@inheritdoc}
    */
-  public function setInitialAccountId($account_id) {
+  public function setInitialAccountId($account_id): void {
     if (isset($this->account)) {
       throw new \LogicException('AccountProxyInterface::setInitialAccountId() cannot be called after an account was set on the AccountProxy');
     }

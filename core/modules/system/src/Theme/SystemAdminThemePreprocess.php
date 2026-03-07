@@ -276,7 +276,7 @@ class SystemAdminThemePreprocess {
    *   - theme_groups: An associative array containing groups of themes.
    *   - theme_group_titles: An associative array containing titles of themes.
    */
-  public function preprocessSystemThemesPage(&$variables): void {
+  public function preprocessSystemThemesPage(array &$variables): void {
     $groups = [];
     $theme_groups = $variables['theme_groups'];
     $variables['attributes']['id'] = 'system-themes-page';
@@ -342,7 +342,7 @@ class SystemAdminThemePreprocess {
           $current_theme['incompatible'] = $this->t("This theme is missing a 'content' region.");
         }
         elseif (!empty($theme->incompatible_php)) {
-          if (substr_count($theme->info['php'], '.') < 2) {
+          if (substr_count((string) $theme->info['php'], '.') < 2) {
             $theme->info['php'] .= '.*';
           }
           $current_theme['incompatible'] = $this->t('This theme requires PHP version @php_required and is incompatible with PHP version @php_version.', ['@php_required' => $theme->info['php'], '@php_version' => phpversion()]);

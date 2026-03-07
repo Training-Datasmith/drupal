@@ -16,14 +16,13 @@ class ProxyBuilder {
    * @return string
    *   The class name of the proxy.
    */
-  public static function buildProxyClassName($class_name) {
+  public static function buildProxyClassName($class_name): string {
     $match = [];
     preg_match('/([a-zA-Z0-9_]+\\\\[a-zA-Z0-9_]+)\\\\(.+)/', $class_name, $match);
     $root_namespace = $match[1];
     $rest_fqcn = $match[2];
-    $proxy_class_name = $root_namespace . '\\ProxyClass\\' . $rest_fqcn;
 
-    return $proxy_class_name;
+    return $root_namespace . '\\ProxyClass\\' . $rest_fqcn;
   }
 
   /**
@@ -35,12 +34,11 @@ class ProxyBuilder {
    * @return string
    *   The namespace name of the proxy.
    */
-  public static function buildProxyNamespace($class_name) {
+  public static function buildProxyNamespace($class_name): string {
     $proxy_classname = static::buildProxyClassName($class_name);
 
     preg_match('/(.+)\\\\[a-zA-Z0-9]+/', $proxy_classname, $match);
-    $proxy_namespace = $match[1];
-    return $proxy_namespace;
+    return $match[1];
   }
 
   /**
@@ -52,11 +50,11 @@ class ProxyBuilder {
    * @return string
    *   The full string with namespace class and methods.
    */
-  public function build($class_name) {
+  public function build($class_name): string {
     $reflection = new \ReflectionClass($class_name);
 
-    $proxy_class_name = $this->buildProxyClassName($class_name);
-    $proxy_namespace = $this->buildProxyNamespace($class_name);
+    $proxy_class_name = static::buildProxyClassName($class_name);
+    $proxy_namespace = static::buildProxyNamespace($class_name);
     $proxy_class_shortname = str_replace($proxy_namespace . '\\', '', $proxy_class_name);
 
     $output = '';
@@ -147,7 +145,7 @@ EOS;
     $output .= implode("\n", $methods);
 
     // Indent the output.
-    $output = implode("\n", array_map(function ($value) {
+    $output = implode("\n", array_map(function ($value): string {
       if ($value === '') {
         return $value;
       }
@@ -158,9 +156,8 @@ EOS;
 
     $final_output = str_replace('{{ class_name }}', $class_name, $final_output);
     $final_output = str_replace('{{ namespace }}', $proxy_namespace ? $proxy_namespace . ' ' : '', $final_output);
-    $final_output = str_replace('{{ proxy_class_shortname }}', $proxy_class_shortname, $final_output);
 
-    return $final_output;
+    return str_replace('{{ proxy_class_shortname }}', $proxy_class_shortname, $final_output);
   }
 
   /**
@@ -169,8 +166,8 @@ EOS;
    * @return string
    *   A string for the lazyLoadItself method.
    */
-  protected function buildLazyLoadItselfMethod() {
-    $output = <<<'EOS'
+  protected function buildLazyLoadItselfMethod(): string {
+    return <<<'EOS'
 /**
  * Lazy loads the real service from the container.
  *
@@ -187,8 +184,6 @@ protected function lazyLoadItself()
 }
 
 EOS;
-
-    return $output;
   }
 
   /**
@@ -200,7 +195,7 @@ EOS;
    * @return string
    *   The docblock, signature, and body for a method.
    */
-  protected function buildMethod(\ReflectionMethod $reflection_method) {
+  protected function buildMethod(\ReflectionMethod $reflection_method): string {
 
     $parameters = [];
     foreach ($reflection_method->getParameters() as $parameter) {
@@ -250,9 +245,7 @@ EOS;
     $output = $signature_line . "\n{\n";
 
     $output .= $this->buildMethodBody($reflection_method);
-
-    $output .= "\n" . '}';
-    return $output;
+    return $output . ("\n" . '}');
   }
 
   /**
@@ -264,7 +257,7 @@ EOS;
    * @return string
    *   A parameter string.
    */
-  protected function buildParameter(\ReflectionParameter $parameter) {
+  protected function buildParameter(\ReflectionParameter $parameter): string {
     $parameter_string = '';
 
     if ($parameter->hasType()) {
@@ -306,7 +299,7 @@ EOS;
    * @return string
    *   The body for a method.
    */
-  protected function buildMethodBody(\ReflectionMethod $reflection_method) {
+  protected function buildMethodBody(\ReflectionMethod $reflection_method): string {
     $output = '';
 
     $function_name = $reflection_method->getName();
@@ -330,9 +323,7 @@ EOS;
       $parameters[] = '$' . $parameter->getName();
     }
 
-    $output .= implode(', ', $parameters) . ');';
-
-    return $output;
+    return $output . (implode(', ', $parameters) . ');');
   }
 
   /**
@@ -341,8 +332,8 @@ EOS;
    * @return string
    *   The constructor for a class.
    */
-  protected function buildConstructorMethod() {
-    $output = <<<'EOS'
+  protected function buildConstructorMethod(): string {
+    return <<<'EOS'
 /**
  * Constructs a ProxyClass Drupal proxy object.
  *
@@ -358,8 +349,6 @@ public function __construct(\Symfony\Component\DependencyInjection\ContainerInte
 }
 
 EOS;
-
-    return $output;
   }
 
   /**
@@ -368,10 +357,8 @@ EOS;
    * @return string
    *   The use statements.
    */
-  protected function buildUseStatements() {
-    $output = '';
-
-    return $output;
+  protected function buildUseStatements(): string {
+    return '';
   }
 
 }

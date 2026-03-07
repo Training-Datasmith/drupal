@@ -20,7 +20,7 @@ class Desaturate extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     // This operation does not use any parameters.
     return [];
   }

@@ -40,7 +40,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   id: 'entity_method',
   deriver: EntityMethodDeriver::class,
 )]
-final class EntityMethod implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class EntityMethod implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   /**
    * Constructs a EntityMethod object.
@@ -61,13 +61,13 @@ final class EntityMethod implements ConfigActionPluginInterface, ContainerFactor
    *   Determines whether an array maps to multiple calls.
    */
   public function __construct(
-    protected readonly string $pluginId,
-    protected readonly ConfigManagerInterface $configManager,
-    protected readonly string $method,
-    protected readonly Exists $exists,
-    protected readonly int $numberOfParams,
-    protected readonly int $numberOfRequiredParams,
-    protected readonly bool $pluralized,
+    protected string $pluginId,
+    protected ConfigManagerInterface $configManager,
+    protected string $method,
+    protected Exists $exists,
+    protected int $numberOfParams,
+    protected int $numberOfRequiredParams,
+    protected bool $pluralized,
   ) {
   }
 
@@ -145,7 +145,7 @@ final class EntityMethod implements ConfigActionPluginInterface, ContainerFactor
     }
     // If an instance of the entity (either itself, or a clone) was returned
     // by the method, return that.
-    return is_a($result, get_class($entity)) ? $result : $entity;
+    return is_a($result, $entity::class) ? $result : $entity;
   }
 
 }

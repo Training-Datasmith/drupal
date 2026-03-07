@@ -26,7 +26,7 @@ final class Cleaner extends QueueWorkerBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,

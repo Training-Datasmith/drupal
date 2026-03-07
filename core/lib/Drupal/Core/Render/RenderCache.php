@@ -96,8 +96,12 @@ class RenderCache implements RenderCacheInterface {
    * @return bool
    *   Whether the cache tags allow caching for the current HTTP method.
    */
-  protected function isCacheableForCurrentHttpMethod(array $tags): bool {
-    return $this->requestStack->getCurrentRequest()->isMethodCacheable() || empty(array_filter($tags, fn (string $tag) => str_starts_with($tag, 'CACHE_MISS_IF_UNCACHEABLE_HTTP_METHOD:')));
+  protected function isCacheableForCurrentHttpMethod(array $tags): bool
+  {
+      if ($this->requestStack->getCurrentRequest()->isMethodCacheable()) {
+          return true;
+      }
+      return empty(array_filter($tags, fn (string $tag): bool => str_starts_with($tag, 'CACHE_MISS_IF_UNCACHEABLE_HTTP_METHOD:')));
   }
 
   /**
@@ -124,8 +128,9 @@ class RenderCache implements RenderCacheInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getCacheableRenderArray(array $elements) {
+  public function getCacheableRenderArray(array $elements): array {
     $data = [
       '#markup' => $elements['#markup'],
       '#attached' => $elements['#attached'],

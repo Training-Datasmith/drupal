@@ -22,26 +22,24 @@ namespace Drupal\Core\Ajax;
 class FocusFirstCommand implements CommandInterface {
 
   /**
-   * The selector of the container with tabbable elements.
-   *
-   * @var string
-   */
-  protected $selector;
-
-  /**
    * Constructs an FocusFirstCommand object.
    *
    * @param string $selector
    *   The selector of the container with tabbable elements.
    */
-  public function __construct($selector) {
-    $this->selector = $selector;
+  public function __construct(
+      /**
+       * The selector of the container with tabbable elements.
+       */
+      protected $selector
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     return [
       'command' => 'focusFirst',
       'selector' => $this->selector,

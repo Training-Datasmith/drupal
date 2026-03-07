@@ -19,32 +19,11 @@ class FormValidator implements FormValidatorInterface {
   use StringTranslationTrait;
 
   /**
-   * The CSRF token generator to validate the form token.
-   *
-   * @var \Drupal\Core\Access\CsrfTokenGenerator
-   */
-  protected $csrfToken;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
-   * The form error handler.
-   *
-   * @var \Drupal\Core\Form\FormErrorHandlerInterface
-   */
-  protected $formErrorHandler;
 
   /**
    * The callable resolver.
@@ -54,16 +33,22 @@ class FormValidator implements FormValidatorInterface {
   public function __construct(
     RequestStack $request_stack,
     TranslationInterface $string_translation,
-    CsrfTokenGenerator $csrf_token,
-    LoggerInterface $logger,
-    FormErrorHandlerInterface $form_error_handler,
+    /**
+     * The CSRF token generator to validate the form token.
+     */
+    protected \Drupal\Core\Access\CsrfTokenGenerator $csrfToken,
+    /**
+     * A logger instance.
+     */
+    protected \Psr\Log\LoggerInterface $logger,
+    /**
+     * The form error handler.
+     */
+    protected \Drupal\Core\Form\FormErrorHandlerInterface $formErrorHandler,
     ?CallableResolver $callableResolver = NULL,
   ) {
     $this->requestStack = $request_stack;
     $this->stringTranslation = $string_translation;
-    $this->csrfToken = $csrf_token;
-    $this->logger = $logger;
-    $this->formErrorHandler = $form_error_handler;
     if (!$callableResolver) {
       @trigger_error(sprintf('Calling %s() without the $callableResolver param is deprecated in drupal:11.3.0 and is required in drupal:12.0.0. See https://www.drupal.org/node/3548821', __METHOD__), E_USER_DEPRECATED);
       $callableResolver = \Drupal::service(CallableResolver::class);
@@ -74,7 +59,7 @@ class FormValidator implements FormValidatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function executeValidateHandlers(&$form, FormStateInterface &$form_state) {
+  public function executeValidateHandlers(&$form, FormStateInterface &$form_state): void {
     // If there was a button pressed, use its handlers.
     $handlers = $form_state->getValidateHandlers();
     // Otherwise, check for a form-level handler.
@@ -91,7 +76,7 @@ class FormValidator implements FormValidatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateForm($form_id, &$form, FormStateInterface &$form_state) {
+  public function validateForm($form_id, &$form, FormStateInterface &$form_state): void {
     // If this form is flagged to always validate, ensure that previous runs of
     // validation are ignored.
     if ($form_state->isValidationEnforced()) {
@@ -128,7 +113,7 @@ class FormValidator implements FormValidatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setInvalidTokenError(FormStateInterface $form_state) {
+  public function setInvalidTokenError(FormStateInterface $form_state): void {
     // Setting this error will cause the form to fail validation.
     $form_state->setErrorByName('form_token', $this->t('The form has become outdated. Press the back button, copy any unsaved work in the form, and then reload the page.'));
   }
@@ -200,7 +185,7 @@ class FormValidator implements FormValidatorInterface {
    * @param string $form_id
    *   The unique string identifying the form.
    */
-  protected function finalizeValidation(&$form, FormStateInterface &$form_state, $form_id) {
+  protected function finalizeValidation(array &$form, FormStateInterface &$form_state, $form_id) {
     // Delegate handling of form errors to a service.
     $this->formErrorHandler->handleFormErrors($form, $form_state);
 
@@ -233,7 +218,7 @@ class FormValidator implements FormValidatorInterface {
    *   call to the method, which receives the entire form array as the $element,
    *   and not on recursive calls.
    */
-  protected function doValidateForm(&$elements, FormStateInterface &$form_state, $form_id = NULL) {
+  protected function doValidateForm(array &$elements, FormStateInterface &$form_state, $form_id = NULL) {
     // Recurse through all children, sorting the elements so that the order of
     // error messages displayed to the user matches the order of elements in
     // the form. Use a copy of $elements so that it is not modified by the
@@ -334,13 +319,13 @@ class FormValidator implements FormValidatorInterface {
    *   web service requests, or other expensive requests that should
    *   not be repeated in the submission step.
    */
-  protected function performRequiredValidation(&$elements, FormStateInterface &$form_state) {
+  protected function performRequiredValidation(array &$elements, FormStateInterface &$form_state) {
     // Verify that the value is not longer than #maxlength.
-    if (isset($elements['#maxlength']) && mb_strlen($elements['#value']) > $elements['#maxlength']) {
+    if (isset($elements['#maxlength']) && mb_strlen((string) $elements['#value']) > $elements['#maxlength']) {
       $form_state->setError($elements, $this->t('@name cannot be longer than %max characters but is currently %length characters long.', [
         '@name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title'],
         '%max' => $elements['#maxlength'],
-        '%length' => mb_strlen($elements['#value']),
+        '%length' => mb_strlen((string) $elements['#value']),
       ]));
     }
 
@@ -414,7 +399,7 @@ class FormValidator implements FormValidatorInterface {
     // invalid user input when executing form-level submit handlers.
     $triggering_element = $form_state->getTriggeringElement();
     if (isset($triggering_element['#limit_validation_errors']) && ($triggering_element['#limit_validation_errors'] !== FALSE) && !($form_state->isSubmitted() && !isset($triggering_element['#submit']))) {
-      return $triggering_element['#limit_validation_errors'];
+        return $triggering_element['#limit_validation_errors'];
     }
     // If submit handlers won't run (due to the submission having been
     // triggered by an element whose #executes_submit_callback property isn't
@@ -424,16 +409,10 @@ class FormValidator implements FormValidatorInterface {
     // setting the #limit_validation_errors property. For button element
     // types, #limit_validation_errors defaults to FALSE, so that full
     // validation is their default behavior.
-    elseif ($triggering_element && !isset($triggering_element['#limit_validation_errors']) && !$form_state->isSubmitted()) {
-      return [];
+    if ($triggering_element && !isset($triggering_element['#limit_validation_errors']) && !$form_state->isSubmitted()) {
+        return [];
     }
-    // As an extra security measure, explicitly turn off error suppression if
-    // one of the above conditions wasn't met. Since this is also done at the
-    // end of this function, doing it here is only to handle the rare edge
-    // case where a validate handler invokes form processing of another form.
-    else {
-      return NULL;
-    }
+    return NULL;
   }
 
 }

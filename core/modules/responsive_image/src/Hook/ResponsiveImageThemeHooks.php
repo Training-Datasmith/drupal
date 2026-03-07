@@ -63,7 +63,7 @@ class ResponsiveImageThemeHooks {
    *   - responsive_image_style_id: A responsive image style.
    *   - url: An optional \Drupal\Core\Url object.
    */
-  public function preprocessResponsiveImageFormatter(&$variables): void {
+  public function preprocessResponsiveImageFormatter(array &$variables): void {
     // Provide fallback to standard image if valid responsive image style is not
     // provided in the responsive image formatter.
     $responsive_image_style = ResponsiveImageStyle::load($variables['responsive_image_style_id']);

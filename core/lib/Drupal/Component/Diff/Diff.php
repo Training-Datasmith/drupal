@@ -19,7 +19,7 @@ class Diff {
    *
    * @var \Drupal\Component\Diff\Engine\DiffOp[]
    */
-  protected $edits;
+  protected array $edits;
 
   /**
    * Constructor.
@@ -31,7 +31,7 @@ class Diff {
    * @param array $to_lines
    *   An array of strings.
    */
-  public function __construct($from_lines, $to_lines) {
+  public function __construct(array|string $from_lines, array|string $to_lines) {
     $diffOpBuilder = new DiffOpOutputBuilder();
     $differ = new Differ($diffOpBuilder);
     $this->edits = $diffOpBuilder->toOpsArray($differ->diffToArray($from_lines, $to_lines));

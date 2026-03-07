@@ -35,31 +35,25 @@ abstract class ImageEffectBase extends ConfigurablePluginBase implements ImageEf
   protected $weight = '';
 
   /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * {@inheritdoc}
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
+    /**
+     * A logger instance.
+     */
     #[Autowire(service: 'logger.channel.image')]
-    LoggerInterface $logger,
+    protected \Psr\Log\LoggerInterface $logger,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->logger = $logger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function transformDimensions(array &$dimensions, $uri) {
+  public function transformDimensions(array &$dimensions, $uri): void {
     // Most image effects will not change the dimensions. This base
     // implementation represents this behavior. Override this method if your
     // image effect does change the dimensions.

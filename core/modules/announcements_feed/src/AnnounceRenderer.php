@@ -59,7 +59,7 @@ final class AnnounceRenderer {
       $build[$key][] = $announcement;
     }
 
-    $build += [
+    return $build + [
       '#theme' => 'announcements_feed',
       '#count' => count($announcements),
       '#feed_link' => $this->feedLink,
@@ -77,8 +77,6 @@ final class AnnounceRenderer {
         ],
       ],
     ];
-
-    return $build;
   }
 
 }

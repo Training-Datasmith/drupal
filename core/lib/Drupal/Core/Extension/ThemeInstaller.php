@@ -121,9 +121,7 @@ class ThemeInstaller implements ThemeInstallerInterface {
       }
 
       // Set the actual theme weights.
-      $theme_list = array_map(function ($theme) use ($theme_data) {
-        return $theme_data[$theme]->sort;
-      }, $theme_list);
+      $theme_list = array_map(fn($theme) => $theme_data[$theme]->sort, $theme_list);
 
       // Sort the theme list by their weights (reverse).
       arsort($theme_list);
@@ -139,7 +137,7 @@ class ThemeInstaller implements ThemeInstallerInterface {
       }
 
       // Throw an exception if the theme name is too long.
-      if (strlen($key) > DRUPAL_EXTENSION_NAME_MAX_LENGTH) {
+      if (strlen((string) $key) > DRUPAL_EXTENSION_NAME_MAX_LENGTH) {
         throw new ExtensionNameLengthException("Theme name $key is over the maximum allowed length of " . DRUPAL_EXTENSION_NAME_MAX_LENGTH . ' characters.');
       }
 
@@ -190,7 +188,7 @@ class ThemeInstaller implements ThemeInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function uninstall(array $theme_list) {
+  public function uninstall(array $theme_list): void {
     $extension_config = $this->configFactory->getEditable('core.extension');
     $theme_config = $this->configFactory->getEditable('system.theme');
     $list = $this->themeHandler->listInfo();

@@ -117,7 +117,7 @@ function system_post_update_convert_empty_description_entity_form_modes_to_null(
     ->update($sandbox, 'entity_form_mode', function (EntityFormModeInterface $form_mode): bool {
       // Entity form mode's `description` field must be stored as NULL at the
       // config level if they are empty.
-      if ($form_mode->get('description') !== NULL && trim($form_mode->get('description')) === '') {
+      if ($form_mode->get('description') !== NULL && trim((string) $form_mode->get('description')) === '') {
         $form_mode->set('description', NULL);
         return TRUE;
       }
@@ -139,9 +139,7 @@ function system_post_update_delete_rss_config(array &$sandbox): void {
     $view_config_updater = \Drupal::classResolver(ViewsConfigUpdater::class);
     $view_config_updater->setDeprecationsEnabled(FALSE);
     \Drupal::classResolver(ConfigEntityUpdater::class)
-      ->update($sandbox, 'view', function (ViewEntityInterface $view) use ($view_config_updater, $sandbox): bool {
-        return $view_config_updater->needsRssViewModeUpdate($view, $sandbox['#system_post_update_delete_rss_config__previous_view_mode']);
-      });
+      ->update($sandbox, 'view', fn(ViewEntityInterface $view): bool => $view_config_updater->needsRssViewModeUpdate($view, $sandbox['#system_post_update_delete_rss_config__previous_view_mode']));
   }
 
   if (!isset($sandbox['#finished']) || $sandbox['#finished'] >= 1) {

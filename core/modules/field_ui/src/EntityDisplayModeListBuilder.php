@@ -20,34 +20,29 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityDisplayModeListBuilder extends ConfigEntityListBuilder {
 
   /**
-   * All entity types.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface[]
-   */
-  protected $entityTypes;
-
-  /**
    * Constructs a new EntityDisplayModeListBuilder object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Entity\EntityTypeInterface[] $entity_types
+   * @param \Drupal\Core\Entity\EntityTypeInterface[] $entityTypes
    *   List of all entity types.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, array $entity_types) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, /**
+   * All entity types.
+   */
+  protected array $entityTypes) {
     parent::__construct($entity_type, $storage);
 
     // Override the default limit (50) in order to display all view modes.
     $this->limit = FALSE;
-    $this->entityTypes = $entity_types;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     $entity_type_manager = $container->get('entity_type.manager');
     return new static(
       $entity_type,
@@ -103,8 +98,9 @@ class EntityDisplayModeListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}
+   * @return non-empty-list[]
    */
-  public function load() {
+  public function load(): array {
     $entities = [];
     foreach (parent::load() as $entity) {
       $entities[$entity->getTargetType()][] = $entity;
@@ -115,7 +111,7 @@ class EntityDisplayModeListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = [];
     foreach ($this->load() as $entity_type => $entities) {
       if (!isset($this->entityTypes[$entity_type])) {
@@ -185,7 +181,7 @@ class EntityDisplayModeListBuilder extends ConfigEntityListBuilder {
    *   TRUE if the entity has the correct view builder handler, FALSE if the
    *   entity doesn't have the correct view builder handler.
    */
-  protected function isValidEntity($entity_type) {
+  protected function isValidEntity($entity_type): bool {
     return $this->entityTypes[$entity_type]->get('field_ui_base_route') && $this->entityTypes[$entity_type]->hasViewBuilderClass();
   }
 

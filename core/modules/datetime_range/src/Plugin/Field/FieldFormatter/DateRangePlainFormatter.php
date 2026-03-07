@@ -36,7 +36,7 @@ class DateRangePlainFormatter extends DateTimePlainFormatter {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
     $separator = $this->getSetting('separator');
 
@@ -70,16 +70,15 @@ class DateRangePlainFormatter extends DateTimePlainFormatter {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $form = parent::settingsForm($form, $form_state);
-    $form = $this->dateTimeRangeSettingsForm($form);
-    return $form;
+    return $this->dateTimeRangeSettingsForm($form);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     return array_merge(parent::settingsSummary(), $this->dateTimeRangeSettingsSummary());
   }
 

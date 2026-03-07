@@ -22,7 +22,7 @@ class PathAliasForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     parent::save($form, $form_state);
 
     $this->messenger()->addStatus($this->t('The alias has been saved.'));

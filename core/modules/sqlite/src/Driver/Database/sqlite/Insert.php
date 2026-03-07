@@ -87,7 +87,7 @@ class Insert extends QueryInsert {
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     // Create a sanitized comment string to prepend to the query.
     $comments = $this->connection->makeComment($this->comments);
 
@@ -97,9 +97,7 @@ class Insert extends QueryInsert {
       $placeholders = array_fill(0, count($this->insertFields), '?');
     }
 
-    $insert_fields = array_map(function ($field) {
-      return $this->connection->escapeField($field);
-    }, $this->insertFields);
+    $insert_fields = array_map(fn($field) => $this->connection->escapeField($field), $this->insertFields);
 
     // If we're selecting from a SelectQuery, finish building the query and
     // pass it back, as any remaining options are irrelevant.

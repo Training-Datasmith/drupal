@@ -51,7 +51,7 @@ final class FieldStorageAddController extends ControllerBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.field.field_type'),
       $container->get('plugin.manager.field.field_type_category'),
@@ -89,7 +89,7 @@ final class FieldStorageAddController extends ControllerBase {
    * @return array
    *   The field selection links.
    */
-  public function getFieldSelectionLinks(string $entity_type_id, string $bundle) {
+  public function getFieldSelectionLinks(string $entity_type_id, string $bundle): array {
     $build = [];
     $this->entityTypeId = $entity_type_id;
     $this->bundle = $bundle;
@@ -197,7 +197,7 @@ final class FieldStorageAddController extends ControllerBase {
         $field_type_options_radios[$id]['#attached']['library'] = $libraries;
       }
     }
-    uasort($field_type_options_radios, [SortArray::class, 'sortByWeightProperty']);
+    uasort($field_type_options_radios, SortArray::sortByWeightProperty(...));
     $build['add']['new_storage_type'] = $field_type_options_radios;
     $build['#attached']['library'][] = 'field_ui/drupal.field_ui';
     $build['#attached']['library'][] = 'field_ui/drupal.field_ui.manage_fields';

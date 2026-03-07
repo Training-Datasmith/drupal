@@ -27,13 +27,6 @@ namespace Drupal\Component\Graph;
 class Graph {
 
   /**
-   * Holds the directed acyclic graph.
-   *
-   * @var array
-   */
-  protected $graph;
-
-  /**
    * Instantiates the directed acyclic graph object.
    *
    * @param array $graph
@@ -43,8 +36,13 @@ class Graph {
    *   connected to it; the values in this array can be simply TRUE or may
    *   contain other data.
    */
-  public function __construct($graph) {
-    $this->graph = $graph;
+  public function __construct(
+      /**
+       * Holds the directed acyclic graph.
+       */
+      protected $graph
+  )
+  {
   }
 
   /**
@@ -104,7 +102,7 @@ class Graph {
    *
    * @see \Drupal\Component\Graph\Graph::searchAndSort()
    */
-  protected function depthFirstSearch(&$state, $start, &$component = NULL) {
+  protected function depthFirstSearch(array &$state, $start, &$component = NULL) {
     // Assign new component for each new vertex, i.e. when not called
     // recursively.
     if (!isset($component)) {

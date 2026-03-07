@@ -39,7 +39,7 @@ class TextItem extends TextItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -99,9 +99,8 @@ class TextItem extends TextItemBase {
       '#min' => 1,
       '#disabled' => $has_data,
     ];
-    $element += parent::storageSettingsForm($form, $form_state, $has_data);
 
-    return $element;
+    return $element + parent::storageSettingsForm($form, $form_state, $has_data);
   }
 
 }

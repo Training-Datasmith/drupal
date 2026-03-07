@@ -23,46 +23,23 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
   protected $entity;
 
   /**
-   * The entity type bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
-
-  /**
-   * The entity repository service.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * Constructs a ContentEntityForm object.
    *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository service.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info, TimeInterface $time) {
-    $this->entityRepository = $entity_repository;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
-    $this->time = $time;
+  public function __construct(protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\Component\Datetime\TimeInterface $time)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity.repository'),
       $container->get('entity_type.bundle.info'),
@@ -141,7 +118,7 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
     // Update the changed timestamp of the entity.
     $this->updateChangedTime($this->entity);
@@ -233,7 +210,7 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
    * @return string[]
    *   An array of field names.
    */
-  protected function getEditedFieldNames(FormStateInterface $form_state) {
+  protected function getEditedFieldNames(FormStateInterface $form_state): array {
     return array_keys($this->getFormDisplay($form_state)->getComponents());
   }
 
@@ -321,7 +298,7 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
   /**
    * {@inheritdoc}
    */
-  public function isDefaultFormLangcode(FormStateInterface $form_state) {
+  public function isDefaultFormLangcode(FormStateInterface $form_state): bool {
     $this->initFormLangcodes($form_state);
     return $form_state->get('langcode') == $form_state->get('entity_default_langcode');
   }
@@ -353,7 +330,7 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
   /**
    * {@inheritdoc}
    */
-  public function setFormDisplay(EntityFormDisplayInterface $form_display, FormStateInterface $form_state) {
+  public function setFormDisplay(EntityFormDisplayInterface $form_display, FormStateInterface $form_state): static {
     $form_state->set('form_display', $form_display);
     return $this;
   }
@@ -376,7 +353,7 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
    *
    * @see \Drupal\Core\Entity\ContentEntityForm::form()
    */
-  public function updateFormLangcode($entity_type_id, EntityInterface $entity, array $form, FormStateInterface $form_state) {
+  public function updateFormLangcode($entity_type_id, EntityInterface $entity, array $form, FormStateInterface $form_state): void {
     $langcode = $entity->language()->getId();
     $form_state->set('langcode', $langcode);
 
@@ -395,7 +372,7 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity updated with the submitted values.
    */
-  public function updateChangedTime(EntityInterface $entity) {
+  public function updateChangedTime(EntityInterface $entity): void {
     if ($entity instanceof EntityChangedInterface) {
       $entity->setChangedTime($this->time->getRequestTime());
     }
@@ -463,7 +440,7 @@ class ContentEntityForm extends EntityForm implements ContentEntityFormInterface
     $bundle_entity = $this->getBundleEntity();
     if ($bundle_entity instanceof RevisionableEntityBundleInterface) {
       // Always use the default revision setting.
-      $new_revision_default = $bundle_entity->shouldCreateNewRevision();
+      return $bundle_entity->shouldCreateNewRevision();
     }
     return $new_revision_default;
   }

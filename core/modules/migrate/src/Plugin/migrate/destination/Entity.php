@@ -72,22 +72,13 @@ abstract class Entity extends DestinationBase implements ContainerFactoryPluginI
 
   /**
    * The entity storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
    */
-  protected $storage;
+  protected \Drupal\Core\Entity\EntityStorageInterface $storage;
 
   /**
    * The entity field manager.
    */
   protected EntityFieldManagerInterface $entityFieldManager;
-
-  /**
-   * The list of the bundles of this entity type.
-   *
-   * @var array
-   */
-  protected $bundles;
 
   /**
    * Construct a new entity.
@@ -105,14 +96,13 @@ abstract class Entity extends DestinationBase implements ContainerFactoryPluginI
    * @param array $bundles
    *   The list of bundles this entity type has.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, protected array $bundles) {
     $plugin_definition += [
       'label' => $storage->getEntityType()->getPluralLabel(),
     ];
 
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
     $this->storage = $storage;
-    $this->bundles = $bundles;
     $this->supportsRollback = TRUE;
   }
 
@@ -246,7 +236,7 @@ abstract class Entity extends DestinationBase implements ContainerFactoryPluginI
   /**
    * {@inheritdoc}
    */
-  public function rollback(array $destination_identifier) {
+  public function rollback(array $destination_identifier): void {
     // Delete the specified entity from Drupal if it exists.
     $entity = $this->storage->load(reset($destination_identifier));
     if ($entity) {

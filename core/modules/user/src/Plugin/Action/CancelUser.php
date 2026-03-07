@@ -21,20 +21,6 @@ use Drupal\Core\TempStore\PrivateTempStoreFactory;
 class CancelUser extends ActionBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The tempstore factory.
-   *
-   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
-   */
-  protected $tempStoreFactory;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * Constructs a CancelUser object.
    *
    * @param array $configuration
@@ -43,29 +29,26 @@ class CancelUser extends ActionBase implements ContainerFactoryPluginInterface {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
+   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory
    *   The tempstore factory.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   Current user.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, PrivateTempStoreFactory $temp_store_factory, AccountInterface $current_user) {
-    $this->currentUser = $current_user;
-    $this->tempStoreFactory = $temp_store_factory;
-
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory, protected \Drupal\Core\Session\AccountInterface $currentUser) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function executeMultiple(array $entities) {
+  public function executeMultiple(array $entities): void {
     $this->tempStoreFactory->get('user_user_operations_cancel')->set($this->currentUser->id(), $entities);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function execute($object = NULL) {
+  public function execute($object = NULL): void {
     $this->executeMultiple([$object]);
   }
 

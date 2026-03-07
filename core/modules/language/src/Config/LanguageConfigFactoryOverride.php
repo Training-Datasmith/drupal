@@ -66,7 +66,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function getOverride($langcode, $name) {
+  public function getOverride($langcode, $name): \Drupal\language\Config\LanguageConfigOverride {
     $storage = $this->getStorage($langcode);
     $data = $storage->read($name);
 
@@ -117,7 +117,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function setLanguage(?LanguageInterface $language = NULL) {
+  public function setLanguage(?LanguageInterface $language = NULL): static {
     $this->language = $language;
     return $this;
   }
@@ -125,7 +125,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function installLanguageOverrides($langcode) {
+  public function installLanguageOverrides($langcode): void {
     /** @var \Drupal\Core\Config\ConfigInstallerInterface $config_installer */
     $config_installer = \Drupal::service('config.installer');
     $config_installer->installCollectionDefaultConfig($this->createConfigCollectionName($langcode));
@@ -142,7 +142,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function addCollections(ConfigCollectionInfo $collection_info) {
+  public function addCollections(ConfigCollectionInfo $collection_info): void {
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
       $collection_info->addCollection($this->createConfigCollectionName($language->getId()), $this);
     }
@@ -151,7 +151,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     $config = $event->getConfig();
     $name = $config->getName();
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
@@ -165,7 +165,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function onConfigRename(ConfigRenameEvent $event) {
+  public function onConfigRename(ConfigRenameEvent $event): void {
     $config = $event->getConfig();
     $name = $config->getName();
     $old_name = $event->getOldName();
@@ -183,7 +183,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function onConfigDelete(ConfigCrudEvent $event) {
+  public function onConfigDelete(ConfigCrudEvent $event): void {
     $config = $event->getConfig();
     $name = $config->getName();
     foreach (\Drupal::languageManager()->getLanguages() as $language) {
@@ -197,7 +197,7 @@ class LanguageConfigFactoryOverride extends ConfigFactoryOverrideBase implements
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($name) {
+  public function getCacheableMetadata($name): \Drupal\Core\Cache\CacheableMetadata {
     $metadata = new CacheableMetadata();
     if ($this->language) {
       $metadata->setCacheContexts(['languages:language_interface']);

@@ -116,7 +116,7 @@ class DateRangeItem extends DateTimeItem {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $start_value = $this->get('value')->getValue();
     $end_value = $this->get('end_value')->getValue();
     return ($start_value === NULL || $start_value === '') && ($end_value === NULL || $end_value === '');
@@ -125,7 +125,7 @@ class DateRangeItem extends DateTimeItem {
   /**
    * {@inheritdoc}
    */
-  public function onChange($property_name, $notify = TRUE) {
+  public function onChange($property_name, $notify = TRUE): void {
     // Enforce that the computed date is recalculated.
     if ($property_name == 'value') {
       $this->set('start_date', NULL);

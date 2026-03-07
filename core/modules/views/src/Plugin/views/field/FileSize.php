@@ -29,7 +29,7 @@ class FileSize extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['file_size_display'] = [
       '#title' => $this->t('File size display'),
@@ -47,18 +47,12 @@ class FileSize extends FieldPluginBase {
   public function render(ResultRow $values) {
     $value = $this->getValue($values);
     if ($value) {
-      switch ($this->options['file_size_display']) {
-        case 'bytes':
-          return $value;
-
-        case 'formatted':
-        default:
-          return ByteSizeMarkup::create((int) $value);
-      }
+      return match ($this->options['file_size_display']) {
+          'bytes' => $value,
+          default => ByteSizeMarkup::create((int) $value),
+      };
     }
-    else {
-      return '';
-    }
+    return '';
   }
 
 }

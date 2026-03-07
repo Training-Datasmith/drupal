@@ -22,7 +22,7 @@ class FileVideoFormatter extends FileMediaFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function getMediaType() {
+  public static function getMediaType(): string {
     return 'video';
   }
 

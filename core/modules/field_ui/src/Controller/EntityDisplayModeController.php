@@ -17,7 +17,7 @@ class EntityDisplayModeController extends ControllerBase {
    * @return array
    *   A list of entity types to add a view mode for.
    */
-  public function viewModeTypeSelection() {
+  public function viewModeTypeSelection(): array {
     $entity_types = [];
     foreach ($this->entityTypeManager()->getDefinitions() as $entity_type_id => $entity_type) {
       if ($entity_type->get('field_ui_base_route') && $entity_type->hasViewBuilderClass()) {
@@ -52,7 +52,7 @@ class EntityDisplayModeController extends ControllerBase {
    * @return array
    *   A list of entity types to add a form mode for.
    */
-  public function formModeTypeSelection() {
+  public function formModeTypeSelection(): array {
     $entity_types = [];
     foreach ($this->entityTypeManager()->getDefinitions() as $entity_type_id => $entity_type) {
       if ($entity_type->get('field_ui_base_route') && $entity_type->hasFormClasses()) {

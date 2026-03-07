@@ -20,25 +20,11 @@ use Drupal\Component\Uuid\UuidInterface;
 class FieldConfigStorage extends FieldConfigStorageBase {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * The field type plugin manager.
    *
    * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
    */
   protected $fieldTypeManager;
-
-  /**
-   * The deleted fields repository.
-   *
-   * @var \Drupal\Core\Field\DeletedFieldsRepositoryInterface
-   */
-  protected $deletedFieldsRepository;
 
   /**
    * Constructs a FieldConfigStorage object.
@@ -51,26 +37,24 @@ class FieldConfigStorage extends FieldConfigStorageBase {
    *   The UUID service.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
    *   The field type plugin manager.
-   * @param \Drupal\Core\Field\DeletedFieldsRepositoryInterface $deleted_fields_repository
+   * @param \Drupal\Core\Field\DeletedFieldsRepositoryInterface $deletedFieldsRepository
    *   The deleted fields repository.
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
    *   The memory cache.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, EntityTypeManagerInterface $entity_type_manager, FieldTypePluginManagerInterface $field_type_manager, DeletedFieldsRepositoryInterface $deleted_fields_repository, MemoryCacheInterface $memory_cache) {
+  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, FieldTypePluginManagerInterface $field_type_manager, protected \Drupal\Core\Field\DeletedFieldsRepositoryInterface $deletedFieldsRepository, MemoryCacheInterface $memory_cache) {
     parent::__construct($entity_type, $config_factory, $uuid_service, $language_manager, $memory_cache);
-    $this->entityTypeManager = $entity_type_manager;
     $this->fieldTypeManager = $field_type_manager;
-    $this->deletedFieldsRepository = $deleted_fields_repository;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('config.factory'),
@@ -86,7 +70,7 @@ class FieldConfigStorage extends FieldConfigStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function importDelete($name, Config $new_config, Config $old_config) {
+  public function importDelete($name, Config $new_config, Config $old_config): bool {
     // If the field storage has been deleted in the same import, the field will
     // be deleted by then, and there is nothing left to do. Just return TRUE so
     // that the file does not get written to active store.
@@ -98,8 +82,9 @@ class FieldConfigStorage extends FieldConfigStorageBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function loadByProperties(array $conditions = []) {
+  public function loadByProperties(array $conditions = []): array {
     // Include deleted fields if specified in the $conditions parameters.
     $include_deleted = $conditions['include_deleted'] ?? FALSE;
     unset($conditions['include_deleted']);
@@ -140,28 +125,13 @@ class FieldConfigStorage extends FieldConfigStorageBase {
       // Only keep the field if it matches all conditions.
       foreach ($conditions as $key => $value) {
         // Extract the actual value against which the condition is checked.
-        switch ($key) {
-          case 'field_name':
-            $checked_value = $field_storage->getName();
-            break;
-
-          case 'field_id':
-          case 'field_storage_uuid':
-            $checked_value = $field_storage->uuid();
-            break;
-
-          case 'uuid':
-            $checked_value = $field->uuid();
-            break;
-
-          case 'deleted':
-            $checked_value = $field->isDeleted();
-            break;
-
-          default:
-            $checked_value = $field->get($key);
-            break;
-        }
+        $checked_value = match ($key) {
+            'field_name' => $field_storage->getName(),
+            'field_id', 'field_storage_uuid' => $field_storage->uuid(),
+            'uuid' => $field->uuid(),
+            'deleted' => $field->isDeleted(),
+            default => $field->get($key),
+        };
 
         // Skip to the next field as soon as one condition does not match.
         if ($checked_value != $value) {

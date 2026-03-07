@@ -86,7 +86,7 @@ class GroupwiseMax extends RelationshipPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     // Get the sorts that apply to our base.
@@ -167,7 +167,7 @@ class GroupwiseMax extends RelationshipPluginBase {
   /**
    * When the form is submitted, make sure to clear the subquery string cache.
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     $cid = 'views_relationship_groupwise_max:' . $this->view->storage->id() . ':' . $this->view->current_display . ':' . $this->options['id'];
     \Drupal::cache('data')->delete($cid);
   }
@@ -187,7 +187,7 @@ class GroupwiseMax extends RelationshipPluginBase {
    * @return string
    *   The subquery SQL string, ready for use in the main query.
    */
-  protected function leftQuery($options) {
+  protected function leftQuery(array $options): string|array {
     // Either load another view, or create one on the fly.
     if ($options['subquery_view']) {
       $temp_view = Views::getView($options['subquery_view']);
@@ -204,7 +204,7 @@ class GroupwiseMax extends RelationshipPluginBase {
       // select field. See https://www.drupal.org/node/844910.
       // We work around this further down.
       $sort = $options['subquery_sort'];
-      [$sort_table, $sort_field] = explode('.', $sort);
+      [$sort_table, $sort_field] = explode('.', (string) $sort);
       $sort_options = ['order' => $options['subquery_order']];
       $temp_view->addHandler('default', 'sort', $sort_table, $sort_field, $sort_options);
     }
@@ -277,7 +277,7 @@ class GroupwiseMax extends RelationshipPluginBase {
     foreach ($orders as $order_key => $order) {
       // But if we're using a whole view, we don't know what we have!
       if ($options['subquery_view']) {
-        [$sort_table, $sort_field] = explode('.', $order_key);
+        [$sort_table, $sort_field] = explode('.', (string) $order_key);
       }
       $orders[$sort_table . $this->subquery_namespace . '.' . $sort_field] = $order;
       unset($orders[$order_key]);
@@ -295,9 +295,8 @@ class GroupwiseMax extends RelationshipPluginBase {
     // into a SelectQuery that it does not recognize (because it's outer) just
     // makes it treat it as a string.
     $outer_placeholder = ':' . str_replace('.', '_', $this->definition['outer field']);
-    $subquery_sql = str_replace($outer_placeholder, $this->definition['outer field'], $subquery_sql);
 
-    return $subquery_sql;
+    return str_replace($outer_placeholder, $this->definition['outer field'], $subquery_sql);
   }
 
   /**
@@ -329,8 +328,8 @@ class GroupwiseMax extends RelationshipPluginBase {
    * PostgreSQL doesn't support mixed-cased identifiers unless quoted, so we
    * need to quote each single part to prevent from query exceptions.
    */
-  protected function conditionNamespace($string) {
-    $parts = explode(' = ', $string);
+  protected function conditionNamespace($string): string {
+    $parts = explode(' = ', (string) $string);
     foreach ($parts as &$part) {
       if (str_contains($part, '.')) {
         $part = '"' . str_replace('.', $this->subquery_namespace . '".', $part);
@@ -343,7 +342,7 @@ class GroupwiseMax extends RelationshipPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // Figure out what base table this relationship brings to the party.
     $table_data = Views::viewsData()->get($this->definition['base']);
     $base_field = empty($this->definition['base field']) ? $table_data['table']['base']['field'] : $this->definition['base field'];

@@ -61,7 +61,7 @@ class TranslationString extends StringBase {
    * @return $this
    *   The called object.
    */
-  public function setCustomized($customized = TRUE) {
+  public function setCustomized($customized = TRUE): static {
     $this->customized = $customized ? LOCALE_CUSTOMIZED : LOCALE_NOT_CUSTOMIZED;
     return $this;
   }
@@ -69,14 +69,14 @@ class TranslationString extends StringBase {
   /**
    * {@inheritdoc}
    */
-  public function isSource() {
+  public function isSource(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isTranslation() {
+  public function isTranslation(): bool {
     return !empty($this->lid) && !empty($this->language) && isset($this->translation);
   }
 
@@ -90,7 +90,7 @@ class TranslationString extends StringBase {
   /**
    * {@inheritdoc}
    */
-  public function setString($string) {
+  public function setString($string): static {
     $this->translation = $string;
     return $this;
   }
@@ -105,7 +105,7 @@ class TranslationString extends StringBase {
   /**
    * {@inheritdoc}
    */
-  public function save() {
+  public function save(): static {
     parent::save();
     $this->isNew = FALSE;
     return $this;
@@ -114,7 +114,7 @@ class TranslationString extends StringBase {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): static {
     parent::delete();
     $this->isNew = TRUE;
     return $this;

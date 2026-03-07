@@ -239,7 +239,7 @@ class SystemThemeHooks {
    * Implements hook_preprocess_HOOK() for block templates.
    */
   #[Hook('preprocess_block')]
-  public function preprocessBlock(&$variables): void {
+  public function preprocessBlock(array &$variables): void {
     switch ($variables['base_plugin_id']) {
       case 'system_branding_block':
         $variables['site_logo'] = '';

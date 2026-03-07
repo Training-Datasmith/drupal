@@ -21,7 +21,7 @@ class CreateNew extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     return [
       'width' => [
         'description' => 'The width of the image, in pixels',
@@ -50,7 +50,7 @@ class CreateNew extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function validateArguments(array $arguments) {
+  protected function validateArguments(array $arguments): array {
     // Assure extension is supported.
     if (!in_array($arguments['extension'], $this->getToolkit()->getSupportedExtensions())) {
       throw new \InvalidArgumentException("Invalid extension ('{$arguments['extension']}') specified for the image 'create_new' operation");
@@ -79,7 +79,7 @@ class CreateNew extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function execute(array $arguments) {
+  protected function execute(array $arguments): bool {
     // Get the image type.
     $type = $this->getToolkit()->extensionToImageType($arguments['extension']);
 

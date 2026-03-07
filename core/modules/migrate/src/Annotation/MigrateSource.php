@@ -71,7 +71,7 @@ class MigrateSource extends Plugin implements MultipleProviderAnnotationInterfac
   /**
    * {@inheritdoc}
    */
-  public function getProviders() {
+  public function getProviders(): array {
     if (isset($this->definition['provider'])) {
       // Ensure that we return an array even if
       // \Drupal\Component\Annotation\AnnotationInterface::setProvider() has
@@ -84,7 +84,7 @@ class MigrateSource extends Plugin implements MultipleProviderAnnotationInterfac
   /**
    * {@inheritdoc}
    */
-  public function setProviders(array $providers) {
+  public function setProviders(array $providers): void {
     $this->definition['provider'] = $providers;
   }
 

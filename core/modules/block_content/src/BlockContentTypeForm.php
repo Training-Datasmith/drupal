@@ -18,7 +18,7 @@ class BlockContentTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     /** @var \Drupal\block_content\BlockContentTypeInterface $block_type */
@@ -97,7 +97,7 @@ class BlockContentTypeForm extends BundleEntityFormBase {
    */
   protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state) {
     // An empty description violates config schema.
-    if (trim($form_state->getValue('description', '')) === '') {
+    if (trim((string) $form_state->getValue('description', '')) === '') {
       $form_state->unsetValue('description');
     }
     parent::copyFormValuesToEntity($entity, $form, $form_state);
@@ -106,7 +106,7 @@ class BlockContentTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $block_type = $this->entity;
     $status = $block_type->save();
 

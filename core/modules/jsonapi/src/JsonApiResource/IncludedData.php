@@ -26,7 +26,7 @@ class IncludedData extends ResourceObjectData {
    */
   public function __construct($data) {
     assert(Inspector::assertAllObjects($data, ResourceObject::class, EntityAccessDeniedHttpException::class));
-    parent::__construct($data, -1);
+    parent::__construct($data);
   }
 
 }

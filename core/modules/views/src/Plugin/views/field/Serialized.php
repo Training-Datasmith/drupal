@@ -27,7 +27,7 @@ class Serialized extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['format'] = [
@@ -56,7 +56,7 @@ class Serialized extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     // Require a key if the format is key.
     if ($form_state->getValue(['options', 'format']) == 'key' && $form_state->getValue(['options', 'key']) == '') {
       $form_state->setError($form['key'], $this->t('You have to enter a key if you want to display a key of the data.'));
@@ -68,13 +68,13 @@ class Serialized extends FieldPluginBase {
    */
   public function render(ResultRow $values) {
     $value = $values->{$this->field_alias};
-
     if ($this->options['format'] == 'unserialized') {
-      return $this->sanitizeValue(print_r(unserialize($value), TRUE));
+        return $this->sanitizeValue(print_r(unserialize($value), TRUE));
     }
-    elseif ($this->options['format'] == 'key' && !empty($this->options['key'])) {
-      $value = (array) unserialize($value);
-      return $this->sanitizeValue($value[$this->options['key']]);
+
+    if ($this->options['format'] == 'key' && !empty($this->options['key'])) {
+        $value = (array) unserialize($value);
+        return $this->sanitizeValue($value[$this->options['key']]);
     }
 
     return $value;

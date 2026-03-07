@@ -21,7 +21,7 @@ trait SqlFieldableEntityTypeListenerTrait {
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL) {
+  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL): void {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $original_storage */
     $original_storage = $this->entityTypeManager->createHandlerInstance($original->getStorageClass(), $original);
     $has_data = $original_storage->hasData();

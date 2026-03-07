@@ -25,20 +25,6 @@ class MediaLibraryUiBuilder {
   use StringTranslationTrait;
 
   /**
-   * The form builder.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * The currently active request object.
    *
    * @var \Symfony\Component\HttpFoundation\Request
@@ -46,39 +32,21 @@ class MediaLibraryUiBuilder {
   protected $request;
 
   /**
-   * The views executable factory.
-   *
-   * @var \Drupal\views\ViewExecutableFactory
-   */
-  protected $viewsExecutableFactory;
-
-  /**
-   * The media library opener resolver.
-   *
-   * @var \Drupal\media_library\OpenerResolverInterface
-   */
-  protected $openerResolver;
-
-  /**
    * Constructs a MediaLibraryUiBuilder instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\views\ViewExecutableFactory $views_executable_factory
+   * @param \Drupal\views\ViewExecutableFactory $viewsExecutableFactory
    *   The views executable factory.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    *   The currently active request object.
-   * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
+   * @param \Drupal\media_library\OpenerResolverInterface $openerResolver
    *   The opener resolver.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RequestStack $request_stack, ViewExecutableFactory $views_executable_factory, FormBuilderInterface $form_builder, OpenerResolverInterface $opener_resolver) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, RequestStack $request_stack, protected \Drupal\views\ViewExecutableFactory $viewsExecutableFactory, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\media_library\OpenerResolverInterface $openerResolver) {
     $this->request = $request_stack->getCurrentRequest();
-    $this->viewsExecutableFactory = $views_executable_factory;
-    $this->formBuilder = $form_builder;
-    $this->openerResolver = $opener_resolver;
   }
 
   /**
@@ -87,7 +55,7 @@ class MediaLibraryUiBuilder {
    * @return array
    *   The media library dialog options.
    */
-  public static function dialogOptions() {
+  public static function dialogOptions(): array {
     return [
       'classes' => [
         'ui-dialog' => 'media-library-widget-modal',
@@ -118,27 +86,25 @@ class MediaLibraryUiBuilder {
     if ($state->get('media_library_content') === '1') {
       return $this->buildLibraryContent($state);
     }
-    else {
-      return [
-        '#theme' => 'media_library_wrapper',
-        '#attributes' => [
-          'id' => 'media-library-wrapper',
-        ],
-        'menu' => $this->buildMediaTypeMenu($state),
-        'content' => $this->buildLibraryContent($state),
-        // Attach the JavaScript for the media library UI. The number of
-        // available slots needs to be added to make sure users can't select
-        // more items than allowed.
-        '#attached' => [
-          'library' => ['media_library/ui'],
-          'drupalSettings' => [
-            'media_library' => [
-              'selection_remaining' => $state->getAvailableSlots(),
-            ],
+    return [
+      '#theme' => 'media_library_wrapper',
+      '#attributes' => [
+        'id' => 'media-library-wrapper',
+      ],
+      'menu' => $this->buildMediaTypeMenu($state),
+      'content' => $this->buildLibraryContent($state),
+      // Attach the JavaScript for the media library UI. The number of
+      // available slots needs to be added to make sure users can't select
+      // more items than allowed.
+      '#attached' => [
+        'library' => ['media_library/ui'],
+        'drupalSettings' => [
+          'media_library' => [
+            'selection_remaining' => $state->getAvailableSlots(),
           ],
         ],
-      ];
-    }
+      ],
+    ];
   }
 
   /**
@@ -150,7 +116,7 @@ class MediaLibraryUiBuilder {
    * @return array
    *   The render array for the media library.
    */
-  protected function buildLibraryContent(MediaLibraryState $state) {
+  protected function buildLibraryContent(MediaLibraryState $state): array {
     return [
       '#type' => 'container',
       '#theme_wrappers' => [
@@ -181,10 +147,7 @@ class MediaLibraryUiBuilder {
       try {
         $state = MediaLibraryState::fromRequest($this->request);
       }
-      catch (BadRequestHttpException $e) {
-        return AccessResult::forbidden($e->getMessage());
-      }
-      catch (\InvalidArgumentException $e) {
+      catch (BadRequestHttpException|\InvalidArgumentException $e) {
         return AccessResult::forbidden($e->getMessage());
       }
     }
@@ -219,7 +182,7 @@ class MediaLibraryUiBuilder {
    * @return array
    *   The render array for the media type menu.
    */
-  protected function buildMediaTypeMenu(MediaLibraryState $state) {
+  protected function buildMediaTypeMenu(MediaLibraryState $state): array {
     // Add the menu for each type if we have more than 1 media type enabled for
     // the field.
     $allowed_type_ids = $state->getAllowedTypeIds();

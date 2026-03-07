@@ -29,7 +29,7 @@ class Search extends FilterPluginBase {
    *
    * @var \Drupal\search\ViewsSearchQuery
    */
-  protected $searchQuery = NULL;
+  protected $searchQuery;
 
   /**
    * TRUE if the search query has been parsed.
@@ -54,7 +54,7 @@ class Search extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->searchType = $this->definition['search_type'];
@@ -102,7 +102,7 @@ class Search extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateExposed(&$form, FormStateInterface $form_state) {
+  public function validateExposed(&$form, FormStateInterface $form_state): void {
     if (!isset($this->options['expose']['identifier'])) {
       return;
     }
@@ -134,7 +134,7 @@ class Search extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // Since attachment views don't validate the exposed input, parse the search
     // expression if required.
     if (!$this->parsed) {

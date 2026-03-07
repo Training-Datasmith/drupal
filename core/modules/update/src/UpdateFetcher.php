@@ -72,7 +72,7 @@ class UpdateFetcher implements UpdateFetcherInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetchProjectData(array $project, $site_key = '') {
+  public function fetchProjectData(array $project, $site_key = ''): string {
     $url = $this->buildFetchUrl($project, $site_key);
     return $this->doRequest($url, ['headers' => ['Accept' => 'text/xml']], $this->withHttpFallback);
   }
@@ -113,7 +113,7 @@ class UpdateFetcher implements UpdateFetcherInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildFetchUrl(array $project, $site_key = '') {
+  public function buildFetchUrl(array $project, $site_key = ''): string {
     $name = $project['name'];
     $url = $this->getFetchBaseUrl($project);
     $url .= '/' . $name . '/current';
@@ -121,7 +121,7 @@ class UpdateFetcher implements UpdateFetcherInterface {
     // Only append usage information if we have a site key and the project is
     // installed. We do not want to record usage statistics for uninstalled
     // projects.
-    if (!empty($site_key) && !str_contains($project['project_type'], 'disabled')) {
+    if (!empty($site_key) && !str_contains((string) $project['project_type'], 'disabled')) {
       // Append the site key.
       $url .= str_contains($url, '?') ? '&' : '?';
       $url .= 'site_key=';
@@ -130,7 +130,7 @@ class UpdateFetcher implements UpdateFetcherInterface {
       // Append the version.
       if (!empty($project['info']['version'])) {
         $url .= '&version=';
-        $url .= rawurlencode($project['info']['version']);
+        $url .= rawurlencode((string) $project['info']['version']);
       }
 
       // Append the list of modules or themes installed.

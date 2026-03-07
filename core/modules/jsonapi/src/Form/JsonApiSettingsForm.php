@@ -18,7 +18,7 @@ class JsonApiSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'jsonapi_settings';
   }
 
@@ -37,9 +37,9 @@ class JsonApiSettingsForm extends ConfigFormBase {
         'jsonapi.settings',
         'read_only',
         // Convert the bool config value to an expected string.
-        fn($value) => $value ? 'r' : 'rw',
+        fn($value): string => $value ? 'r' : 'rw',
         // Convert the submitted value to a boolean before storing it in config.
-        fn($value) => $value === 'r',
+        fn($value): bool => $value === 'r',
       ),
       '#description' => $this->t('Warning: Only enable all operations if the site requires it. <a href=":docs">Learn more about securing your site with JSON:API.</a>', [':docs' => 'https://www.drupal.org/docs/8/modules/jsonapi/security-considerations']),
     ];

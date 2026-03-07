@@ -40,7 +40,7 @@ class SiteSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->getParameter('site.path'),
       $container->get('renderer'),
@@ -51,14 +51,14 @@ class SiteSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'install_settings_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     // Make sure the install API is available.
     include_once DRUPAL_ROOT . '/core/includes/install.inc';
     $settings_file = './' . $this->sitePath . '/settings.php';
@@ -152,7 +152,7 @@ class SiteSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // Make sure the install API is available.
     include_once DRUPAL_ROOT . '/core/includes/install.inc';
 
@@ -180,13 +180,12 @@ class SiteSettingsForm extends FormBase {
    * @return array
    *   An array of form errors keyed by the element name and parents.
    */
-  protected function getDatabaseErrors(array $database, $settings_file) {
+  protected function getDatabaseErrors(array $database, $settings_file): array {
     $errors = install_database_errors($database, $settings_file);
-    $form_errors = array_filter($errors, function ($value) {
-      // Errors keyed by something other than an integer already are linked to
-      // form elements.
-      return is_int($value);
-    });
+    $form_errors = array_filter($errors, 
+        // Errors keyed by something other than an integer already are linked to
+        // form elements.
+        fn($value) => is_int($value));
 
     // Find the generic errors.
     $errors = array_diff_key($errors, $form_errors);
@@ -212,7 +211,7 @@ class SiteSettingsForm extends FormBase {
    * @return mixed[]
    *   The inline template render array to display the database errors.
    */
-  public static function getDatabaseErrorsTemplate(array $errors) {
+  public static function getDatabaseErrorsTemplate(array $errors): array {
     return [
       '#type' => 'inline_template',
       '#template' => '{% trans %}Resolve all issues below to continue the installation. For help configuring your database server, see the <a href="https://www.drupal.org/docs/installing-drupal">installation handbook</a>, or contact your hosting provider.{% endtrans %}{{ errors }}',
@@ -228,7 +227,7 @@ class SiteSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     global $install_state;
 
     // Make sure the install API is available.
@@ -240,7 +239,7 @@ class SiteSettingsForm extends FormBase {
     // For BC, just save the database driver name, not the database driver
     // extension name which equals the driver's namespace.
     $database = $form_state->get('database');
-    $namespaceParts = explode('\\', $database['driver']);
+    $namespaceParts = explode('\\', (string) $database['driver']);
     $database['driver'] = end($namespaceParts);
     $settings['databases']['default']['default'] = (object) [
       'value'    => $database,
@@ -287,7 +286,7 @@ class SiteSettingsForm extends FormBase {
    * @return string
    *   The path to the generated config sync directory.
    */
-  protected function createRandomConfigDirectory() {
+  protected function createRandomConfigDirectory(): string {
     $config_sync_directory = $this->sitePath . '/files/config_' . Crypt::randomBytesBase64(55) . '/sync';
     // This should never fail, it is created here inside the public files
     // directory, which has already been verified to be writable itself.

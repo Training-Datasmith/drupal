@@ -14,7 +14,7 @@ class NodeDeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  protected function getDeletionMessage() {
+  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     /** @var \Drupal\node\NodeInterface $entity */
     $entity = $this->getEntity();
 

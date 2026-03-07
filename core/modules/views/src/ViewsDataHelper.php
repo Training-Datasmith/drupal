@@ -10,13 +10,6 @@ use Drupal\Component\Render\FormattableMarkup;
 class ViewsDataHelper {
 
   /**
-   * The views data object, containing the cached information.
-   *
-   * @var \Drupal\views\ViewsData
-   */
-  protected $data;
-
-  /**
    * A prepared list of all fields, keyed by base_table and handler type.
    *
    * @var array
@@ -26,11 +19,11 @@ class ViewsDataHelper {
   /**
    * Constructs a ViewsData object.
    *
-   * @param \Drupal\views\ViewsData $views_data
+   * @param \Drupal\views\ViewsData $data
    *   The views data object, containing the cached table information.
    */
-  public function __construct(ViewsData $views_data) {
-    $this->data = $views_data;
+  public function __construct(protected \Drupal\views\ViewsData $data)
+  {
   }
 
   /**
@@ -51,7 +44,7 @@ class ViewsDataHelper {
    * @return array
    *   A keyed array of in the form of 'base_table' => 'Description'.
    */
-  public function fetchFields($base, $type, $grouping = FALSE, $sub_type = NULL) {
+  public function fetchFields($base, $type, $grouping = FALSE, $sub_type = NULL): array {
     if (!$this->fields) {
       $data = $this->data->getAll();
       // This constructs this ginormous multi dimensional array to
@@ -150,12 +143,12 @@ class ViewsDataHelper {
           $strings += $this->fields[$base_table][$type];
         }
       }
-      uasort($strings, [$this, 'fetchedFieldSort']);
+      uasort($strings, $this->fetchedFieldSort(...));
       return $strings;
     }
 
     if (isset($this->fields[$base][$type])) {
-      uasort($this->fields[$base][$type], [$this, 'fetchedFieldSort']);
+      uasort($this->fields[$base][$type], $this->fetchedFieldSort(...));
       return $this->fields[$base][$type];
     }
     return [];
@@ -174,15 +167,15 @@ class ViewsDataHelper {
    *   Returns -1 if $a comes before $b, 1 other way round and 0 if it cannot be
    *   decided.
    */
-  protected static function fetchedFieldSort($a, $b) {
-    $a_group = mb_strtolower($a['group']);
-    $b_group = mb_strtolower($b['group']);
+  protected static function fetchedFieldSort(array $a, array $b): int {
+    $a_group = mb_strtolower((string) $a['group']);
+    $b_group = mb_strtolower((string) $b['group']);
     if ($a_group != $b_group) {
       return $a_group <=> $b_group;
     }
 
-    $a_title = mb_strtolower($a['title']);
-    $b_title = mb_strtolower($b['title']);
+    $a_title = mb_strtolower((string) $a['title']);
+    $b_title = mb_strtolower((string) $b['title']);
     return $a_title <=> $b_title;
   }
 

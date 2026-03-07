@@ -29,46 +29,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EmailAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The token service.
-   *
-   * @var \Drupal\Core\Utility\Token
-   */
-  protected $token;
-
-  /**
    * The user storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
   protected $storage;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
-   * The mail manager.
-   *
-   * @var \Drupal\Core\Mail\MailManagerInterface
-   */
-  protected $mailManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The email validator.
-   *
-   * @var \Drupal\Component\Utility\EmailValidatorInterface
-   */
-  protected $emailValidator;
 
   /**
    * Constructs an EmailAction object.
@@ -85,28 +50,22 @@ class EmailAction extends ConfigurableActionBase implements ContainerFactoryPlug
    *   The entity type manager.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\Core\Mail\MailManagerInterface $mail_manager
+   * @param \Drupal\Core\Mail\MailManagerInterface $mailManager
    *   The mail manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $emailValidator
    *   The email validator.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Token $token, EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger, MailManagerInterface $mail_manager, LanguageManagerInterface $language_manager, EmailValidatorInterface $email_validator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Utility\Token $token, EntityTypeManagerInterface $entity_type_manager, protected \Psr\Log\LoggerInterface $logger, protected \Drupal\Core\Mail\MailManagerInterface $mailManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Component\Utility\EmailValidatorInterface $emailValidator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->token = $token;
     $this->storage = $entity_type_manager->getStorage('user');
-    $this->logger = $logger;
-    $this->mailManager = $mail_manager;
-    $this->languageManager = $language_manager;
-    $this->emailValidator = $email_validator;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static($configuration, $plugin_id, $plugin_definition,
       $container->get('token'),
       $container->get('entity_type.manager'),
@@ -120,7 +79,7 @@ class EmailAction extends ConfigurableActionBase implements ContainerFactoryPlug
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
+  public function execute($entity = NULL): void {
     if (empty($this->configuration['node'])) {
       $this->configuration['node'] = $entity;
     }
@@ -150,7 +109,7 @@ class EmailAction extends ConfigurableActionBase implements ContainerFactoryPlug
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'recipient' => '',
       'subject' => '',
@@ -161,7 +120,7 @@ class EmailAction extends ConfigurableActionBase implements ContainerFactoryPlug
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['recipient'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Recipient email address'),
@@ -190,8 +149,8 @@ class EmailAction extends ConfigurableActionBase implements ContainerFactoryPlug
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    if (!$this->emailValidator->isValid($form_state->getValue('recipient')) && !str_contains($form_state->getValue('recipient'), ':mail')) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
+    if (!$this->emailValidator->isValid($form_state->getValue('recipient')) && !str_contains((string) $form_state->getValue('recipient'), ':mail')) {
       // We want the literal %author placeholder to be emphasized in the error
       // message.
       $form_state->setErrorByName('recipient', $this->t('Enter a valid email address or use a token email address such as %author.', ['%author' => '[node:author:mail]']));
@@ -201,7 +160,7 @@ class EmailAction extends ConfigurableActionBase implements ContainerFactoryPlug
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['recipient'] = $form_state->getValue('recipient');
     $this->configuration['subject'] = $form_state->getValue('subject');
     $this->configuration['message'] = $form_state->getValue('message');

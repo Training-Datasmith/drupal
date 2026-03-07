@@ -15,21 +15,21 @@ class Analyze extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'analyze';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_analyze_view_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $view = $form_state->get('view');
 
     $form['#title'] = $this->t('View analysis');
@@ -53,7 +53,7 @@ class Analyze extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\views_ui\ViewUI $view */
     $view = $form_state->get('view');
     $form_state->setRedirectUrl($view->toUrl('edit-form'));

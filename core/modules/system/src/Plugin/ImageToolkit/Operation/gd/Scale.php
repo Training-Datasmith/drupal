@@ -20,7 +20,7 @@ class Scale extends Resize {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     return [
       'width' => [
         'description' => 'The target width, in pixels. This value is omitted then the scaling will based only on the height value',
@@ -43,7 +43,7 @@ class Scale extends Resize {
   /**
    * {@inheritdoc}
    */
-  protected function validateArguments(array $arguments) {
+  protected function validateArguments(array $arguments): array {
     // Assure at least one dimension.
     if (empty($arguments['width']) && empty($arguments['height'])) {
       throw new \InvalidArgumentException("At least one dimension ('width' or 'height') must be provided to the image 'scale' operation");
@@ -82,11 +82,12 @@ class Scale extends Resize {
    */
   protected function execute(array $arguments = []) {
     // Don't scale if we don't change the dimensions at all.
-    if ($arguments['width'] !== $this->getToolkit()->getWidth() || $arguments['height'] !== $this->getToolkit()->getHeight()) {
-      // Don't upscale if the option isn't enabled.
-      if ($arguments['upscale'] || ($arguments['width'] <= $this->getToolkit()->getWidth() && $arguments['height'] <= $this->getToolkit()->getHeight())) {
-        return parent::execute($arguments);
-      }
+    if (!($arguments['width'] !== $this->getToolkit()->getWidth() || $arguments['height'] !== $this->getToolkit()->getHeight())) {
+      return TRUE;
+    }
+    // Don't upscale if the option isn't enabled.
+    if ($arguments['upscale'] || ($arguments['width'] <= $this->getToolkit()->getWidth() && $arguments['height'] <= $this->getToolkit()->getHeight())) {
+      return parent::execute($arguments);
     }
     return TRUE;
   }

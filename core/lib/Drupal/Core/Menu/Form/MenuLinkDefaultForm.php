@@ -30,51 +30,27 @@ class MenuLinkDefaultForm implements MenuLinkFormInterface, ContainerInjectionIn
   protected $menuLink;
 
   /**
-   * The menu link manager.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkManagerInterface
-   */
-  protected $menuLinkManager;
-
-  /**
-   * The parent form selector service.
-   *
-   * @var \Drupal\Core\Menu\MenuParentFormSelectorInterface
-   */
-  protected $menuParentSelector;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a new \Drupal\Core\Menu\Form\MenuLinkDefaultForm.
    *
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
+   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
    *   The menu link manager.
-   * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $menu_parent_selector
+   * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector
    *   The menu parent form selector service.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
    */
-  public function __construct(MenuLinkManagerInterface $menu_link_manager, MenuParentFormSelectorInterface $menu_parent_selector, TranslationInterface $string_translation, ModuleHandlerInterface $module_handler, protected ModuleExtensionList $moduleExtensionList) {
-    $this->menuLinkManager = $menu_link_manager;
-    $this->menuParentSelector = $menu_parent_selector;
+  public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager, protected \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector, TranslationInterface $string_translation, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected ModuleExtensionList $moduleExtensionList) {
     $this->stringTranslation = $string_translation;
-    $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.menu.link'),
       $container->get('menu.parent_form_selector'),
@@ -87,14 +63,14 @@ class MenuLinkDefaultForm implements MenuLinkFormInterface, ContainerInjectionIn
   /**
    * {@inheritdoc}
    */
-  public function setMenuLinkInstance(MenuLinkInterface $menu_link) {
+  public function setMenuLinkInstance(MenuLinkInterface $menu_link): void {
     $this->menuLink = $menu_link;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['#title'] = $this->t('Edit menu link %title', ['%title' => $this->menuLink->getTitle()]);
 
     $provider = $this->menuLink->getProvider();
@@ -162,13 +138,11 @@ class MenuLinkDefaultForm implements MenuLinkFormInterface, ContainerInjectionIn
     $new_definition['enabled'] = $form_state->getValue('enabled') ? 1 : 0;
     $new_definition['weight'] = (int) $form_state->getValue('weight');
     $new_definition['expanded'] = $form_state->getValue('expanded') ? 1 : 0;
-    [$menu_name, $parent] = explode(':', $form_state->getValue('menu_parent'), 2);
+    [$menu_name, $parent] = explode(':', (string) $form_state->getValue('menu_parent'), 2);
     if (!empty($menu_name)) {
       $new_definition['menu_name'] = $menu_name;
     }
-    if (isset($parent)) {
-      $new_definition['parent'] = $parent;
-    }
+    $new_definition['parent'] = $parent;
     return $new_definition;
   }
 

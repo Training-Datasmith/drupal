@@ -19,27 +19,6 @@ class DatabaseStorage extends StorageBase {
   use DependencySerializationTrait;
 
   /**
-   * The serialization class to use.
-   *
-   * @var \Drupal\Component\Serialization\SerializationInterface
-   */
-  protected $serializer;
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The name of the SQL table to use.
-   *
-   * @var string
-   */
-  protected $table;
-
-  /**
    * Overrides Drupal\Core\KeyValueStore\StorageBase::__construct().
    *
    * @param string $collection
@@ -51,17 +30,17 @@ class DatabaseStorage extends StorageBase {
    * @param string $table
    *   The name of the SQL table to use, defaults to key_value.
    */
-  public function __construct($collection, SerializationInterface $serializer, Connection $connection, $table = 'key_value') {
+  public function __construct($collection, protected \Drupal\Component\Serialization\SerializationInterface $serializer, protected \Drupal\Core\Database\Connection $connection, /**
+   * The name of the SQL table to use.
+   */
+  protected $table = 'key_value') {
     parent::__construct($collection);
-    $this->serializer = $serializer;
-    $this->connection = $connection;
-    $this->table = $table;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function has($key) {
+  public function has($key): bool {
     try {
       return (bool) $this->connection->query('SELECT 1 FROM {' . $this->connection->escapeTable($this->table) . '} WHERE [collection] = :collection AND [name] = :key', [
         ':collection' => $this->collection,
@@ -76,8 +55,9 @@ class DatabaseStorage extends StorageBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(array $keys) {
+  public function getMultiple(array $keys): array {
     $values = [];
     try {
       $result = $this->connection
@@ -102,8 +82,9 @@ class DatabaseStorage extends StorageBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getAll() {
+  public function getAll(): array {
     try {
       $result = $this->connection->query('SELECT [name], [value] FROM {' . $this->connection->escapeTable($this->table) . '} WHERE [collection] = :collection', [':collection' => $this->collection]);
     }
@@ -144,7 +125,7 @@ class DatabaseStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function set($key, $value) {
+  public function set($key, $value): void {
     try {
       $this->doSet($key, $value);
     }
@@ -172,7 +153,7 @@ class DatabaseStorage extends StorageBase {
    * @return bool
    *   TRUE if the data was set, FALSE if it already existed.
    */
-  protected function doSetIfNotExists($key, $value) {
+  protected function doSetIfNotExists($key, $value): bool {
     $result = $this->connection->merge($this->table)
       ->insertFields([
         'collection' => $this->collection,
@@ -197,16 +178,14 @@ class DatabaseStorage extends StorageBase {
       if ($this->ensureTableExists()) {
         return $this->doSetIfNotExists($key, $value);
       }
-      else {
-        throw $e;
-      }
+      throw $e;
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function rename($key, $new_key) {
+  public function rename($key, $new_key): void {
     try {
       $this->connection->update($this->table)
         ->fields(['name' => $new_key])
@@ -222,7 +201,7 @@ class DatabaseStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $keys) {
+  public function deleteMultiple(array $keys): void {
     // Delete in chunks when a large array is passed.
     while ($keys) {
       try {
@@ -240,7 +219,7 @@ class DatabaseStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     try {
       $this->connection->delete($this->table)
         ->condition('collection', $this->collection)
@@ -257,10 +236,10 @@ class DatabaseStorage extends StorageBase {
    * @return bool
    *   TRUE if the table exists, FALSE if it does not exists.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $database_schema = $this->connection->schema();
-      $database_schema->createTable($this->table, $this->schemaDefinition());
+      $database_schema->createTable($this->table, static::schemaDefinition());
     }
     // If the table already exists, then attempting to recreate it will throw an
     // exception. In this case just catch the exception and do nothing.
@@ -295,7 +274,7 @@ class DatabaseStorage extends StorageBase {
   /**
    * Defines the schema for the key_value table.
    */
-  public static function schemaDefinition() {
+  public static function schemaDefinition(): array {
     return [
       'description' => 'Generic key-value storage table. See the state system for an example.',
       'fields' => [

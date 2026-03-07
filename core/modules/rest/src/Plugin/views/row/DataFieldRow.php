@@ -44,14 +44,14 @@ class DataFieldRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if (!empty($this->options['field_options'])) {
       $options = (array) $this->options['field_options'];
       // Prepare a trimmed version of replacement aliases.
       $aliases = static::extractFromOptionsArray('alias', $options);
-      $this->replacementAliases = array_filter(array_map('trim', $aliases));
+      $this->replacementAliases = array_filter(array_map(trim(...), $aliases));
       // Prepare an array of raw output field options.
       $this->rawOutputOptions = static::extractFromOptionsArray('raw_output', $options);
     }
@@ -70,7 +70,7 @@ class DataFieldRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['field_options'] = [
@@ -96,7 +96,7 @@ class DataFieldRow extends RowPluginBase {
           '#title_display' => 'invisible',
           '#type' => 'textfield',
           '#default_value' => $options[$id]['alias'] ?? '',
-          '#element_validate' => [[$this, 'validateAliasName']],
+          '#element_validate' => [$this->validateAliasName(...)],
         ];
         $form['field_options'][$id]['raw_output'] = [
           '#title' => $this->t('Raw output for @id', ['@id' => $id]),
@@ -111,8 +111,8 @@ class DataFieldRow extends RowPluginBase {
   /**
    * Form element validation handler.
    */
-  public function validateAliasName($element, FormStateInterface $form_state) {
-    if (preg_match('@[^A-Za-z0-9_-]+@', $element['#value'])) {
+  public function validateAliasName(array $element, FormStateInterface $form_state): void {
+    if (preg_match('@[^A-Za-z0-9_-]+@', (string) $element['#value'])) {
       $form_state->setError($element, $this->t('The machine-readable name must contain only letters, numbers, dashes and underscores.'));
     }
   }
@@ -120,7 +120,7 @@ class DataFieldRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     // Collect an array of aliases to validate.
     $aliases = static::extractFromOptionsArray('alias', $form_state->getValue(['row_options', 'field_options']));
 
@@ -133,8 +133,9 @@ class DataFieldRow extends RowPluginBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function render($row) {
+  public function render($row): array {
     $output = [];
 
     foreach ($this->view->field as $id => $field) {
@@ -170,11 +171,7 @@ class DataFieldRow extends RowPluginBase {
    *   The matches user entered alias, or the original ID if nothing is found.
    */
   public function getFieldKeyAlias($id) {
-    if (isset($this->replacementAliases[$id])) {
-      return $this->replacementAliases[$id];
-    }
-
-    return $id;
+    return $this->replacementAliases[$id] ?? $id;
   }
 
   /**
@@ -188,10 +185,8 @@ class DataFieldRow extends RowPluginBase {
    * @return array
    *   A regular one dimensional array of values.
    */
-  protected static function extractFromOptionsArray($key, $options) {
-    return array_map(function ($item) use ($key) {
-      return $item[$key] ?? NULL;
-    }, $options);
+  protected static function extractFromOptionsArray($key, $options): array {
+    return array_map(fn(array $item) => $item[$key] ?? NULL, $options);
   }
 
 }

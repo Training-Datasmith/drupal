@@ -15,7 +15,7 @@ class TermDeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     // The cancel URL is the vocabulary collection, terms have no global
     // list page.
     return new Url('entity.taxonomy_vocabulary.collection');
@@ -31,14 +31,14 @@ class TermDeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Deleting a term will delete all its children if there are any. This action cannot be undone.');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDeletionMessage() {
+  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Deleted term %name.', ['%name' => $this->entity->label()]);
   }
 

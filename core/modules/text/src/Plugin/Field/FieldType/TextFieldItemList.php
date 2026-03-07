@@ -13,7 +13,7 @@ class TextFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state) {
+  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state): void {
     if ($allowed_formats = $this->getSetting('allowed_formats')) {
       $field_name = $this->definition->getName();
       $submitted_values = $form_state->getValue([

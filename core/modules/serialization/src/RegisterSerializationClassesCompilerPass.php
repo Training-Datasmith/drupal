@@ -70,7 +70,7 @@ class RegisterSerializationClassesCompilerPass implements CompilerPassInterface 
    *   A flattened array of Reference objects from $services, ordered from high
    *   to low priority.
    */
-  protected function sort($services) {
+  protected function sort($services): array {
     krsort($services);
     return array_merge(...$services);
   }

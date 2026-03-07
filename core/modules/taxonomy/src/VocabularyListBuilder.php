@@ -27,25 +27,9 @@ class VocabularyListBuilder extends DraggableListBuilder {
   protected $entitiesKey = 'vocabularies';
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
+  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * The messenger.
@@ -59,7 +43,7 @@ class VocabularyListBuilder extends DraggableListBuilder {
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
@@ -70,23 +54,20 @@ class VocabularyListBuilder extends DraggableListBuilder {
    */
   public function __construct(
     EntityTypeInterface $entity_type,
-    AccountInterface $current_user,
+    protected \Drupal\Core\Session\AccountInterface $currentUser,
     EntityTypeManagerInterface $entity_type_manager,
-    RendererInterface $renderer,
+    protected \Drupal\Core\Render\RendererInterface $renderer,
     MessengerInterface $messenger,
   ) {
     parent::__construct($entity_type, $entity_type_manager->getStorage($entity_type->id()));
-
-    $this->currentUser = $current_user;
     $this->entityTypeManager = $entity_type_manager;
-    $this->renderer = $renderer;
     $this->messenger = $messenger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('current_user'),
@@ -99,14 +80,14 @@ class VocabularyListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'taxonomy_overview_vocabularies';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = parent::getDefaultOperations($entity, $cacheability);
@@ -167,7 +148,7 @@ class VocabularyListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $entities = $this->load();
     // If there are not multiple vocabularies, disable dragging by unsetting the
     // weight key.
@@ -200,7 +181,7 @@ class VocabularyListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
     $form['vocabularies']['#attributes'] = ['id' => 'taxonomy'];
     $form['actions']['submit']['#value'] = $this->t('Save');
@@ -211,7 +192,7 @@ class VocabularyListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     $this->messenger->addStatus($this->t('The configuration options have been saved.'));

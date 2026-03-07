@@ -58,7 +58,7 @@ class ViewAjaxController implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('view'),
       $container->get('views.executable'),
@@ -90,9 +90,7 @@ class ViewAjaxController implements ContainerInjectionInterface {
 
       // Arguments can be empty, make sure they are passed on as NULL so that
       // argument validation is not triggered.
-      $args = array_map(function ($arg) {
-        return ($arg == '' ? NULL : $arg);
-      }, $args);
+      $args = array_map(fn(string $arg) => $arg == '' ? NULL : $arg, $args);
 
       $path = $request->query->get('view_path', $request->request->get('view_path'));
       $target_url = $this->pathValidator->getUrlIfValid($path ?? '');
@@ -123,7 +121,7 @@ class ViewAjaxController implements ContainerInjectionInterface {
         $response->setView($view);
         // Fix the current path for paging.
         if (!empty($path)) {
-          $this->currentPath->setPath('/' . ltrim($path, '/'), $request);
+          $this->currentPath->setPath('/' . ltrim((string) $path, '/'), $request);
         }
 
         // Create a clone of the request object to avoid mutating the request
@@ -168,13 +166,9 @@ class ViewAjaxController implements ContainerInjectionInterface {
 
         return $response;
       }
-      else {
-        throw new AccessDeniedHttpException();
-      }
+      throw new AccessDeniedHttpException();
     }
-    else {
-      throw new NotFoundHttpException();
-    }
+    throw new NotFoundHttpException();
   }
 
 }

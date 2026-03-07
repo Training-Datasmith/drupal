@@ -25,7 +25,7 @@ class Title extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['title'] = [
@@ -42,7 +42,7 @@ class Title extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender(array $results) {
+  public function preRender(array $results): void {
     parent::preRender($results);
 
     // If a title is provided, process it.
@@ -55,7 +55,7 @@ class Title extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($empty = FALSE) {
+  public function render($empty = FALSE): array {
     // Do nothing for this handler by returning an empty render array.
     return [];
   }

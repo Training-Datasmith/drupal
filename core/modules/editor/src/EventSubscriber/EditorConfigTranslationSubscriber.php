@@ -14,20 +14,13 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 class EditorConfigTranslationSubscriber implements EventSubscriberInterface {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * EditorConfigTranslationSubscriber constructor.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The factory for configuration objects.
    */
-  public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory)
+  {
   }
 
   /**
@@ -35,7 +28,7 @@ class EditorConfigTranslationSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents(): array {
     $events = [];
-    if (class_exists('Drupal\config_translation\Event\ConfigTranslationEvents')) {
+    if (class_exists(\Drupal\config_translation\Event\ConfigTranslationEvents::class)) {
       $events[ConfigTranslationEvents::POPULATE_MAPPER][] = ['addConfigNames'];
     }
     return $events;
@@ -47,7 +40,7 @@ class EditorConfigTranslationSubscriber implements EventSubscriberInterface {
    * @param \Drupal\config_translation\Event\ConfigMapperPopulateEvent $event
    *   The configuration mapper event.
    */
-  public function addConfigNames(ConfigMapperPopulateEvent $event) {
+  public function addConfigNames(ConfigMapperPopulateEvent $event): void {
     $mapper = $event->getMapper();
     if ($mapper instanceof ConfigEntityMapperInterface && $mapper->getType() == 'filter_format') {
       $editor_config_name = 'editor.editor.' . $mapper->getEntity()->id();

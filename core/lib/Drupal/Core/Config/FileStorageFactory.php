@@ -19,7 +19,7 @@ class FileStorageFactory {
    *   In case the sync directory does not exist or is not defined in
    *   $settings['config_sync_directory'].
    */
-  public static function getSync() {
+  public static function getSync(): \Drupal\Core\Config\FileStorage {
     $directory = Settings::get('config_sync_directory', FALSE);
     if ($directory === FALSE) {
       throw new ConfigDirectoryNotDefinedException('The config sync directory is not defined in $settings["config_sync_directory"]');

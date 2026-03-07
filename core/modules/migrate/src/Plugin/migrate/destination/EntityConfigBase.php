@@ -65,20 +65,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityConfigBase extends Entity {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * Construct a new entity.
    *
    * @param array $configuration
@@ -93,21 +79,19 @@ class EntityConfigBase extends Entity {
    *   The storage for this entity type.
    * @param array $bundles
    *   The list of bundles this entity type has.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles);
-    $this->languageManager = $language_manager;
-    $this->configFactory = $config_factory;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     $entity_type_id = static::getEntityTypeId($plugin_id);
     return new static(
       $configuration,
@@ -124,7 +108,7 @@ class EntityConfigBase extends Entity {
   /**
    * {@inheritdoc}
    */
-  public function import(Row $row, array $old_destination_id_values = []) {
+  public function import(Row $row, array $old_destination_id_values = []): array {
     if ($row->isStub()) {
       throw new MigrateException('Config entities can not be stubbed.');
     }
@@ -169,7 +153,7 @@ class EntityConfigBase extends Entity {
    * @return bool
    *   Whether this destination is for translations.
    */
-  protected function isTranslationDestination() {
+  protected function isTranslationDestination(): bool {
     return !empty($this->configuration['translations']);
   }
 
@@ -200,7 +184,7 @@ class EntityConfigBase extends Entity {
    *   Thrown if the destination is for translations and either the "property"
    *   or "translation" property does not exist.
    */
-  protected function updateEntity(EntityInterface $entity, Row $row) {
+  protected function updateEntity(EntityInterface $entity, Row $row): EntityInterface {
     // This is a translation if the language in the active config does not
     // match the language of this row.
     $translation = FALSE;
@@ -225,7 +209,7 @@ class EntityConfigBase extends Entity {
     }
     else {
       foreach ($row->getRawDestination() as $property => $value) {
-        $this->updateEntityProperty($entity, explode(Row::PROPERTY_SEPARATOR, $property), $value);
+        $this->updateEntityProperty($entity, explode(Row::PROPERTY_SEPARATOR, (string) $property), $value);
       }
       $this->setRollbackAction($row->getIdMap());
     }
@@ -266,7 +250,7 @@ class EntityConfigBase extends Entity {
    * @return string
    *   The generated entity ID.
    */
-  protected function generateId(Row $row, array $ids) {
+  protected function generateId(Row $row, array $ids): string {
     $id_values = [];
     foreach ($ids as $id) {
       if ($this->isTranslationDestination() && $id == 'langcode') {
@@ -280,7 +264,7 @@ class EntityConfigBase extends Entity {
   /**
    * {@inheritdoc}
    */
-  public function rollback(array $destination_identifier) {
+  public function rollback(array $destination_identifier): void {
     if ($this->isTranslationDestination()) {
       // The entity id does not include the langcode.
       $id_values = [];

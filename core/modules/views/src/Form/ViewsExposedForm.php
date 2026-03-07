@@ -20,37 +20,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ViewsExposedForm extends FormBase implements WorkspaceSafeFormInterface {
 
   /**
-   * The exposed form cache.
-   *
-   * @var \Drupal\views\ExposedFormCache
-   */
-  protected $exposedFormCache;
-
-
-  /**
-   * The current path stack.
-   *
-   * @var \Drupal\Core\Path\CurrentPathStack
-   */
-  protected $currentPathStack;
-
-  /**
    * Constructs a new ViewsExposedForm.
    *
-   * @param \Drupal\views\ExposedFormCache $exposed_form_cache
+   * @param \Drupal\views\ExposedFormCache $exposedFormCache
    *   The exposed form cache.
-   * @param \Drupal\Core\Path\CurrentPathStack $current_path_stack
+   * @param \Drupal\Core\Path\CurrentPathStack $currentPathStack
    *   The current path stack.
    */
-  public function __construct(ExposedFormCache $exposed_form_cache, CurrentPathStack $current_path_stack) {
-    $this->exposedFormCache = $exposed_form_cache;
-    $this->currentPathStack = $current_path_stack;
+  public function __construct(protected \Drupal\views\ExposedFormCache $exposedFormCache, protected \Drupal\Core\Path\CurrentPathStack $currentPathStack)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('views.exposed_form_cache'),
       $container->get('path.current')
@@ -60,7 +44,7 @@ class ViewsExposedForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_exposed_form';
   }
 
@@ -155,7 +139,7 @@ class ViewsExposedForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
 
     foreach (['field', 'filter'] as $type) {
@@ -173,7 +157,7 @@ class ViewsExposedForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Form input keys that will not be included in $view->exposed_raw_data.
     $exclude = ['submit', 'form_build_id', 'form_id', 'form_token', 'exposed_form_plugin', 'reset'];
     $values = $form_state->getValues();

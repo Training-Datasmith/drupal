@@ -16,20 +16,13 @@ class EntityReferenceFieldItemNormalizer extends FieldItemNormalizer {
   use EntityReferenceFieldItemNormalizerTrait;
 
   /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * Constructs an EntityReferenceFieldItemNormalizer object.
    *
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository) {
-    $this->entityRepository = $entity_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+  {
   }
 
   /**
@@ -79,10 +72,8 @@ class EntityReferenceFieldItemNormalizer extends FieldItemNormalizer {
       if ($entity = $this->entityRepository->loadEntityByUuid($target_type, $data['target_uuid'])) {
         return ['target_id' => $entity->id()] + array_intersect_key($data, $field_item->getProperties());
       }
-      else {
-        // Unable to load entity by uuid.
-        throw new InvalidArgumentException(sprintf('No "%s" entity found with UUID "%s" for field "%s".', $data['target_type'], $data['target_uuid'], $field_item->getName()));
-      }
+      // Unable to load entity by uuid.
+      throw new InvalidArgumentException(sprintf('No "%s" entity found with UUID "%s" for field "%s".', $data['target_type'], $data['target_uuid'], $field_item->getName()));
     }
     return parent::constructValue($data, $context);
   }

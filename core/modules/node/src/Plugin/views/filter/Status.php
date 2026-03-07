@@ -27,14 +27,14 @@ class Status extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function canExpose() {
+  public function canExpose(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if ($this->moduleHandler->hasImplementations('node_grants')) {
       return;
     }

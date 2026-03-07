@@ -29,7 +29,7 @@ class TelephoneItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -54,7 +54,7 @@ class TelephoneItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('value')->getValue();
     return $value === NULL || $value === '';
   }
@@ -88,7 +88,7 @@ class TelephoneItem extends FieldItemBase {
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    $values['value'] = rand(pow(10, 8), pow(10, 9) - 1);
+    $values['value'] = random_int(10 ** 8, 10 ** 9 - 1);
     return $values;
   }
 

@@ -115,8 +115,8 @@ class Standard extends Xss implements EditorXssFilterInterface {
    *
    * @see \Drupal\filter\Plugin\Filter\FilterInterface::getHTMLRestrictions()
    */
-  protected static function getAllowedTags($restrictions) {
-    if ($restrictions === FALSE || !isset($restrictions['allowed'])) {
+  protected static function getAllowedTags(array $restrictions): array {
+    if (!isset($restrictions['allowed'])) {
       return [];
     }
 
@@ -131,7 +131,7 @@ class Standard extends Xss implements EditorXssFilterInterface {
   /**
    * {@inheritdoc}
    */
-  protected static function needsRemoval(array $html_tags, $elem) {
+  protected static function needsRemoval(array $html_tags, $elem): bool {
     // This class uses a list of tags to remove instead of the normal list of
     // tags to allow.
     // @see static::filterXss()

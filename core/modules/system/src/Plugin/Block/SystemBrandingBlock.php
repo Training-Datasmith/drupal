@@ -35,7 +35,7 @@ class SystemBrandingBlock extends BlockBase implements ContainerFactoryPluginInt
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     if ($themeSettingsProvider === NULL) {
-      @trigger_error('Calling ' . __CLASS__ . ' constructor without the $themeSettingsProvider argument is deprecated in drupal:11.3.0 and it will be required in drupal:12.0.0. See https://www.drupal.org/node/3035289', E_USER_DEPRECATED);
+      @trigger_error('Calling ' . self::class . ' constructor without the $themeSettingsProvider argument is deprecated in drupal:11.3.0 and it will be required in drupal:12.0.0. See https://www.drupal.org/node/3035289', E_USER_DEPRECATED);
       $this->themeSettingsProvider = \Drupal::service(ThemeSettingsProvider::class);
     }
   }
@@ -43,7 +43,7 @@ class SystemBrandingBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'use_site_logo' => TRUE,
       'use_site_name' => TRUE,
@@ -55,7 +55,7 @@ class SystemBrandingBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     // Get permissions.
     $url_system_theme_settings = new Url('system.theme_settings');
 
@@ -118,7 +118,7 @@ class SystemBrandingBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     $block_branding = $form_state->getValue('block_branding');
     $this->configuration['use_site_logo'] = $block_branding['use_site_logo'];
     $this->configuration['use_site_name'] = $block_branding['use_site_name'];
@@ -128,7 +128,7 @@ class SystemBrandingBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public function build() {
+  public function build(): array {
     $build = [];
     $site_config = $this->configFactory->get('system.site');
 
@@ -155,7 +155,7 @@ class SystemBrandingBlock extends BlockBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return Cache::mergeTags(
       parent::getCacheTags(),
       $this->configFactory->get('system.site')->getCacheTags()

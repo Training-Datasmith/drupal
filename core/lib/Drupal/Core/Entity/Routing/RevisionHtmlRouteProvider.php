@@ -16,7 +16,7 @@ class RevisionHtmlRouteProvider implements EntityRouteProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
+  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
     $collection = new RouteCollection();
     $entityTypeId = $entity_type->id();
 

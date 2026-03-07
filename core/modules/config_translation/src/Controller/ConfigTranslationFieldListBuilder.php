@@ -36,23 +36,9 @@ class ConfigTranslationFieldListBuilder extends ConfigTranslationEntityListBuild
   protected $baseEntityBundles = [];
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     $entity_type_manager = $container->get('entity_type.manager');
     $entity_type_bundle_info = $container->get('entity_type.bundle.info');
     return new static(
@@ -70,21 +56,19 @@ class ConfigTranslationFieldListBuilder extends ConfigTranslationEntityListBuild
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
     parent::__construct($entity_type, $storage);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMapperDefinition($mapper_definition) {
+  public function setMapperDefinition($mapper_definition): static {
     $this->baseEntityType = $mapper_definition['base_entity_type'];
     $this->baseEntityInfo = $this->entityTypeManager->getDefinition($this->baseEntityType);
     $this->baseEntityBundles = $this->entityTypeBundleInfo->getBundleInfo($this->baseEntityType);
@@ -154,7 +138,7 @@ class ConfigTranslationFieldListBuilder extends ConfigTranslationEntityListBuild
    * @return bool
    *   Whenever the bundle is displayed or not.
    */
-  public function displayBundle() {
+  public function displayBundle(): bool {
     // The bundle key is explicitly defined in the entity definition.
     if ($this->baseEntityInfo->getKey('bundle')) {
       return TRUE;

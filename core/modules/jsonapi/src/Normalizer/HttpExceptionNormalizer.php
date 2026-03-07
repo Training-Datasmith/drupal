@@ -23,20 +23,13 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class HttpExceptionNormalizer extends NormalizerBase {
 
   /**
-   * The current user making the request.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * HttpExceptionNormalizer constructor.
    *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(AccountInterface $current_user) {
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\Session\AccountInterface $currentUser)
+  {
   }
 
   /**
@@ -73,7 +66,7 @@ class HttpExceptionNormalizer extends NormalizerBase {
    * @return array
    *   The error objects to include in the response.
    */
-  protected function buildErrorObjects(HttpException $exception) {
+  protected function buildErrorObjects(HttpException $exception): array {
     $error = [];
     $status_code = $exception->getStatusCode();
     if (!empty(Response::$statusTexts[$status_code])) {
@@ -91,7 +84,7 @@ class HttpExceptionNormalizer extends NormalizerBase {
     if (isset($headers['Link']) && !is_array($headers['Link'])) {
       $error['links']['info']['href'] = $headers['Link'];
     }
-    elseif ($info_url = $this->getInfoUrl($status_code)) {
+    elseif ($info_url = static::getInfoUrl($status_code)) {
       $error['links']['info']['href'] = $info_url;
     }
     // Exceptions thrown without an explicitly defined code get assigned zero by
@@ -129,7 +122,7 @@ class HttpExceptionNormalizer extends NormalizerBase {
    *
    * @internal
    */
-  public static function getInfoUrl($status_code) {
+  public static function getInfoUrl($status_code): ?string {
     // Depending on the error code we'll return a different URL.
     $url = 'https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html';
     $sections = [

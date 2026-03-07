@@ -19,26 +19,19 @@ class NodeRouteContext implements ContextProviderInterface {
   use StringTranslationTrait;
 
   /**
-   * The route match object.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructs a new NodeRouteContext.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match object.
    */
-  public function __construct(RouteMatchInterface $route_match) {
-    $this->routeMatch = $route_match;
+  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRuntimeContexts(array $unqualified_context_ids) {
+  public function getRuntimeContexts(array $unqualified_context_ids): array {
     $result = [];
     $context_definition = EntityContextDefinition::create('node')->setRequired(FALSE);
     $value = NULL;
@@ -73,7 +66,7 @@ class NodeRouteContext implements ContextProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getAvailableContexts() {
+  public function getAvailableContexts(): array {
     $context = EntityContext::fromEntityTypeId('node', $this->t('Node from URL'));
     return ['node' => $context];
   }

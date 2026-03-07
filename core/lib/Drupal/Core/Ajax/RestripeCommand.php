@@ -16,29 +16,27 @@ namespace Drupal\Core\Ajax;
 class RestripeCommand implements CommandInterface {
 
   /**
-   * A CSS selector string.
-   *
-   * If the command is a response to a request from an #ajax form element then
-   * this value can be NULL.
-   *
-   * @var string
-   */
-  protected $selector;
-
-  /**
    * Constructs a RestripeCommand object.
    *
    * @param string $selector
    *   A CSS selector for the table to be restriped.
    */
-  public function __construct($selector) {
-    $this->selector = $selector;
+  public function __construct(
+      /**
+       * A CSS selector string.
+       *
+       * If the command is a response to a request from an #ajax form element then
+       * this value can be NULL.
+       */
+      protected $selector
+  )
+  {
   }
 
   /**
    * Implements Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
 
     return [
       'command' => 'restripe',

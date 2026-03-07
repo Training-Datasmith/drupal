@@ -123,7 +123,7 @@ trait SectionListTrait {
    *
    * @see \Drupal\layout_builder\Plugin\Layout\BlankLayout
    */
-  protected function hasBlankSection() {
+  protected function hasBlankSection(): bool {
     // A blank section will only ever exist when the delta is 0, as added by
     // ::removeSection().
     return $this->hasSection(0) && $this->getSection(0)->getLayoutId() === 'layout_builder_blank';
@@ -168,7 +168,7 @@ trait SectionListTrait {
    * @return bool
    *   TRUE if there is a section for this delta, FALSE otherwise.
    */
-  protected function hasSection($delta) {
+  protected function hasSection($delta): bool {
     return isset($this->getSections()[$delta]);
   }
 

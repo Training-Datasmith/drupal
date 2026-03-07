@@ -16,7 +16,7 @@ class FileSystem {
    *   A string containing the path to the temporary directory, or FALSE if no
    *   suitable temporary directory can be found.
    */
-  public static function getOsTemporaryDirectory() {
+  public static function getOsTemporaryDirectory(): string|false {
     $directories = [];
 
     // Has PHP been set with an upload_tmp_dir?

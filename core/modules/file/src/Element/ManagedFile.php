@@ -27,7 +27,7 @@ class ManagedFile extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#process' => [
@@ -60,7 +60,7 @@ class ManagedFile extends FormElementBase {
    */
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
     // Find the current value of this field.
-    $fids = !empty($input['fids']) ? explode(' ', $input['fids']) : [];
+    $fids = !empty($input['fids']) ? explode(' ', (string) $input['fids']) : [];
     foreach ($fids as $key => $fid) {
       $fids[$key] = (int) $fid;
     }
@@ -180,10 +180,10 @@ class ManagedFile extends FormElementBase {
     /** @var \Drupal\Core\Render\RendererInterface $renderer */
     $renderer = \Drupal::service('renderer');
 
-    $form_parents = explode('/', $request->query->get('element_parents'));
+    $form_parents = explode('/', (string) $request->query->get('element_parents'));
 
     // Sanitize form parents before using them.
-    $form_parents = array_filter($form_parents, [Element::class, 'child']);
+    $form_parents = array_filter($form_parents, Element::child(...));
 
     // Retrieve the element to be rendered.
     $form = NestedArray::getValue($form, $form_parents);
@@ -210,7 +210,7 @@ class ManagedFile extends FormElementBase {
    * Expands the file type to include Upload and Remove buttons, as well as
    * support for a default value.
    */
-  public static function processManagedFile(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processManagedFile(array &$element, FormStateInterface $form_state, &$complete_form): array {
 
     // This is used sometimes so let's implode it just once.
     $parents_prefix = implode('_', $element['#parents']);
@@ -395,7 +395,7 @@ class ManagedFile extends FormElementBase {
    * @see \Drupal\file\Element\ManagedFile::processManagedFile()
    * @see \Drupal\Core\Form\FormBuilderInterface::doBuildForm()
    */
-  public static function preRenderManagedFile($element) {
+  public static function preRenderManagedFile(array $element): array {
     // If we already have a file, we don't want to show the upload controls.
     if (!empty($element['#value']['fids'])) {
       if (!$element['#multiple']) {
@@ -413,7 +413,7 @@ class ManagedFile extends FormElementBase {
   /**
    * Render API callback: Validates the managed_file element.
    */
-  public static function validateManagedFile(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateManagedFile(array &$element, FormStateInterface $form_state, &$complete_form): void {
     $triggering_element = $form_state->getTriggeringElement();
     $clicked_button = isset($triggering_element['#parents']) ? end($triggering_element['#parents']) : '';
     if ($clicked_button != 'remove_button' && !empty($element['fids']['#value'])) {
@@ -467,7 +467,7 @@ class ManagedFile extends FormElementBase {
    * @return \Drupal\file\FileUsage\FileUsageInterface
    *   The file usage service.
    */
-  protected static function fileUsage() {
+  protected static function fileUsage(): object {
     return \Drupal::service('file.usage');
   }
 
@@ -499,8 +499,8 @@ class ManagedFile extends FormElementBase {
       if ($element['#multiple']) {
         $remove_fids = [];
         foreach (Element::children($element) as $name) {
-          if (str_starts_with($name, 'file_') && $element[$name]['selected']['#value']) {
-            $remove_fids[] = (int) substr($name, 5);
+          if (str_starts_with((string) $name, 'file_') && $element[$name]['selected']['#value']) {
+            $remove_fids[] = (int) substr((string) $name, 5);
           }
         }
         $fids = array_diff($fids, $remove_fids);

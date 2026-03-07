@@ -37,7 +37,7 @@ class PhpSelection extends DefaultSelection {
       $match = Html::escape(mb_strtolower($match));
     }
     elseif (is_array($match)) {
-      array_walk($match, function (&$item) {
+      array_walk($match, function (&$item): void {
         $item = Html::escape(mb_strtolower($item));
       });
     }
@@ -64,7 +64,7 @@ class PhpSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS') {
+  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS'): int {
     $count = 0;
     foreach ($this->getReferenceableEntities($match, $match_operator) as &$items) {
       $count += count($items);
@@ -90,50 +90,23 @@ class PhpSelection extends DefaultSelection {
     // Always use a case-insensitive value.
     $label = mb_strtolower($label);
 
-    switch ($match_operator) {
-      case '=':
-        return $label == $match;
-
-      case '>':
-        return $label > $match;
-
-      case '<':
-        return $label < $match;
-
-      case '>=':
-        return $label >= $match;
-
-      case '<=':
-        return $label <= $match;
-
-      case '<>':
-        return $label != $match;
-
-      case 'IN':
-        return array_search($label, $match) !== FALSE;
-
-      case 'NOT IN':
-        return array_search($label, $match) === FALSE;
-
-      case 'STARTS_WITH':
-        return str_starts_with($label, $match);
-
-      case 'CONTAINS':
-        return str_contains($label, $match);
-
-      case 'ENDS_WITH':
-        return str_ends_with($label, $match);
-
-      case 'IS NOT NULL':
-        return TRUE;
-
-      case 'IS NULL':
-        return FALSE;
-
-      default:
+    return match ($match_operator) {
+        '=' => $label == $match,
+        '>' => $label > $match,
+        '<' => $label < $match,
+        '>=' => $label >= $match,
+        '<=' => $label <= $match,
+        '<>' => $label != $match,
+        'IN' => array_search($label, $match) !== FALSE,
+        'NOT IN' => array_search($label, $match) === FALSE,
+        'STARTS_WITH' => str_starts_with($label, (string) $match),
+        'CONTAINS' => str_contains($label, (string) $match),
+        'ENDS_WITH' => str_ends_with($label, (string) $match),
+        'IS NOT NULL' => TRUE,
+        'IS NULL' => FALSE,
         // Invalid match operator.
-        return FALSE;
-    }
+        default => FALSE,
+    };
   }
 
 }

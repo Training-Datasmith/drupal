@@ -123,7 +123,7 @@ abstract class EntityReferenceFormatterBase extends FormatterBase {
    * Loads the entities referenced in that field across all the entities being
    * viewed.
    */
-  public function prepareView(array $entities_items) {
+  public function prepareView(array $entities_items): void {
     // Collect entity IDs to load. For performance, we want to use a single
     // "multiple entity load" to load all the entities for the multiple
     // "entity reference item lists" being displayed. We thus cannot use

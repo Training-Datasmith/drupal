@@ -28,7 +28,7 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
    * \Drupal::entityTypeManager()->getDefinition($this->entityTypeId)
    * @endcode
    */
-  protected $entityType;
+  protected \Drupal\Core\Entity\EntityTypeInterface $entityType;
 
   /**
    * Name of the entity's ID field in the entity database table.
@@ -77,18 +77,9 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
   private $baseEntityClass;
 
   /**
-   * The memory cache.
-   *
-   * @var \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface
-   */
-  protected $memoryCache;
-
-  /**
    * The memory cache tag.
-   *
-   * @var string
    */
-  protected $memoryCacheTag;
+  protected string $memoryCacheTag;
 
   /**
    * Entity IDs awaiting loading.
@@ -100,17 +91,16 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
+   * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memoryCache
    *   The memory cache.
    */
-  public function __construct(EntityTypeInterface $entity_type, MemoryCacheInterface $memory_cache) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memoryCache) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
     $this->baseEntityClass = $entity_type->getClass();
     $this->idKey = $this->entityType->getKey('id');
     $this->uuidKey = $this->entityType->getKey('uuid');
     $this->langcodeKey = $this->entityType->getKey('langcode');
-    $this->memoryCache = $memory_cache;
     $this->memoryCacheTag = 'entity.memory_cache:' . $this->entityTypeId;
   }
 
@@ -159,7 +149,7 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
   /**
    * {@inheritdoc}
    */
-  public function resetCache(?array $ids = NULL) {
+  public function resetCache(?array $ids = NULL): void {
     if ($this->entityType->isStaticallyCacheable() && isset($ids)) {
       foreach ($ids as $id) {
         $this->memoryCache->delete($this->buildCacheId($id));
@@ -214,7 +204,7 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity object.
    */
-  protected function invokeHook($hook, EntityInterface $entity) {
+  protected function invokeHook(string $hook, EntityInterface $entity) {
     // Invoke the hook.
     $this->moduleHandler()->invokeAll($this->entityTypeId . '_' . $hook, [$entity]);
     // Invoke the respective entity-level hook.
@@ -428,10 +418,10 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
         $entity_class::postLoad($this, $items);
       }
     }
-    $this->moduleHandler()->invokeAllWith('entity_load', function (callable $hook, string $module) use (&$entities) {
+    $this->moduleHandler()->invokeAllWith('entity_load', function (callable $hook, string $module) use (&$entities): void {
       $hook($entities, $this->entityTypeId);
     });
-    $this->moduleHandler()->invokeAllWith($this->entityTypeId . '_load', function (callable $hook, string $module) use (&$entities) {
+    $this->moduleHandler()->invokeAllWith($this->entityTypeId . '_load', function (callable $hook, string $module) use (&$entities): void {
       $hook($entities);
     });
   }
@@ -476,7 +466,7 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
   /**
    * {@inheritdoc}
    */
-  public function delete(array $entities) {
+  public function delete(array $entities): void {
     if (!$entities) {
       // If no entities were passed, do nothing.
       return;
@@ -613,7 +603,7 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
   /**
    * {@inheritdoc}
    */
-  public function restore(EntityInterface $entity) {
+  public function restore(EntityInterface $entity): void {
     // The restore process does not invoke any pre or post-save operations.
     $this->doSave($entity->id(), $entity);
   }
@@ -691,7 +681,7 @@ abstract class EntityStorageBase extends EntityHandlerBase implements EntityStor
   protected function getEntitiesByClass(array $entities): array {
     $entity_classes = [];
     foreach ($entities as $entity) {
-      $entity_classes[get_class($entity)][$entity->id()] = $entity;
+      $entity_classes[$entity::class][$entity->id()] = $entity;
     }
     return $entity_classes;
   }

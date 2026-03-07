@@ -17,7 +17,7 @@ class GroupByNumeric extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $this->ensureMyTable();
     $field = $this->getField();
     $placeholder = $this->placeholder();
@@ -35,7 +35,7 @@ class GroupByNumeric extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getSortName() {
+  public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Numerical', [], ['context' => 'Sort order']);
   }
 

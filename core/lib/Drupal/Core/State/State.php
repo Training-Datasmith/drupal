@@ -18,8 +18,6 @@ class State extends CacheCollector implements StateInterface {
    * Each entry should be an array that defines the following keys:
    *   - 'replacement': The new name for the state.
    *   - 'message': The deprecation message to use for trigger_error().
-   *
-   * @var array
    */
   private static array $deprecatedState = [];
 
@@ -81,8 +79,9 @@ class State extends CacheCollector implements StateInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(array $keys) {
+  public function getMultiple(array $keys): array {
     $values = [];
     foreach ($keys as $key) {
       $values[$key] = $this->get($key);
@@ -94,7 +93,7 @@ class State extends CacheCollector implements StateInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($key, $value) {
+  public function set($key, $value): void {
     if (isset(self::$deprecatedState[$key])) {
       // phpcs:ignore Drupal.Semantics.FunctionTriggerError
       @trigger_error(self::$deprecatedState[$key]['message'], E_USER_DEPRECATED);
@@ -116,7 +115,7 @@ class State extends CacheCollector implements StateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $data) {
+  public function setMultiple(array $data): void {
     $this->keyValueStore->setMultiple($data);
     foreach ($data as $key => $value) {
       $this->registerKeySetDuringRequest($key, $value, parent::get($key));
@@ -128,7 +127,7 @@ class State extends CacheCollector implements StateInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($key) {
+  public function delete($key): void {
     $this->keyValueStore->delete($key);
     parent::delete($key);
   }
@@ -136,7 +135,7 @@ class State extends CacheCollector implements StateInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $keys) {
+  public function deleteMultiple(array $keys): void {
     $this->keyValueStore->deleteMultiple($keys);
     foreach ($keys as $key) {
       parent::delete($key);
@@ -146,7 +145,7 @@ class State extends CacheCollector implements StateInterface {
   /**
    * {@inheritdoc}
    */
-  public function resetCache() {
+  public function resetCache(): void {
     $this->clear();
   }
 

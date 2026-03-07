@@ -28,46 +28,23 @@ class ChooseBlockController implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * The block manager.
-   *
-   * @var \Drupal\Core\Block\BlockManagerInterface
-   */
-  protected $blockManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * ChooseBlockController constructor.
    *
-   * @param \Drupal\Core\Block\BlockManagerInterface $block_manager
+   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
    *   The block manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(BlockManagerInterface $block_manager, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user) {
-    $this->blockManager = $block_manager;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\Block\BlockManagerInterface $blockManager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Session\AccountInterface $currentUser)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.block'),
       $container->get('entity_type.manager'),
@@ -172,7 +149,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
    * @return array
    *   A render array.
    */
-  public function inlineBlockList(SectionStorageInterface $section_storage, int $delta, $region) {
+  public function inlineBlockList(SectionStorageInterface $section_storage, int $delta, $region): array {
     $definitions = $this->blockManager->getFilteredDefinitions('layout_builder', $this->getPopulatedContexts($section_storage), [
       'section_storage' => $section_storage,
       'delta' => $delta,
@@ -221,7 +198,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
    * @return array
    *   The block links render array.
    */
-  protected function getBlockLinks(SectionStorageInterface $section_storage, int $delta, $region, array $blocks) {
+  protected function getBlockLinks(SectionStorageInterface $section_storage, int $delta, $region, array $blocks): array {
     $links = [];
     foreach ($blocks as $block_id => $block) {
       $attributes = $this->getAjaxAttributes();
@@ -254,7 +231,7 @@ class ChooseBlockController implements ContainerInjectionInterface {
    * @return array
    *   The attributes array.
    */
-  protected function getAjaxAttributes() {
+  protected function getAjaxAttributes(): array {
     if ($this->isAjax()) {
       return [
         'class' => ['use-ajax'],

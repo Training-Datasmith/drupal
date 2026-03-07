@@ -17,8 +17,6 @@ class ComponentValidator {
    * The schema validator.
    *
    * This property will only be set if the validator library is available.
-   *
-   * @var \JsonSchema\Validator|null
    */
   protected ?Validator $validator = NULL;
 
@@ -94,10 +92,10 @@ class ComponentValidator {
     // will not automatically convert to 'null', which will lead to a PHP error
     // that is hard to trace back to the property.
     $non_string_props = [];
-    \array_walk($prop_names, function (string $prop) use (&$non_string_props, $schema) {
+    \array_walk($prop_names, function (string $prop) use (&$non_string_props, $schema): void {
       $type = $schema['properties'][$prop]['type'];
       $types = !\is_array($type) ? [$type] : $type;
-      $non_string_types = \array_filter($types, static fn (mixed $type) => !\is_string($type));
+      $non_string_types = \array_filter($types, static fn (mixed $type): bool => !\is_string($type));
       if ($non_string_types) {
         $non_string_props[] = $prop;
       }
@@ -115,11 +113,11 @@ class ComponentValidator {
     $missing_class_errors = [];
     foreach ($classes_per_prop as $prop_name => $class_types) {
       // For each possible type, check if it is a class.
-      $missing_classes = array_filter($class_types, static fn(string $class) => !class_exists($class) && !interface_exists($class));
+      $missing_classes = array_filter($class_types, static fn(string $class): bool => !class_exists($class) && !interface_exists($class));
       $missing_class_errors = [
         ...$missing_class_errors,
         ...array_map(
-          static fn(string $class) => sprintf('Unable to find class/interface "%s" specified in the prop "%s" for the component "%s".', $class, $prop_name, $definition['id']),
+          static fn(string $class): string => sprintf('Unable to find class/interface "%s" specified in the prop "%s" for the component "%s".', $class, $prop_name, $definition['id']),
           $missing_classes
         ),
       ];
@@ -225,7 +223,7 @@ class ComponentValidator {
         // because it's hard to access both given the possible complexity of a
         // schema. Since this is a small non critical DX improvement error
         // message checking should be sufficient.
-        if (str_contains($error['message'], 'NULL value found, but a ')) {
+        if (str_contains((string) $error['message'], 'NULL value found, but a ')) {
           $error['message'] .= '. This may be because the property is empty instead of having data present. If possible fix the source data, use the |default() twig filter, or update the schema to allow multiple types.';
         }
 
@@ -273,12 +271,15 @@ class ComponentValidator {
     foreach ($properties as $prop_name => $prop_def) {
       $class_types = $classes_per_prop[$prop_name] ?? [];
       $prop = $props_raw[$prop_name] ?? NULL;
-      if (empty($class_types) || is_null($prop)) {
-        continue;
+      if (empty($class_types)) {
+          continue;
+      }
+      if (is_null($prop)) {
+          continue;
       }
       $is_valid = array_reduce(
         $class_types,
-        static fn(bool $valid, string $class_name) => $valid || $prop instanceof $class_name,
+        static fn(bool $valid, string $class_name): bool => $valid || $prop instanceof $class_name,
         FALSE
       );
       if (!$is_valid) {
@@ -315,7 +316,7 @@ class ComponentValidator {
       $type = $prop_def['type'] ?? 'null';
       $types = is_string($type) ? [$type] : $type;
       // For each possible type, check if it is a class.
-      $class_types = array_filter($types, static fn(string $type) => !in_array(
+      $class_types = array_filter($types, static fn(string $type): bool => !in_array(
         $type,
         ['array', 'boolean', 'integer', 'null', 'number', 'object', 'string']
       ));

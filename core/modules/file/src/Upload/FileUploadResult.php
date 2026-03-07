@@ -42,8 +42,6 @@ class FileUploadResult {
 
   /**
    * The constraint violations.
-   *
-   * @var \Symfony\Component\Validator\ConstraintViolationListInterface
    */
   protected ConstraintViolationListInterface $violations;
 
@@ -56,8 +54,6 @@ class FileUploadResult {
 
   /**
    * Flags the result as having had a security rename.
-   *
-   * @return $this
    */
   public function setSecurityRename(): FileUploadResult {
     $this->securityRename = TRUE;
@@ -69,8 +65,6 @@ class FileUploadResult {
    *
    * @param string $sanitizedFilename
    *   The sanitized filename.
-   *
-   * @return $this
    */
   public function setSanitizedFilename(string $sanitizedFilename): FileUploadResult {
     $this->sanitizedFilename = $sanitizedFilename;
@@ -92,8 +86,6 @@ class FileUploadResult {
    *
    * @param string $originalFilename
    *   The original filename.
-   *
-   * @return $this
    */
   public function setOriginalFilename(string $originalFilename): FileUploadResult {
     $this->originalFilename = $originalFilename;
@@ -105,8 +97,6 @@ class FileUploadResult {
    *
    * @param \Drupal\file\FileInterface $file
    *   A file entity.
-   *
-   * @return $this
    */
   public function setFile(FileInterface $file): FileUploadResult {
     $this->file = $file;

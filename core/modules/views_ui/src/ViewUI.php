@@ -94,13 +94,6 @@ class ViewUI implements ViewEntityInterface {
   public $live_preview;
 
   /**
-   * The View storage object.
-   *
-   * @var \Drupal\views\ViewEntityInterface
-   */
-  protected $storage;
-
-  /**
    * Stores a list of database queries run beside the main one from views.
    *
    * @var array
@@ -116,15 +109,15 @@ class ViewUI implements ViewEntityInterface {
    */
   public static $forms = [
     'add-handler' => '\Drupal\views_ui\Form\Ajax\AddItem',
-    'analyze' => '\Drupal\views_ui\Form\Ajax\Analyze',
-    'handler' => '\Drupal\views_ui\Form\Ajax\ConfigHandler',
-    'handler-extra' => '\Drupal\views_ui\Form\Ajax\ConfigHandlerExtra',
-    'handler-group' => '\Drupal\views_ui\Form\Ajax\ConfigHandlerGroup',
-    'display' => '\Drupal\views_ui\Form\Ajax\Display',
-    'edit-details' => '\Drupal\views_ui\Form\Ajax\EditDetails',
-    'rearrange' => '\Drupal\views_ui\Form\Ajax\Rearrange',
-    'rearrange-filter' => '\Drupal\views_ui\Form\Ajax\RearrangeFilter',
-    'reorder-displays' => '\Drupal\views_ui\Form\Ajax\ReorderDisplays',
+    'analyze' => \Drupal\views_ui\Form\Ajax\Analyze::class,
+    'handler' => \Drupal\views_ui\Form\Ajax\ConfigHandler::class,
+    'handler-extra' => \Drupal\views_ui\Form\Ajax\ConfigHandlerExtra::class,
+    'handler-group' => \Drupal\views_ui\Form\Ajax\ConfigHandlerGroup::class,
+    'display' => \Drupal\views_ui\Form\Ajax\Display::class,
+    'edit-details' => \Drupal\views_ui\Form\Ajax\EditDetails::class,
+    'rearrange' => \Drupal\views_ui\Form\Ajax\Rearrange::class,
+    'rearrange-filter' => \Drupal\views_ui\Form\Ajax\RearrangeFilter::class,
+    'reorder-displays' => \Drupal\views_ui\Form\Ajax\ReorderDisplays::class,
   ];
 
   /**
@@ -154,9 +147,8 @@ class ViewUI implements ViewEntityInterface {
    * @param \Drupal\views\ViewEntityInterface $storage
    *   The View storage object to wrap.
    */
-  public function __construct(ViewEntityInterface $storage) {
+  public function __construct(protected \Drupal\views\ViewEntityInterface $storage) {
     $this->entityType = 'view';
-    $this->storage = $storage;
   }
 
   /**
@@ -180,7 +172,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($property_name, $value, $notify = TRUE) {
+  public function set($property_name, $value, $notify = TRUE): void {
     if (property_exists($this->storage, $property_name)) {
       $this->storage->set($property_name, $value);
     }
@@ -192,14 +184,14 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSyncing($syncing) {
+  public function setSyncing($syncing): void {
     $this->isSyncing = $syncing;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setUninstalling($isUninstalling) {
+  public function setUninstalling($isUninstalling): void {
     $this->isUninstalling = $isUninstalling;
   }
 
@@ -224,7 +216,7 @@ class ViewUI implements ViewEntityInterface {
    * to apply to the default display or to the current display, and dispatches
    * control appropriately.
    */
-  public function standardSubmit($form, FormStateInterface $form_state) {
+  public function standardSubmit($form, FormStateInterface $form_state): void {
     // Determine whether the values the user entered are intended to apply to
     // the current display or the default display.
 
@@ -234,28 +226,25 @@ class ViewUI implements ViewEntityInterface {
     // display these changes apply to.
     $display_id = $form_state->get('display_id');
     if ($revert) {
-      // If it's revert just change the override and return.
-      $display = &$this->getExecutable()->displayHandlers->get($display_id);
-      $display->optionsOverride($form, $form_state);
-
-      // Don't execute the normal submit handling but still store the changed
-      // view into cache.
-      $this->cacheSet();
-      return;
+        // If it's revert just change the override and return.
+        $display = &$this->getExecutable()->displayHandlers->get($display_id);
+        $display->optionsOverride($form, $form_state);
+        // Don't execute the normal submit handling but still store the changed
+        // view into cache.
+        $this->cacheSet();
+        return;
     }
-    elseif ($was_defaulted === $is_defaulted) {
-      // We're not changing which display these form values apply to.
-      // Run the regular submit handler for this form.
-    }
-    elseif ($was_defaulted && !$is_defaulted) {
+    if ($was_defaulted === $is_defaulted) {
+        // We're not changing which display these form values apply to.
+        // Run the regular submit handler for this form.
+    } elseif ($was_defaulted && !$is_defaulted) {
       // We were using the default display's values, but we're now overriding
       // the default display and saving values specific to this display.
       $display = &$this->getExecutable()->displayHandlers->get($display_id);
       // optionsOverride toggles the override of this section.
       $display->optionsOverride($form, $form_state);
       $display->submitOptionsForm($form, $form_state);
-    }
-    elseif (!$was_defaulted && $is_defaulted) {
+    } elseif (!$was_defaulted && $is_defaulted) {
       // We used to have an override for this display, but the user now wants
       // to go back to the default display.
       // Overwrite the default display with the current form values, and make
@@ -273,7 +262,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * Submit handler for cancel button.
    */
-  public function standardCancel($form, FormStateInterface $form_state) {
+  public function standardCancel($form, FormStateInterface $form_state): void {
     if (!empty($this->changed) && isset($this->form_cache)) {
       unset($this->form_cache);
       $this->cacheSet();
@@ -291,7 +280,7 @@ class ViewUI implements ViewEntityInterface {
    * @todo Is the hidden op operator still here somewhere, or is that part of
    *   the docblock outdated?
    */
-  public function getStandardButtons(&$form, FormStateInterface $form_state, $form_id, $name = NULL) {
+  public function getStandardButtons(array &$form, FormStateInterface $form_state, string $form_id, $name = NULL): void {
     $form['actions'] = [
       '#type' => 'actions',
     ];
@@ -316,7 +305,7 @@ class ViewUI implements ViewEntityInterface {
         // the current display. Since we have no way of knowing at this point
         // which display the user wants to update, views_ui_standard_submit will
         // take care of running the regular submit handler as appropriate.
-        '#submit' => [[$this, 'standardSubmit']],
+        '#submit' => [$this->standardSubmit(...)],
         '#button_type' => 'primary',
       ];
       // Form API button click detection requires the button's #value to be the
@@ -337,7 +326,7 @@ class ViewUI implements ViewEntityInterface {
     }
 
     // Create a "Cancel" button. For purely informational forms, label it "OK".
-    $cancel_submit = [$this, 'standardCancel'];
+    $cancel_submit = $this->standardCancel(...);
     if (function_exists($form_id . '_cancel')) {
       @trigger_error('Support for magic cancel submit handlers such as ' . $form_id . '_cancel() is deprecated in drupal:11.3.0 and removed in drupal:13.0.0. Specify a submit handler in a class method instead. See https://www.drupal.org/node/3536715', E_USER_DEPRECATED);
       $cancel_submit = $form_id . '_cancel';
@@ -366,7 +355,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * Return the was_defaulted, is_defaulted and revert state of a form.
    */
-  public function getOverrideValues($form, FormStateInterface $form_state) {
+  public function getOverrideValues(array $form, FormStateInterface $form_state): array {
     // Make sure the dropdown exists in the first place.
     if ($form_state->hasValue(['override', 'dropdown'])) {
       // #default_value is used to determine whether it was the default value or
@@ -398,7 +387,7 @@ class ViewUI implements ViewEntityInterface {
    *
    * Clicking 'apply' will go to this form rather than closing the ajax popup.
    */
-  public function addFormToStack($key, $display_id, $type, $id = NULL, $top = FALSE, $rebuild_keys = FALSE) {
+  public function addFormToStack($key, $display_id, $type, $id = NULL, $top = FALSE, $rebuild_keys = FALSE): void {
     // Reset the cache of IDs. Drupal rather aggressively prevents ID
     // duplication but this causes it to remember IDs that are no longer even
     // being used.
@@ -444,7 +433,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * Submit handler for adding new item(s) to a view.
    */
-  public function submitItemAdd($form, FormStateInterface $form_state) {
+  public function submitItemAdd($form, FormStateInterface $form_state): void {
     $type = $form_state->get('type');
     $types = ViewExecutable::getHandlerTypes();
     $section = $types[$type]['plural'];
@@ -473,7 +462,7 @@ class ViewUI implements ViewEntityInterface {
       // Loop through each of the items that were checked and add them to the
       // view.
       foreach (array_keys(array_filter($form_state->getValue('name'))) as $field) {
-        [$table, $field] = explode('.', $field, 2);
+        [$table, $field] = explode('.', (string) $field, 2);
 
         if ($cut = strpos($field, '$')) {
           $field = substr($field, 0, $cut);
@@ -522,7 +511,7 @@ class ViewUI implements ViewEntityInterface {
    *
    * @see ViewUI::endQueryCapture()
    */
-  public function startQueryCapture() {
+  public function startQueryCapture(): void {
     Database::startLog('views');
   }
 
@@ -531,13 +520,16 @@ class ViewUI implements ViewEntityInterface {
    *
    * @see ViewUI::startQueryCapture()
    */
-  public function endQueryCapture() {
+  public function endQueryCapture(): void {
     $queries = Database::getLog('views');
 
     $this->additionalQueries = $queries;
   }
 
-  public function renderPreview($display_id, $args = []) {
+  /**
+   * @return mixed[]
+   */
+  public function renderPreview($display_id, $args = []): array {
     // Save the current path so it can be restored before returning from this
     // function.
     $request_stack = \Drupal::requestStack();
@@ -655,7 +647,7 @@ class ViewUI implements ViewEntityInterface {
               $connection = Database::getConnection();
               foreach ($quoted as $key => $val) {
                 if (is_array($val)) {
-                  $quoted[$key] = implode(', ', array_map([$connection, 'quote'], $val));
+                  $quoted[$key] = implode(', ', array_map($connection->quote(...), $val));
                 }
                 else {
                   $quoted[$key] = $connection->quote($val);
@@ -865,7 +857,7 @@ class ViewUI implements ViewEntityInterface {
    *   - current: The number of the current form on the stack.
    *   - total: The total number of forms originally on the stack.
    */
-  public function getFormProgress() {
+  public function getFormProgress(): array|false {
     $progress = FALSE;
     if (!empty($this->stack)) {
       // The forms on the stack have integer keys that don't change as the forms
@@ -887,7 +879,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * Sets a cached view object in the shared tempstore.
    */
-  public function cacheSet() {
+  public function cacheSet(): void {
     if ($this->isLocked()) {
       \Drupal::messenger()->addError($this->t('Changes cannot be made to a locked view.'));
       return;
@@ -917,7 +909,7 @@ class ViewUI implements ViewEntityInterface {
    * @return bool
    *   TRUE if the view is locked, FALSE otherwise.
    */
-  public function isLocked() {
+  public function isLocked(): bool {
     $lock = $this->getLock();
     return $lock && $lock->getOwnerId() != \Drupal::currentUser()->id();
   }
@@ -925,7 +917,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * Passes through all unknown calls onto the storage object.
    */
-  public function __call($method, $args) {
+  public function __call(string $method, array $args) {
     return call_user_func_array([$this->storage, $method], $args);
   }
 
@@ -1107,14 +1099,14 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     $this->storage->presave($storage);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     $this->storage->postSave($storage, $update);
   }
 
@@ -1127,7 +1119,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function postCreate(EntityStorageInterface $storage) {
+  public function postCreate(EntityStorageInterface $storage): void {
     $this->storage->postCreate($storage);
   }
 
@@ -1166,7 +1158,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function mergeDefaultDisplaysOptions() {
+  public function mergeDefaultDisplaysOptions(): void {
     $this->storage->mergeDefaultDisplaysOptions();
   }
 
@@ -1194,7 +1186,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     $this->storage->calculateDependencies();
     return $this;
   }
@@ -1258,7 +1250,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTypedData() {
+  public function getTypedData(): void {
     $this->storage->getTypedData();
   }
 
@@ -1328,7 +1320,7 @@ class ViewUI implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function addCacheableDependency($other_object) {
+  public function addCacheableDependency($other_object): static {
     $this->storage->addCacheableDependency($other_object);
     return $this;
   }
@@ -1379,7 +1371,7 @@ class ViewUI implements ViewEntityInterface {
    *
    * @return $this
    */
-  public function setLock(Lock $lock) {
+  public function setLock(Lock $lock): static {
     $this->lock = $lock;
     return $this;
   }
@@ -1389,7 +1381,7 @@ class ViewUI implements ViewEntityInterface {
    *
    * @return $this
    */
-  public function unsetLock() {
+  public function unsetLock(): static {
     $this->lock = NULL;
     return $this;
   }

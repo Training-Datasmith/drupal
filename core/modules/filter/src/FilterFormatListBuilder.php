@@ -25,13 +25,6 @@ class FilterFormatListBuilder extends DraggableListBuilder {
   protected $entitiesKey = 'formats';
 
   /**
-   * The config factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The messenger.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -45,22 +38,20 @@ class FilterFormatListBuilder extends DraggableListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, ConfigFactoryInterface $config_factory, MessengerInterface $messenger) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, MessengerInterface $messenger) {
     parent::__construct($entity_type, $storage);
-
-    $this->configFactory = $config_factory;
     $this->messenger = $messenger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -72,7 +63,7 @@ class FilterFormatListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'filter_admin_overview';
   }
 
@@ -129,7 +120,7 @@ class FilterFormatListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = parent::getDefaultOperations($entity, $cacheability);
@@ -159,7 +150,7 @@ class FilterFormatListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
     $form['actions']['submit']['#value'] = $this->t('Save');
     return $form;
@@ -168,7 +159,7 @@ class FilterFormatListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     filter_formats_reset();

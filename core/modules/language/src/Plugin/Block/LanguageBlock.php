@@ -27,20 +27,6 @@ use Drupal\language\Plugin\Derivative\LanguageBlock as LanguageBlockDeriver;
 class LanguageBlock extends BlockBase implements ContainerFactoryPluginInterface, CacheOptionalInterface {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The path matcher.
-   *
-   * @var \Drupal\Core\Path\PathMatcherInterface
-   */
-  protected $pathMatcher;
-
-  /**
    * Constructs a LanguageBlock object.
    *
    * @param array $configuration
@@ -49,15 +35,13 @@ class LanguageBlock extends BlockBase implements ContainerFactoryPluginInterface
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Path\PathMatcherInterface $path_matcher
+   * @param \Drupal\Core\Path\PathMatcherInterface $pathMatcher
    *   The path matcher.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LanguageManagerInterface $language_manager, PathMatcherInterface $path_matcher) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Path\PathMatcherInterface $pathMatcher) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->languageManager = $language_manager;
-    $this->pathMatcher = $path_matcher;
   }
 
   /**
@@ -70,8 +54,9 @@ class LanguageBlock extends BlockBase implements ContainerFactoryPluginInterface
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function build() {
+  public function build(): array {
     $build = [];
     $type = $this->getDerivativeId();
     $route_match = \Drupal::routeMatch();

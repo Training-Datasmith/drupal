@@ -35,28 +35,28 @@ abstract class LanguageNegotiationMethodBase implements LanguageNegotiationMetho
   /**
    * {@inheritdoc}
    */
-  public function setLanguageManager(ConfigurableLanguageManagerInterface $language_manager) {
+  public function setLanguageManager(ConfigurableLanguageManagerInterface $language_manager): void {
     $this->languageManager = $language_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setConfig(ConfigFactoryInterface $config) {
+  public function setConfig(ConfigFactoryInterface $config): void {
     $this->config = $config;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCurrentUser(AccountInterface $current_user) {
+  public function setCurrentUser(AccountInterface $current_user): void {
     $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function persist(LanguageInterface $language) {
+  public function persist(LanguageInterface $language): void {
     // Default implementation persists nothing.
   }
 

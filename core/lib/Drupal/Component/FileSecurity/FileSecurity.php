@@ -47,7 +47,7 @@ class FileSecurity {
     $lines = static::htaccessPreventExecution();
 
     if ($deny_public_access) {
-      $lines = static::denyPublicAccess() . "\n\n$lines";
+      return static::denyPublicAccess() . "\n\n$lines";
     }
 
     return $lines;
@@ -59,7 +59,7 @@ class FileSecurity {
    * @return string
    *   Apache htaccess directives to prevent execution of files in a location.
    */
-  protected static function htaccessPreventExecution() {
+  protected static function htaccessPreventExecution(): string {
     return <<<EOF
 # Turn off all options we don't need.
 Options -Indexes -ExecCGI -Includes -MultiViews
@@ -84,7 +84,7 @@ EOF;
    * @return string
    *   Apache htaccess directives to block access to a location.
    */
-  protected static function denyPublicAccess() {
+  protected static function denyPublicAccess(): string {
     return <<<EOF
 # Deny all requests from Apache 2.4+.
 <IfModule mod_authz_core.c>
@@ -113,7 +113,7 @@ EOF;
    * @return bool
    *   TRUE if writing the file was successful.
    */
-  protected static function writeFile($directory, $filename, $contents, $force) {
+  protected static function writeFile(string $directory, string $filename, $contents, $force) {
     $file_path = $directory . DIRECTORY_SEPARATOR . $filename;
     // Don't overwrite if the file exists unless forced.
     if (file_exists($file_path) && !$force) {

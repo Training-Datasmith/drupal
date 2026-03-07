@@ -35,7 +35,7 @@ class QueryParameter extends ArgumentDefaultPluginBase implements CacheableDepen
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['query_param'] = [
       '#type' => 'textfield',
@@ -67,7 +67,7 @@ class QueryParameter extends ArgumentDefaultPluginBase implements CacheableDepen
   public function getArgument() {
     $current_request = $this->view->getRequest();
     // Convert a[b][c][d] into ['a', 'b', 'c', 'd'].
-    $path = array_filter(preg_split('#(\[|\]\[|\])#', $this->options['query_param']));
+    $path = array_filter(preg_split('#(\[|\]\[|\])#', (string) $this->options['query_param']));
 
     if ($current_request->query->has($path[0])) {
       $query = $current_request->query->all();
@@ -79,23 +79,21 @@ class QueryParameter extends ArgumentDefaultPluginBase implements CacheableDepen
 
       return $param;
     }
-    else {
-      // Otherwise, use the fixed fallback value.
-      return $this->options['fallback'];
-    }
+    // Otherwise, use the fixed fallback value.
+    return $this->options['fallback'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return ['url'];
   }
 

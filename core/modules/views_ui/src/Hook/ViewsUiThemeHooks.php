@@ -663,7 +663,7 @@ class ViewsUiThemeHooks {
    * Implements hook_preprocess_HOOK() for views templates.
    */
   #[Hook('preprocess_views_view')]
-  public function preprocessViewsView(&$variables): void {
+  public function preprocessViewsView(array &$variables): void {
     $view = $variables['view'];
     // Render title for the admin preview.
     if (!empty($view->live_preview)) {
@@ -773,9 +773,10 @@ class ViewsUiThemeHooks {
   /**
    * Returns a link to editing a certain display setting.
    */
-  protected function viewPreviewSectionDisplayCategoryLinks(ViewExecutable $view, $type, $title): array {
+  protected function viewPreviewSectionDisplayCategoryLinks(ViewExecutable $view, string $type, $title): array {
     $display = $view->display_handler->display;
-    $links = [
+
+    return [
       $type . '-edit' => [
         'title' => $this->t('Edit @section', ['@section' => $title]),
         'url' => Url::fromRoute('views_ui.form_display', [
@@ -787,8 +788,6 @@ class ViewsUiThemeHooks {
         'attributes' => ['class' => ['views-ajax-link']],
       ],
     ];
-
-    return $links;
   }
 
   /**
@@ -800,9 +799,8 @@ class ViewsUiThemeHooks {
     $links = array_merge($links, $this->viewPreviewSectionHandlerLinks($view, 'field', TRUE));
     $links = array_merge($links, $this->viewPreviewSectionHandlerLinks($view, 'sort', TRUE));
     $links = array_merge($links, $this->viewPreviewSectionHandlerLinks($view, 'argument', TRUE));
-    $links = array_merge($links, $this->viewPreviewSectionHandlerLinks($view, 'relationship', TRUE));
 
-    return $links;
+    return array_merge($links, $this->viewPreviewSectionHandlerLinks($view, 'relationship', TRUE));
   }
 
 }

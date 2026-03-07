@@ -48,7 +48,7 @@ class KeyValueDatabaseExpirableFactory implements KeyValueExpirableFactoryInterf
   /**
    * Deletes expired items.
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     try {
       $this->connection->delete('key_value_expire')
         ->condition('expire', $this->time->getRequestTime(), '<')

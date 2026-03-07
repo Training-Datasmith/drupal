@@ -11,7 +11,6 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  * @addtogroup hooks
  * @{
  */
-
 /**
  * Control access to private file downloads and specify HTTP headers.
  *
@@ -23,7 +22,7 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  * @param string $uri
  *   The URI of the file.
  *
- * @return string[]|int|null
+ * @return string[]|null
  *   If the user does not have permission to access the file, return -1. If the
  *   user has permission, return an array with the appropriate headers. If the
  *   file is not controlled by the current module, the return value should be
@@ -31,7 +30,7 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  *
  * @see \Drupal\system\FileDownloadController::download()
  */
-function hook_file_download($uri): array|int|null {
+function hook_file_download($uri): ?array {
   // Check to see if this is a config download.
   $scheme = StreamWrapperManager::getScheme($uri);
   $target = StreamWrapperManager::getTarget($uri);
@@ -58,7 +57,7 @@ function hook_file_download($uri): array|int|null {
  *   The URI to a file for which we need an external URL, or the path to a
  *   shipped file.
  */
-function hook_file_url_alter(&$uri) {
+function hook_file_url_alter(&$uri): void {
   $user = \Drupal::currentUser();
 
   // User 1 will always see the local file in this example.

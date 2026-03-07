@@ -28,20 +28,13 @@ class StaticMenuLinkOverrides implements StaticMenuLinkOverridesInterface {
   protected $config;
 
   /**
-   * The config factory object.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * Constructs a StaticMenuLinkOverrides object.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   A configuration factory instance.
    */
-  public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory)
+  {
   }
 
   /**
@@ -62,7 +55,7 @@ class StaticMenuLinkOverrides implements StaticMenuLinkOverridesInterface {
   /**
    * {@inheritdoc}
    */
-  public function reload() {
+  public function reload(): void {
     $this->config = NULL;
     $this->configFactory->reset($this->configName);
   }
@@ -105,8 +98,9 @@ class StaticMenuLinkOverrides implements StaticMenuLinkOverridesInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function loadMultipleOverrides(array $ids) {
+  public function loadMultipleOverrides(array $ids): array {
     $result = [];
     if ($ids) {
       $all_overrides = $this->getConfig()->get('definitions') ?: [];
@@ -123,7 +117,7 @@ class StaticMenuLinkOverrides implements StaticMenuLinkOverridesInterface {
   /**
    * {@inheritdoc}
    */
-  public function saveOverride($id, array $definition) {
+  public function saveOverride($id, array $definition): array {
     // Only allow to override a specific subset of the keys.
     $expected = [
       'menu_name' => '',
@@ -173,7 +167,7 @@ class StaticMenuLinkOverrides implements StaticMenuLinkOverridesInterface {
    * @return string
    *   The menu plugin ID with double underscore instead of dots.
    */
-  protected static function encodeId($id) {
+  protected static function encodeId($id): string {
     return strtr($id, ['.' => '__', '__' => '___']);
   }
 

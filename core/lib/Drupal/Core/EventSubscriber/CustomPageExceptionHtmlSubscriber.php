@@ -20,23 +20,9 @@ use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
 class CustomPageExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
 
   /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
    * Constructs a new CustomPageExceptionHtmlSubscriber.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
    * @param \Symfony\Component\HttpKernel\HttpKernelInterface $http_kernel
    *   The HTTP Kernel service.
@@ -46,26 +32,24 @@ class CustomPageExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
    *   The redirect destination service.
    * @param \Symfony\Component\Routing\Matcher\UrlMatcherInterface $access_unaware_router
    *   A router implementation which does not check access.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, HttpKernelInterface $http_kernel, LoggerInterface $logger, RedirectDestinationInterface $redirect_destination, UrlMatcherInterface $access_unaware_router, AccessManagerInterface $access_manager) {
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, HttpKernelInterface $http_kernel, LoggerInterface $logger, RedirectDestinationInterface $redirect_destination, UrlMatcherInterface $access_unaware_router, protected \Drupal\Core\Access\AccessManagerInterface $accessManager) {
     parent::__construct($http_kernel, $logger, $redirect_destination, $access_unaware_router);
-    $this->configFactory = $config_factory;
-    $this->accessManager = $access_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function getPriority() {
+  protected static function getPriority(): int {
     return -50;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function on403(ExceptionEvent $event) {
+  public function on403(ExceptionEvent $event): void {
     $custom_403_path = $this->configFactory->get('system.site')->get('page.403');
     if (!empty($custom_403_path)) {
       $this->makeSubrequestToCustomPath($event, $custom_403_path, Response::HTTP_FORBIDDEN);
@@ -75,7 +59,7 @@ class CustomPageExceptionHtmlSubscriber extends DefaultExceptionHtmlSubscriber {
   /**
    * {@inheritdoc}
    */
-  public function on404(ExceptionEvent $event) {
+  public function on404(ExceptionEvent $event): void {
     $custom_404_path = $this->configFactory->get('system.site')->get('page.404');
     if (!empty($custom_404_path)) {
       $this->makeSubrequestToCustomPath($event, $custom_404_path, Response::HTTP_NOT_FOUND);

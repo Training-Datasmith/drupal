@@ -36,8 +36,6 @@ class ThemeManager implements ThemeManagerInterface {
 
   /**
    * Default variables.
-   *
-   * @var array|null
    */
   protected ?array $defaultVariables = NULL;
 
@@ -86,7 +84,7 @@ class ThemeManager implements ThemeManagerInterface {
    *
    * @return $this
    */
-  public function setThemeRegistry(Registry $theme_registry) {
+  public function setThemeRegistry(Registry $theme_registry): static {
     $this->themeRegistry = $theme_registry;
     return $this;
   }
@@ -104,14 +102,14 @@ class ThemeManager implements ThemeManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasActiveTheme() {
+  public function hasActiveTheme(): bool {
     return isset($this->activeTheme);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function resetActiveTheme() {
+  public function resetActiveTheme(): static {
     $this->activeTheme = NULL;
     $this->defaultVariables = NULL;
     return $this;
@@ -120,7 +118,7 @@ class ThemeManager implements ThemeManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setActiveTheme(ActiveTheme $active_theme) {
+  public function setActiveTheme(ActiveTheme $active_theme): static {
     $this->activeTheme = $active_theme;
     if ($active_theme) {
       $this->themeInitialization->loadActiveTheme($active_theme);
@@ -131,7 +129,7 @@ class ThemeManager implements ThemeManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function render($hook, array $variables) {
+  public function render($hook, array $variables): false|\Drupal\Component\Render\MarkupInterface|string {
     static $default_attributes;
 
     $active_theme = $this->getActiveTheme();
@@ -394,7 +392,7 @@ class ThemeManager implements ThemeManagerInterface {
       $variables['theme_hook_suggestion'] = $theme_hook_suggestion;
     }
     $output = $this->getThemeEngine($theme_engine)->renderTemplate($template_file, $variables);
-    return ($output instanceof MarkupInterface) ? $output : (string) $output;
+    return ($output instanceof MarkupInterface) ? $output : $output;
   }
 
   /**
@@ -497,7 +495,7 @@ class ThemeManager implements ThemeManagerInterface {
    *
    * @todo Should we cache some of these information?
    */
-  public function alterForTheme(ActiveTheme $theme, $type, &$data, &$context1 = NULL, &$context2 = NULL) {
+  public function alterForTheme(ActiveTheme $theme, $type, &$data, &$context1 = NULL, &$context2 = NULL): void {
     // Most of the time, $type is passed as a string, so for performance,
     // normalize it to that. When passed as an array, usually the first item in
     // the array is a generic type, and additional items in the array are more
@@ -583,7 +581,7 @@ class ThemeManager implements ThemeManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function alter($type, &$data, &$context1 = NULL, &$context2 = NULL) {
+  public function alter($type, &$data, &$context1 = NULL, &$context2 = NULL): void {
     $theme = $this->getActiveTheme();
     $this->alterForTheme($theme, $type, $data, $context1, $context2);
   }

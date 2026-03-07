@@ -15,7 +15,7 @@ class MediaLibraryServiceProvider implements ServiceProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function register(ContainerBuilder $container) {
+  public function register(ContainerBuilder $container): void {
     $container->registerForAutoconfiguration(MediaLibraryOpenerInterface::class)
       ->addTag('media_library.opener');
   }

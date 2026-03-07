@@ -21,14 +21,12 @@ class DefaultAccessCheck implements RoutingAccessInterface {
    */
   public function access(Route $route) {
     if ($route->getRequirement('_access') === 'TRUE') {
-      return AccessResult::allowed();
+        return AccessResult::allowed();
     }
-    elseif ($route->getRequirement('_access') === 'FALSE') {
-      return AccessResult::forbidden();
+    if ($route->getRequirement('_access') === 'FALSE') {
+        return AccessResult::forbidden();
     }
-    else {
-      return AccessResult::neutral();
-    }
+    return AccessResult::neutral();
   }
 
 }

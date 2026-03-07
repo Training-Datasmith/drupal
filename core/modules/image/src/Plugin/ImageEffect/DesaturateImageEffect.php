@@ -20,7 +20,7 @@ class DesaturateImageEffect extends ImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
+  public function applyEffect(ImageInterface $image): bool {
     if (!$image->desaturate()) {
       $this->logger->error('Image desaturate failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
         '%toolkit' => $image->getToolkitId(),

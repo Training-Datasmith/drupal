@@ -17,7 +17,7 @@ class StatisticsLastUpdated extends Date {
    * The node table.
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected ?string $node_table;
+  protected ?string $node_table = null;
 
   /**
    * The field alias.
@@ -28,7 +28,7 @@ class StatisticsLastUpdated extends Date {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $this->node_table = $this->query->ensureTable('node', $this->relationship);
     $this->field_alias = $this->query->addOrderBy(NULL, "GREATEST(" . $this->node_table . ".changed, " . $this->tableAlias . ".last_comment_timestamp)", $this->options['order'], $this->tableAlias . '_' . $this->field);

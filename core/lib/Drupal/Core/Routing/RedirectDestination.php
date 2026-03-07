@@ -18,13 +18,6 @@ class RedirectDestination implements RedirectDestinationInterface {
   protected $requestStack;
 
   /**
-   * The URL generator.
-   *
-   * @var \Drupal\Core\Routing\UrlGeneratorInterface
-   */
-  protected $urlGenerator;
-
-  /**
    * The destination used by the current request.
    *
    * @var string
@@ -36,18 +29,17 @@ class RedirectDestination implements RedirectDestinationInterface {
    *
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
+   * @param \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator
    *   The URL generator.
    */
-  public function __construct(RequestStack $request_stack, UrlGeneratorInterface $url_generator) {
+  public function __construct(RequestStack $request_stack, protected \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator) {
     $this->requestStack = $request_stack;
-    $this->urlGenerator = $url_generator;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAsArray() {
+  public function getAsArray(): array {
     return ['destination' => $this->get()];
   }
 
@@ -75,7 +67,7 @@ class RedirectDestination implements RedirectDestinationInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($new_destination) {
+  public function set($new_destination): static {
     $this->destination = $new_destination;
     return $this;
   }

@@ -32,32 +32,14 @@ class Handler {
   const POST_DRUPAL_SCAFFOLD_CMD = 'post-drupal-scaffold-cmd';
 
   /**
-   * The Composer service.
-   *
-   * @var \Composer\Composer
-   */
-  protected $composer;
-
-  /**
-   * Composer's I/O service.
-   *
-   * @var \Composer\IO\IOInterface
-   */
-  protected $io;
-
-  /**
    * The scaffold options in the top-level composer.json's 'extra' section.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\ManageOptions
    */
-  protected $manageOptions;
+  protected \Drupal\Composer\Plugin\Scaffold\ManageOptions $manageOptions;
 
   /**
    * The manager that keeps track of which packages are allowed to scaffold.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\AllowedPackages
    */
-  protected $manageAllowedPackages;
+  protected \Drupal\Composer\Plugin\Scaffold\AllowedPackages $manageAllowedPackages;
 
   /**
    * The list of listeners that are notified after a package event.
@@ -74,17 +56,21 @@ class Handler {
    * @param \Composer\IO\IOInterface $io
    *   The Composer I/O service.
    */
-  public function __construct(Composer $composer, IOInterface $io) {
-    $this->composer = $composer;
-    $this->io = $io;
-    $this->manageOptions = new ManageOptions($composer);
-    $this->manageAllowedPackages = new AllowedPackages($composer, $io, $this->manageOptions);
+  public function __construct(/**
+   * The Composer service.
+   */
+  protected \Composer\Composer $composer, /**
+   * Composer's I/O service.
+   */
+  protected \Composer\IO\IOInterface $io) {
+    $this->manageOptions = new ManageOptions($this->composer);
+    $this->manageAllowedPackages = new AllowedPackages($this->composer, $this->io, $this->manageOptions);
   }
 
   /**
    * Registers post-package events if the 'require' command was called.
    */
-  public function requireWasCalled() {
+  public function requireWasCalled(): void {
     // In order to differentiate between post-package events called after
     // 'composer require' vs. the same events called at other times, we will
     // only install our handler when a 'require' event is detected.
@@ -100,7 +86,7 @@ class Handler {
    * @param \Composer\Installer\PackageEvent $event
    *   Composer package event sent on install/update/remove.
    */
-  public function onPostPackageEvent(PackageEvent $event) {
+  public function onPostPackageEvent(PackageEvent $event): void {
     foreach ($this->postPackageListeners as $listener) {
       $listener->event($event);
     }
@@ -118,7 +104,7 @@ class Handler {
    * @return \Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface[]
    *   A list of scaffolding operation objects
    */
-  protected function createScaffoldOperations(PackageInterface $package, array $package_file_mappings) {
+  protected function createScaffoldOperations(PackageInterface $package, array $package_file_mappings): array {
     $scaffold_op_factory = new OperationFactory($this->composer);
     $scaffold_ops = [];
     foreach ($package_file_mappings as $dest_rel_path => $data) {
@@ -131,7 +117,7 @@ class Handler {
   /**
    * Copies all scaffold files from source to destination.
    */
-  public function scaffold() {
+  public function scaffold(): void {
     // Recursively get the list of allowed packages. Only allowed packages
     // may declare scaffold files. Note that the top-level composer.json file
     // is implicitly allowed.
@@ -203,7 +189,7 @@ class Handler {
    * @return \Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface[][]
    *   An array of destination paths => scaffold operation objects.
    */
-  protected function getFileMappingsFromPackages(array $allowed_packages) {
+  protected function getFileMappingsFromPackages(array $allowed_packages): array {
     $file_mappings = [];
     foreach ($allowed_packages as $package_name => $package) {
       $file_mappings[$package_name] = $this->getPackageFileMappings($package);

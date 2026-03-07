@@ -50,7 +50,7 @@ class Language extends TypedData {
    *
    * Both the langcode and the language object may be passed as value.
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     // Support passing language objects.
     if (is_object($value)) {
       $this->id = $value->getId();
@@ -82,10 +82,10 @@ class Language extends TypedData {
    */
   public function id() {
     if (isset($this->id)) {
-      return $this->id;
+        return $this->id;
     }
-    elseif (isset($this->language)) {
-      return $this->language->getId();
+    if (isset($this->language)) {
+        return $this->language->getId();
     }
   }
 

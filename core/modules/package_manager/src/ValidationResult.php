@@ -14,7 +14,7 @@ use PhpTuf\ComposerStager\API\Exception\ExceptionInterface;
  *
  * @property \Drupal\Core\StringTranslation\TranslatableMarkup[] $messages
  */
-final class ValidationResult {
+final readonly class ValidationResult {
 
   /**
    * Creates a ValidationResult object.
@@ -35,13 +35,13 @@ final class ValidationResult {
    *   is NULL.
    */
   private function __construct(
-    public readonly int $severity,
-    private readonly array $messages,
-    public readonly ?TranslatableMarkup $summary,
+    public int $severity,
+    private array $messages,
+    public ?TranslatableMarkup $summary,
     bool $assert_translatable,
   ) {
     if ($assert_translatable) {
-      assert(Inspector::assertAll(fn ($message) => $message instanceof TranslatableMarkup, $messages));
+      assert(Inspector::assertAll(fn ($message): bool => $message instanceof TranslatableMarkup, $messages));
     }
     if (empty($messages)) {
       throw new \InvalidArgumentException('At least one message is required.');
@@ -70,8 +70,6 @@ final class ValidationResult {
    *   The throwable.
    * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $summary
    *   The errors summary.
-   *
-   * @return static
    */
   public static function createErrorFromThrowable(\Throwable $throwable, ?TranslatableMarkup $summary = NULL): static {
     // All Composer Stager exceptions are translatable.
@@ -87,8 +85,6 @@ final class ValidationResult {
    *   The error messages.
    * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $summary
    *   The errors summary.
-   *
-   * @return static
    */
   public static function createError(array $messages, ?TranslatableMarkup $summary = NULL): static {
     return new static(RequirementSeverity::Error->value, $messages, $summary, TRUE);
@@ -101,8 +97,6 @@ final class ValidationResult {
    *   The error messages.
    * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $summary
    *   The errors summary.
-   *
-   * @return static
    */
   public static function createWarning(array $messages, ?TranslatableMarkup $summary = NULL): static {
     return new static(RequirementSeverity::Warning->value, $messages, $summary, TRUE);
@@ -144,7 +138,7 @@ final class ValidationResult {
     return (
       $a->severity === $b->severity &&
       strval($a->summary) === strval($b->summary) &&
-      array_map('strval', $a->messages) === array_map('strval', $b->messages)
+      array_map(strval(...), $a->messages) === array_map(strval(...), $b->messages)
     );
   }
 

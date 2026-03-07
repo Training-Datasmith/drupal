@@ -13,26 +13,19 @@ use Symfony\Component\Routing\Route;
 class ImageStyleRoutes implements ContainerInjectionInterface {
 
   /**
-   * The stream wrapper manager service.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
-
-  /**
    * Constructs a new ImageStyleRoutes object.
    *
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager
+   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
    *   The stream wrapper manager service.
    */
-  public function __construct(StreamWrapperManagerInterface $stream_wrapper_manager) {
-    $this->streamWrapperManager = $stream_wrapper_manager;
+  public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('stream_wrapper_manager')
     );
@@ -44,7 +37,7 @@ class ImageStyleRoutes implements ContainerInjectionInterface {
    * @return \Symfony\Component\Routing\Route[]
    *   An array of route objects.
    */
-  public function routes() {
+  public function routes(): array {
     $routes = [];
     // Generate image derivatives of publicly available files. If clean URLs are
     // disabled image derivatives will always be served through the menu system.

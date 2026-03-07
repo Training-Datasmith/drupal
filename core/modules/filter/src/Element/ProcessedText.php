@@ -20,7 +20,7 @@ class ProcessedText extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#text' => '',
       '#format' => NULL,
@@ -62,7 +62,7 @@ class ProcessedText extends RenderElementBase {
    *
    * @ingroup sanitization
    */
-  public static function preRenderText($element) {
+  public static function preRenderText(array $element): array {
     $format_id = $element['#format'];
     $filter_types_to_skip = $element['#filter_types_to_skip'];
     $text = $element['#text'];
@@ -92,7 +92,7 @@ class ProcessedText extends RenderElementBase {
       return $element;
     }
 
-    $filter_must_be_applied = function (FilterInterface $filter) use ($filter_types_to_skip) {
+    $filter_must_be_applied = function (FilterInterface $filter) use ($filter_types_to_skip): bool {
       $enabled = $filter->status === TRUE;
       $type = $filter->getType();
       // Prevent FilterInterface::TYPE_HTML_RESTRICTOR from being skipped.

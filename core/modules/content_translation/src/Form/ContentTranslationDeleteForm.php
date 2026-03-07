@@ -16,7 +16,7 @@ class ContentTranslationDeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'content_translation_delete_confirm';
   }
 

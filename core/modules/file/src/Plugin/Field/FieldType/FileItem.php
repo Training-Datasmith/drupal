@@ -81,7 +81,7 @@ class FileItem extends EntityReferenceItem {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'target_id' => [
@@ -140,7 +140,7 @@ class FileItem extends EntityReferenceItem {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
     $element = [];
 
     $element['#attached']['library'][] = 'file/drupal.file';
@@ -179,7 +179,7 @@ class FileItem extends EntityReferenceItem {
   /**
    * {@inheritdoc}
    */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
     $element = [];
     $settings = $this->getSettings();
 
@@ -240,9 +240,9 @@ class FileItem extends EntityReferenceItem {
    * This function is assigned as an #element_validate callback in
    * fieldSettingsForm().
    */
-  public static function validateDirectory($element, FormStateInterface $form_state) {
+  public static function validateDirectory(array $element, FormStateInterface $form_state): void {
     // Strip slashes from the beginning and end of $element['file_directory'].
-    $value = trim($element['#value'], '\\/');
+    $value = trim((string) $element['#value'], '\\/');
     $form_state->setValueForElement($element, $value);
   }
 
@@ -257,10 +257,10 @@ class FileItem extends EntityReferenceItem {
    * as a space-separated list for compatibility with the 'FileExtension'
    * constraint.
    */
-  public static function validateExtensions($element, FormStateInterface $form_state) {
+  public static function validateExtensions(array $element, FormStateInterface $form_state): void {
     if (!empty($element['#value'])) {
-      $extensions = preg_replace('/([, ]+\.?)/', ' ', trim(strtolower($element['#value'])));
-      $extension_array = array_unique(array_filter(explode(' ', $extensions)));
+      $extensions = preg_replace('/([, ]+\.?)/', ' ', trim(strtolower((string) $element['#value'])));
+      $extension_array = array_unique(array_filter(explode(' ', (string) $extensions)));
       $extensions = implode(' ', $extension_array);
       if (!preg_match('/^([a-z0-9]+([._][a-z0-9])* ?)+$/', $extensions)) {
         $form_state->setError($element, new TranslatableMarkup("The list of allowed extensions is not valid. Allowed characters are a-z, 0-9, '.', and '_'. The first and last characters cannot be '.' or '_', and these two characters cannot appear next to each other. Separate extensions with a comma or space."));
@@ -295,8 +295,8 @@ class FileItem extends EntityReferenceItem {
    * This function is assigned as an #element_validate callback in
    * fieldSettingsForm().
    */
-  public static function validateMaxFilesize($element, FormStateInterface $form_state) {
-    $element['#value'] = trim($element['#value']);
+  public static function validateMaxFilesize(array $element, FormStateInterface $form_state): void {
+    $element['#value'] = trim((string) $element['#value']);
     $form_state->setValue(['settings', 'max_filesize'], $element['#value']);
     if (!empty($element['#value']) && !Bytes::validate($element['#value'])) {
       $form_state->setError($element, new TranslatableMarkup('The "@name" option must contain a valid value. You may either leave the text field empty or enter a string like "512" (bytes), "80 KB" (kilobytes) or "50 MB" (megabytes).', ['@name' => $element['#title']]));
@@ -333,8 +333,8 @@ class FileItem extends EntityReferenceItem {
    *
    * @see \Drupal\Core\Utility\Token::replace()
    */
-  protected static function doGetUploadLocation(array $settings, $data = []) {
-    $destination = trim($settings['file_directory'], '/');
+  protected static function doGetUploadLocation(array $settings, array $data = []): string {
+    $destination = trim((string) $settings['file_directory'], '/');
 
     // Replace tokens. As the tokens might contain HTML we convert it to plain
     // text.
@@ -349,14 +349,14 @@ class FileItem extends EntityReferenceItem {
    *   An array suitable for passing to file_save_upload() or the file field
    *   element's '#upload_validators' property.
    */
-  public function getUploadValidators() {
+  public function getUploadValidators(): array {
     return $this->getFileUploadValidators($this->getSettings());
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition): array {
     $random = new Random();
     $settings = $field_definition->getSettings();
 
@@ -370,7 +370,7 @@ class FileItem extends EntityReferenceItem {
     // Determine which extension to use when generating.
     $extension = 'txt';
     if (!empty($settings['file_extensions'])) {
-      $extensions = explode(' ', $settings['file_extensions']);
+      $extensions = explode(' ', (string) $settings['file_extensions']);
       $extension = array_rand(array_flip($extensions), 1);
     }
 
@@ -380,12 +380,11 @@ class FileItem extends EntityReferenceItem {
     /** @var \Drupal\file\FileRepositoryInterface $file_repository */
     $file_repository = \Drupal::service('file.repository');
     $file = $file_repository->writeData($data, $destination, FileExists::Error);
-    $values = [
+    return [
       'target_id' => $file->id(),
       'display' => (int) $settings['display_default'],
       'description' => $random->sentences(10),
     ];
-    return $values;
   }
 
   /**
@@ -404,7 +403,7 @@ class FileItem extends EntityReferenceItem {
   /**
    * {@inheritdoc}
    */
-  public static function getPreconfiguredOptions() {
+  public static function getPreconfiguredOptions(): array {
     return [];
   }
 

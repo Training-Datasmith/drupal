@@ -46,7 +46,7 @@ class Tasks extends InstallTasks {
   /**
    * {@inheritdoc}
    */
-  public function name() {
+  public function name(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     try {
       if (!$this->isConnectionActive() || !$this->getConnection() instanceof Connection) {
         throw new ConnectionNotDefinedException('The database connection is not active or not a MySql connection');
@@ -74,7 +74,7 @@ class Tasks extends InstallTasks {
   /**
    * {@inheritdoc}
    */
-  protected function connect() {
+  protected function connect(): bool {
     try {
       // This doesn't actually test the connection.
       Database::setActiveConnection();
@@ -157,7 +157,7 @@ class Tasks extends InstallTasks {
   /**
    * Ensure that InnoDB is available.
    */
-  public function ensureInnoDbAvailable() {
+  public function ensureInnoDbAvailable(): void {
     $engines = Database::getConnection()->query('SHOW ENGINES')->fetchAllKeyed();
     if (isset($engines['MyISAM']) && $engines['MyISAM'] == 'DEFAULT' && !isset($engines['InnoDB'])) {
       $this->fail($this->t('The MyISAM storage engine is not supported.'));

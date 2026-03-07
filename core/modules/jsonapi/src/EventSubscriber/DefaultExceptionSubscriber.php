@@ -27,21 +27,21 @@ class DefaultExceptionSubscriber extends SerializationDefaultExceptionSubscriber
   /**
    * {@inheritdoc}
    */
-  protected static function getPriority() {
+  protected static function getPriority(): int|float {
     return parent::getPriority() + 25;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getHandledFormats() {
+  protected function getHandledFormats(): array {
     return ['api_json'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     if (!$this->isJsonApiExceptionEvent($event)) {
       return;
     }
@@ -82,10 +82,13 @@ class DefaultExceptionSubscriber extends SerializationDefaultExceptionSubscriber
    * @return bool
    *   TRUE if it needs to be formatted using JSON:API. FALSE otherwise.
    */
-  protected function isJsonApiExceptionEvent(ExceptionEvent $exception_event) {
+  protected function isJsonApiExceptionEvent(ExceptionEvent $exception_event): bool {
     $request = $exception_event->getRequest();
     $parameters = $request->attributes->all();
-    return $request->getRequestFormat() === 'api_json' || (bool) Routes::getResourceTypeNameFromParameters($parameters);
+    if ($request->getRequestFormat() === 'api_json') {
+        return true;
+    }
+    return (bool) Routes::getResourceTypeNameFromParameters($parameters);
   }
 
 }

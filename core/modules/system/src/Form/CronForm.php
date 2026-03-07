@@ -36,14 +36,14 @@ class CronForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['system.cron'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('state'),
@@ -57,7 +57,7 @@ class CronForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_cron_settings';
   }
 
@@ -116,7 +116,7 @@ class CronForm extends ConfigFormBase {
   /**
    * Form submission handler for running cron manually.
    */
-  public function runCron(array &$form, FormStateInterface $form_state) {
+  public function runCron(array &$form, FormStateInterface $form_state): void {
     if ($this->cron->run()) {
       $this->messenger()->addStatus($this->t('Cron ran successfully.'));
     }

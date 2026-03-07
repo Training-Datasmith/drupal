@@ -21,7 +21,7 @@ class ListField extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $field_storage = $this->getFieldStorageDefinition();

@@ -30,7 +30,7 @@ class ConfigCacheTag implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The Event to process.
    */
-  public function onSave(ConfigCrudEvent $event) {
+  public function onSave(ConfigCrudEvent $event): void {
     $config_name = $event->getConfig()->getName();
     // Changing the site settings may mean a different route is selected for the
     // front page. Additionally a change to the site name or similar must

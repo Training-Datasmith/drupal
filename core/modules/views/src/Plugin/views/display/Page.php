@@ -46,20 +46,6 @@ class Page extends PathPluginBase {
   protected $usesAttachments = TRUE;
 
   /**
-   * The menu storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $menuStorage;
-
-  /**
-   * The parent form selector service.
-   *
-   * @var \Drupal\Core\Menu\MenuParentFormSelectorInterface
-   */
-  protected $parentFormSelector;
-
-  /**
    * Constructs a Page object.
    *
    * @param array $configuration
@@ -72,21 +58,19 @@ class Page extends PathPluginBase {
    *   The route provider.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key value store.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $menu_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $menuStorage
    *   The menu storage.
-   * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $parent_form_selector
+   * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $parentFormSelector
    *   The parent form selector service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteProviderInterface $route_provider, StateInterface $state, EntityStorageInterface $menu_storage, MenuParentFormSelectorInterface $parent_form_selector) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteProviderInterface $route_provider, StateInterface $state, protected \Drupal\Core\Entity\EntityStorageInterface $menuStorage, protected \Drupal\Core\Menu\MenuParentFormSelectorInterface $parentFormSelector) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $route_provider, $state);
-    $this->menuStorage = $menu_storage;
-    $this->parentFormSelector = $parent_form_selector;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -215,28 +199,18 @@ class Page extends PathPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     parent::optionsSummary($categories, $options);
 
     $menu = $this->getOption('menu');
     if (!is_array($menu)) {
       $menu = ['type' => 'none'];
     }
-    switch ($menu['type']) {
-      case 'none':
-      default:
-        $menu_str = $this->t('No menu');
-        break;
-
-      case 'normal':
-        $menu_str = $this->t('Normal: @title', ['@title' => $menu['title']]);
-        break;
-
-      case 'tab':
-      case 'default tab':
-        $menu_str = $this->t('Tab: @title', ['@title' => $menu['title']]);
-        break;
-    }
+    $menu_str = match ($menu['type']) {
+        'normal' => $this->t('Normal: @title', ['@title' => $menu['title']]),
+        'tab', 'default tab' => $this->t('Tab: @title', ['@title' => $menu['title']]),
+        default => $this->t('No menu'),
+    };
 
     $options['menu'] = [
       'category' => 'page',
@@ -275,7 +249,7 @@ class Page extends PathPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     switch ($form_state->get('section')) {
@@ -495,18 +469,18 @@ class Page extends PathPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::validateOptionsForm($form, $form_state);
 
     if ($form_state->get('section') == 'menu') {
       $path = $this->getOption('path');
       $menu_type = $form_state->getValue(['menu', 'type']);
-      if ($menu_type == 'normal' && str_contains($path, '%')) {
+      if ($menu_type == 'normal' && str_contains((string) $path, '%')) {
         $form_state->setError($form['menu']['type'], $this->t('Views cannot create normal menu links for paths with a % in them.'));
       }
 
       if ($menu_type == 'default tab' || $menu_type == 'tab') {
-        $bits = explode('/', $path);
+        $bits = explode('/', (string) $path);
         $last = array_pop($bits);
         if ($last == '%') {
           $form_state->setError($form['menu']['type'], $this->t('A display whose path ends with a % cannot be a tab.'));
@@ -522,13 +496,13 @@ class Page extends PathPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::submitOptionsForm($form, $form_state);
 
     switch ($form_state->get('section')) {
       case 'menu':
         $menu = $form_state->getValue('menu');
-        [$menu['menu_name'], $menu['parent']] = explode(':', $menu['parent'], 2);
+        [$menu['menu_name'], $menu['parent']] = explode(':', (string) $menu['parent'], 2);
         $this->setOption('menu', $menu);
         // Send ajax form to options page if we use it.
         if ($form_state->getValue(['menu', 'type']) == 'default tab') {
@@ -576,7 +550,7 @@ class Page extends PathPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getArgumentText() {
+  public function getArgumentText(): array {
     return [
       'filter value not present' => $this->t('When the filter value is <em>NOT</em> in the URL'),
       'filter value present' => $this->t('When the filter value <em>IS</em> in the URL or a default is provided'),
@@ -587,7 +561,7 @@ class Page extends PathPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getPagerText() {
+  public function getPagerText(): array {
     return [
       'items per page title' => $this->t('Items per page'),
       'items per page description' => $this->t('Enter 0 for no limit.'),

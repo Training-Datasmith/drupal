@@ -87,7 +87,7 @@ class FormHooks {
       // does, move it to the bottom and remove the second bulk operations
       // submit.
       foreach (Element::children($form['header']) as $key) {
-        if (str_contains($key, '_bulk_form')) {
+        if (str_contains((string) $key, '_bulk_form')) {
           // Move the bulk actions form from the header to its own container.
           $form['bulk_actions_container'] = $form['header'][$key];
           // Remove the supplementary bulk operations submit button as it
@@ -400,8 +400,8 @@ class FormHooks {
     ];
 
     // Add handler.
-    $form['#validate'][] = [__CLASS__, 'formSystemThemeSettingsAlterValidate'];
-    $form['#submit'][] = [__CLASS__, 'formSystemThemeSettingsAlterSubmit'];
+    $form['#validate'][] = [self::class, 'formSystemThemeSettingsAlterValidate'];
+    $form['#submit'][] = [self::class, 'formSystemThemeSettingsAlterSubmit'];
 
     // Attach custom library.
     $form['#attached']['library'][] = 'admin/settings';
@@ -474,7 +474,7 @@ class FormHooks {
       // Attach custom library.
       $form['#attached']['library'][] = 'admin/settings';
 
-      array_unshift($form['actions']['submit']['#submit'], [__CLASS__, 'userFormSubmit']);
+      array_unshift($form['actions']['submit']['#submit'], [self::class, 'userFormSubmit']);
     }
   }
 
@@ -573,7 +573,7 @@ class FormHooks {
       // wrapper.
       if (isset($form['options']['operator']['#prefix'])) {
         foreach (['views-left-30', 'views-left-40'] as $left_class) {
-          if (str_contains($form['options']['operator']['#prefix'], $left_class)) {
+          if (str_contains((string) $form['options']['operator']['#prefix'], $left_class)) {
             $form['options']['operator']['#prefix'] = '<div class="views-config-group-region">' . str_replace($left_class, 'views-group-box--operator', $form['options']['operator']['#prefix']);
             $form['options']['value']['#suffix'] = ($form['options']['value']['#suffix'] ?? '') . '</div>';
           }
@@ -586,7 +586,7 @@ class FormHooks {
       $wrapper_div_to_remove = '<div id="edit-options-value-wrapper">';
       if (isset($form['options']['value']['#prefix']) && str_contains($form['options']['value']['#prefix'], $wrapper_div_to_remove)) {
         $form['options']['value']['#prefix'] = str_replace($wrapper_div_to_remove, '', $form['options']['value']['#prefix']);
-        $form['options']['value']['#suffix'] = preg_replace('/<\/div>/', '', $form['options']['value']['#suffix'], 1);
+        $form['options']['value']['#suffix'] = preg_replace('/<\/div>/', '', (string) $form['options']['value']['#suffix'], 1);
       }
 
       if (isset($form['options']['value']['#prefix'])) {
@@ -657,7 +657,7 @@ class FormHooks {
           'class' => ['gin-sticky-form-actions'],
         ],
       ];
-      $form['#after_build'][] = [__CLASS__, 'formAfterBuild'];
+      $form['#after_build'][] = [self::class, 'formAfterBuild'];
     }
 
     // Sticky action buttons.

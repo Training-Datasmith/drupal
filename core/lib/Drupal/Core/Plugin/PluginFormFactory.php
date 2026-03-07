@@ -12,20 +12,13 @@ use Drupal\Core\DependencyInjection\ClassResolverInterface;
 class PluginFormFactory implements PluginFormFactoryInterface {
 
   /**
-   * The class resolver.
-   *
-   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
-   */
-  protected $classResolver;
-
-  /**
    * PluginFormFactory constructor.
    *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
    *   The class resolver.
    */
-  public function __construct(ClassResolverInterface $class_resolver) {
-    $this->classResolver = $class_resolver;
+  public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
+  {
   }
 
   /**
@@ -45,7 +38,7 @@ class PluginFormFactory implements PluginFormFactoryInterface {
     $form_class = $plugin->getFormClass($operation);
 
     // If the form specified is the plugin itself, use it directly.
-    if (ltrim(get_class($plugin), '\\') === ltrim($form_class, '\\')) {
+    if (ltrim($plugin::class, '\\') === ltrim((string) $form_class, '\\')) {
       $form_object = $plugin;
     }
     else {

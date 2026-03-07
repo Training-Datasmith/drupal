@@ -12,7 +12,7 @@ class DrupalCoreRecommendedBuilder extends DrupalPackageBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getPath() {
+  public function getPath(): string {
     return 'CoreRecommended';
   }
 
@@ -65,7 +65,7 @@ class DrupalCoreRecommendedBuilder extends DrupalPackageBuilder {
    * @return array
    *   The initial package metadata.
    */
-  protected function initialPackageMetadata() {
+  protected function initialPackageMetadata(): array {
     return [
       "name" => "drupal/core-recommended",
       "type" => "metapackage",

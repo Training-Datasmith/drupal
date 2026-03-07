@@ -35,7 +35,7 @@ class DrupalTranslator implements TranslatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function transChoice($id, $number, array $parameters = [], $domain = NULL, $locale = NULL) {
+  public function transChoice(string $id, $number, array $parameters = [], $domain = NULL, $locale = NULL): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     // Violation messages can separated singular and plural versions by "|".
     $ids = explode('|', $id);
 
@@ -59,7 +59,7 @@ class DrupalTranslator implements TranslatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLocale($locale) {
+  public function setLocale($locale): void {
     $this->locale = $locale;
   }
 
@@ -72,8 +72,9 @@ class DrupalTranslator implements TranslatorInterface {
 
   /**
    * Processes the parameters array for use with TranslatableMarkup.
+   * @return mixed[]
    */
-  protected function processParameters(array $parameters) {
+  protected function processParameters(array $parameters): array {
     $return = [];
     foreach ($parameters as $key => $value) {
       // We allow the values in the parameters to be safe string objects. This
@@ -87,9 +88,9 @@ class DrupalTranslator implements TranslatorInterface {
         // replacement strings.
       }
       // Check for symfony replacement patterns in the form "{{ name }}".
-      elseif (str_starts_with($key, '{{ ') && strrpos($key, ' }}') == strlen($key) - 3) {
+      elseif (str_starts_with((string) $key, '{{ ') && strrpos((string) $key, ' }}') == strlen((string) $key) - 3) {
         // Transform it into a Drupal pattern using the format %name.
-        $key = '%' . substr($key, 3, strlen($key) - 6);
+        $key = '%' . substr((string) $key, 3, strlen((string) $key) - 6);
         $return[$key] = $value;
       }
       else {
@@ -102,11 +103,11 @@ class DrupalTranslator implements TranslatorInterface {
   /**
    * Returns options suitable for use with TranslatableMarkup.
    */
-  protected function getOptions($domain = NULL, $locale = NULL) {
+  protected function getOptions($domain = NULL, $locale = NULL): array {
     // We do not support domains, so we ignore this parameter.
     // If locale is left NULL, TranslatableMarkup will default to the interface
     // language.
-    $locale = $locale ?? $this->locale;
+    $locale ??= $this->locale;
     return ['langcode' => $locale];
   }
 

@@ -37,7 +37,7 @@ class PasswordItem extends StringItem {
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     parent::preSave();
 
     $entity = $this->getEntity();
@@ -68,7 +68,7 @@ class PasswordItem extends StringItem {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     // We cannot use the parent implementation from StringItem as it does not
     // consider the additional 'existing' property that PasswordItem contains.
     $value = $this->get('value')->getValue();

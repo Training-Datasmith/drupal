@@ -25,7 +25,7 @@ class ImageStyleStorage extends ConfigEntityStorage implements ImageStyleStorage
   /**
    * {@inheritdoc}
    */
-  public function setReplacementId($name, $replacement) {
+  public function setReplacementId($name, $replacement): void {
     $this->replacement[$name] = $replacement;
   }
 
@@ -39,7 +39,7 @@ class ImageStyleStorage extends ConfigEntityStorage implements ImageStyleStorage
   /**
    * {@inheritdoc}
    */
-  public function clearReplacementId($name) {
+  public function clearReplacementId($name): void {
     unset($this->replacement[$name]);
   }
 

@@ -93,7 +93,7 @@ class LocaleThemeHooks {
    * Implements hook_preprocess_HOOK() for node templates.
    */
   #[Hook('preprocess_node')]
-  public function preprocessNode(&$variables): void {
+  public function preprocessNode(array &$variables): void {
     /** @var \Drupal\node\NodeInterface $node */
     $node = $variables['node'];
     if ($node->language()->getId() != LanguageInterface::LANGCODE_NOT_SPECIFIED) {

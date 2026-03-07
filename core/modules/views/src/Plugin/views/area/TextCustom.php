@@ -26,7 +26,7 @@ class TextCustom extends TokenizeAreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['content'] = [
@@ -43,7 +43,7 @@ class TextCustom extends TokenizeAreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($empty = FALSE) {
+  public function render($empty = FALSE): array {
     if (!$empty || !empty($this->options['empty'])) {
       return [
         '#markup' => $this->renderTextarea($this->options['content']),

@@ -21,8 +21,9 @@ class EntityReferenceIdFormatter extends EntityReferenceFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#plain_text': mixed, '#cache': array{tags: mixed}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {

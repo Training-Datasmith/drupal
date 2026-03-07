@@ -22,14 +22,14 @@ class ImageStyleDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Optionally select a style before deleting %style', ['%style' => $this->entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if (count($this->getReplacementOptions()) > 1) {
       return $this->t('If this style is in use on the site, you may select another style to replace it. All images that have been generated for this style will be permanently deleted. If no replacement style is selected, the dependent configurations might need manual reconfiguration.');
     }
@@ -39,7 +39,7 @@ class ImageStyleDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $replacement_styles = $this->getReplacementOptions();
     // If there are non-empty options in the list, allow the user to optionally
     // pick up a replacement.
@@ -59,7 +59,7 @@ class ImageStyleDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Save a selected replacement in the image style storage. It will be used
     // later, in the same request, when resolving dependencies.
     if ($replacement = $form_state->getValue('replacement')) {

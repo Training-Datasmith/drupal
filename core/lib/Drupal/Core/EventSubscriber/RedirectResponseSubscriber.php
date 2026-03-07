@@ -21,8 +21,6 @@ class RedirectResponseSubscriber implements EventSubscriberInterface {
 
   /**
    * Whether to ignore the destination query parameter when redirecting.
-   *
-   * @var bool
    */
   protected bool $ignoreDestination = FALSE;
 
@@ -50,7 +48,7 @@ class RedirectResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The Event to process.
    */
-  public function checkRedirectUrl(ResponseEvent $event) {
+  public function checkRedirectUrl(ResponseEvent $event): void {
     $response = $event->getResponse();
     if ($response instanceof RedirectResponse) {
       $request = $event->getRequest();
@@ -108,7 +106,7 @@ class RedirectResponseSubscriber implements EventSubscriberInterface {
    * @return string
    *   The destination as absolute URL.
    */
-  protected function getDestinationAsAbsoluteUrl($destination, $scheme_and_host) {
+  protected function getDestinationAsAbsoluteUrl($destination, string $scheme_and_host) {
     if (!UrlHelper::isExternal($destination)) {
       // The destination query parameter can be a relative URL in the sense of
       // not including the scheme and host, but its path is expected to be
@@ -142,7 +140,7 @@ class RedirectResponseSubscriber implements EventSubscriberInterface {
    *   (optional) TRUE if the destination query parameter should be ignored.
    *   FALSE if not. Defaults to TRUE.
    */
-  public function setIgnoreDestination($status = TRUE) {
+  public function setIgnoreDestination(bool $status = TRUE): void {
     $this->ignoreDestination = $status;
   }
 

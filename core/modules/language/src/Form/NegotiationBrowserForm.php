@@ -18,24 +18,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class NegotiationBrowserForm extends ConfigFormBase {
 
   /**
-   * The configurable language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, ConfigurableLanguageManagerInterface $language_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, /**
+   * The configurable language manager.
+   */
+  protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager) {
     parent::__construct($config_factory, $typedConfigManager);
-    $this->languageManager = $language_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -46,14 +41,14 @@ class NegotiationBrowserForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'language_negotiation_configure_browser_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['language.mappings'];
   }
 
@@ -150,19 +145,19 @@ class NegotiationBrowserForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // Array to check if all browser language codes are unique.
     $unique_values = [];
 
     // Check all mappings.
     if ($form_state->hasValue('mappings')) {
       $mappings = $form_state->getValue('mappings');
-      foreach ($mappings as $key => $data) {
+      foreach ($mappings as $data) {
         // Make sure browser_langcode is unique.
         if (array_key_exists($data['browser_langcode'], $unique_values)) {
           $form_state->setErrorByName('mappings][new_mapping][browser_langcode', $this->t('Browser language codes must be unique.'));
         }
-        elseif (preg_match('/[^a-z\-]/', $data['browser_langcode'])) {
+        elseif (preg_match('/[^a-z\-]/', (string) $data['browser_langcode'])) {
           $form_state->setErrorByName('mappings][new_mapping][browser_langcode', $this->t('Browser language codes can only contain lowercase letters and a hyphen(-).'));
         }
         $unique_values[$data['browser_langcode']] = $data['drupal_langcode'];
@@ -176,7 +171,7 @@ class NegotiationBrowserForm extends ConfigFormBase {
       if (array_key_exists($data['browser_langcode'], $unique_values)) {
         $form_state->setErrorByName('mappings][' . $key . '][browser_langcode', $this->t('Browser language codes must be unique.'));
       }
-      elseif (preg_match('/[^a-z\-]/', $data['browser_langcode'])) {
+      elseif (preg_match('/[^a-z\-]/', (string) $data['browser_langcode'])) {
         $form_state->setErrorByName('mappings][' . $key . '][browser_langcode', $this->t('Browser language codes can only contain lowercase letters and a hyphen(-).'));
       }
       $unique_values[$data['browser_langcode']] = $data['drupal_langcode'];
@@ -188,7 +183,7 @@ class NegotiationBrowserForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $mappings = $form_state->get('mappings');
     if (!empty($mappings)) {
       $config = $this->config('language.mappings');

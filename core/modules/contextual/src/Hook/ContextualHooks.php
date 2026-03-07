@@ -90,8 +90,7 @@ class ContextualHooks {
         ];
         $sample_picture = \Drupal::service('renderer')->render($sample_picture);
         $output .= '<dd>' . $this->t('Contextual links for an area on a page are displayed using a contextual links button. Hovering over the area of interest will temporarily make the contextual links button visible (which looks like a pencil in most themes, and is normally displayed in the upper right corner of the area). The icon typically looks like this: @picture Once the contextual links button for the area of interest is visible, click the button to display the links.', ['@picture' => $sample_picture]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -102,7 +101,7 @@ class ContextualHooks {
    * @see \Drupal\contextual\Plugin\views\field\ContextualLinks::render()
    */
   #[Hook('contextual_links_view_alter')]
-  public function contextualLinksViewAlter(&$element, $items): void {
+  public function contextualLinksViewAlter(array &$element, $items): void {
     if (isset($element['#contextual_links']['contextual'])) {
       $encoded_links = $element['#contextual_links']['contextual']['metadata']['contextual-views-field-links'];
       $element['#links'] = Json::decode(rawurldecode($encoded_links));

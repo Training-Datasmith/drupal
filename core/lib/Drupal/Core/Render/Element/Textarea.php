@@ -32,7 +32,7 @@ class Textarea extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#cols' => 60,
@@ -54,7 +54,7 @@ class Textarea extends FormElementBase {
   /**
    * Adds the textarea resize library.
    */
-  public static function preRenderAttachments($element): array {
+  public static function preRenderAttachments(array $element): array {
     $element['#attached']['library'][] = 'core/drupal.textarea-resize';
     return $element;
   }
@@ -62,7 +62,7 @@ class Textarea extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
     if ($input !== FALSE && $input !== NULL) {
       // This should be a string, but allow other scalars since they might be
       // valid input in programmatic form submissions.

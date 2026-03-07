@@ -28,20 +28,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class DbLogController extends ControllerBase {
 
   /**
-   * The database service.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * The user storage.
    *
    * @var \Drupal\user\UserStorageInterface
@@ -49,13 +35,17 @@ class DbLogController extends ControllerBase {
   protected $userStorage;
 
   public function __construct(
-    Connection $database,
-    DateFormatterInterface $date_formatter,
+    /**
+     * The database service.
+     */
+    protected \Drupal\Core\Database\Connection $database,
+    /**
+     * The date formatter service.
+     */
+    protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter,
     FormBuilderInterface $form_builder,
     protected readonly DbLogFilters $dbLogFilters,
   ) {
-    $this->database = $database;
-    $this->dateFormatter = $date_formatter;
     $this->formBuilder = $form_builder;
     $this->userStorage = $this->entityTypeManager()->getStorage('user');
   }
@@ -66,7 +56,7 @@ class DbLogController extends ControllerBase {
    * @return array
    *   An array of log level classes.
    */
-  public static function getLogLevelClassMap() {
+  public static function getLogLevelClassMap(): array {
     return [
       RfcLogLevel::DEBUG => 'dblog-debug',
       RfcLogLevel::INFO => 'dblog-info',
@@ -101,7 +91,7 @@ class DbLogController extends ControllerBase {
 
     $classes = static::getLogLevelClassMap();
 
-    $build['dblog_filter_form'] = $this->formBuilder()->getForm('Drupal\dblog\Form\DblogFilterForm');
+    $build['dblog_filter_form'] = $this->formBuilder()->getForm(\Drupal\dblog\Form\DblogFilterForm::class);
 
     $header = [
       // Icon column.
@@ -216,7 +206,7 @@ class DbLogController extends ControllerBase {
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    *   If no event found for the given ID.
    */
-  public function eventDetails($event_id) {
+  public function eventDetails($event_id): array {
     $query = $this->database->select('watchdog', 'w')
       ->fields('w')
       ->condition('w.wid', $event_id);
@@ -415,7 +405,7 @@ class DbLogController extends ControllerBase {
    *   A build array in the format expected by
    *   \Drupal\Core\Render\RendererInterface::render().
    */
-  public function topLogMessages($type) {
+  public function topLogMessages($type): array {
     $header = [
       ['data' => $this->t('Count'), 'field' => 'count', 'sort' => 'desc'],
       ['data' => $this->t('Message'), 'field' => 'message'],

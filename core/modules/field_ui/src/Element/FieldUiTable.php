@@ -16,12 +16,12 @@ class FieldUiTable extends Table {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     $info = parent::getInfo();
     $info['#regions'] = ['' => []];
     $info['#theme'] = 'field_ui_table';
     // Prepend FieldUiTable's prerender callbacks.
-    array_unshift($info['#pre_render'], [$this, 'tablePreRender'], [$this, 'preRenderRegionRows']);
+    array_unshift($info['#pre_render'], $this->tablePreRender(...), $this->preRenderRegionRows(...));
     return $info;
   }
 
@@ -43,7 +43,7 @@ class FieldUiTable extends Table {
    * @see \Drupal\Core\Render\RendererInterface::render()
    * @see \Drupal\Core\Render\Element\Table::preRenderTable()
    */
-  public static function tablePreRender($elements) {
+  public static function tablePreRender(array $elements): array {
     $js_settings = [];
 
     // For each region, build the tree structure from the weight and parenting
@@ -139,7 +139,7 @@ class FieldUiTable extends Table {
    * @return array
    *   The $element with prepared variables ready for field-ui-table.html.twig.
    */
-  public static function preRenderRegionRows($elements) {
+  public static function preRenderRegionRows(array $elements): array {
     // Determine the colspan to use for region rows, by checking the number of
     // columns in the headers.
     $columns_count = 0;
@@ -226,13 +226,13 @@ class FieldUiTable extends Table {
    * @return array
    *   Array where rendering order has been determined.
    */
-  public static function reduceOrder($array, $a) {
+  public static function reduceOrder($array, array $a) {
     $array = $array ?: [];
     if (!empty($a['name'])) {
       $array[] = $a['name'];
     }
     if (!empty($a['children'])) {
-      uasort($a['children'], ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+      uasort($a['children'], \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
       $array = array_merge($array, array_reduce($a['children'], [static::class, 'reduceOrder']));
     }
 

@@ -142,32 +142,17 @@ class UpdateThemeHooks {
           '#attributes' => ['class' => ['update']],
         ];
       }
-      $row_key = !empty($project['title']) ? mb_strtolower($project['title']) : mb_strtolower($project['name']);
+      $row_key = !empty($project['title']) ? mb_strtolower((string) $project['title']) : mb_strtolower((string) $project['name']);
 
       // Add the project status row and details.
       $rows[$project['project_type']][$row_key]['status'] = $project_status;
 
       // Add project status class attribute to the table row.
-      switch ($project['status']) {
-        case UpdateManagerInterface::CURRENT:
-          $rows[$project['project_type']][$row_key]['#attributes'] = ['class' => ['color-success']];
-          break;
-
-        case UpdateFetcherInterface::UNKNOWN:
-        case UpdateFetcherInterface::FETCH_PENDING:
-        case UpdateFetcherInterface::NOT_FETCHED:
-        case UpdateManagerInterface::NOT_SECURE:
-        case UpdateManagerInterface::REVOKED:
-        case UpdateManagerInterface::NOT_SUPPORTED:
-          $rows[$project['project_type']][$row_key]['#attributes'] = ['class' => ['color-error']];
-          break;
-
-        case UpdateFetcherInterface::NOT_CHECKED:
-        case UpdateManagerInterface::NOT_CURRENT:
-        default:
-          $rows[$project['project_type']][$row_key]['#attributes'] = ['class' => ['color-warning']];
-          break;
-      }
+      $rows[$project['project_type']][$row_key]['#attributes'] = match ($project['status']) {
+          UpdateManagerInterface::CURRENT => ['class' => ['color-success']],
+          UpdateFetcherInterface::UNKNOWN, UpdateFetcherInterface::FETCH_PENDING, UpdateFetcherInterface::NOT_FETCHED, UpdateManagerInterface::NOT_SECURE, UpdateManagerInterface::REVOKED, UpdateManagerInterface::NOT_SUPPORTED => ['class' => ['color-error']],
+          default => ['class' => ['color-warning']],
+      };
     }
 
     $project_types = [
@@ -234,7 +219,7 @@ class UpdateThemeHooks {
     $project = &$variables['project'];
 
     // Set the project title and URL.
-    $variables['title'] = (isset($project['title'])) ? $project['title'] : $project['name'];
+    $variables['title'] = $project['title'] ?? $project['name'];
     $variables['url'] = (isset($project['link'])) ? Url::fromUri($project['link'])->toString() : NULL;
 
     $variables['install_type'] = $project['install_type'];
@@ -382,7 +367,7 @@ class UpdateThemeHooks {
     }
     $variables['status']['label'] = $status_label;
     $variables['status']['attributes'] = new Attribute();
-    $variables['status']['reason'] = (isset($project['reason'])) ? $project['reason'] : NULL;
+    $variables['status']['reason'] = $project['reason'] ?? NULL;
 
     switch ($project['status']) {
       case UpdateManagerInterface::CURRENT:
@@ -393,22 +378,18 @@ class UpdateThemeHooks {
       case UpdateFetcherInterface::UNKNOWN:
       case UpdateFetcherInterface::FETCH_PENDING:
       case UpdateFetcherInterface::NOT_FETCHED:
-        $uri = 'core/misc/icons/e29700/warning.svg';
-        $text = $this->t('Warning');
-        break;
-
-      case UpdateManagerInterface::NOT_SECURE:
-      case UpdateManagerInterface::REVOKED:
-      case UpdateManagerInterface::NOT_SUPPORTED:
-        $uri = 'core/misc/icons/e32700/error.svg';
-        $text = $this->t('Error');
-        break;
 
       case UpdateFetcherInterface::NOT_CHECKED:
       case UpdateManagerInterface::NOT_CURRENT:
       default:
         $uri = 'core/misc/icons/e29700/warning.svg';
         $text = $this->t('Warning');
+        break;
+      case UpdateManagerInterface::NOT_SECURE:
+      case UpdateManagerInterface::REVOKED:
+      case UpdateManagerInterface::NOT_SUPPORTED:
+        $uri = 'core/misc/icons/e32700/error.svg';
+        $text = $this->t('Error');
         break;
     }
 

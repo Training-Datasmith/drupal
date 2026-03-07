@@ -15,20 +15,13 @@ use Symfony\Component\HttpFoundation\Request;
 class MenuController extends ControllerBase {
 
   /**
-   * The menu parent form service.
-   *
-   * @var \Drupal\Core\Menu\MenuParentFormSelectorInterface
-   */
-  protected $menuParentSelector;
-
-  /**
    * Creates a new MenuController object.
    *
-   * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $menu_parent_form
+   * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector
    *   The menu parent form service.
    */
-  public function __construct(MenuParentFormSelectorInterface $menu_parent_form) {
-    $this->menuParentSelector = $menu_parent_form;
+  public function __construct(protected \Drupal\Core\Menu\MenuParentFormSelectorInterface $menuParentSelector)
+  {
   }
 
   /**
@@ -63,7 +56,7 @@ class MenuController extends ControllerBase {
    * @return array
    *   The menu label as a render array.
    */
-  public function menuTitle(MenuInterface $menu) {
+  public function menuTitle(MenuInterface $menu): array {
     return ['#markup' => $menu->label(), '#allowed_tags' => Xss::getHtmlTagList()];
   }
 

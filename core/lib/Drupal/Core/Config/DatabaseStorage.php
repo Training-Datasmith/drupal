@@ -13,34 +13,6 @@ class DatabaseStorage implements StorageInterface {
   use DependencySerializationTrait;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The database table name.
-   *
-   * @var string
-   */
-  protected $table;
-
-  /**
-   * Additional database connection options to use in queries.
-   *
-   * @var array
-   */
-  protected $options = [];
-
-  /**
-   * The storage collection.
-   *
-   * @var string
-   */
-  protected $collection = StorageInterface::DEFAULT_COLLECTION;
-
-  /**
    * Constructs a new DatabaseStorage.
    *
    * @param \Drupal\Core\Database\Connection $connection
@@ -53,17 +25,25 @@ class DatabaseStorage implements StorageInterface {
    *   (optional) The collection to store configuration in. Defaults to the
    *   default collection.
    */
-  public function __construct(Connection $connection, $table, array $options = [], $collection = StorageInterface::DEFAULT_COLLECTION) {
-    $this->connection = $connection;
-    $this->table = $table;
-    $this->options = $options;
-    $this->collection = $collection;
+  public function __construct(
+      protected \Drupal\Core\Database\Connection $connection,
+      /**
+       * The database table name.
+       */
+      protected $table,
+      protected array $options = [],
+      /**
+       * The storage collection.
+       */
+      protected $collection = StorageInterface::DEFAULT_COLLECTION
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     try {
       return (bool) $this->connection->queryRange('SELECT 1 FROM {' . $this->connection->escapeTable($this->table) . '} WHERE [collection] = :collection AND [name] = :name', 0, 1, [
         ':collection' => $this->collection,
@@ -163,7 +143,7 @@ class DatabaseStorage implements StorageInterface {
    * @return bool
    *   TRUE when the write was successful, FALSE otherwise.
    */
-  protected function doWrite($name, $data) {
+  protected function doWrite($name, $data): bool {
     return (bool) $this->connection->merge($this->table, $this->options)
       ->keys(['collection', 'name'], [$this->collection, $name])
       ->fields(['data' => $data])
@@ -179,7 +159,7 @@ class DatabaseStorage implements StorageInterface {
    * @throws \Drupal\Core\Config\StorageException
    *   If a database error occurs.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $this->connection->schema()->createTable($this->table, static::schemaDefinition());
     }
@@ -200,8 +180,8 @@ class DatabaseStorage implements StorageInterface {
    *
    * @internal
    */
-  protected static function schemaDefinition() {
-    $schema = [
+  protected static function schemaDefinition(): array {
+    return [
       'description' => 'The base table for configuration data.',
       'fields' => [
         'collection' => [
@@ -227,7 +207,6 @@ class DatabaseStorage implements StorageInterface {
       ],
       'primary key' => ['collection', 'name'],
     ];
-    return $schema;
   }
 
   /**
@@ -237,7 +216,7 @@ class DatabaseStorage implements StorageInterface {
    *
    * @todo Ignore replica targets for data manipulation operations.
    */
-  public function delete($name) {
+  public function delete($name): bool {
     return (bool) $this->connection->delete($this->table, $this->options)
       ->condition('collection', $this->collection)
       ->condition('name', $name)
@@ -249,7 +228,7 @@ class DatabaseStorage implements StorageInterface {
    *
    * @throws \PDOException
    */
-  public function rename($name, $new_name) {
+  public function rename($name, $new_name): bool {
     return (bool) $this->connection->update($this->table, $this->options)
       ->fields(['name' => $new_name])
       ->condition('name', $name)
@@ -260,14 +239,14 @@ class DatabaseStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function encode($data) {
+  public function encode($data): string {
     return serialize($data);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function decode($raw) {
+  public function decode($raw): array|false {
     $data = @unserialize($raw, ['allowed_classes' => FALSE]);
     return is_array($data) ? $data : FALSE;
   }
@@ -297,7 +276,7 @@ class DatabaseStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteAll($prefix = '') {
+  public function deleteAll($prefix = ''): bool {
     try {
       return (bool) $this->connection->delete($this->table, $this->options)
         ->condition('name', $prefix . '%', 'LIKE')
@@ -317,7 +296,7 @@ class DatabaseStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function createCollection($collection) {
+  public function createCollection($collection): static {
     return new static(
       $this->connection,
       $this->table,

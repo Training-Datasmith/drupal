@@ -15,52 +15,6 @@ class ContextDefinition implements ContextDefinitionInterface {
   use TypedDataTrait;
 
   /**
-   * The data type of the data.
-   *
-   * @var string
-   *   The data type.
-   */
-  protected $dataType;
-
-  /**
-   * The human-readable label.
-   *
-   * @var string
-   *   The label.
-   */
-  protected $label;
-
-  /**
-   * The human-readable description.
-   *
-   * @var string|null
-   *   The description, or NULL if no description is available.
-   */
-  protected $description;
-
-  /**
-   * Whether the data is multi-valued, i.e. a list of data items.
-   *
-   * @var bool
-   */
-  protected $isMultiple = FALSE;
-
-  /**
-   * Determines whether a data value is required.
-   *
-   * @var bool
-   *   Whether a data value is required.
-   */
-  protected $isRequired = TRUE;
-
-  /**
-   * The default value.
-   *
-   * @var mixed
-   */
-  protected $defaultValue;
-
-  /**
    * An array of constraints.
    *
    * @var array[]
@@ -77,7 +31,7 @@ class ContextDefinition implements ContextDefinitionInterface {
    * @return static
    *   The created context definition object.
    */
-  public static function create($data_type = 'any') {
+  public static function create($data_type = 'any'): \Drupal\Core\Plugin\Context\EntityContextDefinition|self {
     if (str_starts_with($data_type, 'entity:')) {
       return new EntityContextDefinition($data_type);
     }
@@ -89,34 +43,46 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * Constructs a new context definition object.
    *
-   * @param string $data_type
+   * @param string $dataType
    *   The required data type.
    * @param string|null|\Stringable $label
    *   The label of this context definition for the UI.
-   * @param bool $required
+   * @param bool $isRequired
    *   Whether the context definition is required.
-   * @param bool $multiple
+   * @param bool $isMultiple
    *   Whether the context definition is multivalue.
    * @param string|null $description
    *   The description of this context definition for the UI.
-   * @param mixed $default_value
+   * @param mixed $defaultValue
    *   The default value of this definition.
    * @param array $constraints
    *   An array of constraints keyed by the constraint name and a value of an
    *   array constraint options or a NULL.
    */
-  public function __construct($data_type = 'any', $label = NULL, $required = TRUE, $multiple = FALSE, $description = NULL, $default_value = NULL, array $constraints = []) {
-    $this->dataType = $data_type;
-    $this->label = $label;
-    $this->isRequired = $required;
-    $this->isMultiple = $multiple;
-    $this->description = $description;
-    $this->defaultValue = $default_value;
+  public function __construct(/**
+   * The data type of the data.
+   */
+  protected $dataType = 'any', /**
+   * The human-readable label.
+   */
+  protected $label = NULL, /**
+   * Determines whether a data value is required.
+   */
+  protected $isRequired = TRUE, /**
+   * Whether the data is multi-valued, i.e. a list of data items.
+   */
+  protected $isMultiple = FALSE, /**
+   * The human-readable description.
+   */
+  protected $description = NULL, /**
+   * The default value.
+   */
+  protected $defaultValue = NULL, array $constraints = []) {
     foreach ($constraints as $constraint_name => $options) {
       $this->addConstraint($constraint_name, $options);
     }
 
-    assert(!str_starts_with($data_type, 'entity:') || $this instanceof EntityContextDefinition);
+    assert(!str_starts_with($this->dataType, 'entity:') || $this instanceof EntityContextDefinition);
   }
 
   /**
@@ -129,7 +95,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDataType($data_type) {
+  public function setDataType($data_type): static {
     $this->dataType = $data_type;
     return $this;
   }
@@ -144,7 +110,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLabel($label) {
+  public function setLabel($label): static {
     $this->label = $label;
     return $this;
   }
@@ -159,7 +125,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDescription($description) {
+  public function setDescription($description): static {
     $this->description = $description;
     return $this;
   }
@@ -174,7 +140,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMultiple($multiple = TRUE) {
+  public function setMultiple($multiple = TRUE): static {
     $this->isMultiple = $multiple;
     return $this;
   }
@@ -189,7 +155,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setRequired($required = TRUE) {
+  public function setRequired($required = TRUE): static {
     $this->isRequired = $required;
     return $this;
   }
@@ -204,7 +170,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDefaultValue($default_value) {
+  public function setDefaultValue($default_value): static {
     $this->defaultValue = $default_value;
     return $this;
   }
@@ -228,7 +194,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setConstraints(array $constraints) {
+  public function setConstraints(array $constraints): static {
     $this->constraints = $constraints;
     return $this;
   }
@@ -272,7 +238,7 @@ class ContextDefinition implements ContextDefinitionInterface {
    * @return bool
    *   TRUE if the data types match, otherwise FALSE.
    */
-  protected function dataTypeMatches(ContextInterface $context) {
+  protected function dataTypeMatches(ContextInterface $context): bool {
     $this_type = $this->getDataType();
     $that_type = $context->getContextDefinition()->getDataType();
 
@@ -290,7 +256,7 @@ class ContextDefinition implements ContextDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function isSatisfiedBy(ContextInterface $context) {
+  public function isSatisfiedBy(ContextInterface $context): bool {
     $definition = $context->getContextDefinition();
     if (!$this->dataTypeMatches($context)) {
       return FALSE;
@@ -344,7 +310,7 @@ class ContextDefinition implements ContextDefinitionInterface {
    * @yield \Drupal\Core\TypedData\TypedDataInterface
    *   The set of typed data object.
    */
-  protected function getSampleValues() {
+  protected function getSampleValues(): \Generator {
     yield $this->getTypedDataManager()->create($this->getDataDefinition());
   }
 
@@ -354,7 +320,7 @@ class ContextDefinition implements ContextDefinitionInterface {
    * @return \Symfony\Component\Validator\Constraint[]
    *   A list of applied constraints for the context definition.
    */
-  protected function getConstraintObjects() {
+  protected function getConstraintObjects(): array {
     $constraint_definitions = $this->getConstraints();
 
     $validation_constraint_manager = $this->getTypedDataManager()->getValidationConstraintManager();

@@ -31,7 +31,7 @@ class ConfigTranslationBlockListBuilder extends ConfigTranslationEntityListBuild
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),

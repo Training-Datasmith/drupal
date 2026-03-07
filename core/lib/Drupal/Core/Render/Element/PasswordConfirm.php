@@ -31,7 +31,7 @@ class PasswordConfirm extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#markup' => '',
@@ -44,8 +44,9 @@ class PasswordConfirm extends FormElementBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state): array {
     if ($input === FALSE) {
       $element += ['#default_value' => []];
       return $element['#default_value'] + ['pass1' => '', 'pass2' => ''];
@@ -66,7 +67,7 @@ class PasswordConfirm extends FormElementBase {
   /**
    * Expand a password_confirm field into two text boxes.
    */
-  public static function processPasswordConfirm(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processPasswordConfirm(array &$element, FormStateInterface $form_state, &$complete_form): array {
     $element['pass1'] = [
       '#type' => 'password',
       '#title' => t('Password'),
@@ -102,9 +103,9 @@ class PasswordConfirm extends FormElementBase {
   /**
    * Validates a password_confirm element.
    */
-  public static function validatePasswordConfirm(&$element, FormStateInterface $form_state, &$complete_form) {
-    $pass1 = trim($element['pass1']['#value']);
-    $pass2 = trim($element['pass2']['#value']);
+  public static function validatePasswordConfirm(array &$element, FormStateInterface $form_state, &$complete_form): array {
+    $pass1 = trim((string) $element['pass1']['#value']);
+    $pass2 = trim((string) $element['pass2']['#value']);
     if (strlen($pass1) > 0 || strlen($pass2) > 0) {
       if (strcmp($pass1, $pass2)) {
         $form_state->setError($element, t('The specified passwords do not match.'));

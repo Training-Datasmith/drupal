@@ -28,7 +28,7 @@ class ProfileExtensionList extends ExtensionList {
   /**
    * {@inheritdoc}
    */
-  protected function getInstalledExtensionNames() {
+  protected function getInstalledExtensionNames(): array {
     return [$this->installProfile];
   }
 

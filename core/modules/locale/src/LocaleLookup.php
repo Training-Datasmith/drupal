@@ -16,53 +16,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class LocaleLookup extends CacheCollector {
 
   /**
-   * A language code.
-   *
-   * @var string
-   */
-  protected $langcode;
-
-  /**
    * The msgctxt context.
-   *
-   * @var string
    */
-  protected $context;
-
-  /**
-   * The locale storage.
-   *
-   * @var \Drupal\locale\StringStorageInterface
-   */
-  protected $stringStorage;
-
-  /**
-   * The cache backend that should be used.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * The lock backend that should be used.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected $lock;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
+  protected string $context;
 
   /**
    * The request stack.
@@ -78,28 +34,24 @@ class LocaleLookup extends CacheCollector {
    *   The language code.
    * @param string $context
    *   The string context.
-   * @param \Drupal\locale\StringStorageInterface $string_storage
+   * @param \Drupal\locale\StringStorageInterface $stringStorage
    *   The string storage.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend.
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    */
-  public function __construct($langcode, $context, StringStorageInterface $string_storage, CacheBackendInterface $cache, LockBackendInterface $lock, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, RequestStack $request_stack) {
-    $this->langcode = $langcode;
+  public function __construct(/**
+   * A language code.
+   */
+  protected $langcode, $context, protected \Drupal\locale\StringStorageInterface $stringStorage, protected \Drupal\Core\Cache\CacheBackendInterface $cache, protected \Drupal\Core\Lock\LockBackendInterface $lock, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, RequestStack $request_stack) {
     $this->context = (string) $context;
-    $this->stringStorage = $string_storage;
-    $this->configFactory = $config_factory;
-    $this->languageManager = $language_manager;
-
-    $this->cache = $cache;
-    $this->lock = $lock;
     $this->tags = ['locale'];
     $this->requestStack = $request_stack;
   }

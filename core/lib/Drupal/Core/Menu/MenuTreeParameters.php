@@ -30,14 +30,14 @@ class MenuTreeParameters implements \Serializable {
    *
    * @var int|null
    */
-  public $minDepth = NULL;
+  public $minDepth;
 
   /**
    * The maximum depth of menu links in the resulting tree relative to the root.
    *
    * @var int|null
    */
-  public $maxDepth = NULL;
+  public $maxDepth;
 
   /**
    * An array of parent link IDs.
@@ -81,7 +81,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @codeCoverageIgnore
    */
-  public function setRoot($root) {
+  public function setRoot($root): static {
     $this->root = (string) $root;
     return $this;
   }
@@ -94,7 +94,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @return $this
    */
-  public function setMinDepth($min_depth) {
+  public function setMinDepth($min_depth): static {
     $this->minDepth = max(1, $min_depth);
     return $this;
   }
@@ -109,7 +109,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @codeCoverageIgnore
    */
-  public function setMaxDepth($max_depth) {
+  public function setMaxDepth($max_depth): static {
     $this->maxDepth = $max_depth;
     return $this;
   }
@@ -123,7 +123,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @return $this
    */
-  public function addExpandedParents(array $parents) {
+  public function addExpandedParents(array $parents): static {
     $this->expandedParents = array_merge($this->expandedParents, $parents);
     $this->expandedParents = array_unique($this->expandedParents);
     return $this;
@@ -141,7 +141,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @codeCoverageIgnore
    */
-  public function setActiveTrail(array $active_trail) {
+  public function setActiveTrail(array $active_trail): static {
     $this->activeTrail = $active_trail;
     return $this;
   }
@@ -162,7 +162,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @return $this
    */
-  public function addCondition($definition_field, $value, $operator = NULL) {
+  public function addCondition($definition_field, $value, $operator = NULL): static {
     if (!isset($operator)) {
       $this->conditions[$definition_field] = $value;
     }
@@ -177,7 +177,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @return $this
    */
-  public function onlyEnabledLinks() {
+  public function onlyEnabledLinks(): static {
     $this->addCondition('enabled', 1);
     return $this;
   }
@@ -187,7 +187,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @return $this
    */
-  public function setTopLevelOnly() {
+  public function setTopLevelOnly(): static {
     $this->setMaxDepth(1);
     return $this;
   }
@@ -203,7 +203,7 @@ class MenuTreeParameters implements \Serializable {
    *
    * @return $this
    */
-  public function excludeRoot() {
+  public function excludeRoot(): static {
     $this->setMinDepth(1);
     return $this;
   }

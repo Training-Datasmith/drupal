@@ -25,7 +25,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    * @var array
    */
   protected $defaults = [
-    'class' => '\Drupal\migrate\Plugin\Migration',
+    'class' => \Drupal\migrate\Plugin\Migration::class,
   ];
 
   /**
@@ -33,30 +33,20 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    *
    * @var string
    */
-  protected $pluginInterface = 'Drupal\migrate\Plugin\MigrationInterface';
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
+  protected $pluginInterface = \Drupal\migrate\Plugin\MigrationInterface::class;
 
   /**
    * Construct a migration plugin manager.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend for the definitions.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend, LanguageManagerInterface $language_manager) {
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, CacheBackendInterface $cache_backend) {
     $this->factory = new ContainerFactory($this, $this->pluginInterface);
     $this->alterInfo('migration_plugins');
     $this->setCacheBackend($cache_backend, 'migration_plugins');
-    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -68,9 +58,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    */
   protected function getDiscovery() {
     if (!isset($this->discovery)) {
-      $directories = array_map(function ($directory) {
-        return [$directory . '/migrations'];
-      }, $this->moduleHandler->getModuleDirectories());
+      $directories = array_map(fn(string $directory) => [$directory . '/migrations'], $this->moduleHandler->getModuleDirectories());
 
       $yaml_discovery = new YamlDirectoryDiscovery($directories, 'migrate');
       // This gets rid of migrations which try to use a non-existent source
@@ -80,10 +68,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
       // This gets rid of migrations with explicit providers set if one of the
       // providers do not exist before we try to use a potentially non-existing
       // deriver. This is a rare case.
-      $filtered_discovery = new ProviderFilterDecorator($only_with_source_discovery, [
-        $this->moduleHandler,
-        'moduleExists',
-      ]);
+      $filtered_discovery = new ProviderFilterDecorator($only_with_source_discovery, $this->moduleHandler->moduleExists(...));
       $this->discovery = new ContainerDerivativeDiscoveryDecorator($filtered_discovery);
     }
     return $this->discovery;
@@ -92,7 +77,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
   /**
    * {@inheritdoc}
    */
-  public function createInstance($plugin_id, array $configuration = []) {
+  public function createInstance($plugin_id, array $configuration = []): \Drupal\migrate\Plugin\MigrationInterface|false {
     $instances = $this->createInstances([$plugin_id], [$plugin_id => $configuration]);
     return reset($instances);
   }
@@ -135,16 +120,15 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    * {@inheritdoc}
    */
   public function createInstancesByTag($tag) {
-    $migrations = array_filter($this->getDefinitions(), function ($migration) use ($tag) {
-      return !empty($migration['migration_tags']) && in_array($tag, $migration['migration_tags']);
-    });
+    $migrations = array_filter($this->getDefinitions(), fn(array $migration) => !empty($migration['migration_tags']) && in_array($tag, $migration['migration_tags']));
     return $migrations ? $this->createInstances(array_keys($migrations)) : [];
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function expandPluginIds(array $migration_ids) {
+  public function expandPluginIds(array $migration_ids): array {
     $plugin_ids = [];
     $all_ids = array_keys($this->getDefinitions());
     foreach ($migration_ids as $id) {
@@ -159,7 +143,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
   /**
    * {@inheritdoc}
    */
-  public function buildDependencyMigration(array $migrations, array $dynamic_ids) {
+  public function buildDependencyMigration(array $migrations, array $dynamic_ids): array {
     // Migration dependencies can be optional or required. If an optional
     // dependency does not run, the current migration is still OK to go. Both
     // optional and required dependencies (if run at all) must run before the
@@ -228,7 +212,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
    * @param array $dynamic_ids
    *   The dynamic ID mapping.
    */
-  protected function addDependency(array &$graph, $id, $dependency, $dynamic_ids) {
+  protected function addDependency(array &$graph, $id, $dependency, array $dynamic_ids) {
     $dependencies = $dynamic_ids[$dependency] ?? [$dependency];
     if (!isset($graph[$id]['edges'])) {
       $graph[$id]['edges'] = [];
@@ -261,9 +245,7 @@ class MigrationPluginManager extends DefaultPluginManager implements MigrationPl
       $this->processDefinition($definition, $plugin_id);
     }
     $this->alterDefinitions($definitions);
-    return ProviderFilterDecorator::filterDefinitions($definitions, function ($provider) {
-      return $this->providerExists($provider);
-    });
+    return ProviderFilterDecorator::filterDefinitions($definitions, fn($provider) => $this->providerExists($provider));
   }
 
 }

@@ -30,7 +30,7 @@ class SectionData extends TypedData {
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     if (is_array($value)) {
       $value = Section::fromArray($value);
     }

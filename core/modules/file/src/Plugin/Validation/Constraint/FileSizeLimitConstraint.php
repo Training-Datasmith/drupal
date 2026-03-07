@@ -18,15 +18,11 @@ class FileSizeLimitConstraint extends SymfonyConstraint {
 
   /**
    * The file limit.
-   *
-   * @var int
    */
   public int $fileLimit = 0;
 
   /**
    * The user limit.
-   *
-   * @var int
    */
   public int $userLimit = 0;
 

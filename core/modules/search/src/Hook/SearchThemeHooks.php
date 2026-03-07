@@ -99,7 +99,7 @@ class SearchThemeHooks {
    * Implements hook_preprocess_HOOK() for block templates.
    */
   #[Hook('preprocess_block')]
-  public function preprocessBlock(&$variables): void {
+  public function preprocessBlock(array &$variables): void {
     if ($variables['plugin_id'] == 'search_form_block') {
       $variables['attributes']['role'] = 'search';
     }

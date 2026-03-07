@@ -16,16 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkflowListBuilder extends ConfigEntityListBuilder {
 
   /**
-   * The workflow type plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $workflowTypeManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -40,18 +33,17 @@ class WorkflowListBuilder extends ConfigEntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $workflow_type_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $workflowTypeManager
    *   The workflow type plugin manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, PluginManagerInterface $workflow_type_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Component\Plugin\PluginManagerInterface $workflowTypeManager) {
     parent::__construct($entity_type, $storage);
-    $this->workflowTypeManager = $workflow_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'workflow_admin_overview_form';
   }
 
@@ -90,7 +82,7 @@ class WorkflowListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = parent::render();
     $workflow_types_count = count($this->workflowTypeManager->getDefinitions());
     if ($workflow_types_count === 0) {

@@ -21,51 +21,30 @@ use Composer\Util\Filesystem;
 class ScaffoldFilePath {
 
   /**
-   * The type of scaffold file this is,'autoload', 'dest' or 'src'.
-   *
-   * @var string
-   */
-  protected $type;
-
-  /**
-   * The name of the package containing the file.
-   *
-   * @var string
-   */
-  protected $packageName;
-
-  /**
-   * The relative path to the file.
-   *
-   * @var string
-   */
-  protected $relativePath;
-
-  /**
-   * The full path to the file.
-   *
-   * @var string
-   */
-  protected $fullPath;
-
-  /**
    * ScaffoldFilePath constructor.
    *
-   * @param string $path_type
+   * @param string $type
    *   The type of scaffold file this is,'autoload', 'dest' or 'src'.
-   * @param string $package_name
+   * @param string $packageName
    *   The name of the package containing the file.
-   * @param string $rel_path
+   * @param string $relativePath
    *   The relative path to the file.
-   * @param string $full_path
+   * @param string $fullPath
    *   The full path to the file.
    */
-  public function __construct($path_type, $package_name, $rel_path, $full_path) {
-    $this->type = $path_type;
-    $this->packageName = $package_name;
-    $this->relativePath = $rel_path;
-    $this->fullPath = $full_path;
-
+  public function __construct(/**
+   * The type of scaffold file this is,'autoload', 'dest' or 'src'.
+   */
+  protected $type, /**
+   * The name of the package containing the file.
+   */
+  protected $packageName, /**
+   * The relative path to the file.
+   */
+  protected $relativePath, /**
+   * The full path to the file.
+   */
+  protected $fullPath) {
     // Ensure that the full path really is a full path. We do not use
     // 'realpath' here because the file specified by the full path might
     // not exist yet.
@@ -124,7 +103,7 @@ class ScaffoldFilePath {
    * @return self
    *   Object wrapping the relative and absolute path to the source file.
    */
-  public static function sourcePath($package_name, $package_path, $destination, $source) {
+  public static function sourcePath($package_name, string $package_path, $destination, ?string $source): self {
     // Complain if there is no source path.
     if (empty($source)) {
       throw new \RuntimeException("No scaffold file path given for {$destination} in package {$package_name}.");
@@ -157,7 +136,7 @@ class ScaffoldFilePath {
    * @return self
    *   Object wrapping the relative and absolute path to the destination file.
    */
-  public static function destinationPath($package_name, $destination, Interpolator $location_replacements) {
+  public static function destinationPath($package_name, $destination, Interpolator $location_replacements): self {
     $dest_full_path = $location_replacements->interpolate($destination);
     return new self('dest', $package_name, $destination, $dest_full_path);
   }
@@ -171,7 +150,7 @@ class ScaffoldFilePath {
    *   (optional) Prefix to add before -rel-path and -full-path item names.
    *   Defaults to path type provided when constructing this object.
    */
-  public function addInterpolationData(Interpolator $interpolator, $name_prefix = '') {
+  public function addInterpolationData(Interpolator $interpolator, $name_prefix = ''): void {
     if (empty($name_prefix)) {
       $name_prefix = $this->type;
     }
@@ -193,7 +172,7 @@ class ScaffoldFilePath {
    * @return \Drupal\Composer\Plugin\Scaffold\Interpolator
    *   An interpolator for making string replacements.
    */
-  public function getInterpolator($name_prefix = '') {
+  public function getInterpolator($name_prefix = ''): \Drupal\Composer\Plugin\Scaffold\Interpolator {
     $interpolator = new Interpolator();
     $this->addInterpolationData($interpolator, $name_prefix);
     return $interpolator;

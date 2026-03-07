@@ -21,7 +21,7 @@ class UidRevision extends Uid {
   /**
    * {@inheritdoc}
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $this->uidRevisionQuery([$this->argument]);
   }
 

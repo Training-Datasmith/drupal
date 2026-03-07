@@ -41,7 +41,7 @@ class Textfield extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#size' => 60,
@@ -65,7 +65,7 @@ class Textfield extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
     if ($input !== FALSE && $input !== NULL) {
       // This should be a string, but allow other scalars since they might be
       // valid input in programmatic form submissions.
@@ -88,7 +88,7 @@ class Textfield extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderTextfield($element) {
+  public static function preRenderTextfield(array $element): array {
     $element['#attributes']['type'] = 'text';
     Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
     static::setAttributes($element, ['form-text']);

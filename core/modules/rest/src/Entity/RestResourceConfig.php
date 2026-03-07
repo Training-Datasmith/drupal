@@ -112,16 +112,11 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
    * {@inheritdoc}
    */
   public function getMethods() {
-    switch ($this->granularity) {
-      case RestResourceConfigInterface::METHOD_GRANULARITY:
-        return $this->getMethodsForMethodGranularity();
-
-      case RestResourceConfigInterface::RESOURCE_GRANULARITY:
-        return $this->configuration['methods'];
-
-      default:
-        throw new \InvalidArgumentException('Invalid granularity specified.');
-    }
+    return match ($this->granularity) {
+        RestResourceConfigInterface::METHOD_GRANULARITY => $this->getMethodsForMethodGranularity(),
+        RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['methods'],
+        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+    };
   }
 
   /**
@@ -130,25 +125,20 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
    * @return string[]
    *   A list of supported HTTP methods.
    */
-  protected function getMethodsForMethodGranularity() {
+  protected function getMethodsForMethodGranularity(): array {
     $methods = array_keys($this->configuration);
-    return array_map([$this, 'normalizeRestMethod'], $methods);
+    return array_map($this->normalizeRestMethod(...), $methods);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getAuthenticationProviders($method) {
-    switch ($this->granularity) {
-      case RestResourceConfigInterface::METHOD_GRANULARITY:
-        return $this->getAuthenticationProvidersForMethodGranularity($method);
-
-      case RestResourceConfigInterface::RESOURCE_GRANULARITY:
-        return $this->configuration['authentication'];
-
-      default:
-        throw new \InvalidArgumentException('Invalid granularity specified.');
-    }
+    return match ($this->granularity) {
+        RestResourceConfigInterface::METHOD_GRANULARITY => $this->getAuthenticationProvidersForMethodGranularity($method),
+        RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['authentication'],
+        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+    };
   }
 
   /**
@@ -172,16 +162,11 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
    * {@inheritdoc}
    */
   public function getFormats($method) {
-    switch ($this->granularity) {
-      case RestResourceConfigInterface::METHOD_GRANULARITY:
-        return $this->getFormatsForMethodGranularity($method);
-
-      case RestResourceConfigInterface::RESOURCE_GRANULARITY:
-        return $this->configuration['formats'];
-
-      default:
-        throw new \InvalidArgumentException('Invalid granularity specified.');
-    }
+    return match ($this->granularity) {
+        RestResourceConfigInterface::METHOD_GRANULARITY => $this->getFormatsForMethodGranularity($method),
+        RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->configuration['formats'],
+        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+    };
   }
 
   /**
@@ -204,7 +189,7 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return [
       'resource' => new DefaultSingleLazyPluginCollection($this->getResourcePluginManager(), $this->plugin_id, []),
     ];
@@ -213,7 +198,7 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
 
     foreach ($this->getRestResourceDependencies()->calculateDependencies($this) as $type => $dependencies) {
@@ -227,7 +212,7 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
   /**
    * {@inheritdoc}
    */
-  public function onDependencyRemoval(array $dependencies) {
+  public function onDependencyRemoval(array $dependencies): bool {
     $parent = parent::onDependencyRemoval($dependencies);
 
     // If the dependency problems are not marked as fixed at this point they
@@ -256,14 +241,14 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
    * @return string
    *   The normalized request method.
    */
-  protected function normalizeRestMethod($method) {
+  protected function normalizeRestMethod($method): string {
     return strtoupper($method);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     \Drupal::service('router.builder')->setRebuildNeeded();
@@ -272,7 +257,7 @@ class RestResourceConfig extends ConfigEntityBase implements RestResourceConfigI
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     \Drupal::service('router.builder')->setRebuildNeeded();

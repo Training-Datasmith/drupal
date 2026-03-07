@@ -31,8 +31,9 @@ class LayoutSectionItemList extends FieldItemList implements SectionListInterfac
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getSections() {
+  public function getSections(): array {
     $sections = [];
     foreach ($this->list as $delta => $item) {
       $sections[$delta] = $item->section;
@@ -43,7 +44,7 @@ class LayoutSectionItemList extends FieldItemList implements SectionListInterfac
   /**
    * {@inheritdoc}
    */
-  protected function setSections(array $sections) {
+  protected function setSections(array $sections): static {
     $this->list = [];
     $sections = array_values($sections);
     /** @var \Drupal\layout_builder\Plugin\Field\FieldType\LayoutSectionItem $item */
@@ -69,7 +70,7 @@ class LayoutSectionItemList extends FieldItemList implements SectionListInterfac
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     parent::preSave();
     // Loop through each section and reconstruct it to ensure that all default
     // values are present.
@@ -87,11 +88,7 @@ class LayoutSectionItemList extends FieldItemList implements SectionListInterfac
     }
 
     // Convert arrays of section objects to array values for comparison.
-    $convert = function (LayoutSectionItemList $list) {
-      return array_map(function (Section $section) {
-        return $section->toArray();
-      }, $list->getSections());
-    };
+    $convert = (fn(LayoutSectionItemList $list) => array_map(fn(Section $section) => $section->toArray(), $list->getSections()));
     return $convert($this) === $convert($list_to_compare);
   }
 

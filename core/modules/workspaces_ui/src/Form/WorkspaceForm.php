@@ -29,7 +29,7 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $instance = parent::create($container);
     $instance->workspaceManager = $container->get('workspaces.manager');
     return $instance;
@@ -38,7 +38,7 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $workspace = $this->entity;
 
     if ($this->operation == 'edit') {
@@ -70,7 +70,7 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function getEditedFieldNames(FormStateInterface $form_state) {
+  protected function getEditedFieldNames(FormStateInterface $form_state): array {
     return array_merge([
       'label',
       'id',
@@ -89,7 +89,7 @@ class WorkspaceForm extends ContentEntityForm {
       'id',
     ];
     foreach ($violations->getByFields($field_names) as $violation) {
-      [$field_name] = explode('.', $violation->getPropertyPath(), 2);
+      [$field_name] = explode('.', (string) $violation->getPropertyPath(), 2);
       $form_state->setErrorByName($field_name, $violation->getMessage());
     }
     parent::flagViolations($violations, $form, $form_state);
@@ -119,7 +119,7 @@ class WorkspaceForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $workspace = $this->entity;
     $workspace->setNewRevision(TRUE);
     $status = $workspace->save();

@@ -30,13 +30,6 @@ class Media extends CKEditor5PluginDefault implements ContainerFactoryPluginInte
   use CKEditor5PluginConfigurableTrait;
 
   /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
    * Media constructor.
    *
    * @param array $configuration
@@ -45,12 +38,11 @@ class Media extends CKEditor5PluginDefault implements ContainerFactoryPluginInte
    *   The plugin ID for the plugin instance.
    * @param \Drupal\ckeditor5\Plugin\CKEditor5PluginDefinition $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    */
-  public function __construct(array $configuration, string $plugin_id, CKEditor5PluginDefinition $plugin_definition, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct(array $configuration, string $plugin_id, CKEditor5PluginDefinition $plugin_definition, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
@@ -63,7 +55,7 @@ class Media extends CKEditor5PluginDefault implements ContainerFactoryPluginInte
    *   An array containing view modes, style configuration,
    *   and toolbar configuration.
    */
-  private function configureViewModes(EditorInterface $editor) {
+  private function configureViewModes(EditorInterface $editor): array {
     $element_style_configuration = [];
     $toolbar_configuration = [];
 
@@ -184,7 +176,7 @@ class Media extends CKEditor5PluginDefault implements ContainerFactoryPluginInte
     $subset = $this->getPluginDefinition()->getElements();
     $view_mode_override_enabled = $this->getConfiguration()['allow_view_mode_override'];
     if (!$view_mode_override_enabled) {
-      $subset = array_diff($subset, ['<drupal-media data-view-mode>']);
+      return array_diff($subset, ['<drupal-media data-view-mode>']);
     }
     return $subset;
   }
@@ -192,14 +184,14 @@ class Media extends CKEditor5PluginDefault implements ContainerFactoryPluginInte
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return ['allow_view_mode_override' => FALSE];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['allow_view_mode_override'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow the user to override the default view mode'),
@@ -211,7 +203,7 @@ class Media extends CKEditor5PluginDefault implements ContainerFactoryPluginInte
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $form_value = $form_state->getValue('allow_view_mode_override');
     $form_state->setValue('allow_view_mode_override', (bool) $form_value);
   }
@@ -219,7 +211,7 @@ class Media extends CKEditor5PluginDefault implements ContainerFactoryPluginInte
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['allow_view_mode_override'] = $form_state->getValue('allow_view_mode_override');
   }
 

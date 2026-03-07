@@ -22,20 +22,13 @@ use Drupal\layout_builder\Entity\LayoutEntityDisplayInterface;
 class LayoutBuilderIsActiveCacheContext implements CalculatedCacheContextInterface {
 
   /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * LayoutBuilderCacheContext constructor.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
    */
-  public function __construct(RouteMatchInterface $route_match) {
-    $this->routeMatch = $route_match;
+  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+  {
   }
 
   /**
@@ -48,7 +41,7 @@ class LayoutBuilderIsActiveCacheContext implements CalculatedCacheContextInterfa
   /**
    * {@inheritdoc}
    */
-  public function getContext($entity_type_id = NULL) {
+  public function getContext($entity_type_id = NULL): string {
     if (!$entity_type_id) {
       throw new \LogicException('Missing entity type ID');
     }
@@ -60,7 +53,7 @@ class LayoutBuilderIsActiveCacheContext implements CalculatedCacheContextInterfa
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($entity_type_id = NULL) {
+  public function getCacheableMetadata($entity_type_id = NULL): \Drupal\Core\Cache\CacheableMetadata {
     if (!$entity_type_id) {
       throw new \LogicException('Missing entity type ID');
     }

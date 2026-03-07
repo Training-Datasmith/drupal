@@ -32,7 +32,7 @@ class Tel extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#size' => 30,
@@ -62,7 +62,7 @@ class Tel extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderTel($element) {
+  public static function preRenderTel(array $element): array {
     $element['#attributes']['type'] = 'tel';
     Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
     static::setAttributes($element, ['form-tel']);

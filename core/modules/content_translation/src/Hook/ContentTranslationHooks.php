@@ -68,8 +68,7 @@ class ContentTranslationHooks {
         $output .= '<dd>' . $this->t('When you add a new translation, the original text you are translating is displayed in the edit form as the <em>source</em>. If at least one translation of the original content already exists when you add a new translation, you can choose either the original content (default) or one of the other translations as the source, using the select list in the Source language section. After saving the translation, the chosen source language is then listed on the Translate tab of the content.') . '</dd>';
         $output .= '<dt>' . $this->t('Setting status of translations') . '</dt>';
         $output .= '<dd>' . $this->t('If you edit a translation in one language you may want to set the status of the other translations as <em>out-of-date</em>. You can set this status by selecting the <em>Flag other translations as outdated</em> checkbox in the Translation section of the content editing form. The status will be visible on the Translations page.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'language.content_settings_page':
         $output = '';
@@ -147,13 +146,13 @@ class ContentTranslationHooks {
     foreach ($entity_types as $entity_type) {
       if ($entity_type->isTranslatable()) {
         if (!$entity_type->hasHandlerClass('translation')) {
-          $entity_type->setHandlerClass('translation', 'Drupal\content_translation\ContentTranslationHandler');
+          $entity_type->setHandlerClass('translation', \Drupal\content_translation\ContentTranslationHandler::class);
         }
         if (!$entity_type->get('content_translation_metadata')) {
-          $entity_type->set('content_translation_metadata', 'Drupal\content_translation\ContentTranslationMetadataWrapper');
+          $entity_type->set('content_translation_metadata', \Drupal\content_translation\ContentTranslationMetadataWrapper::class);
         }
         if (!$entity_type->getFormClass('content_translation_deletion')) {
-          $entity_type->setFormClass('content_translation_deletion', '\Drupal\content_translation\Form\ContentTranslationDeleteForm');
+          $entity_type->setFormClass('content_translation_deletion', \Drupal\content_translation\Form\ContentTranslationDeleteForm::class);
         }
         $translation = $entity_type->get('translation');
         if (!$translation || !isset($translation['content_translation'])) {
@@ -223,7 +222,7 @@ class ContentTranslationHooks {
    * Implements hook_entity_bundle_info_alter().
    */
   #[Hook('entity_bundle_info_alter', order: Order::First)]
-  public function entityBundleInfoAlter(&$entity_type_bundles): void {
+  public function entityBundleInfoAlter(array &$entity_type_bundles): void {
 
     // Inline the logic from ContentTranslationManager::isEnabled() to avoid
     // having to load configuration entities one by one.
@@ -325,7 +324,7 @@ class ContentTranslationHooks {
    * @see Drupal\image\Plugin\Field\FieldType\ImageItem
    */
   #[Hook('field_info_alter')]
-  public function fieldInfoAlter(&$info): void {
+  public function fieldInfoAlter(array &$info): void {
     foreach ($info as $key => $settings) {
       // Supply the column_groups key if it's not there.
       if (empty($settings['column_groups'])) {
@@ -391,7 +390,7 @@ class ContentTranslationHooks {
    * Performs language fallback for inaccessible translations.
    */
   #[Hook('language_fallback_candidates_entity_view_alter')]
-  public function languageFallbackCandidatesEntityViewAlter(&$candidates, $context): void {
+  public function languageFallbackCandidatesEntityViewAlter(array &$candidates, array $context): void {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $context['data'];
     $entity_type_id = $entity->getEntityTypeId();
@@ -473,7 +472,7 @@ class ContentTranslationHooks {
    * Implements hook_element_info_alter().
    */
   #[Hook('element_info_alter')]
-  public function elementInfoAlter(&$type): void {
+  public function elementInfoAlter(array &$type): void {
     if (isset($type['language_configuration'])) {
       $type['language_configuration']['#process'][] = 'content_translation_language_configuration_element_process';
     }
@@ -483,7 +482,7 @@ class ContentTranslationHooks {
    * Implements hook_page_attachments().
    */
   #[Hook('page_attachments')]
-  public function pageAttachments(&$page): void {
+  public function pageAttachments(array &$page): void {
     $cache = CacheableMetadata::createFromRenderArray($page);
     $route_match = \Drupal::routeMatch();
     // If the current route has no parameters, return.
@@ -493,8 +492,11 @@ class ContentTranslationHooks {
     $is_front = \Drupal::service('path.matcher')->isFrontPage();
     // Determine if the current route represents an entity.
     foreach ($parameters as $name => $options) {
-      if (!isset($options['type']) || !str_starts_with($options['type'], 'entity:')) {
-        continue;
+      if (!isset($options['type'])) {
+          continue;
+      }
+      if (!str_starts_with((string) $options['type'], 'entity:')) {
+          continue;
       }
       $entity = $route_match->getParameter($name);
       if ($entity instanceof ContentEntityInterface && $entity->hasLinkTemplate('canonical')) {

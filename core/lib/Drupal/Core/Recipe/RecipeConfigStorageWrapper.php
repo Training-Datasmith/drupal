@@ -13,7 +13,7 @@ use Drupal\Core\Config\StorageInterface;
  * @internal
  *   This API is experimental.
  */
-final class RecipeConfigStorageWrapper implements StorageInterface {
+final readonly class RecipeConfigStorageWrapper implements StorageInterface {
 
   /**
    * @param \Drupal\Core\Config\StorageInterface $storageA
@@ -25,9 +25,9 @@ final class RecipeConfigStorageWrapper implements StorageInterface {
    *   default collection.
    */
   public function __construct(
-    protected readonly StorageInterface $storageA,
-    protected readonly StorageInterface $storageB,
-    protected readonly string $collection = StorageInterface::DEFAULT_COLLECTION,
+    protected StorageInterface $storageA,
+    protected StorageInterface $storageB,
+    protected string $collection = StorageInterface::DEFAULT_COLLECTION,
   ) {
   }
 
@@ -56,7 +56,7 @@ final class RecipeConfigStorageWrapper implements StorageInterface {
 
     // Reduce all the storages to a single RecipeConfigStorageWrapper object.
     // The storages are prioritized in the order they are added to $storages.
-    return array_reduce($storages, fn(StorageInterface $carry, StorageInterface $storage) => new static($carry, $storage), new static(
+    return array_reduce($storages, fn(StorageInterface $carry, StorageInterface $storage): static => new static($carry, $storage), new static(
       array_shift($storages),
       array_shift($storages)
     ));
@@ -65,8 +65,12 @@ final class RecipeConfigStorageWrapper implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function exists($name): bool {
-    return $this->storageA->exists($name) || $this->storageB->exists($name);
+  public function exists($name): bool
+  {
+      if ($this->storageA->exists($name)) {
+          return true;
+      }
+      return $this->storageB->exists($name);
   }
 
   /**

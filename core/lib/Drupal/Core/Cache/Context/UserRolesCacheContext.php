@@ -26,7 +26,7 @@ class UserRolesCacheContext extends UserCacheContextBase implements CalculatedCa
   /**
    * {@inheritdoc}
    */
-  public function getContext($role = NULL) {
+  public function getContext($role = NULL): string {
     if ($role === NULL) {
       return implode(',', $this->user->getRoles());
     }

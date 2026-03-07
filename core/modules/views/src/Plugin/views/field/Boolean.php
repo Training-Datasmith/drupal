@@ -51,7 +51,7 @@ class Boolean extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $default_formats = [
@@ -70,7 +70,7 @@ class Boolean extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     foreach ($this->formats as $key => $item) {
       $options[$key] = implode('/', $item);
     }
@@ -118,17 +118,15 @@ class Boolean extends FieldPluginBase {
     if (!empty($this->options['not'])) {
       $value = !$value;
     }
-
     if ($this->options['type'] == 'custom') {
-      $custom_value = $value ? $this->options['type_custom_true'] : $this->options['type_custom_false'];
-      return ViewsRenderPipelineMarkup::create(UtilityXss::filterAdmin($custom_value));
+        $custom_value = $value ? $this->options['type_custom_true'] : $this->options['type_custom_false'];
+        return ViewsRenderPipelineMarkup::create(UtilityXss::filterAdmin($custom_value));
     }
-    elseif (isset($this->formats[$this->options['type']])) {
-      return $value ? $this->formats[$this->options['type']][0] : $this->formats[$this->options['type']][1];
+
+    if (isset($this->formats[$this->options['type']])) {
+        return $value ? $this->formats[$this->options['type']][0] : $this->formats[$this->options['type']][1];
     }
-    else {
-      return $value ? $this->formats['yes-no'][0] : $this->formats['yes-no'][1];
-    }
+    return $value ? $this->formats['yes-no'][0] : $this->formats['yes-no'][1];
   }
 
 }

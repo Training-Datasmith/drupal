@@ -19,46 +19,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UserMultipleCancelConfirm extends ConfirmFormBase {
 
   /**
-   * The temp store factory.
-   *
-   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
-   */
-  protected $tempStoreFactory;
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $userStorage;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new UserMultipleCancelConfirm.
    *
-   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
+   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory
    *   The temp store factory.
-   * @param \Drupal\user\UserStorageInterface $user_storage
+   * @param \Drupal\user\UserStorageInterface $userStorage
    *   The user storage.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(PrivateTempStoreFactory $temp_store_factory, UserStorageInterface $user_storage, EntityTypeManagerInterface $entity_type_manager) {
-    $this->tempStoreFactory = $temp_store_factory;
-    $this->userStorage = $user_storage;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory, protected \Drupal\user\UserStorageInterface $userStorage, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('tempstore.private'),
       $container->get('entity_type.manager')->getStorage('user'),
@@ -69,35 +46,35 @@ class UserMultipleCancelConfirm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'user_multiple_cancel_confirm';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to cancel these user accounts?');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('entity.user.collection');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Confirm');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): string {
     return '';
   }
 
@@ -187,15 +164,13 @@ class UserMultipleCancelConfirm extends ConfirmFormBase {
       '#description' => $this->t('When enabled, the user will receive an email notification after the account has been canceled.'),
     ];
 
-    $form = parent::buildForm($form, $form_state);
-
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $current_user_id = $this->currentUser()->id();
 
     // Clear out the accounts from the temp store.

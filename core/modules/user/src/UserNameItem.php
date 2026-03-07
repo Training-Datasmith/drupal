@@ -14,7 +14,7 @@ class UserNameItem extends StringItem {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('value')->getValue();
 
     // Take into account that the name of the anonymous user is an empty string.
@@ -39,7 +39,7 @@ class UserNameItem extends StringItem {
     $count = mt_rand(2, 3);
 
     // Capitalize the words used in usernames 50% of the time.
-    $words = mt_rand(0, 1) ? array_map('ucfirst', $words) : $words;
+    $words = mt_rand(0, 1) ? array_map(ucfirst(...), $words) : $words;
 
     // Username is a single long word 50% of the time. In the case of a single
     // long word, sometimes the generated username may also contain periods in
@@ -50,7 +50,7 @@ class UserNameItem extends StringItem {
       $count = mt_rand(2, 8);
 
       // The username will start with a capital letter 50% of the time.
-      $words = mt_rand(0, 1) ? array_map('strtolower', $words) : $words;
+      $words = mt_rand(0, 1) ? array_map(strtolower(...), $words) : $words;
     }
 
     $string = implode($separator, array_splice($words, 0, $count));

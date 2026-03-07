@@ -32,8 +32,9 @@ class DateTimeCustomFormatter extends DateTimeFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     // @todo Evaluate removing this method in
     // https://www.drupal.org/node/2793143 to determine if the behavior and
     // markup in the base class implementation can be used instead.

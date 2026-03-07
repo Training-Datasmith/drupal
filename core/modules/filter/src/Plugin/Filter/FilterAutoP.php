@@ -21,20 +21,18 @@ class FilterAutoP extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     return new FilterProcessResult(_filter_autop($text));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function tips($long = FALSE) {
+  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if ($long) {
       return $this->t('Lines and paragraphs are automatically recognized. The &lt;br /&gt; line break, &lt;p&gt; paragraph and &lt;/p&gt; close paragraph tags are inserted automatically. If paragraphs are not recognized simply add a couple of blank lines.');
     }
-    else {
-      return $this->t('Lines and paragraphs break automatically.');
-    }
+    return $this->t('Lines and paragraphs break automatically.');
   }
 
 }

@@ -18,22 +18,14 @@ abstract class EntityActionDeriverBase extends DeriverBase implements ContainerD
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new EntityActionDeriverBase object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation) {
     $this->stringTranslation = $string_translation;
   }
 
@@ -89,11 +81,8 @@ abstract class EntityActionDeriverBase extends DeriverBase implements ContainerD
    */
   protected function getApplicableEntityTypes() {
     $entity_types = $this->entityTypeManager->getDefinitions();
-    $entity_types = array_filter($entity_types, function (EntityTypeInterface $entity_type) {
-      return $this->isApplicable($entity_type);
-    });
 
-    return $entity_types;
+    return array_filter($entity_types, fn(EntityTypeInterface $entity_type) => $this->isApplicable($entity_type));
   }
 
 }

@@ -15,7 +15,7 @@ class MediaForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
     /** @var \Drupal\media\MediaTypeInterface $media_type */
     $media_type = $this->entity->bundle->entity;

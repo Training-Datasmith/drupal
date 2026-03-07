@@ -10,13 +10,6 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
   use TypedDataTrait;
 
   /**
-   * The array holding values for all definition keys.
-   *
-   * @var array
-   */
-  protected $definition = [];
-
-  /**
    * Creates a new data definition.
    *
    * @param string $type
@@ -25,7 +18,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   A new DataDefinition object.
    */
-  public static function create($type) {
+  public static function create($type): static {
     $definition['type'] = $type;
     return new static($definition);
   }
@@ -40,11 +33,11 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
   /**
    * Constructs a new data definition object.
    *
-   * @param array $values
+   * @param array $definition
    *   (optional) If given, an array of initial values to set on the definition.
    */
-  public function __construct(array $values = []) {
-    $this->definition = $values;
+  public function __construct(protected array $definition = [])
+  {
   }
 
   /**
@@ -63,7 +56,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setDataType($type) {
+  public function setDataType($type): static {
     $this->definition['type'] = $type;
     return $this;
   }
@@ -84,7 +77,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setLabel($label) {
+  public function setLabel($label): static {
     $this->definition['label'] = $label;
     return $this;
   }
@@ -105,7 +98,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setDescription($description) {
+  public function setDescription($description): static {
     $this->definition['description'] = $description;
     return $this;
   }
@@ -113,7 +106,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
   /**
    * {@inheritdoc}
    */
-  public function isList() {
+  public function isList(): bool {
     return ($this instanceof ListDataDefinitionInterface);
   }
 
@@ -137,7 +130,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setReadOnly($read_only) {
+  public function setReadOnly($read_only): static {
     $this->definition['read-only'] = $read_only;
     return $this;
   }
@@ -145,7 +138,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
   /**
    * {@inheritdoc}
    */
-  public function isComputed() {
+  public function isComputed(): bool {
     return !empty($this->definition['computed']);
   }
 
@@ -158,7 +151,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setComputed($computed) {
+  public function setComputed($computed): static {
     $this->definition['computed'] = $computed;
     return $this;
   }
@@ -166,7 +159,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
   /**
    * {@inheritdoc}
    */
-  public function isRequired() {
+  public function isRequired(): bool {
     return !empty($this->definition['required']);
   }
 
@@ -179,7 +172,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setRequired($required) {
+  public function setRequired($required): static {
     $this->definition['required'] = $required;
     return $this;
   }
@@ -191,10 +184,8 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
     if (isset($this->definition['class'])) {
       return $this->definition['class'];
     }
-    else {
-      $type_definition = \Drupal::typedDataManager()->getDefinition($this->getDataType());
-      return $type_definition['class'];
-    }
+    $type_definition = \Drupal::typedDataManager()->getDefinition($this->getDataType());
+    return $type_definition['class'];
   }
 
   /**
@@ -206,7 +197,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setClass($class) {
+  public function setClass($class): static {
     $this->definition['class'] = $class;
     return $this;
   }
@@ -227,7 +218,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setSettings(array $settings) {
+  public function setSettings(array $settings): static {
     $this->definition['settings'] = $settings;
     return $this;
   }
@@ -250,7 +241,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * @return static
    *   The object itself for chaining.
    */
-  public function setSetting($setting_name, $value) {
+  public function setSetting($setting_name, $value): static {
     $this->definition['settings'][$setting_name] = $value;
     return $this;
   }
@@ -258,7 +249,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
   /**
    * {@inheritdoc}
    */
-  public function getConstraints() {
+  public function getConstraints(): float|int|array {
     $constraints = $this->definition['constraints'] ?? [];
     $constraints += $this->getTypedDataManager()->getDefaultConstraints($this);
     // If either the constraints defined on this data definition or the default
@@ -295,7 +286,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    *
    * @return $this
    */
-  public function setConstraints(array $constraints) {
+  public function setConstraints(array $constraints): static {
     $this->definition['constraints'] = $constraints;
     return $this;
   }
@@ -381,11 +372,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    * {@inheritdoc}
    */
   public function isInternal() {
-    // Respect the definition, otherwise default to TRUE for computed fields.
-    if (isset($this->definition['internal'])) {
-      return $this->definition['internal'];
-    }
-    return $this->isComputed();
+    return $this->definition['internal'] ?? $this->isComputed();
   }
 
   /**
@@ -398,7 +385,7 @@ class DataDefinition implements DataDefinitionInterface, \ArrayAccess {
    *
    * @see \Drupal\Core\TypedData\DataDefinitionInterface::isInternal
    */
-  public function setInternal($internal) {
+  public function setInternal($internal): static {
     $this->definition['internal'] = $internal;
     return $this;
   }

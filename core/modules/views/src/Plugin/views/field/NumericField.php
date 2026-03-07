@@ -41,7 +41,7 @@ class NumericField extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     if (!empty($this->definition['float'])) {
       $form['set_precision'] = [
         '#type' => 'checkbox',
@@ -94,7 +94,7 @@ class NumericField extends FieldPluginBase {
       '#default_value' => $this->options['format_plural_string'],
     ];
 
-    $plural_array = explode(PoItem::DELIMITER, $this->options['format_plural_string']);
+    $plural_array = explode(PoItem::DELIMITER, (string) $this->options['format_plural_string']);
     $plurals = $this->getNumberOfPlurals($this->view->storage->get('langcode'));
     for ($i = 0; $i < $plurals; $i++) {
       $form['format_plural_values'][$i] = [
@@ -136,7 +136,7 @@ class NumericField extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     // Merge plural format options into one string and drop the individual
     // option values.
     $options = &$form_state->getValue('options');
@@ -148,7 +148,7 @@ class NumericField extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render(ResultRow $values) {
+  public function render(ResultRow $values): string {
     $value = $this->getValue($values);
 
     // Check to see if hiding should happen before adding prefix and suffix
@@ -158,12 +158,12 @@ class NumericField extends FieldPluginBase {
     }
 
     // After the hide_empty check NULL values should be treated as a 0 value.
-    $value = $value ?? 0;
+    $value ??= 0;
     if (!empty($this->options['set_precision'])) {
       $precision = $this->options['precision'];
     }
-    elseif ($decimal_position = strpos($value, '.')) {
-      $precision = strlen($value) - $decimal_position - 1;
+    elseif ($decimal_position = strpos((string) $value, '.')) {
+      $precision = strlen((string) $value) - $decimal_position - 1;
     }
     else {
       $precision = 0;

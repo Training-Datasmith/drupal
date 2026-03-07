@@ -17,7 +17,7 @@ trait AjaxHelperTrait {
    * @return bool
    *   TRUE if the current request is via AJAX, FALSE otherwise.
    */
-  protected function isAjax() {
+  protected function isAjax(): bool {
     $wrapper_format = $this->getRequestWrapperFormat() ?? '';
     return str_contains($wrapper_format, 'drupal_ajax') ||
       str_contains($wrapper_format, 'drupal_modal') ||

@@ -30,13 +30,6 @@ use Drupal\user\RoleInterface;
 class UserSelection extends DefaultSelection {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a new UserSelection object.
    *
    * @param array $configuration
@@ -60,16 +53,14 @@ class UserSelection extends DefaultSelection {
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, AccountInterface $current_user, Connection $connection, ?EntityFieldManagerInterface $entity_field_manager = NULL, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, ?EntityRepositoryInterface $entity_repository = NULL) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, AccountInterface $current_user, protected \Drupal\Core\Database\Connection $connection, ?EntityFieldManagerInterface $entity_field_manager = NULL, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, ?EntityRepositoryInterface $entity_repository = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $module_handler, $current_user, $entity_field_manager, $entity_type_bundle_info, $entity_repository);
-
-    $this->connection = $connection;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'filter' => [
         'type' => '_none',
@@ -110,7 +101,7 @@ class UserSelection extends DefaultSelection {
     $form['filter']['settings'] = [
       '#type' => 'container',
       '#attributes' => ['class' => ['entity_reference-settings']],
-      '#process' => [['\Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem', 'formProcessMergeParent']],
+      '#process' => [[\Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem::class, 'formProcessMergeParent']],
     ];
 
     if ($configuration['filter']['type'] == 'role') {
@@ -127,9 +118,7 @@ class UserSelection extends DefaultSelection {
       ];
     }
 
-    $form += parent::buildConfigurationForm($form, $form_state);
-
-    return $form;
+    return $form + parent::buildConfigurationForm($form, $form_state);
   }
 
   /**
@@ -182,17 +171,17 @@ class UserSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function validateReferenceableNewEntities(array $entities) {
+  public function validateReferenceableNewEntities(array $entities): array {
     $entities = parent::validateReferenceableNewEntities($entities);
     // Mirror the conditions checked in buildEntityQuery().
     if ($role = $this->getConfiguration()['filter']['role']) {
-      $entities = array_filter($entities, function ($user) use ($role) {
+      $entities = array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $user) use ($role): bool {
         /** @var \Drupal\user\UserInterface $user */
         return !empty(array_intersect($user->getRoles(), $role));
       });
     }
     if (!$this->currentUser->hasPermission('administer users')) {
-      $entities = array_filter($entities, function ($user) {
+      return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $user) {
         /** @var \Drupal\user\UserInterface $user */
         return $user->isActive();
       });
@@ -203,7 +192,7 @@ class UserSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function entityQueryAlter(SelectInterface $query) {
+  public function entityQueryAlter(SelectInterface $query): void {
     parent::entityQueryAlter($query);
 
     // Bail out early if we do not need to match the Anonymous user.

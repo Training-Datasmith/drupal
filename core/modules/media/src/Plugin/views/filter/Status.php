@@ -27,14 +27,14 @@ class Status extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function canExpose() {
+  public function canExpose(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $table = $this->ensureMyTable();
     $snippet = "$table.status = 1 OR ($table.uid = ***CURRENT_USER*** AND ***CURRENT_USER*** <> 0 AND ***VIEW_OWN_UNPUBLISHED_MEDIA*** = 1) OR ***ADMINISTER_MEDIA*** = 1";
     if ($this->moduleHandler->moduleExists('content_moderation')) {

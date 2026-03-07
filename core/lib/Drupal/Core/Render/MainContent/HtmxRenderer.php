@@ -54,7 +54,7 @@ class HtmxRenderer implements MainContentRendererInterface {
    * We only wrap the necessary content into a full HTML document to be
    * processed by HTMX on the frontend.
    */
-  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match) {
+  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match): \Drupal\Core\Render\HtmlResponse {
     $token = Crypt::randomBytesBase64(55);
     $html = [
       '#type' => 'inline_template',
@@ -98,7 +98,7 @@ HTMX_RESPONSE,
     // RendererInterface::render() instead of RendererInterface::renderRoot().
     // @see \Drupal\Core\Render\HtmlResponseAttachmentsProcessor.
     $render_context = new RenderContext();
-    $this->renderer->executeInRenderContext($render_context, function () use (&$html) {
+    $this->renderer->executeInRenderContext($render_context, function () use (&$html): void {
       // RendererInterface::render() renders the $html render array and updates
       // it in place. We don't care about the return value (which is just
       // $html['#markup']), but about the resulting render array.
@@ -120,13 +120,11 @@ HTMX_RESPONSE,
     // entire render cache, regardless of the cache bin.
     $content['#cache']['tags'][] = 'rendered';
 
-    $response = new HtmlResponse($content, 200, [
+    return new HtmlResponse($content, 200, [
       'Content-Type' => 'text/html; charset=utf-8',
       // Make sure bots do not show this response in search results.
       'X-Robots-Tag' => 'noindex',
     ]);
-
-    return $response;
   }
 
 }

@@ -21,7 +21,7 @@ class ChangedFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function hasAffectingChanges(FieldItemListInterface $original_items, $langcode) {
+  public function hasAffectingChanges(FieldItemListInterface $original_items, $langcode): bool {
     // When saving entities in the user interface, the changed timestamp is
     // automatically incremented by ContentEntityForm::submitForm() even if
     // nothing was actually changed. Thus, the changed time needs to be

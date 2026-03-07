@@ -28,7 +28,7 @@ class ErrorCollection implements \IteratorAggregate {
    *
    * @var list<\Symfony\Component\HttpKernel\Exception\HttpExceptionInterface>
    */
-  protected $errors;
+  protected array $errors;
 
   /**
    * Instantiates an ErrorCollection object.
@@ -37,9 +37,7 @@ class ErrorCollection implements \IteratorAggregate {
    *   The errors.
    */
   public function __construct(array $errors) {
-    assert(Inspector::assertAll(function ($error) {
-      return $error instanceof HttpExceptionInterface;
-    }, $errors));
+    assert(Inspector::assertAll(fn($error) => $error instanceof HttpExceptionInterface, $errors));
     $this->errors = $errors;
   }
 

@@ -62,8 +62,7 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
    * {@inheritdoc}
    */
   public function getSettableOptions(?AccountInterface $account = NULL) {
-    $allowed_options = options_allowed_values($this->getFieldDefinition()->getFieldStorageDefinition(), $this->getEntity());
-    return $allowed_options;
+    return options_allowed_values($this->getFieldDefinition()->getFieldStorageDefinition(), $this->getEntity());
   }
 
   /**
@@ -82,7 +81,7 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('value')->getValue();
 
     return empty($value) && (string) $value !== '0';
@@ -257,7 +256,7 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public static function addMoreSubmit(array $form, FormStateInterface $form_state) {
+  public static function addMoreSubmit(array $form, FormStateInterface $form_state): void {
     $form_state->set('items_count', $form_state->get('items_count') + 1);
     $form_state->setRebuild();
   }
@@ -293,7 +292,7 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public static function deleteSubmit(array $form, FormStateInterface $form_state) {
+  public static function deleteSubmit(array $form, FormStateInterface $form_state): void {
     $allowed_values = $form_state->getStorage()['allowed_values'];
     $button = $form_state->getTriggeringElement();
     $element = NestedArray::getValue($form, array_slice($button['#array_parents'], 0, -1));
@@ -348,7 +347,7 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
    *
    * @see \Drupal\Core\Render\Element\FormElementBase::processPattern()
    */
-  public static function validateAllowedValues($element, FormStateInterface $form_state) {
+  public static function validateAllowedValues(array $element, FormStateInterface $form_state): void {
     $items = array_filter(array_map(function ($item) use ($element) {
       $current_element = $element['table'][$item];
       $key_has_input = isset($current_element['item']['key']['#value']) && $current_element['item']['key']['#value'] !== '';
@@ -366,11 +365,9 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
       }
 
       return NULL;
-    }, Element::children($element['table'])), function ($item) {
-      return $item;
-    });
+    }, Element::children($element['table'])), fn($item) => $item);
     if ($reordered_items = $form_state->getValue([...$element['#parents'], 'table'])) {
-      uksort($items, function ($a, $b) use ($reordered_items) {
+      uksort($items, function ($a, $b) use ($reordered_items): int {
         $a_weight = $reordered_items[$a]['weight'] ?? 0;
         $b_weight = $reordered_items[$b]['weight'] ?? 0;
         return $a_weight <=> $b_weight;
@@ -414,7 +411,7 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
     foreach ($list as $position => $text) {
       // Check for an explicit key.
       $matches = [];
-      if (preg_match('/(.*)\|(.*)/', $text, $matches)) {
+      if (preg_match('/(.*)\|(.*)/', (string) $text, $matches)) {
         // Trim key and value to avoid unwanted spaces issues.
         $key = trim($matches[1]);
         $value = trim($matches[2]);
@@ -569,7 +566,7 @@ abstract class ListItemBase extends FieldItemBase implements OptionsProviderInte
   /**
    * Resets the static variable on field storage update.
    */
-  public static function submitFieldStorageUpdate() {
+  public static function submitFieldStorageUpdate(): void {
     drupal_static_reset('options_allowed_values');
   }
 

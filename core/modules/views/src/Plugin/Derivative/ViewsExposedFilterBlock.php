@@ -24,36 +24,27 @@ class ViewsExposedFilterBlock implements ContainerDeriverInterface {
   protected $derivatives = [];
 
   /**
-   * The view storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $viewStorage;
-
-  /**
-   * The base plugin ID that the derivative is for.
-   *
-   * @var string
-   */
-  protected $basePluginId;
-
-  /**
    * Constructs a ViewsExposedFilterBlock object.
    *
-   * @param string $base_plugin_id
+   * @param string $basePluginId
    *   The base plugin ID.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $view_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
    *   The entity storage to load views.
    */
-  public function __construct($base_plugin_id, EntityStorageInterface $view_storage) {
-    $this->basePluginId = $base_plugin_id;
-    $this->viewStorage = $view_storage;
+  public function __construct(
+      /**
+       * The base plugin ID that the derivative is for.
+       */
+      protected $basePluginId,
+      protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $base_plugin_id,
       $container->get('entity_type.manager')->getStorage('view')
@@ -84,25 +75,30 @@ class ViewsExposedFilterBlock implements ContainerDeriverInterface {
       $executable = $view->getExecutable();
       $executable->initDisplay();
       foreach ($executable->displayHandlers as $display) {
-        if (isset($display) && $display->getOption('exposed_block')) {
-          // Add a block definition for the block.
-          if ($display->usesExposedFormInBlock()) {
-            $delta = $view->id() . '-' . $display->display['id'];
-            $desc = $this->t('Exposed form: @view-@display_id', [
-              '@view' => $view->id(),
-              '@display_id' => $display->display['id'],
-            ]);
-            $this->derivatives[$delta] = [
-              'admin_label' => $desc,
-              'config_dependencies' => [
-                'config' => [
-                  $view->getConfigDependencyName(),
-                ],
-              ],
-            ];
-            $this->derivatives[$delta] += $base_plugin_definition;
+          if (!isset($display)) {
+              continue;
           }
-        }
+          if (!$display->getOption('exposed_block')) {
+              continue;
+          }
+          // Add a block definition for the block.
+          if (!$display->usesExposedFormInBlock()) {
+              continue;
+          }
+          $delta = $view->id() . '-' . $display->display['id'];
+          $desc = $this->t('Exposed form: @view-@display_id', [
+            '@view' => $view->id(),
+            '@display_id' => $display->display['id'],
+          ]);
+          $this->derivatives[$delta] = [
+            'admin_label' => $desc,
+            'config_dependencies' => [
+              'config' => [
+                $view->getConfigDependencyName(),
+              ],
+            ],
+          ];
+          $this->derivatives[$delta] += $base_plugin_definition;
       }
     }
     return $this->derivatives;

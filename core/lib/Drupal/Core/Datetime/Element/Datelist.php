@@ -23,7 +23,7 @@ class Datelist extends DateElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     // Note that since this information is cached, the #date_timezone property
     // is not set here, as this needs to vary potentially by-user.
     return [
@@ -87,39 +87,16 @@ class Datelist extends DateElementBase {
           $date->setTimezone(new \DateTimeZone($element['#date_timezone']));
           static::incrementRound($date, $increment);
           foreach ($parts as $part) {
-            switch ($part) {
-              case 'day':
-                $format = 'j';
-                break;
-
-              case 'month':
-                $format = 'n';
-                break;
-
-              case 'year':
-                $format = 'Y';
-                break;
-
-              case 'hour':
-                $format = in_array('ampm', $element['#date_part_order']) ? 'g' : 'G';
-                break;
-
-              case 'minute':
-                $format = 'i';
-                break;
-
-              case 'second':
-                $format = 's';
-                break;
-
-              case 'ampm':
-                $format = 'a';
-                break;
-
-              default:
-                $format = '';
-
-            }
+            $format = match ($part) {
+                'day' => 'j',
+                'month' => 'n',
+                'year' => 'Y',
+                'hour' => in_array('ampm', $element['#date_part_order']) ? 'g' : 'G',
+                'minute' => 'i',
+                'second' => 's',
+                'ampm' => 'a',
+                default => '',
+            };
             $return[$part] = $date->format($format);
           }
         }
@@ -182,7 +159,7 @@ class Datelist extends DateElementBase {
    * @return array
    *   An expanded DateList element.
    */
-  public static function processDatelist(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processDatelist(array &$element, FormStateInterface $form_state, &$complete_form): array {
     // Load translated date part labels from the appropriate calendar plugin.
     $date_helper = new DateHelper();
 
@@ -292,7 +269,7 @@ class Datelist extends DateElementBase {
    * @param array $complete_form
    *   The complete form structure.
    */
-  public static function validateDatelist(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateDatelist(array &$element, FormStateInterface $form_state, array &$complete_form): void {
     $input_exists = FALSE;
     $input = NestedArray::getValue($form_state->getValues(), $element['#parents'], $input_exists);
     $title = static::getElementTitle($element, $complete_form);
@@ -344,7 +321,7 @@ class Datelist extends DateElementBase {
    * @return array
    *   Array of keys from the input array that have no value, may be empty.
    */
-  protected static function checkEmptyInputs($input, $parts) {
+  protected static function checkEmptyInputs(array $input, $parts): array {
     // The object key does not represent an input value, see
     // \Drupal\Core\Datetime\Element\Datelist::valueCallback().
     unset($input['object']);

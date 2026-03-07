@@ -24,7 +24,7 @@ class DiffArray {
    *   Returns an array containing all the values from array1 that are not
    *   present in array2.
    */
-  public static function diffAssocRecursive(array $array1, array $array2) {
+  public static function diffAssocRecursive(array $array1, array $array2): array {
     $difference = [];
 
     foreach ($array1 as $key => $value) {

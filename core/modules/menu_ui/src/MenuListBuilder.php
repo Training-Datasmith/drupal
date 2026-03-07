@@ -47,7 +47,7 @@ class MenuListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = parent::getDefaultOperations($entity, $cacheability);
@@ -72,7 +72,7 @@ class MenuListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function ensureDestination(Url $url) {
+  protected function ensureDestination(Url $url): Url {
     // We don't want to add the destination URL here, as it means we get
     // redirected back to the list-builder after adding/deleting menu links from
     // a menu.
@@ -82,7 +82,7 @@ class MenuListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = parent::render();
     $build['#attached']['library'][] = "menu_ui/drupal.menu_ui.adminforms";
     return $build;

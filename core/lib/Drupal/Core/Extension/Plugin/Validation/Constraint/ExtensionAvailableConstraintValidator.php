@@ -181,7 +181,7 @@ class ExtensionAvailableConstraintValidator extends ConstraintValidator implemen
    */
   protected function getExtensionDiscovery(?string $profile = NULL): ExtensionDiscovery {
     // cspell:ignore CNKDSIUSYFUISEFCB
-    $profile = $profile ?? '_does_not_exist_profile_CNKDSIUSYFUISEFCB';
+    $profile ??= '_does_not_exist_profile_CNKDSIUSYFUISEFCB';
     if (!isset($this->extensionDiscovery) || !isset($this->extensionDiscovery[$profile])) {
       // When inside a testing environment, we allow all extensions to be
       // available to simplify testing distributions.

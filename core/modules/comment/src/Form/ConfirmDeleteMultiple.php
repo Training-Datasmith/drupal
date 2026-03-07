@@ -15,28 +15,28 @@ class ConfirmDeleteMultiple extends EntityDeleteMultipleForm {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     return $this->formatPlural(count($this->selection), 'Are you sure you want to delete this comment and all its children?', 'Are you sure you want to delete these comments and all their children?');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('comment.admin');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDeletedMessage($count) {
+  protected function getDeletedMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     return $this->formatPlural($count, 'Deleted @count comment.', 'Deleted @count comments.');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getInaccessibleMessage($count) {
+  protected function getInaccessibleMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     return $this->formatPlural($count, "@count comment has not been deleted because you do not have the necessary permissions.", "@count comments have not been deleted because you do not have the necessary permissions.");
   }
 

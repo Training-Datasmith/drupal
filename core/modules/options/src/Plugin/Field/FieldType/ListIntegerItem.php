@@ -41,7 +41,7 @@ class ListIntegerItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -57,16 +57,15 @@ class ListIntegerItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  protected function allowedValuesDescription() {
+  protected function allowedValuesDescription(): string {
     $description = '<p>' . $this->t('The name will be used in displayed options and edit forms. The value is the stored value, and must be numeric.') . '</p>';
-    $description .= '<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>';
-    return $description;
+    return $description . ('<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function validateAllowedValue($option) {
+  protected static function validateAllowedValue($option): ?\Drupal\Core\StringTranslation\TranslatableMarkup {
     if (!preg_match('/^-?\d+$/', $option)) {
       return new TranslatableMarkup('Allowed values list: keys must be integers.');
     }
@@ -76,7 +75,7 @@ class ListIntegerItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  protected static function castAllowedValue($value) {
+  protected static function castAllowedValue($value): int {
     return (int) $value;
   }
 

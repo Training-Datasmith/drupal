@@ -115,7 +115,7 @@ abstract class FieldItemBase extends Map implements FieldItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     // Treat the values as property value of the first property, if no array is
     // given.
     if (isset($values) && !is_array($values)) {
@@ -151,10 +151,10 @@ abstract class FieldItemBase extends Map implements FieldItemInterface {
     // There is either a property object or a plain value - possibly for a
     // not-defined property. If we have a plain value, directly return it.
     if (isset($this->properties[$name])) {
-      return $this->properties[$name]->getValue();
+        return $this->properties[$name]->getValue();
     }
-    elseif (isset($this->values[$name])) {
-      return $this->values[$name];
+    if (isset($this->values[$name])) {
+        return $this->values[$name];
     }
   }
 

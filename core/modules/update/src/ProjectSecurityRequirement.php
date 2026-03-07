@@ -20,54 +20,41 @@ final class ProjectSecurityRequirement {
   use StringTranslationTrait;
 
   /**
-   * The project title.
-   *
-   * @var string|null
-   */
-  protected $projectTitle;
-
-  /**
-   * Security coverage information for the project.
-   *
-   * @var array
-   *
-   * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
-   */
-  private $securityCoverageInfo;
-
-  /**
-   * The next version after the installed version in the format [MAJOR].[MINOR].
-   *
-   * @var string|null
-   */
-  private $nextMajorMinorVersion;
-
-  /**
-   * The existing (currently installed) version in the format [MAJOR].[MINOR].
-   *
-   * @var string|null
-   */
-  private $existingMajorMinorVersion;
-
-  /**
    * Constructs a ProjectSecurityRequirement object.
    *
-   * @param string|null $project_title
+   * @param string|null $projectTitle
    *   The project title.
-   * @param array $security_coverage_info
+   * @param array $securityCoverageInfo
    *   Security coverage information as set by
    *   \Drupal\update\ProjectSecurityData::getCoverageInfo().
-   * @param string|null $existing_major_minor_version
+   * @param string|null $existingMajorMinorVersion
    *   The existing (currently installed) version in the format [MAJOR].[MINOR].
-   * @param string|null $next_major_minor_version
+   * @param string|null $nextMajorMinorVersion
    *   The next version after the installed version in the format
    *   [MAJOR].[MINOR].
    */
-  private function __construct($project_title = NULL, array $security_coverage_info = [], $existing_major_minor_version = NULL, $next_major_minor_version = NULL) {
-    $this->projectTitle = $project_title;
-    $this->securityCoverageInfo = $security_coverage_info;
-    $this->existingMajorMinorVersion = $existing_major_minor_version;
-    $this->nextMajorMinorVersion = $next_major_minor_version;
+  private function __construct(
+      /**
+       * The project title.
+       */
+      protected $projectTitle = NULL,
+      /**
+       * Security coverage information for the project.
+       *
+       *
+       * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
+       */
+      private array $securityCoverageInfo = [],
+      /**
+       * The existing (currently installed) version in the format [MAJOR].[MINOR].
+       */
+      private $existingMajorMinorVersion = NULL,
+      /**
+       * The next version after the installed version in the format [MAJOR].[MINOR].
+       */
+      private $nextMajorMinorVersion = NULL
+  )
+  {
   }
 
   /**
@@ -87,13 +74,12 @@ final class ProjectSecurityRequirement {
    *   The security coverage information as returned by
    *   \Drupal\update\ProjectSecurityData::getCoverageInfo().
    *
-   * @return static
    *
    * @see \Drupal\update\UpdateManagerInterface::getProjects()
    * @see \Drupal\update\ProjectSecurityData::getCoverageInfo()
    * @see update_process_project_info()
    */
-  public static function createFromProjectDataAndSecurityCoverageInfo(array $project_data, array $security_coverage_info) {
+  public static function createFromProjectDataAndSecurityCoverageInfo(array $project_data, array $security_coverage_info): static {
     if ($project_data['project_type'] !== 'core' || $project_data['name'] !== 'drupal' || empty($security_coverage_info)) {
       return new static();
     }
@@ -133,7 +119,7 @@ final class ProjectSecurityRequirement {
    * @return array
    *   Requirements array as specified by hook_requirements().
    */
-  private function getVersionEndRequirement() {
+  private function getVersionEndRequirement(): array {
     $requirement = [];
     if ($security_coverage_message = $this->getVersionEndCoverageMessage()) {
       $requirement['description'] = $security_coverage_message;
@@ -200,14 +186,14 @@ final class ProjectSecurityRequirement {
    * @return array
    *   Requirements array as specified by hook_requirements().
    */
-  private function getDateEndRequirement() {
+  private function getDateEndRequirement(): array {
     $requirement = [];
     /** @var \Drupal\Component\Datetime\Time $time */
     $time = \Drupal::service('datetime.time');
     /** @var \Drupal\Core\Datetime\DateFormatterInterface $date_formatter */
     $date_formatter = \Drupal::service('date.formatter');
     // 'security_coverage_end_date' will either be in format 'Y-m-d' or 'Y-m'.
-    if (substr_count($this->securityCoverageInfo['security_coverage_end_date'], '-') === 2) {
+    if (substr_count((string) $this->securityCoverageInfo['security_coverage_end_date'], '-') === 2) {
       $date_format = 'Y-m-d';
       $full_security_coverage_end_date = $this->securityCoverageInfo['security_coverage_end_date'];
     }
@@ -260,7 +246,7 @@ final class ProjectSecurityRequirement {
    * @return string
    *   The message for a version with no security coverage.
    */
-  private function getVersionNoSecurityCoverageMessage() {
+  private function getVersionNoSecurityCoverageMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t(
       '<a href=":update_status_report">Update to a supported minor</a> as soon as possible to continue receiving security updates.',
       [':update_status_report' => Url::fromRoute('update.status')->toString()]
@@ -273,7 +259,7 @@ final class ProjectSecurityRequirement {
    * @return string
    *   A link to the release cycle page on drupal.org.
    */
-  private function getReleaseCycleLink() {
+  private function getReleaseCycleLink(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t(
         'Visit the <a href=":url">release cycle overview</a> for more information on supported releases.',
         [':url' => 'https://www.drupal.org/core/release-cycle-overview']

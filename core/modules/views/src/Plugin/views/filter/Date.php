@@ -49,7 +49,7 @@ class Date extends NumericFilter {
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::validateOptionsForm($form, $form_state);
 
     if (!empty($this->options['exposed']) && $form_state->isValueEmpty(['options', 'expose', 'required'])) {
@@ -69,7 +69,7 @@ class Date extends NumericFilter {
   /**
    * {@inheritdoc}
    */
-  public function validateExposed(&$form, FormStateInterface $form_state) {
+  public function validateExposed(&$form, FormStateInterface $form_state): void {
     if (empty($this->options['exposed'])) {
       return;
     }
@@ -94,21 +94,21 @@ class Date extends NumericFilter {
   /**
    * Validate that the time values convert to something usable.
    */
-  public function validateValidTime(&$form, FormStateInterface $form_state, $operator, $value) {
+  public function validateValidTime(array &$form, FormStateInterface $form_state, $operator, array $value): void {
     $operators = $this->operators();
 
     if ($operators[$operator]['values'] == 1) {
-      $convert = strtotime($value['value']);
+      $convert = strtotime((string) $value['value']);
       if (!empty($form['value']) && ($convert == -1 || $convert === FALSE)) {
         $form_state->setError($form['value'], $this->t('Invalid date format.'));
       }
     }
     elseif ($operators[$operator]['values'] == 2) {
-      $min = strtotime($value['min']);
+      $min = strtotime((string) $value['min']);
       if ($min == -1 || $min === FALSE) {
         $form_state->setError($form['min'], $this->t('Invalid date format.'));
       }
-      $max = strtotime($value['max']);
+      $max = strtotime((string) $value['max']);
       if ($max == -1 || $max === FALSE) {
         $form_state->setError($form['max'], $this->t('Invalid date format.'));
       }
@@ -190,8 +190,8 @@ class Date extends NumericFilter {
    * {@inheritdoc}
    */
   protected function opBetween($field) {
-    $a = intval(strtotime($this->value['min'], 0));
-    $b = intval(strtotime($this->value['max'], 0));
+    $a = intval(strtotime((string) $this->value['min'], 0));
+    $b = intval(strtotime((string) $this->value['max'], 0));
 
     if ($this->value['type'] == 'offset') {
       // Keep sign.
@@ -210,7 +210,7 @@ class Date extends NumericFilter {
    * {@inheritdoc}
    */
   protected function opSimple($field) {
-    $value = intval(strtotime($this->value['value'], 0));
+    $value = intval(strtotime((string) $this->value['value'], 0));
     if (!empty($this->value['type']) && $this->value['type'] == 'offset') {
       // Keep sign.
       $value = '***CURRENT_TIME***' . sprintf('%+d', $value);

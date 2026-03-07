@@ -43,7 +43,7 @@ final class LinksetController extends ControllerBase {
    * @return \Drupal\Core\Cache\CacheableJsonResponse
    *   A linkset response.
    */
-  public function process(Request $request, MenuInterface $menu) {
+  public function process(Request $request, MenuInterface $menu): \Drupal\Core\Cache\CacheableJsonResponse {
     // Load the given menu's tree of elements.
     $tree = $this->loadMenuTree($menu);
     // Get the incoming request URI and parse it so the linkset can use a
@@ -57,12 +57,11 @@ final class LinksetController extends ControllerBase {
     $menu_id = $menu->id();
     $links = $this->toLinkTargetObjects($tree, $cacheability);
     foreach ($links as $rel => $target_objects) {
-      $links[$rel] = array_map(function (array $target) use ($menu_id) {
-        // According to the Linkset specification, this member must be an array
-        // since the "machine-name" target attribute is non-standard.
-        // See https://tools.ietf.org/html/draft-ietf-httpapi-linkset-08#section-4.2.4.3
-        return $target + ['machine-name' => [$menu_id]];
-      }, $target_objects);
+      $links[$rel] = array_map(
+          // According to the Linkset specification, this member must be an array
+          // since the "machine-name" target attribute is non-standard.
+          // See https://tools.ietf.org/html/draft-ietf-httpapi-linkset-08#section-4.2.4.3
+          fn(array $target) => $target + ['machine-name' => [$menu_id]], $target_objects);
     }
     $linkset = !empty($tree)
       ? [['anchor' => $anchor] + $links]
@@ -210,7 +209,7 @@ final class LinksetController extends ControllerBase {
    * @param array $attributes
    *   Attributes available for the link.
    */
-  private function processCustomLinkAttributes(array &$link, array $attributes = []) {
+  private function processCustomLinkAttributes(array &$link, array $attributes = []): void {
     $attribute_keys_to_ignore = [
       'hreflang',
       'media',
@@ -224,7 +223,7 @@ final class LinksetController extends ControllerBase {
         continue;
       }
       // Skip the attribute key if it has an asterisk (*).
-      if (str_contains($key, '*')) {
+      if (str_contains((string) $key, '*')) {
         continue;
       }
       // Skip the value if it is an object.
@@ -238,8 +237,11 @@ final class LinksetController extends ControllerBase {
       if (is_array($value)) {
         $link[$key] = [];
         foreach ($value as $val) {
-          if (is_object($val) || is_array($val)) {
-            continue;
+          if (is_object($val)) {
+              continue;
+          }
+          if (is_array($val)) {
+              continue;
           }
           $link[$key][] = (string) $val;
         }

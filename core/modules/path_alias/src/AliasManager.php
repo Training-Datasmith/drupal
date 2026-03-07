@@ -55,7 +55,7 @@ class AliasManager implements AliasManagerInterface {
    *   is no replacement.
    * @see https://www.drupal.org/node/3532412
    */
-  public function setCacheKey($key) {
+  public function setCacheKey($key): void {
     @trigger_error(__METHOD__ . ' is deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. There is no replacement. See https://www.drupal.org/node/3532412', E_USER_DEPRECATED);
   }
 
@@ -66,7 +66,7 @@ class AliasManager implements AliasManagerInterface {
    *   is no replacement.
    * @see https://www.drupal.org/node/3532412
    */
-  public function writeCache() {
+  public function writeCache(): void {
     @trigger_error(__METHOD__ . ' is deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. There is no replacement. See https://www.drupal.org/node/3532412', E_USER_DEPRECATED);
   }
 
@@ -165,18 +165,13 @@ class AliasManager implements AliasManagerInterface {
     if (!empty($this->noAlias[$langcode][$path])) {
       return $path;
     }
-
-    // If the alias has already been loaded, return it from static cache.
-    if (isset($this->lookupMap[$langcode][$path])) {
-      return $this->lookupMap[$langcode][$path];
-    }
-    return $path;
+    return $this->lookupMap[$langcode][$path] ?? $path;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function cacheClear($source = NULL) {
+  public function cacheClear($source = NULL): void {
     // Note this method does not flush the preloaded path lookup cache. This is
     // because if a path is missing from this cache, it still results in the
     // alias being loaded correctly, only less efficiently.

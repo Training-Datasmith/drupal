@@ -14,20 +14,13 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class ShortcutSetController extends ControllerBase {
 
   /**
-   * The path validator.
-   *
-   * @var \Drupal\Core\Path\PathValidatorInterface
-   */
-  protected $pathValidator;
-
-  /**
    * Creates a new ShortcutSetController instance.
    *
-   * @param \Drupal\Core\Path\PathValidatorInterface $path_validator
+   * @param \Drupal\Core\Path\PathValidatorInterface $pathValidator
    *   The path validator.
    */
-  public function __construct(PathValidatorInterface $path_validator) {
-    $this->pathValidator = $path_validator;
+  public function __construct(protected \Drupal\Core\Path\PathValidatorInterface $pathValidator)
+  {
   }
 
   /**
@@ -46,7 +39,7 @@ class ShortcutSetController extends ControllerBase {
   public function addShortcutLinkInline(ShortcutSetInterface $shortcut_set, Request $request) {
     $link = $request->query->get('link');
     $name = $request->query->get('name');
-    if (parse_url($link, PHP_URL_SCHEME) === NULL && $this->pathValidator->isValid($link)) {
+    if (parse_url((string) $link, PHP_URL_SCHEME) === NULL && $this->pathValidator->isValid($link)) {
       $shortcut = $this->entityTypeManager()->getStorage('shortcut')->create([
         'title' => $name,
         'shortcut_set' => $shortcut_set->id(),

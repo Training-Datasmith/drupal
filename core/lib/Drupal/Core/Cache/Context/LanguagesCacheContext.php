@@ -11,20 +11,13 @@ use Drupal\Core\Language\LanguageManagerInterface;
 class LanguagesCacheContext implements CalculatedCacheContextInterface {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new LanguagesCacheContext service.
    *
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(LanguageManagerInterface $language_manager) {
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+  {
   }
 
   /**
@@ -61,19 +54,17 @@ class LanguagesCacheContext implements CalculatedCacheContextInterface {
       }
       return implode(',', $context_parts);
     }
-    else {
-      $language_types = $this->languageManager->getDefinedLanguageTypesInfo();
-      if (!isset($language_types[$type])) {
-        throw new \RuntimeException(sprintf('The language type "%s" is invalid.', $type));
-      }
-      return $this->languageManager->getCurrentLanguage($type)->getId();
+    $language_types = $this->languageManager->getDefinedLanguageTypesInfo();
+    if (!isset($language_types[$type])) {
+      throw new \RuntimeException(sprintf('The language type "%s" is invalid.', $type));
     }
+    return $this->languageManager->getCurrentLanguage($type)->getId();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($type = NULL) {
+  public function getCacheableMetadata($type = NULL): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

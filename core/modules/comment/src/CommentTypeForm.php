@@ -25,23 +25,9 @@ class CommentTypeForm extends EntityForm {
   protected $entityTypeManager;
 
   /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
-   * The comment manager.
-   *
-   * @var \Drupal\comment\CommentManagerInterface
-   */
-  protected $commentManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('logger.factory')->get('comment'),
@@ -56,19 +42,17 @@ class CommentTypeForm extends EntityForm {
    *   The entity type manager service.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\comment\CommentManagerInterface $comment_manager
+   * @param \Drupal\comment\CommentManagerInterface $commentManager
    *   The comment manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger, CommentManagerInterface $comment_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Psr\Log\LoggerInterface $logger, protected \Drupal\comment\CommentManagerInterface $commentManager) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->logger = $logger;
-    $this->commentManager = $comment_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $comment_type = $this->entity;
@@ -109,11 +93,13 @@ class CommentTypeForm extends EntityForm {
       // get comment fields added in the UI. Also, ensure to include only
       // entities that have integer id.
       foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
-        if ($entity_type->hasIntegerId()) {
-          if ($entity_type->get('field_ui_base_route')) {
-            $options[$entity_type->id()] = $entity_type->getLabel();
+          if (!$entity_type->hasIntegerId()) {
+              continue;
           }
-        }
+          if (!$entity_type->get('field_ui_base_route')) {
+              continue;
+          }
+          $options[$entity_type->id()] = $entity_type->getLabel();
       }
       $form['target_entity_type_id'] = [
         '#type' => 'select',
@@ -176,7 +162,7 @@ class CommentTypeForm extends EntityForm {
    *
    * @see https://www.drupal.org/node/3566814
    */
-  protected function entityTypeSupportsComments(EntityTypeInterface $entity_type) {
+  protected function entityTypeSupportsComments(EntityTypeInterface $entity_type): ?bool {
     @trigger_error(__METHOD__ . '() is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead. See https://www.drupal.org/node/3566814', E_USER_DEPRECATED);
     return $entity_type->hasIntegerId();
   }
@@ -184,7 +170,7 @@ class CommentTypeForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $comment_type = $this->entity;
     $status = $comment_type->save();
 

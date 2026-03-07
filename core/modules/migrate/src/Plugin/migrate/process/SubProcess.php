@@ -194,8 +194,9 @@ class SubProcess extends ProcessPluginBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array {
     $return = $source = [];
 
     if ($this->configuration['include_source']) {
@@ -252,7 +253,7 @@ class SubProcess extends ProcessPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function multiple() {
+  public function multiple(): bool {
     return TRUE;
   }
 

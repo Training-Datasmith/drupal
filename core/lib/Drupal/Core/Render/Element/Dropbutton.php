@@ -50,7 +50,7 @@ class Dropbutton extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderDropbutton'],
@@ -62,7 +62,7 @@ class Dropbutton extends RenderElementBase {
   /**
    * Pre-render callback: Attaches the dropbutton library and required markup.
    */
-  public static function preRenderDropbutton($element) {
+  public static function preRenderDropbutton(array $element): array {
     $element['#attached']['library'][] = 'core/drupal.dropbutton';
     $element['#attributes']['class'][] = 'dropbutton';
 

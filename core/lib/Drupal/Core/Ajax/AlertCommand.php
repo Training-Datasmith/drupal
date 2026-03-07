@@ -10,26 +10,24 @@ namespace Drupal\Core\Ajax;
 class AlertCommand implements CommandInterface {
 
   /**
-   * The text to be displayed in the alert box.
-   *
-   * @var string
-   */
-  protected $text;
-
-  /**
    * Constructs an AlertCommand object.
    *
    * @param string $text
    *   The text to be displayed in the alert box.
    */
-  public function __construct($text) {
-    $this->text = $text;
+  public function __construct(
+      /**
+       * The text to be displayed in the alert box.
+       */
+      protected $text
+  )
+  {
   }
 
   /**
    * Implements Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
 
     return [
       'command' => 'alert',

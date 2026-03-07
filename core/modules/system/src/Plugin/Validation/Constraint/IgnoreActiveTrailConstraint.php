@@ -19,8 +19,6 @@ class IgnoreActiveTrailConstraint extends SymfonyConstraint {
 
   /**
    * The default violation message.
-   *
-   * @var string
    */
   public string $message = 'The "ignore_active_trail" setting on a system menu block cannot be enabled if "level" is greater than 1 or "expand_all_items" is not enabled and "depth" is greater than 1.';
 

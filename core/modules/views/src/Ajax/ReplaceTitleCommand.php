@@ -13,26 +13,24 @@ use Drupal\Core\Ajax\CommandInterface;
 class ReplaceTitleCommand implements CommandInterface {
 
   /**
-   * The page title to replace.
-   *
-   * @var string
-   */
-  protected $title;
-
-  /**
    * Constructs a \Drupal\views\Ajax\ReplaceTitleCommand object.
    *
    * @param string $title
    *   The title of the page.
    */
-  public function __construct($title) {
-    $this->title = $title;
+  public function __construct(
+      /**
+       * The page title to replace.
+       */
+      protected $title
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     return [
       'command' => 'viewsReplaceTitle',
       'title' => $this->title,

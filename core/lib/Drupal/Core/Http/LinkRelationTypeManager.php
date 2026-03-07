@@ -23,13 +23,6 @@ class LinkRelationTypeManager extends DefaultPluginManager {
   ];
 
   /**
-   * The app root.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
    * Constructs a new LinkRelationTypeManager.
    *
    * @param string $root
@@ -39,8 +32,10 @@ class LinkRelationTypeManager extends DefaultPluginManager {
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend.
    */
-  public function __construct($root, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache) {
-    $this->root = $root;
+  public function __construct(/**
+   * The app root.
+   */
+  protected $root, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache) {
     $this->pluginInterface = LinkRelationTypeInterface::class;
     $this->moduleHandler = $module_handler;
     $this->setCacheBackend($cache, 'link_relation_type_plugins');
@@ -52,9 +47,7 @@ class LinkRelationTypeManager extends DefaultPluginManager {
   protected function getDiscovery() {
     if (!$this->discovery) {
       $directories = ['core' => $this->root . '/core'];
-      $directories += array_map(function (Extension $extension) {
-        return $this->root . '/' . $extension->getPath();
-      }, $this->moduleHandler->getModuleList());
+      $directories += array_map(fn(Extension $extension) => $this->root . '/' . $extension->getPath(), $this->moduleHandler->getModuleList());
       $this->discovery = new YamlDiscovery('link_relation_types', $directories);
     }
     return $this->discovery;

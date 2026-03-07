@@ -14,7 +14,7 @@ abstract class MultiWidthLayoutBase extends LayoutDefault implements PluginFormI
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     $configuration = parent::defaultConfiguration();
     return $configuration + [
       'column_widths' => $this->getDefaultWidth(),
@@ -24,7 +24,7 @@ abstract class MultiWidthLayoutBase extends LayoutDefault implements PluginFormI
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['column_widths'] = [
       '#type' => 'select',
       '#title' => $this->t('Column widths'),
@@ -38,7 +38,7 @@ abstract class MultiWidthLayoutBase extends LayoutDefault implements PluginFormI
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
     $this->configuration['column_widths'] = $form_state->getValue('column_widths');
   }
@@ -46,7 +46,7 @@ abstract class MultiWidthLayoutBase extends LayoutDefault implements PluginFormI
   /**
    * {@inheritdoc}
    */
-  public function build(array $regions) {
+  public function build(array $regions): array {
     $build = parent::build($regions);
     $build['#attributes']['class'] = [
       'layout',

@@ -39,7 +39,7 @@ class ProjectInfo {
    *   (optional) Array of additional elements to be collected from the
    *   .info.yml file. Defaults to [].
    */
-  public function processInfoList(array &$projects, array $list, $project_type, $status, array $additional_elements = []) {
+  public function processInfoList(array &$projects, array $list, $project_type, $status, array $additional_elements = []): void {
     foreach ($list as $file) {
       // Just projects with a matching status should be listed.
       if ($file->status != $status) {
@@ -174,7 +174,7 @@ class ProjectInfo {
    *
    * @see \Drupal\Core\Utility\ProjectInfo::processInfoList()
    */
-  public function filterProjectInfo($info, $additional_elements = []) {
+  public function filterProjectInfo($info, $additional_elements = []): array {
     $elements = [
       '_info_file_ctime',
       'datestamp',

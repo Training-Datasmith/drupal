@@ -23,13 +23,6 @@ class FormatterPluginManager extends DefaultPluginManager {
   protected $formatterOptions;
 
   /**
-   * The field type manager to define field.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected $fieldTypeManager;
-
-  /**
    * Constructs a FormatterPluginManager object.
    *
    * @param \Traversable $namespaces
@@ -39,15 +32,14 @@ class FormatterPluginManager extends DefaultPluginManager {
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
    *   The 'field type' plugin manager.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, FieldTypePluginManagerInterface $field_type_manager) {
-    parent::__construct('Plugin/Field/FieldFormatter', $namespaces, $module_handler, FormatterInterface::class, FieldFormatter::class, 'Drupal\Core\Field\Annotation\FieldFormatter');
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager) {
+    parent::__construct('Plugin/Field/FieldFormatter', $namespaces, $module_handler, FormatterInterface::class, FieldFormatter::class, \Drupal\Core\Field\Annotation\FieldFormatter::class);
 
     $this->setCacheBackend($cache_backend, 'field_formatter_types_plugins');
     $this->alterInfo('field_formatter_info');
-    $this->fieldTypeManager = $field_type_manager;
   }
 
   /**
@@ -61,7 +53,7 @@ class FormatterPluginManager extends DefaultPluginManager {
     //   Find a way to restore sanity to
     //   \Drupal\Core\Field\FormatterBase::__construct().
     // If the plugin provides a factory method, pass the container to it.
-    if (is_subclass_of($plugin_class, 'Drupal\Core\Plugin\ContainerFactoryPluginInterface')) {
+    if (is_subclass_of($plugin_class, \Drupal\Core\Plugin\ContainerFactoryPluginInterface::class)) {
       return $plugin_class::create(\Drupal::getContainer(), $configuration, $plugin_id, $plugin_definition);
     }
 
@@ -138,7 +130,7 @@ class FormatterPluginManager extends DefaultPluginManager {
    * @return array
    *   The display properties with defaults added.
    */
-  public function prepareConfiguration($field_type, array $configuration) {
+  public function prepareConfiguration($field_type, array $configuration): array {
     // Fill in defaults for missing properties.
     $configuration += [
       'label' => 'above',
@@ -172,7 +164,7 @@ class FormatterPluginManager extends DefaultPluginManager {
       $options = [];
       $field_types = $this->fieldTypeManager->getDefinitions();
       $formatter_types = $this->getDefinitions();
-      uasort($formatter_types, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+      uasort($formatter_types, \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
       foreach ($formatter_types as $name => $formatter_type) {
         foreach ($formatter_type['field_types'] as $formatter_field_type) {
           // Check that the field type exists.

@@ -17,13 +17,6 @@ class CurrentUserContext implements ContextProviderInterface {
   use StringTranslationTrait;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
    * The user storage.
    *
    * @var \Drupal\user\UserStorageInterface
@@ -38,15 +31,14 @@ class CurrentUserContext implements ContextProviderInterface {
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_type_manager) {
-    $this->account = $account;
+  public function __construct(protected \Drupal\Core\Session\AccountInterface $account, EntityTypeManagerInterface $entity_type_manager) {
     $this->userStorage = $entity_type_manager->getStorage('user');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRuntimeContexts(array $unqualified_context_ids) {
+  public function getRuntimeContexts(array $unqualified_context_ids): array {
     $current_user = $this->userStorage->load($this->account->id());
 
     if ($current_user) {
@@ -65,11 +57,9 @@ class CurrentUserContext implements ContextProviderInterface {
     $cacheability->setCacheContexts(['user']);
     $context->addCacheableDependency($cacheability);
 
-    $result = [
+    return [
       'current_user' => $context,
     ];
-
-    return $result;
   }
 
   /**

@@ -19,26 +19,24 @@ namespace Drupal\Core\Ajax;
 class RemoveCommand implements CommandInterface {
 
   /**
-   * The CSS selector for the element(s) to be removed.
-   *
-   * @var string
-   */
-  protected $selector;
-
-  /**
    * Constructs a RemoveCommand object.
    *
    * @param string $selector
    *   The selector.
    */
-  public function __construct($selector) {
-    $this->selector = $selector;
+  public function __construct(
+      /**
+       * The CSS selector for the element(s) to be removed.
+       */
+      protected $selector
+  )
+  {
   }
 
   /**
    * Implements Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
     return [
       'command' => 'remove',
       'selector' => $this->selector,

@@ -37,12 +37,11 @@ class BigPipeResponse extends HtmlResponse implements ResponseKeepSessionOpenInt
    * Still contains placeholders. Its cacheability metadata and attachments are
    * for everything except the placeholders (since those are not yet rendered).
    *
-   * @var \Drupal\Core\Render\HtmlResponse
    *
    * @see \Drupal\Core\Render\StreamedResponseInterface
    * @see ::getStreamedResponse()
    */
-  protected $originalHtmlResponse;
+  protected \Drupal\Core\Render\HtmlResponse $originalHtmlResponse;
 
   /**
    * Constructs a new BigPipeResponse.
@@ -51,7 +50,7 @@ class BigPipeResponse extends HtmlResponse implements ResponseKeepSessionOpenInt
    *   The original HTML response.
    */
   public function __construct(HtmlResponse $response) {
-    parent::__construct('', $response->getStatusCode(), []);
+    parent::__construct('', $response->getStatusCode());
 
     $this->originalHtmlResponse = $response;
 
@@ -105,7 +104,7 @@ class BigPipeResponse extends HtmlResponse implements ResponseKeepSessionOpenInt
    * @param \Drupal\big_pipe\Render\BigPipe $big_pipe
    *   The BigPipe service.
    */
-  public function setBigPipeService(BigPipe $big_pipe) {
+  public function setBigPipeService(BigPipe $big_pipe): void {
     $this->bigPipe = $big_pipe;
   }
 

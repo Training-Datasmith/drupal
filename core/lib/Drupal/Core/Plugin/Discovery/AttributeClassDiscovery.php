@@ -14,19 +14,15 @@ class AttributeClassDiscovery extends ComponentAttributeClassDiscovery {
    * Suffix to append to each PSR-4 directory associated with a base namespace.
    *
    * This suffix is used to form the directories where plugins are found.
-   *
-   * @var string
    */
-  protected $directorySuffix = '';
+  protected string $directorySuffix = '';
 
   /**
    * A suffix to append to each base namespace.
    *
    * This suffix is used to obtain the namespaces where plugins are found.
-   *
-   * @var string
    */
-  protected $namespaceSuffix = '';
+  protected string $namespaceSuffix = '';
 
   /**
    * Constructs an AttributeClassDiscovery object.
@@ -45,7 +41,7 @@ class AttributeClassDiscovery extends ComponentAttributeClassDiscovery {
   public function __construct(
     string $subdir,
     protected \Traversable $rootNamespacesIterator,
-    string $pluginDefinitionAttributeName = 'Drupal\Component\Plugin\Attribute\Plugin',
+    string $pluginDefinitionAttributeName = \Drupal\Component\Plugin\Attribute\Plugin::class,
   ) {
     if ($subdir) {
       // Prepend a directory separator to $subdir,
@@ -162,7 +158,7 @@ class AttributeClassDiscovery extends ComponentAttributeClassDiscovery {
     }
 
     // Convert providers to two-level namespaces to check for availability.
-    $dependencies['provider'] = array_map(static fn ($provider) => "Drupal\\$provider", $dependencies['provider']);
+    $dependencies['provider'] = array_map(static fn ($provider): string => "Drupal\\$provider", $dependencies['provider']);
     return parent::hasMissingDependencies($dependencies);
   }
 

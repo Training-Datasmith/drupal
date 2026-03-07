@@ -11,10 +11,8 @@ class FileStorage implements PhpStorageInterface {
 
   /**
    * The directory where the files should be stored.
-   *
-   * @var string
    */
-  protected $directory;
+  protected string $directory;
 
   /**
    * Constructs this FileStorage object.
@@ -32,14 +30,14 @@ class FileStorage implements PhpStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return file_exists($this->getFullPath($name));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function load($name) {
+  public function load($name): bool {
     // The FALSE returned on failure is enough for the caller to handle this,
     // we do not want a warning too.
     return (@include_once $this->getFullPath($name)) !== FALSE;
@@ -48,7 +46,7 @@ class FileStorage implements PhpStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function save($name, $code) {
+  public function save($name, $code): bool {
     $path = $this->getFullPath($name);
     $directory = dirname($path);
     $this->ensureDirectory($directory);
@@ -118,12 +116,10 @@ class FileStorage implements PhpStorageInterface {
         }
         return TRUE;
       }
-      else {
-        // The directory path is not disclosed to avoid an information
-        // disclosure vulnerability. For security reasons, further details are
-        // not provided in the error message.
-        trigger_error('mkdir(): Permission Denied', E_USER_WARNING);
-      }
+      // The directory path is not disclosed to avoid an information
+      // disclosure vulnerability. For security reasons, further details are
+      // not provided in the error message.
+      trigger_error('mkdir(): Permission Denied', E_USER_WARNING);
     }
     return FALSE;
   }
@@ -142,7 +138,7 @@ class FileStorage implements PhpStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFullPath($name) {
+  public function getFullPath($name): string {
     return $this->directory . '/' . $name;
   }
 
@@ -189,8 +185,9 @@ class FileStorage implements PhpStorageInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function listAll() {
+  public function listAll(): array {
     $names = [];
     if (file_exists($this->directory)) {
       foreach (new \DirectoryIterator($this->directory) as $fileinfo) {

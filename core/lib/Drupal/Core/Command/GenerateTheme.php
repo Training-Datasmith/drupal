@@ -31,10 +31,8 @@ class GenerateTheme extends Command {
 
   /**
    * The path for the Drupal root.
-   *
-   * @var string
    */
-  private $root;
+  private readonly string $root;
 
   /**
    * GenerateTheme constructor.
@@ -92,7 +90,7 @@ class GenerateTheme extends Command {
 
     $io->writeln("<info>Generating theme $theme_label ($destination_theme) from $starterkit_id starterkit.</info>");
 
-    $destination = trim($input->getOption('path'), '/') . '/' . $destination_theme;
+    $destination = trim((string) $input->getOption('path'), '/') . '/' . $destination_theme;
     if (is_dir($destination)) {
       $io->getErrorStyle()->error("Theme could not be generated because the destination directory $destination exists already.");
       return 1;
@@ -158,7 +156,7 @@ class GenerateTheme extends Command {
     }
 
     $filesToRename = self::createFilesFinder($tmpDir)
-      ->name(array_map(static fn (string $pattern) => "*$pattern*", array_values($patterns['old'])))
+      ->name(array_map(static fn (string $pattern): string => "*$pattern*", array_values($patterns['old'])))
       ->notPath($starterkit_config['no_rename']);
     foreach ($filesToRename as $file) {
       $filepath_segments = explode('/', $file->getRealPath());
@@ -173,7 +171,7 @@ class GenerateTheme extends Command {
     $info = Yaml::decode(file_get_contents($info_file));
     $info = array_filter(
       array_merge($info, $starterkit_config['info']),
-      static fn (mixed $value) => $value !== NULL,
+      static fn (mixed $value): bool => $value !== NULL,
     );
     // Ensure the generated theme is not hidden.
     unset($info['hidden']);
@@ -290,7 +288,7 @@ class GenerateTheme extends Command {
         throw new \RuntimeException("$key in starterkit.yml must be an array");
       }
       $starterkit_config[$key] = array_map(
-        static fn (string $path) => Glob::toRegex(trim($path, '/')),
+        static fn (string $path): string => Glob::toRegex(trim($path, '/')),
         $starterkit_config[$key]
       );
 
@@ -298,7 +296,7 @@ class GenerateTheme extends Command {
         $files = self::createFilesFinder($theme->getPath())->path($starterkit_config[$key])
           ->ignoreDotFiles(FALSE)
           ->ignoreVCS(TRUE);
-        $starterkit_config[$key] = array_map(static fn ($file) => $file->getRelativePathname(), iterator_to_array($files));
+        $starterkit_config[$key] = array_map(static fn (\Symfony\Component\Finder\SplFileInfo $file): string => $file->getRelativePathname(), iterator_to_array($files));
         if (count($starterkit_config[$key]) === 0) {
           throw new \RuntimeException("Paths were defined `$key` but no files found.");
         }

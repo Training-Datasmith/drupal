@@ -36,7 +36,7 @@ class MemoryBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * {@inheritdoc}
    */
-  public function register($name, $window = 3600, $identifier = NULL) {
+  public function register($name, $window = 3600, $identifier = NULL): void {
     if (!isset($identifier)) {
       $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
     }
@@ -49,7 +49,7 @@ class MemoryBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * {@inheritdoc}
    */
-  public function clear($name, $identifier = NULL) {
+  public function clear($name, $identifier = NULL): void {
     if (!isset($identifier)) {
       $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
     }
@@ -62,7 +62,7 @@ class MemoryBackend implements FloodInterface, PrefixFloodInterface {
   public function clearByPrefix(string $name, string $prefix): void {
     foreach ($this->events as $event_name => $identifier) {
       $identifier_key = key($identifier);
-      $identifier_parts = explode("-", $identifier_key);
+      $identifier_parts = explode("-", (string) $identifier_key);
       $identifier_prefix = reset($identifier_parts);
       if ($prefix == $identifier_prefix && $name == $event_name) {
         unset($this->events[$event_name][$identifier_key]);
@@ -73,7 +73,7 @@ class MemoryBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAllowed($name, $threshold, $window = 3600, $identifier = NULL) {
+  public function isAllowed($name, $threshold, $window = 3600, $identifier = NULL): bool {
     if (!isset($identifier)) {
       $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
     }
@@ -81,22 +81,18 @@ class MemoryBackend implements FloodInterface, PrefixFloodInterface {
       return $threshold > 0;
     }
     $limit = microtime(TRUE) - $window;
-    $number = count(array_filter($this->events[$name][$identifier], function ($entry) use ($limit) {
-      return $entry['time'] > $limit;
-    }));
+    $number = count(array_filter($this->events[$name][$identifier], fn(array $entry) => $entry['time'] > $limit));
     return ($number < $threshold);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     foreach ($this->events as $name => $identifiers) {
       foreach ($this->events[$name] as $identifier => $entries) {
         // Remove expired entries.
-        $this->events[$name][$identifier] = array_filter($entries, function ($entry) {
-          return $entry['expire'] > microtime(TRUE);
-        });
+        $this->events[$name][$identifier] = array_filter($entries, fn(array $entry) => $entry['expire'] > microtime(TRUE));
       }
     }
   }

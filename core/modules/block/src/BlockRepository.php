@@ -20,39 +20,24 @@ class BlockRepository implements BlockRepositoryInterface {
   protected $blockStorage;
 
   /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
-   * The context handler.
-   *
-   * @var \Drupal\Core\Plugin\Context\ContextHandlerInterface
-   */
-  protected $contextHandler;
-
-  /**
    * Constructs a new BlockRepository.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
-   * @param \Drupal\Core\Plugin\Context\ContextHandlerInterface $context_handler
+   * @param \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler
    *   The plugin context handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ThemeManagerInterface $theme_manager, ContextHandlerInterface $context_handler) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager, protected \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler) {
     $this->blockStorage = $entity_type_manager->getStorage('block');
-    $this->themeManager = $theme_manager;
-    $this->contextHandler = $context_handler;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getVisibleBlocksPerRegion(array &$cacheable_metadata = []) {
+  public function getVisibleBlocksPerRegion(array &$cacheable_metadata = []): array {
     $active_theme = $this->themeManager->getActiveTheme();
     // Build an array of the region names in the right order.
     $empty = array_fill_keys($active_theme->getRegions(), []);
@@ -78,7 +63,7 @@ class BlockRepository implements BlockRepositoryInterface {
     // Merge it with the actual values to maintain the region ordering.
     $assignments = array_intersect_key(array_merge($empty, $full), $empty);
     foreach ($assignments as &$assignment) {
-      uasort($assignment, 'Drupal\block\Entity\Block::sort');
+      uasort($assignment, Drupal\block\Entity\Block::sort(...));
     }
     return $assignments;
   }
@@ -96,7 +81,7 @@ class BlockRepository implements BlockRepositoryInterface {
     $query->condition('id', $suggestion, 'CONTAINS');
     $block_ids = $query->execute();
 
-    $block_ids = array_map(function ($block_id) {
+    $block_ids = array_map(function ($block_id): string {
       $parts = explode('.', $block_id);
       return end($parts);
     }, $block_ids);

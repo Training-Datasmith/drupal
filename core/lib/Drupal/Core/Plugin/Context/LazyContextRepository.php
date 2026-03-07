@@ -10,14 +10,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class LazyContextRepository implements ContextRepositoryInterface {
 
   /**
-   * The set of available context providers service IDs.
-   *
-   * @var string[]
-   *   Context provider service IDs.
-   */
-  protected $contextProviderServiceIDs = [];
-
-  /**
    * The service container.
    *
    * @var \Symfony\Component\DependencyInjection\ContainerInterface
@@ -36,18 +28,21 @@ class LazyContextRepository implements ContextRepositoryInterface {
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The current service container.
-   * @param string[] $context_provider_service_ids
+   * @param string[] $contextProviderServiceIDs
    *   The set of the available context provider service IDs.
    */
-  public function __construct(ContainerInterface $container, array $context_provider_service_ids) {
+  public function __construct(ContainerInterface $container, /**
+   * The set of available context providers service IDs.
+   */
+  protected array $contextProviderServiceIDs) {
     $this->container = $container;
-    $this->contextProviderServiceIDs = $context_provider_service_ids;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getRuntimeContexts(array $context_ids) {
+  public function getRuntimeContexts(array $context_ids): array {
     $contexts = [];
 
     // Create a map of context providers (service IDs) to unqualified context
@@ -59,7 +54,7 @@ class LazyContextRepository implements ContextRepositoryInterface {
         continue;
       }
       assert($id[0] === '@' && str_contains($id, ':'), 'You must provide the context IDs in the @{service_id}:{unqualified_context_id} format.');
-      list($service_id, $unqualified_context_id) = explode(':', $id, 2);
+      [$service_id, $unqualified_context_id] = explode(':', $id, 2);
       // Remove the leading '@'.
       $service_id = substr($service_id, 1);
       $context_ids_by_service[$service_id][] = $unqualified_context_id;
@@ -82,8 +77,9 @@ class LazyContextRepository implements ContextRepositoryInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getAvailableContexts() {
+  public function getAvailableContexts(): array {
     $contexts = [];
     foreach ($this->contextProviderServiceIDs as $service_id) {
       $contexts_by_service = $this->container->get($service_id)->getAvailableContexts();

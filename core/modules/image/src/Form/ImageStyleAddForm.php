@@ -14,7 +14,7 @@ class ImageStyleAddForm extends ImageStyleFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
     $this->messenger()->addStatus($this->t('Style %name was created.', ['%name' => $this->entity->label()]));
   }

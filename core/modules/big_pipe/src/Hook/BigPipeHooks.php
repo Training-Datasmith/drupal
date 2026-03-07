@@ -30,8 +30,7 @@ class BigPipeHooks {
         $output .= '<dl>';
         $output .= '<dt>' . $this->t('Speeding up your site') . '</dt>';
         $output .= '<dd>' . $this->t('The module requires no configuration. Every part of the page contains metadata that allows BigPipe to figure this out on its own.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

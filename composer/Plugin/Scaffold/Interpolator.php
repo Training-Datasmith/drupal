@@ -10,20 +10,6 @@ namespace Drupal\Composer\Plugin\Scaffold;
 class Interpolator {
 
   /**
-   * The character sequence that identifies the start of a token.
-   *
-   * @var string
-   */
-  protected $startToken;
-
-  /**
-   * The character sequence that identifies the end of a token.
-   *
-   * @var string
-   */
-  protected $endToken;
-
-  /**
    * The associative array of replacements.
    *
    * @var array
@@ -33,14 +19,22 @@ class Interpolator {
   /**
    * Interpolator constructor.
    *
-   * @param string $start_token
+   * @param string $startToken
    *   The start marker for a token, e.g. '['.
-   * @param string $end_token
+   * @param string $endToken
    *   The end marker for a token, e.g. ']'.
    */
-  public function __construct($start_token = '\\[', $end_token = '\\]') {
-    $this->startToken = $start_token;
-    $this->endToken = $end_token;
+  public function __construct(
+      /**
+       * The character sequence that identifies the start of a token.
+       */
+      protected $startToken = '\\[',
+      /**
+       * The character sequence that identifies the end of a token.
+       */
+      protected $endToken = '\\]'
+  )
+  {
   }
 
   /**
@@ -51,7 +45,7 @@ class Interpolator {
    *
    * @return $this
    */
-  public function setData(array $data) {
+  public function setData(array $data): static {
     $this->data = $data;
     return $this;
   }
@@ -64,7 +58,7 @@ class Interpolator {
    *
    * @return $this
    */
-  public function addData(array $data) {
+  public function addData(array $data): static {
     $this->data = array_merge($this->data, $data);
     return $this;
   }
@@ -94,7 +88,7 @@ class Interpolator {
    * @return string
    *   The message after replacements have been made.
    */
-  public function interpolate($message, array $extra = [], $default = '') {
+  public function interpolate($message, array $extra = [], $default = ''): string {
     $data = $extra + $this->data;
     $replacements = $this->replacements($message, $data, $default);
     return strtr($message, $replacements);
@@ -120,7 +114,7 @@ class Interpolator {
    *   An array of replacements to make. Keyed by tokens and the replacements
    *   are the values.
    */
-  protected function replacements($message, array $data, $default = '') {
+  protected function replacements($message, array $data, $default = ''): array {
     $tokens = $this->findTokens($message);
     $replacements = [];
     foreach ($tokens as $sourceText => $key) {
@@ -141,7 +135,7 @@ class Interpolator {
    * @return string[]
    *   map of token to key, e.g. {{key}} => key
    */
-  protected function findTokens($message) {
+  protected function findTokens($message): array {
     $reg_ex = '#' . $this->startToken . '([a-zA-Z0-9._-]+)' . $this->endToken . '#';
     if (!preg_match_all($reg_ex, $message, $matches, PREG_SET_ORDER)) {
       return [];

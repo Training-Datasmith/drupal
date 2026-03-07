@@ -96,7 +96,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
     // Sanitize the schema name here, so we do not have to do it in other
     // functions.
     if (isset($connection_options['schema']) && ($connection_options['schema'] !== 'public')) {
-      $connection_options['schema'] = preg_replace('/[^A-Za-z0-9_]+/', '', $connection_options['schema']);
+      $connection_options['schema'] = preg_replace('/[^A-Za-z0-9_]+/', '', (string) $connection_options['schema']);
     }
 
     // We need to set the connectionOptions before the parent, because setPrefix
@@ -184,10 +184,10 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
     catch (\PDOException $e) {
       if (static::getSQLState($e) == static::CONNECTION_FAILURE) {
         if (str_contains($e->getMessage(), 'password authentication failed for user')) {
-          throw new DatabaseAccessDeniedException($e->getMessage(), $e->getCode(), $e);
+            throw new DatabaseAccessDeniedException($e->getMessage(), $e->getCode(), $e);
         }
-        elseif (str_contains($e->getMessage(), 'database') && str_contains($e->getMessage(), 'does not exist')) {
-          throw new DatabaseNotFoundException($e->getMessage(), $e->getCode(), $e);
+        if (str_contains($e->getMessage(), 'database') && str_contains($e->getMessage(), 'does not exist')) {
+            throw new DatabaseNotFoundException($e->getMessage(), $e->getCode(), $e);
         }
       }
       throw $e;
@@ -199,7 +199,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function query($query, array $args = [], $options = []) {
+  public function query($query, array $args = [], array $options = []) {
     $options += $this->defaultOptions();
 
     // The PDO PostgreSQL driver has a bug which doesn't type cast booleans
@@ -267,7 +267,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function queryTemporary($query, array $args = [], array $options = []) {
+  public function queryTemporary($query, array $args = [], array $options = []): string {
     $tablename = 'db_temporary_' . uniqid();
     $this->query('CREATE TEMPORARY TABLE {' . $tablename . '} AS ' . $query, $args, $options);
     return $tablename;
@@ -276,14 +276,14 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function driver() {
+  public function driver(): string {
     return 'pgsql';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function databaseType() {
+  public function databaseType(): string {
     return 'pgsql';
   }
 
@@ -295,7 +295,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *
    * @throws \Drupal\Core\Database\DatabaseNotFoundException
    */
-  public function createDatabase($database) {
+  public function createDatabase($database): void {
     // Escape the database name.
     $database = Database::getConnection()->escapeDatabase($database);
     $db_created = FALSE;
@@ -310,7 +310,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
         $this->connection->exec("CREATE DATABASE $database WITH TEMPLATE template0 ENCODING='UTF8' LC_CTYPE='$ctype.UTF-8' LC_COLLATE='$collate.UTF-8'");
         $db_created = TRUE;
       }
-      catch (\Exception $e) {
+      catch (\Exception) {
         // It might be that the server is remote and does not support the
         // locale and collation of the webserver, so we will try again.
       }
@@ -351,7 +351,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *
    * @internal
    */
-  public function makeSequenceName($table, $field) {
+  public function makeSequenceName(string $table, string $field): string {
     $sequence_name = $this->prefixTables('{' . $table . '}_' . $field . '_seq');
     // Remove identifier quotes as we are constructing a new name from a
     // prefixed and quoted table name.
@@ -361,7 +361,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function getFullQualifiedTableName($table) {
+  public function getFullQualifiedTableName($table): string {
     $options = $this->getConnectionOptions();
     $schema = $options['schema'] ?? 'public';
 
@@ -380,7 +380,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *   A string representing the savepoint name. By default,
    *   "mimic_implicit_commit" is used.
    */
-  public function addSavepoint($savepoint_name = 'mimic_implicit_commit') {
+  public function addSavepoint(string $savepoint_name = 'mimic_implicit_commit'): void {
     if ($this->inTransaction()) {
       $this->savepoints[$savepoint_name] = $this->startTransaction($savepoint_name);
     }
@@ -393,7 +393,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *   A string representing the savepoint name. By default,
    *   "mimic_implicit_commit" is used.
    */
-  public function releaseSavepoint($savepoint_name = 'mimic_implicit_commit') {
+  public function releaseSavepoint($savepoint_name = 'mimic_implicit_commit'): void {
     if ($this->inTransaction() && $this->transactionManager()->has($savepoint_name)) {
       unset($this->savepoints[$savepoint_name]);
     }
@@ -406,7 +406,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *   A string representing the savepoint name. By default,
    *   "mimic_implicit_commit" is used.
    */
-  public function rollbackSavepoint($savepoint_name = 'mimic_implicit_commit') {
+  public function rollbackSavepoint($savepoint_name = 'mimic_implicit_commit'): void {
     if ($this->inTransaction() && $this->transactionManager()->has($savepoint_name)) {
       $this->savepoints[$savepoint_name]->rollBack();
       unset($this->savepoints[$savepoint_name]);
@@ -428,49 +428,49 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function exceptionHandler() {
+  public function exceptionHandler(): \Drupal\Core\Database\ExceptionHandler {
     return new ExceptionHandler();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function select($table, $alias = NULL, array $options = []) {
+  public function select($table, $alias = NULL, array $options = []): \Drupal\pgsql\Driver\Database\pgsql\Select {
     return new Select($this, $table, $alias, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function insert($table, array $options = []) {
+  public function insert($table, array $options = []): \Drupal\pgsql\Driver\Database\pgsql\Insert {
     return new Insert($this, $table, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function upsert($table, array $options = []) {
+  public function upsert($table, array $options = []): \Drupal\pgsql\Driver\Database\pgsql\Upsert {
     return new Upsert($this, $table, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function update($table, array $options = []) {
+  public function update($table, array $options = []): \Drupal\pgsql\Driver\Database\pgsql\Update {
     return new Update($this, $table, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete($table, array $options = []) {
+  public function delete($table, array $options = []): \Drupal\pgsql\Driver\Database\pgsql\Delete {
     return new Delete($this, $table, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function truncate($table, array $options = []) {
+  public function truncate($table, array $options = []): \Drupal\pgsql\Driver\Database\pgsql\Truncate {
     return new Truncate($this, $table, $options);
   }
 

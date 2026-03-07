@@ -17,11 +17,17 @@ class CommentViewsHooks {
    * Implements hook_views_data_alter().
    */
   #[Hook('views_data_alter')]
-  public function viewsDataAlter(&$data): void {
+  public function viewsDataAlter(array &$data): void {
     // Provides an integration for each entity type except comment.
     foreach (\Drupal::entityTypeManager()->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($entity_type_id == 'comment' || !$entity_type->entityClassImplements(ContentEntityInterface::class) || !$entity_type->getBaseTable()) {
-        continue;
+      if ($entity_type_id == 'comment') {
+          continue;
+      }
+      if (!$entity_type->entityClassImplements(ContentEntityInterface::class)) {
+          continue;
+      }
+      if (!$entity_type->getBaseTable()) {
+          continue;
       }
       $fields = \Drupal::service('comment.manager')->getFields($entity_type_id);
       $base_table = $entity_type->getDataTable() ?: $entity_type->getBaseTable();

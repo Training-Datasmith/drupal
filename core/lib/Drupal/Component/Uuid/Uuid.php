@@ -24,7 +24,7 @@ class Uuid {
    * @return bool
    *   TRUE if the string is well formed, FALSE otherwise.
    */
-  public static function isValid($uuid) {
+  public static function isValid($uuid): bool {
     return (bool) preg_match('/^' . self::VALID_PATTERN . '$/', $uuid);
   }
 

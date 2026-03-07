@@ -55,7 +55,7 @@ class TableSort {
    *
    * @see getContextFromRequest()
    */
-  public static function header(&$cell_content, array &$cell_attributes, array $header, array $context) {
+  public static function header(&$cell_content, array &$cell_attributes, array $header, array $context): void {
     // Special formatting for the currently sorted column header.
     if (isset($cell_attributes['field'])) {
       $title = new TranslatableMarkup('sort by @s', ['@s' => $cell_content]);
@@ -108,7 +108,7 @@ class TableSort {
    *   - "name": The localized title of the table column.
    *   - "sql": The name of the database field to sort on.
    */
-  public static function getOrder(array $headers, Request $request) {
+  public static function getOrder(array $headers, Request $request): array {
     $order = $request->query->get('order', '');
     foreach ($headers as $header) {
       if (is_array($header)) {
@@ -148,7 +148,7 @@ class TableSort {
   public static function getSort(array $headers, Request $request) {
     $query = $request->query;
     if ($query->has('sort')) {
-      return (strtolower($query->get('sort')) == self::DESC) ? self::DESC : self::ASC;
+      return (strtolower((string) $query->get('sort')) == self::DESC) ? self::DESC : self::ASC;
     }
     // The user has not specified a sort. Use the default for the currently
     // sorted header if specified; otherwise use "asc".
@@ -179,7 +179,7 @@ class TableSort {
    *
    * @internal
    */
-  public static function getQueryParameters(Request $request) {
+  public static function getQueryParameters(Request $request): array {
     return UrlHelper::filterQueryParameters($request->query->all(), ['sort', 'order']);
   }
 

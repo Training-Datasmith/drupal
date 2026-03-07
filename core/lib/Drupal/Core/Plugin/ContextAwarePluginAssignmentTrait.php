@@ -20,7 +20,7 @@ trait ContextAwarePluginAssignmentTrait {
    * @return \Drupal\Core\Plugin\Context\ContextHandlerInterface
    *   the context handler service.
    */
-  protected function contextHandler() {
+  protected function contextHandler(): object {
     return \Drupal::service('context.handler');
   }
 
@@ -35,7 +35,7 @@ trait ContextAwarePluginAssignmentTrait {
    * @return array
    *   A form element for assigning context.
    */
-  protected function addContextAssignmentElement(ContextAwarePluginInterface $plugin, array $contexts) {
+  protected function addContextAssignmentElement(ContextAwarePluginInterface $plugin, array $contexts): array {
     $element = [];
     foreach ($plugin->getContextDefinitions() as $context_slot => $definition) {
       $valid_contexts = $this->contextHandler()->getMatchingContexts($contexts, $definition);

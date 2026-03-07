@@ -28,7 +28,7 @@ class Date extends SortPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['granularity'] = [
@@ -51,7 +51,7 @@ class Date extends SortPluginBase {
   /**
    * Called to add the sort to a query.
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     switch ($this->options['granularity']) {
       case 'second':

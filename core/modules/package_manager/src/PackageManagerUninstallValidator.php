@@ -42,8 +42,9 @@ final class PackageManagerUninstallValidator implements ModuleUninstallValidator
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function validate($module) {
+  public function validate($module): array {
     $sandbox_manager = new class(
       $this->pathLocator,
       $this->beginner,

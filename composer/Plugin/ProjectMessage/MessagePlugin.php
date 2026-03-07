@@ -40,7 +40,7 @@ class MessagePlugin implements PluginInterface, EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public function activate(Composer $composer, IOInterface $io) {
+  public function activate(Composer $composer, IOInterface $io): void {
     $this->composer = $composer;
     $this->io = $io;
   }
@@ -60,14 +60,14 @@ class MessagePlugin implements PluginInterface, EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     return [
       ScriptEvents::POST_CREATE_PROJECT_CMD => 'displayPostCreateMessage',
       ScriptEvents::POST_INSTALL_CMD => 'displayPostCreateMessage',
     ];
   }
 
-  public function displayPostCreateMessage(Event $event) {
+  public function displayPostCreateMessage(Event $event): void {
     $message = new Message($this->composer->getPackage(), $event->getName());
     if ($message = $message->getText()) {
       $this->io->write($message);

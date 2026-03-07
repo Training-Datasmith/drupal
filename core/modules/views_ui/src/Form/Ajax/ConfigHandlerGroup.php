@@ -24,7 +24,7 @@ class ConfigHandlerGroup extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'handler-group';
   }
 
@@ -40,14 +40,15 @@ class ConfigHandlerGroup extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_config_item_group_form';
   }
 
   /**
    * {@inheritdoc}
+   * @return array<'#attributes'|'#markup'|'#theme_wrappers'|'#tree', array<int|'class'|'data-drupal-views-scroll', 'container'|'scroll'[]|true>|\Drupal\Core\StringTranslation\TranslatableMarkup|true>[]|\Drupal\Core\StringTranslation\TranslatableMarkup[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $type = $form_state->get('type');
@@ -101,7 +102,7 @@ class ConfigHandlerGroup extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
     $item = &$form_state->get('handler')->options;
     $type = $form_state->get('type');

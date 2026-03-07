@@ -124,13 +124,6 @@ abstract class SourcePluginBase extends PluginBase implements MigrateSourceInter
   protected $moduleHandler;
 
   /**
-   * The entity migration object.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
-
-  /**
    * The current row from the query.
    *
    * @var \Drupal\migrate\Row|null
@@ -238,9 +231,11 @@ abstract class SourcePluginBase extends PluginBase implements MigrateSourceInter
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The entity migration object.
+   */
+  protected \Drupal\migrate\Plugin\MigrationInterface $migration) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->migration = $migration;
 
     // Set up some defaults based on the source configuration.
     foreach (['cacheCounts' => 'cache_counts', 'skipCount' => 'skip_count', 'trackChanges' => 'track_changes'] as $property => $config_key) {
@@ -613,7 +608,7 @@ abstract class SourcePluginBase extends PluginBase implements MigrateSourceInter
   /**
    * {@inheritdoc}
    */
-  public function preRollback(MigrateRollbackEvent $event) {
+  public function preRollback(MigrateRollbackEvent $event): void {
     // Reset the high-water mark.
     $this->saveHighWater(NULL);
   }
@@ -621,7 +616,7 @@ abstract class SourcePluginBase extends PluginBase implements MigrateSourceInter
   /**
    * {@inheritdoc}
    */
-  public function postRollback(MigrateRollbackEvent $event) {
+  public function postRollback(MigrateRollbackEvent $event): void {
     // Nothing to do in this implementation.
   }
 

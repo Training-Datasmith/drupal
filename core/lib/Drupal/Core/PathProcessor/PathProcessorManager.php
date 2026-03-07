@@ -56,7 +56,7 @@ class PathProcessorManager implements InboundPathProcessorInterface, OutboundPat
    * @param int $priority
    *   The priority of the processor being added.
    */
-  public function addInbound(InboundPathProcessorInterface $processor, $priority = 0) {
+  public function addInbound(InboundPathProcessorInterface $processor, $priority = 0): void {
     $this->inboundProcessors[$priority][] = $processor;
     $this->sortedInbound = [];
   }
@@ -94,7 +94,7 @@ class PathProcessorManager implements InboundPathProcessorInterface, OutboundPat
    * @param int $priority
    *   The priority of the processor being added.
    */
-  public function addOutbound(OutboundPathProcessorInterface $processor, $priority = 0) {
+  public function addOutbound(OutboundPathProcessorInterface $processor, $priority = 0): void {
     $this->outboundProcessors[$priority][] = $processor;
     $this->sortedOutbound = [];
   }
@@ -130,7 +130,7 @@ class PathProcessorManager implements InboundPathProcessorInterface, OutboundPat
    * @param string $type
    *   The processor type to sort, e.g. 'inboundProcessors'.
    */
-  protected function sortProcessors($type) {
+  protected function sortProcessors($type): array {
     krsort($this->{$type});
     return array_merge(...$this->{$type});
   }

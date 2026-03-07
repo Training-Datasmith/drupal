@@ -97,7 +97,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('language_manager'),
@@ -115,7 +115,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
   /**
    * {@inheritdoc}
    */
-  public function getFieldDefinitions() {
+  public function getFieldDefinitions(): array {
     $definitions = [];
 
     $definitions['content_translation_source'] = BaseFieldDefinition::create('language')
@@ -180,7 +180,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    * @return bool
    *   TRUE if metadata is natively supported, FALSE otherwise.
    */
-  protected function hasAuthor() {
+  protected function hasAuthor(): bool {
     // Check for field named uid, but only in case the entity implements the
     // EntityOwnerInterface. This helps to exclude cases, where the uid is
     // defined as field name, but is not meant to be an owner field; for
@@ -204,7 +204,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    * @return bool
    *   TRUE if metadata is natively supported, FALSE otherwise.
    */
-  protected function hasChangedTime() {
+  protected function hasChangedTime(): bool {
     return $this->entityType->entityClassImplements(EntityChangedInterface::class) && $this->checkFieldStorageDefinitionTranslatability('changed');
   }
 
@@ -230,14 +230,14 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    * @return bool
    *   TRUE if translatable field storage definition exists, FALSE otherwise.
    */
-  protected function checkFieldStorageDefinitionTranslatability($field_name) {
+  protected function checkFieldStorageDefinitionTranslatability($field_name): bool {
     return array_key_exists($field_name, $this->fieldStorageDefinitions) && $this->fieldStorageDefinitions[$field_name]->isTranslatable();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function retranslate(EntityInterface $entity, $langcode = NULL) {
+  public function retranslate(EntityInterface $entity, $langcode = NULL): void {
     $updated_langcode = !empty($langcode) ? $langcode : $entity->language()->getId();
     foreach ($entity->getTranslationLanguages() as $langcode => $language) {
       $this->manager->getTranslationMetadata($entity->getTranslation($langcode))
@@ -278,7 +278,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
   /**
    * {@inheritdoc}
    */
-  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity) {
+  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity): void {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
 
     $metadata = $this->manager->getTranslationMetadata($entity);
@@ -328,7 +328,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
         'submit' => [
           '#type' => 'submit',
           '#value' => $this->t('Change'),
-          '#submit' => [[$this, 'entityFormSourceChange']],
+          '#submit' => [$this->entityFormSourceChange(...)],
         ],
       ];
       foreach ($this->languageManager->getLanguages() as $language) {
@@ -500,24 +500,24 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
         '#default_value' => $new_translation || !$date ? '' : $this->dateFormatter->format($date, 'custom', 'Y-m-d H:i:s O'),
       ];
 
-      $form['#process'][] = [$this, 'entityFormSharedElements'];
+      $form['#process'][] = $this->entityFormSharedElements(...);
     }
 
     // Process the submitted values before they are stored.
-    $form['#entity_builders'][] = [$this, 'entityFormEntityBuild'];
+    $form['#entity_builders'][] = $this->entityFormEntityBuild(...);
 
     // Handle entity validation.
-    $form['#validate'][] = [$this, 'entityFormValidate'];
+    $form['#validate'][] = $this->entityFormValidate(...);
 
     // Handle entity deletion.
     if (isset($form['actions']['delete'])) {
-      $form['actions']['delete']['#submit'][] = [$this, 'entityFormDelete'];
+      $form['actions']['delete']['#submit'][] = $this->entityFormDelete(...);
     }
 
     // Handle entity form submission before the entity has been saved.
     foreach (Element::children($form['actions']) as $action) {
       if (isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] == 'submit') {
-        array_unshift($form['actions'][$action]['#submit'], [$this, 'entityFormSubmit']);
+        array_unshift($form['actions'][$action]['#submit'], $this->entityFormSubmit(...));
       }
     }
   }
@@ -527,7 +527,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    *
    * @see \Drupal\content_translation\ContentTranslationHandler::entityFormAlter()
    */
-  public function entityFormSharedElements($element, FormStateInterface $form_state, $form) {
+  public function entityFormSharedElements(array $element, FormStateInterface $form_state, $form): array {
     static $ignored_types;
 
     // @todo Find a more reliable way to determine if a form element concerns a
@@ -610,7 +610,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    * @param array $element
    *   A form element array.
    */
-  protected function addTranslatabilityClue(&$element) {
+  protected function addTranslatabilityClue(array &$element) {
     static $suffix, $fapi_title_elements;
 
     // Elements which can have a #title attribute according to FAPI Reference.
@@ -653,7 +653,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    *
    * @see \Drupal\content_translation\ContentTranslationHandler::entityFormAlter()
    */
-  public function entityFormEntityBuild($entity_type, EntityInterface $entity, array $form, FormStateInterface $form_state) {
+  public function entityFormEntityBuild($entity_type, EntityInterface $entity, array $form, FormStateInterface $form_state): void {
     $form_object = $form_state->getFormObject();
     $form_langcode = $form_object->getFormLangcode($form_state);
     $values = &$form_state->getValue('content_translation', []);
@@ -661,7 +661,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
     $metadata = $this->manager->getTranslationMetadata($entity);
     $metadata->setAuthor(!empty($values['uid']) ? User::load($values['uid']) : User::load(0));
     $metadata->setPublished(!empty($values['status']));
-    $metadata->setCreatedTime(!empty($values['created']) ? strtotime($values['created']) : $this->time->getRequestTime());
+    $metadata->setCreatedTime(!empty($values['created']) ? strtotime((string) $values['created']) : $this->time->getRequestTime());
 
     $metadata->setOutdated(!empty($values['outdated']));
     if (!empty($values['retranslate'])) {
@@ -674,7 +674,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    *
    * Validates the submitted content translation metadata.
    */
-  public function entityFormValidate($form, FormStateInterface $form_state) {
+  public function entityFormValidate($form, FormStateInterface $form_state): void {
     if (!$form_state->isValueEmpty('content_translation')) {
       $translation = $form_state->getValue('content_translation');
       // Validate the "authored by" field.
@@ -682,7 +682,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
         $form_state->setErrorByName('content_translation][uid', $this->t('The translation authoring username %name does not exist.', ['%name' => $account->getAccountName()]));
       }
       // Validate the "authored on" field.
-      if (!empty($translation['created']) && strtotime($translation['created']) === FALSE) {
+      if (!empty($translation['created']) && strtotime((string) $translation['created']) === FALSE) {
         $form_state->setErrorByName('content_translation][created', $this->t('You have to specify a valid translation authoring date.'));
       }
     }
@@ -694,7 +694,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    * Updates metadata fields, which should be updated only after the validation
    * has run and before the entity is saved.
    */
-  public function entityFormSubmit($form, FormStateInterface $form_state) {
+  public function entityFormSubmit($form, FormStateInterface $form_state): void {
     /** @var \Drupal\Core\Entity\ContentEntityFormInterface $form_object */
     $form_object = $form_state->getFormObject();
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
@@ -717,7 +717,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    *
    * Takes care of the source language change.
    */
-  public function entityFormSourceChange($form, FormStateInterface $form_state) {
+  public function entityFormSourceChange($form, FormStateInterface $form_state): void {
     $form_object = $form_state->getFormObject();
     $entity = $form_object->getEntity();
     $source = $form_state->getValue(['source_langcode', 'source']);
@@ -737,7 +737,7 @@ class ContentTranslationHandler implements ContentTranslationHandlerInterface, E
    *
    * Takes care of entity deletion.
    */
-  public function entityFormDelete($form, FormStateInterface $form_state) {
+  public function entityFormDelete($form, FormStateInterface $form_state): void {
     $form_object = $form_state->getFormObject();
     $entity = $form_object->getEntity();
     if (count($entity->getTranslationLanguages()) > 1) {

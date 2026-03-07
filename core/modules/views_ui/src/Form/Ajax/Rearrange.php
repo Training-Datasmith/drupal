@@ -27,7 +27,7 @@ class Rearrange extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'rearrange';
   }
 
@@ -42,14 +42,15 @@ class Rearrange extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_rearrange_form';
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $type = $form_state->get('type');
@@ -150,7 +151,7 @@ class Rearrange extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $type = $form_state->get('type');

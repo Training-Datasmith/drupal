@@ -22,7 +22,7 @@ class TranslationStatusForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('state'),
@@ -42,7 +42,7 @@ class TranslationStatusForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'locale_translation_status_form';
   }
 
@@ -51,7 +51,7 @@ class TranslationStatusForm extends FormBase {
    *
    * @ingroup forms
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $languages = locale_translatable_language_list();
     $status = locale_translation_get_status();
     $options = [];
@@ -92,9 +92,7 @@ class TranslationStatusForm extends FormBase {
         }
       }
       // Sort the table data on language name.
-      uasort($options, function ($a, $b) {
-        return strcasecmp($a['title']['data']['#title'], $b['title']['data']['#title']);
-      });
+      uasort($options, fn($a, $b) => strcasecmp((string) $a['title']['data']['#title'], (string) $b['title']['data']['#title']));
       $languages_not_found = array_diff($languages_not_found, $languages_update);
     }
 
@@ -171,7 +169,7 @@ class TranslationStatusForm extends FormBase {
    *   Translation update status as an array keyed by language code and
    *   translation update status.
    */
-  protected function prepareUpdateData(array $status) {
+  protected function prepareUpdateData(array $status): array {
     $updates = [];
 
     // @todo Calling locale_translation_build_projects() is an expensive way to
@@ -224,18 +222,18 @@ class TranslationStatusForm extends FormBase {
    * @return string
    *   The string which contains debug information.
    */
-  protected function createInfoString($project_info) {
+  protected function createInfoString($project_info): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $remote_path = $project_info->files['remote']->uri ?? FALSE;
     $local_path = $project_info->files['local']->uri ?? FALSE;
-
     if (locale_translation_use_remote_source() && $remote_path && $local_path) {
-      return $this->t('File not found at %remote_path nor at %local_path', [
-        '%remote_path' => $remote_path,
-        '%local_path' => $local_path,
-      ]);
+        return $this->t('File not found at %remote_path nor at %local_path', [
+          '%remote_path' => $remote_path,
+          '%local_path' => $local_path,
+        ]);
     }
-    elseif ($local_path) {
-      return $this->t('File not found at %local_path', ['%local_path' => $local_path]);
+
+    if ($local_path) {
+        return $this->t('File not found at %local_path', ['%local_path' => $local_path]);
     }
     return $this->t('Translation file location could not be determined.');
   }
@@ -243,7 +241,7 @@ class TranslationStatusForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // Check if a language has been selected. 'tableselect' doesn't.
     if (!array_filter($form_state->getValue('langcodes'))) {
       $form_state->setErrorByName('', $this->t('Select a language to update.'));
@@ -253,7 +251,7 @@ class TranslationStatusForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->moduleHandler->loadInclude('locale', 'fetch.inc');
     $this->moduleHandler->loadInclude('locale', 'bulk.inc');
 

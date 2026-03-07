@@ -41,17 +41,8 @@ class FormattableMarkup implements MarkupInterface, \Countable {
 
   /**
    * The string containing placeholders.
-   *
-   * @var string
    */
-  protected $string;
-
-  /**
-   * The arguments to replace placeholders with.
-   *
-   * @var array
-   */
-  protected $arguments = [];
+  protected string $string;
 
   /**
    * Constructs a new class instance.
@@ -66,15 +57,14 @@ class FormattableMarkup implements MarkupInterface, \Countable {
    *
    * @see \Drupal\Component\Render\FormattableMarkup::placeholderFormat()
    */
-  public function __construct($string, array $arguments) {
+  public function __construct($string, protected array $arguments) {
     $this->string = (string) $string;
-    $this->arguments = $arguments;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     return static::placeholderFormat($this->string, $this->arguments);
   }
 
@@ -172,7 +162,7 @@ class FormattableMarkup implements MarkupInterface, \Countable {
    * @see \Drupal\Component\Utility\UrlHelper::stripDangerousProtocols()
    * @see \Drupal\Core\Url::fromUri()
    */
-  protected static function placeholderFormat($string, array $args) {
+  protected static function placeholderFormat($string, array $args): string {
     // Transform arguments before inserting them.
     foreach ($args as $key => $value) {
       switch ($key[0]) {
@@ -234,7 +224,7 @@ class FormattableMarkup implements MarkupInterface, \Countable {
    * @return string
    *   The properly escaped replacement value.
    */
-  protected static function placeholderEscape($value) {
+  protected static function placeholderEscape($value): string {
     return $value instanceof MarkupInterface ? (string) $value : Html::escape($value);
   }
 

@@ -10,7 +10,7 @@ namespace Drupal\Core\Config\Checkpoint;
  * @internal
  *   This API is experimental.
  */
-final class Checkpoint {
+final readonly class Checkpoint {
 
   /**
    * Constructs a checkpoint object.
@@ -25,10 +25,10 @@ final class Checkpoint {
    *   The ID of the checkpoint's parent.
    */
   public function __construct(
-    public readonly string $id,
-    public readonly \Stringable|string $label,
-    public readonly int $timestamp,
-    public readonly ?string $parent,
+    public string $id,
+    public \Stringable|string $label,
+    public int $timestamp,
+    public ?string $parent,
   ) {
   }
 

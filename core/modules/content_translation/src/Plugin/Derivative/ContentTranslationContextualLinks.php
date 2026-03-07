@@ -18,26 +18,19 @@ class ContentTranslationContextualLinks extends DeriverBase implements Container
   use StringTranslationTrait;
 
   /**
-   * The content translation manager.
-   *
-   * @var \Drupal\content_translation\ContentTranslationManagerInterface
-   */
-  protected $contentTranslationManager;
-
-  /**
    * Constructs a new ContentTranslationContextualLinks.
    *
-   * @param \Drupal\content_translation\ContentTranslationManagerInterface $content_translation_manager
+   * @param \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager
    *   The content translation manager.
    */
-  public function __construct(ContentTranslationManagerInterface $content_translation_manager) {
-    $this->contentTranslationManager = $content_translation_manager;
+  public function __construct(protected \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('content_translation.manager')
     );

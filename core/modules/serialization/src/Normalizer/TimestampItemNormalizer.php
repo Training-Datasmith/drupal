@@ -32,7 +32,7 @@ class TimestampItemNormalizer extends FieldItemNormalizer {
   /**
    * {@inheritdoc}
    */
-  protected function constructValue($data, $context) {
+  protected function constructValue($data, $context): array {
     if (!empty($data['format'])) {
       $context['datetime_allowed_formats'] = [$data['format']];
     }

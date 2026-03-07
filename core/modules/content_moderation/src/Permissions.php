@@ -21,7 +21,7 @@ class Permissions {
    * @return array
    *   The transition permissions.
    */
-  public function transitionPermissions() {
+  public function transitionPermissions(): array {
     $permissions = [];
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     foreach (Workflow::loadMultipleByType('content_moderation') as $workflow) {

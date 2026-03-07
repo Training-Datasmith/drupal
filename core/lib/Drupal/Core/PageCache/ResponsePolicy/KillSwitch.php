@@ -30,7 +30,7 @@ class KillSwitch implements ResponsePolicyInterface {
   /**
    * Deny any page caching on the current request.
    */
-  public function trigger() {
+  public function trigger(): void {
     $this->kill = TRUE;
   }
 

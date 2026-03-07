@@ -126,14 +126,14 @@ class Language implements LanguageInterface {
   /**
    * {@inheritdoc}
    */
-  public function isDefault() {
+  public function isDefault(): bool {
     return static::getDefaultLangcode() == $this->getId();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isLocked() {
+  public function isLocked(): bool {
     return (bool) $this->locked;
   }
 
@@ -143,8 +143,8 @@ class Language implements LanguageInterface {
    * @param \Drupal\Core\Language\LanguageInterface[] $languages
    *   The array of language objects keyed by langcode.
    */
-  public static function sort(&$languages) {
-    uasort($languages, function (LanguageInterface $a, LanguageInterface $b) {
+  public static function sort(&$languages): void {
+    uasort($languages, function (LanguageInterface $a, LanguageInterface $b): int {
       $a_weight = $a->getWeight();
       $b_weight = $b->getWeight();
       if ($a_weight == $b_weight) {

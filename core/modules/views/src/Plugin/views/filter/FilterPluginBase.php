@@ -71,7 +71,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    *
    * @var mixed
    */
-  public $value = NULL;
+  public $value;
 
   /**
    * Contains the operator which is used on the query.
@@ -86,7 +86,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @var array
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public $group_info = NULL;
+  public $group_info;
 
   /**
    * Disable the possibility to force a single value.
@@ -116,7 +116,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    *
    * @var string[]
    */
-  public ?array $tableAliases;
+  public ?array $tableAliases = null;
 
   /**
    * Overrides \Drupal\views\Plugin\views\HandlerBase::init().
@@ -126,7 +126,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * This likely has to be overridden by filters which are more complex
    * than simple operator/value.
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->operator = $this->options['operator'];
@@ -252,7 +252,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     if ($this->canExpose()) {
       $this->showExposeButton($form, $form_state);
@@ -299,7 +299,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     $this->operatorValidate($form, $form_state);
     $this->valueValidate($form, $form_state);
     if (!empty($this->options['exposed']) && !$this->isAGroup()) {
@@ -319,7 +319,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     // Do not store these values.
     $form_state->unsetValue('expose_button');
     $form_state->unsetValue('group_button');
@@ -339,7 +339,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   /**
    * Shortcut to display the operator form.
    */
-  public function showOperatorForm(&$form, FormStateInterface $form_state) {
+  public function showOperatorForm(array &$form, FormStateInterface $form_state): void {
     $this->operatorForm($form, $form_state);
     $form['operator']['#prefix'] = '<div class="views-group-box views-left-30">';
     $form['operator']['#suffix'] = '</div>';
@@ -359,7 +359,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    *
    * @see buildOptionsForm()
    */
-  protected function operatorForm(&$form, FormStateInterface $form_state) {
+  protected function operatorForm(array &$form, FormStateInterface $form_state) {
     $options = $this->operatorOptions();
     if (!empty($options)) {
       $form['operator'] = [
@@ -411,7 +411,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  protected function showValueForm(&$form, FormStateInterface $form_state) {
+  protected function showValueForm(array &$form, FormStateInterface $form_state) {
     $this->valueForm($form, $form_state);
     if (empty($this->no_operator)) {
       $form['value']['#prefix'] = '<div class="views-group-box views-right-70">' . ($form['value']['#prefix'] ?? '');
@@ -433,7 +433,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    *
    * @see buildOptionsForm()
    */
-  protected function valueForm(&$form, FormStateInterface $form_state) {
+  protected function valueForm(array &$form, FormStateInterface $form_state) {
     $form['value'] = [];
   }
 
@@ -468,7 +468,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function showBuildGroupForm(&$form, FormStateInterface $form_state) {
+  public function showBuildGroupForm(array &$form, FormStateInterface $form_state): void {
     if (empty($this->options['is_grouped'])) {
       return;
     }
@@ -497,7 +497,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  protected function showBuildGroupButton(&$form, FormStateInterface $form_state) {
+  protected function showBuildGroupButton(array &$form, FormStateInterface $form_state) {
 
     $form['group_button'] = [
       '#prefix' => '<div class="views-grouped clearfix">',
@@ -529,7 +529,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
         '#limit_validation_errors' => [],
         '#type' => 'submit',
         '#value' => $this->t('Grouped filters'),
-        '#submit' => [[$this, 'buildGroupForm']],
+        '#submit' => [$this->buildGroupForm(...)],
       ];
       $form['group_button']['radios']['radios']['#default_value'] = 0;
     }
@@ -538,7 +538,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
         '#limit_validation_errors' => [],
         '#type' => 'submit',
         '#value' => $this->t('Single filter'),
-        '#submit' => [[$this, 'buildGroupForm']],
+        '#submit' => [$this->buildGroupForm(...)],
       ];
       $form['group_button']['radios']['radios']['#default_value'] = 1;
     }
@@ -547,7 +547,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   /**
    * Displays the Build Group form.
    */
-  public function buildGroupForm($form, FormStateInterface $form_state) {
+  public function buildGroupForm($form, FormStateInterface $form_state): void {
     $item = &$this->options;
     // flip. If the filter was a group, set back to a standard filter.
     $item['is_grouped'] = empty($item['is_grouped']);
@@ -580,7 +580,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function showExposeButton(&$form, FormStateInterface $form_state) {
+  public function showExposeButton(&$form, FormStateInterface $form_state): void {
     $form['expose_button'] = [
       '#prefix' => '<div class="views-expose clearfix">',
       '#suffix' => '</div>',
@@ -608,7 +608,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
         '#limit_validation_errors' => [],
         '#type' => 'submit',
         '#value' => $this->t('Expose filter'),
-        '#submit' => [[$this, 'displayExposedForm']],
+        '#submit' => [$this->displayExposedForm(...)],
       ];
       $form['expose_button']['checkbox']['checkbox']['#default_value'] = 0;
     }
@@ -620,7 +620,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
         '#limit_validation_errors' => [],
         '#type' => 'submit',
         '#value' => $this->t('Hide filter'),
-        '#submit' => [[$this, 'displayExposedForm']],
+        '#submit' => [$this->displayExposedForm(...)],
       ];
       $form['expose_button']['checkbox']['checkbox']['#default_value'] = 1;
     }
@@ -637,7 +637,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    *
    * @see buildOptionsForm()
    */
-  public function buildExposeForm(&$form, FormStateInterface $form_state) {
+  public function buildExposeForm(&$form, FormStateInterface $form_state): void {
     $form['#theme'] = 'views_ui_expose_filter_form';
     // #flatten will move everything from $form['expose'][$key] to $form[$key]
     // prior to rendering. That's why the preRender for it needs to run first,
@@ -751,7 +751,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
       '#default_value' => $this->options['expose']['remember'],
     ];
 
-    $role_options = array_map(fn(RoleInterface $role) => Html::escape($role->label()), Role::loadMultiple());
+    $role_options = array_map(fn(RoleInterface $role): string => Html::escape($role->label()), Role::loadMultiple());
     $form['expose']['remember_roles'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('User roles'),
@@ -787,7 +787,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   /**
    * Validate the options form.
    */
-  public function validateExposeForm($form, FormStateInterface $form_state) {
+  public function validateExposeForm($form, FormStateInterface $form_state): void {
     $remember_role_keys = ['options', 'expose', 'remember_roles'];
     $roles = $form_state->getValue($remember_role_keys);
     $form_state->setValue($remember_role_keys, array_filter($roles));
@@ -815,7 +815,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    */
   protected function hasValidGroupedValue(array $group) {
     if (!method_exists($this, 'operators')) {
-      throw new \LogicException(get_class($this) . '::operators() not implemented');
+      throw new \LogicException(static::class . '::operators() not implemented');
     }
     $operators = $this->operators();
     if ($operators[$group['operator']]['values'] == 0) {
@@ -823,18 +823,16 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
       // specified in order to be valid entries.
       return TRUE;
     }
-    else {
-      if (is_string($group['value'])) {
+    if (is_string($group['value'])) {
         return trim($group['value']) != '';
-      }
-      elseif (is_array($group['value'])) {
+    }
+    if (is_array($group['value'])) {
         // Some filters allow multiple options to be selected (for example, node
         // types). Ensure at least the minimum number of values is present for
         // this entry to be considered valid.
         $min_values = $operators[$group['operator']]['values'];
         $actual_values = count(array_filter($group['value'], [static::class, 'arrayFilterZero']));
         return $actual_values >= $min_values;
-      }
     }
     return FALSE;
   }
@@ -842,7 +840,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   /**
    * Validate the build group options form.
    */
-  protected function buildGroupValidate($form, FormStateInterface $form_state) {
+  protected function buildGroupValidate(array $form, FormStateInterface $form_state) {
     if (!$form_state->isValueEmpty(['options', 'group_info'])) {
       $identifier = $form_state->getValue(['options', 'group_info', 'identifier']);
       $this->validateIdentifier($identifier, $form_state, $form['group_info']['identifier']);
@@ -854,10 +852,10 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
           $has_valid_value = $this->hasValidGroupedValue($group);
           if ($has_valid_value && $group['title'] == '') {
             if (!method_exists($this, 'operators')) {
-              throw new \LogicException(get_class($this) . '::operators() not implemented');
+              throw new \LogicException(static::class . '::operators() not implemented');
             }
             if (!$this instanceof FilterOperatorsInterface) {
-              @trigger_error('Implementing operators() in class ' . get_class($this) . ' without it implementing \Drupal\views\Plugin\views\filter\FilterOperatorsInterface is deprecated in drupal:10.3.0 and will throw a LogicException in drupal:12.0.0. See https://www.drupal.org/node/3412013', E_USER_DEPRECATED);
+              @trigger_error('Implementing operators() in class ' . static::class . ' without it implementing \Drupal\views\Plugin\views\filter\FilterOperatorsInterface is deprecated in drupal:10.3.0 and will throw a LogicException in drupal:12.0.0. See https://www.drupal.org/node/3412013', E_USER_DEPRECATED);
             }
             $operators = $this->operators();
             if ($operators[$group['operator']]['values'] == 0) {
@@ -891,7 +889,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @return string
    *   The error message if validation fails, or NULL if validation passes.
    */
-  protected function validateIdentifier($identifier, ?FormStateInterface $form_state = NULL, &$form_group = []) {
+  protected function validateIdentifier($identifier, ?FormStateInterface $form_state = NULL, array &$form_group = []) {
     $error = '';
     if (empty($identifier)) {
       $error = $this->t('The identifier is required if the filter is exposed.');
@@ -907,7 +905,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
       $error = $this->t('This identifier is used by another handler.');
     }
 
-    if (!empty($form_state) && !empty($error)) {
+    if ($form_state instanceof \Drupal\Core\Form\FormStateInterface && !empty($error)) {
       $form_state->setError($form_group, $error);
     }
     return $error;
@@ -919,7 +917,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   protected function buildGroupSubmit($form, FormStateInterface $form_state) {
     $groups = [];
     $group_items = $form_state->getValue(['options', 'group_info', 'group_items']);
-    uasort($group_items, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+    uasort($group_items, \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
     // Filter out removed items.
 
     // Start from 1 to avoid problems with #default_value in the widget.
@@ -950,7 +948,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   /**
    * Provide default options for exposed filters.
    */
-  public function defaultExposeOptions() {
+  public function defaultExposeOptions(): void {
     $this->options['expose'] = [
       'use_operator' => FALSE,
       'operator' => $this->options['id'] . '_op',
@@ -989,7 +987,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * The form contains a group of operator or values to apply as a single
    * filter.
    */
-  public function groupForm(&$form, FormStateInterface $form_state) {
+  public function groupForm(array &$form, FormStateInterface $form_state): void {
     $groups = [];
     if (!empty($this->options['group_info']['optional']) && !$this->multipleExposedInput()) {
       $groups = ['All' => $this->t('- Any -')];
@@ -1041,7 +1039,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function buildExposedForm(&$form, FormStateInterface $form_state) {
+  public function buildExposedForm(&$form, FormStateInterface $form_state): void {
     if (empty($this->options['exposed'])) {
       return;
     }
@@ -1113,7 +1111,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param string $wrapper_identifier
    *   The key to use for the wrapper element.
    */
-  protected function buildValueWrapper(&$form, $wrapper_identifier) {
+  protected function buildValueWrapper(array &$form, $wrapper_identifier) {
     // If both the field and the operator are exposed, this will end up being
     // called twice. We don't want to wipe out what's already there, so if it
     // exists already, do nothing.
@@ -1143,7 +1141,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  protected function buildExposedFiltersGroupForm(&$form, FormStateInterface $form_state) {
+  protected function buildExposedFiltersGroupForm(array &$form, FormStateInterface $form_state) {
     if (empty($this->options['exposed']) || empty($this->options['is_grouped'])) {
       return;
     }
@@ -1339,7 +1337,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
       '#suffix' => '</div>',
       '#type' => 'submit',
       '#value' => $this->t('Add another item'),
-      '#submit' => [[$this, 'addGroupForm']],
+      '#submit' => [$this->addGroupForm(...)],
     ];
 
     $js = [];
@@ -1364,7 +1362,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   /**
    * Add a new group to the exposed filter groups.
    */
-  public function addGroupForm($form, FormStateInterface $form_state) {
+  public function addGroupForm($form, FormStateInterface $form_state): void {
     $item = &$this->options;
 
     // Add a new row.
@@ -1385,7 +1383,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
   /**
    * Make some translations to a form item to make it more suitable to exposing.
    */
-  protected function exposedTranslate(&$form, $type) {
+  protected function exposedTranslate(array &$form, $type) {
     if (!isset($form['#type'])) {
       return;
     }
@@ -1428,7 +1426,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    *
    * The function is recursive to support optgroups.
    */
-  protected function prepareFilterSelectOptions(&$options) {
+  protected function prepareFilterSelectOptions(array &$options) {
     foreach ($options as $value => $label) {
       // Recurse for optgroups.
       if (is_array($label)) {
@@ -1494,7 +1492,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * checkboxes widget, and this function will be called for each item
    * chosen in the checkboxes.
    */
-  public function convertExposedInput(&$input, $selected_group_id = NULL) {
+  public function convertExposedInput(array &$input, $selected_group_id = NULL) {
     if ($this->isAGroup()) {
       // If it is already defined the selected group, use it. Only valid
       // when the filter uses checkboxes for widget.
@@ -1543,7 +1541,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * as widget, and therefore has to be applied several times, one per
    * item selected.
    */
-  public function groupMultipleExposedInput(&$input) {
+  public function groupMultipleExposedInput(array &$input) {
     if (!empty($input[$this->options['group_info']['identifier']])) {
       return array_filter($input[$this->options['group_info']['identifier']]);
     }
@@ -1566,7 +1564,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * This function is similar to storeExposedInput but modified to
    * work properly when the filter is a group.
    */
-  public function storeGroupInput($input, $status) {
+  public function storeGroupInput(array $input, $status) {
     if (!$this->isAGroup() || empty($this->options['group_info']['identifier'])) {
       return TRUE;
     }
@@ -1728,7 +1726,7 @@ abstract class FilterPluginBase extends HandlerBase implements CacheableDependen
    * level of indirection. You will find them in $this->operator
    * and $this->value respectively.
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $this->query->addWhere($this->options['group'], "$this->tableAlias.$this->realField", $this->value, $this->operator);
   }

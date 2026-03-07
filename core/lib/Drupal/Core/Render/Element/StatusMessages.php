@@ -26,7 +26,7 @@ class StatusMessages extends RenderElementBase {
    * Generate the placeholder in a #pre_render callback, because the hash salt
    * needs to be accessed, which may not yet be available when this is called.
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       // May have a value of 'status' or 'error' when only displaying messages
       // of that specific type.
@@ -99,7 +99,7 @@ class StatusMessages extends RenderElementBase {
    *
    * @see \Drupal\Core\Messenger\Messenger::deleteByType()
    */
-  public static function renderMessages($type = NULL) {
+  public static function renderMessages($type = NULL): array {
     $render = [];
     if (isset($type)) {
       $messages = [
@@ -112,7 +112,7 @@ class StatusMessages extends RenderElementBase {
 
     if ($messages) {
       // Render the messages.
-      $render = [
+      return [
         '#theme' => 'status_messages',
         '#message_list' => $messages,
         '#status_headings' => [

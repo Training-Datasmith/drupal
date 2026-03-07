@@ -26,7 +26,7 @@ class OmittedData extends ResourceObjectData {
    */
   public function __construct(array $data) {
     assert(Inspector::assertAllObjects($data, EntityAccessDeniedHttpException::class));
-    parent::__construct($data, -1);
+    parent::__construct($data);
   }
 
 }

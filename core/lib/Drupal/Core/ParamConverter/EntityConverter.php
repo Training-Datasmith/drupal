@@ -81,32 +81,17 @@ class EntityConverter implements ParamConverterInterface {
   use DynamicEntityTypeParamConverterTrait;
 
   /**
-   * Entity type manager which performs the upcasting in the end.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * Entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * Constructs a new EntityConverter.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    *
    * @see https://www.drupal.org/node/2938929
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityRepository = $entity_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+  {
   }
 
   /**
@@ -148,9 +133,9 @@ class EntityConverter implements ParamConverterInterface {
    * {@inheritdoc}
    */
   public function applies($definition, $name, Route $route) {
-    if (!empty($definition['type']) && str_starts_with($definition['type'], 'entity:')) {
-      $entity_type_id = substr($definition['type'], strlen('entity:'));
-      if (str_contains($definition['type'], '{')) {
+    if (!empty($definition['type']) && str_starts_with((string) $definition['type'], 'entity:')) {
+      $entity_type_id = substr((string) $definition['type'], strlen('entity:'));
+      if (str_contains((string) $definition['type'], '{')) {
         $entity_type_slug = substr($entity_type_id, 1, -1);
         return $name != $entity_type_slug && in_array($entity_type_slug, $route->compile()->getVariables(), TRUE);
       }

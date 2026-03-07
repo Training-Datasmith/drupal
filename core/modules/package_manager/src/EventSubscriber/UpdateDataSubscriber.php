@@ -16,9 +16,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class UpdateDataSubscriber implements EventSubscriberInterface {
+final readonly class UpdateDataSubscriber implements EventSubscriberInterface {
 
-  public function __construct(private readonly UpdateManagerInterface $updateManager) {
+  public function __construct(private UpdateManagerInterface $updateManager) {
   }
 
   /**

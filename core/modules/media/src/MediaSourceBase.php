@@ -27,34 +27,6 @@ abstract class MediaSourceBase extends PluginBase implements MediaSourceInterfac
   protected $label;
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity field manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The field type plugin manager service.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected $fieldTypeManager;
-
-  /**
-   * The config factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * Constructs a new class instance.
    *
    * @param array $configuration
@@ -63,21 +35,17 @@ abstract class MediaSourceBase extends PluginBase implements MediaSourceInterfac
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager service.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   Entity field manager service.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
    *   The field type plugin manager service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->fieldTypeManager = $field_type_manager;
-    $this->configFactory = $config_factory;
 
     // Add the default configuration of the media source to the plugin.
     $this->setConfiguration($configuration);
@@ -86,7 +54,7 @@ abstract class MediaSourceBase extends PluginBase implements MediaSourceInterfac
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration(array $configuration) {
+  public function setConfiguration(array $configuration): void {
     $this->configuration = NestedArray::mergeDeep(
       $this->defaultConfiguration(),
       $configuration
@@ -207,7 +175,7 @@ abstract class MediaSourceBase extends PluginBase implements MediaSourceInterfac
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     foreach (array_intersect_key($form_state->getValues(), $this->configuration) as $config_key => $config_value) {
       $this->configuration[$config_key] = $config_value;
     }
@@ -348,7 +316,7 @@ abstract class MediaSourceBase extends PluginBase implements MediaSourceInterfac
   /**
    * {@inheritdoc}
    */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display) {
+  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void {
     $display->setComponent($this->getSourceFieldDefinition($type)->getName(), [
       'label' => 'visually_hidden',
     ]);
@@ -357,7 +325,7 @@ abstract class MediaSourceBase extends PluginBase implements MediaSourceInterfac
   /**
    * {@inheritdoc}
    */
-  public function prepareFormDisplay(MediaTypeInterface $type, EntityFormDisplayInterface $display) {
+  public function prepareFormDisplay(MediaTypeInterface $type, EntityFormDisplayInterface $display): void {
     // Make sure the source field is placed just after the "name" base field.
     $name_component = $display->getComponent('name');
     $source_field_weight = ($name_component && isset($name_component['weight'])) ? $name_component['weight'] + 5 : -50;

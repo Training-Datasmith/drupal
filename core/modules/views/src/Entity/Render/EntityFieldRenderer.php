@@ -25,27 +25,6 @@ class EntityFieldRenderer extends RendererBase {
   use DependencySerializationTrait;
 
   /**
-   * The relationship being handled.
-   *
-   * @var string
-   */
-  protected $relationship;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository service.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * A list of indexes of rows whose fields have already been rendered.
    *
    * @var int[]
@@ -63,16 +42,16 @@ class EntityFieldRenderer extends RendererBase {
    *   The language manager.
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    */
-  public function __construct(ViewExecutable $view, $relationship, LanguageManagerInterface $language_manager, EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository) {
+  public function __construct(ViewExecutable $view, /**
+   * The relationship being handled.
+   */
+  protected $relationship, LanguageManagerInterface $language_manager, EntityTypeInterface $entity_type, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository) {
     parent::__construct($view, $language_manager, $entity_type);
-    $this->relationship = $relationship;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -120,7 +99,7 @@ class EntityFieldRenderer extends RendererBase {
   /**
    * {@inheritdoc}
    */
-  public function query(QueryPluginBase $query, $relationship = NULL) {
+  public function query(QueryPluginBase $query, $relationship = NULL): void {
     $this->getEntityTranslationRenderer()->query($query, $relationship);
   }
 
@@ -204,7 +183,7 @@ class EntityFieldRenderer extends RendererBase {
    *
    * @see \Drupal\Core\Entity\Entity\EntityViewDisplay
    */
-  protected function buildFields(array $values) {
+  protected function buildFields(array $values): array {
     $build = [];
 
     if ($values && ($field_ids = $this->getRenderableFieldIds())) {
@@ -275,7 +254,7 @@ class EntityFieldRenderer extends RendererBase {
    * @return string[]
    *   An associative array of views fields.
    */
-  protected function getRenderableFieldIds() {
+  protected function getRenderableFieldIds(): array {
     $field_ids = [];
     foreach ($this->view->field as $field_id => $field) {
       if ($field instanceof EntityField && $field->relationship == $this->relationship) {

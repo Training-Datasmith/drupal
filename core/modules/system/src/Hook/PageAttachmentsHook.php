@@ -10,10 +10,10 @@ use Drupal\Core\Render\BareHtmlPageRendererInterface;
 /**
  * Implements hook_page_attachments() for the system module.
  */
-final class PageAttachmentsHook {
+final readonly class PageAttachmentsHook {
 
   public function __construct(
-    private readonly BareHtmlPageRendererInterface $bareHtmlPageRenderer,
+    private BareHtmlPageRendererInterface $bareHtmlPageRenderer,
   ) {}
 
   /**

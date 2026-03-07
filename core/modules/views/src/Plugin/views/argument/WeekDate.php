@@ -20,7 +20,7 @@ class WeekDate extends Date {
   /**
    * Provide a link to the next level of the view.
    */
-  public function summaryName($data) {
+  public function summaryName($data): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $created = $data->{$this->name_alias};
     return $this->t('Week @week', ['@week' => $created]);
   }

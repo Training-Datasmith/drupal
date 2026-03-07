@@ -48,7 +48,7 @@ abstract class TextItemBase extends FieldItemBase {
    *
    * @see static::fieldSettingsForm()
    */
-  public static function validateAllowedFormats(array &$element, FormStateInterface $form_state) {
+  public static function validateAllowedFormats(array &$element, FormStateInterface $form_state): void {
     $value = array_values(array_filter($form_state->getValue($element['#parents'])));
     $form_state->setValueForElement($element, $value);
   }
@@ -61,9 +61,7 @@ abstract class TextItemBase extends FieldItemBase {
     $format_dependencies = [];
     $dependencies = parent::calculateDependencies($field_definition);
     if (!is_null($field_definition->getSetting('allowed_formats'))) {
-      $format_dependencies = array_map(function (string $format_id) {
-        return 'filter.format.' . $format_id;
-      }, $field_definition->getSetting('allowed_formats'));
+      $format_dependencies = array_map(fn(string $format_id) => 'filter.format.' . $format_id, $field_definition->getSetting('allowed_formats'));
     }
     $config = $dependencies['config'] ?? [];
     $dependencies['config'] = array_merge($config, $format_dependencies);
@@ -86,7 +84,7 @@ abstract class TextItemBase extends FieldItemBase {
       ->setLabel(t('Processed text'))
       ->setDescription(t('The text with the text format applied.'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\text\TextProcessed')
+      ->setClass(\Drupal\text\TextProcessed::class)
       ->setSetting('text source', 'value')
       ->setInternal(FALSE);
 
@@ -96,7 +94,7 @@ abstract class TextItemBase extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     // @todo Add in the filter default format here.
     $this->setValue(['format' => NULL], $notify);
     return $this;
@@ -105,7 +103,7 @@ abstract class TextItemBase extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('value')->getValue();
     return $value === NULL || $value === '';
   }
@@ -113,14 +111,15 @@ abstract class TextItemBase extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function onChange($property_name, $notify = TRUE) {
+  public function onChange($property_name, $notify = TRUE): void {
     // Unset processed properties that are affected by the change.
     foreach ($this->definition->getPropertyDefinitions() as $property => $definition) {
-      if ($definition->getClass() == '\Drupal\text\TextProcessed') {
-        if ($property_name == 'format' || ($definition->getSetting('text source') == $property_name)) {
+        if ($definition->getClass() != \Drupal\text\TextProcessed::class) {
+            continue;
+        }
+        if ($property_name == 'format' || $definition->getSetting('text source') == $property_name) {
           $this->writePropertyValue($property, NULL);
         }
-      }
     }
     parent::onChange($property_name, $notify);
   }
@@ -141,13 +140,11 @@ abstract class TextItemBase extends FieldItemBase {
       $max = (int) ceil($settings['max_length'] / 3);
       $value = substr($random->sentences(mt_rand(1, $max), FALSE), 0, $settings['max_length']);
     }
-
-    $values = [
+    return [
       'value' => $value,
       'summary' => $value,
       'format' => filter_fallback_format(),
     ];
-    return $values;
   }
 
 }

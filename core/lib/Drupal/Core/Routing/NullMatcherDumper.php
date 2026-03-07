@@ -19,7 +19,7 @@ class NullMatcherDumper implements MatcherDumperInterface {
   /**
    * {@inheritdoc}
    */
-  public function addRoutes(RouteCollection $routes) {
+  public function addRoutes(RouteCollection $routes): void {
     if (empty($this->routes)) {
       $this->routes = $routes;
     }

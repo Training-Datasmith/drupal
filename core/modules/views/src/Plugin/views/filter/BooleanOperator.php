@@ -64,12 +64,13 @@ class BooleanOperator extends FilterPluginBase implements FilterOperatorsInterfa
   /**
    * The value options.
    */
-  public ?array $valueOptions;
+  public ?array $valueOptions = null;
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function operatorOptions($which = 'title') {
+  public function operatorOptions($which = 'title'): array {
     $options = [];
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
@@ -80,8 +81,9 @@ class BooleanOperator extends FilterPluginBase implements FilterOperatorsInterfa
 
   /**
    * {@inheritdoc}
+   * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opEmpty', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 0}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'queryOpBoolean', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 1, query_operator: ('<>' | '=')}[]
    */
-  public function operators() {
+  public function operators(): array {
     $operators = [
       '=' => [
         'title' => $this->t('Is equal to'),
@@ -122,7 +124,7 @@ class BooleanOperator extends FilterPluginBase implements FilterOperatorsInterfa
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->value_value = $this->t('True');
@@ -157,7 +159,7 @@ class BooleanOperator extends FilterPluginBase implements FilterOperatorsInterfa
    * dynamic for some reason, child classes should use a guard to reduce
    * database hits as much as possible.
    */
-  public function getValueOptions() {
+  public function getValueOptions(): array {
     if (isset($this->definition['type'])) {
       if ($this->definition['type'] == 'yes-no') {
         $this->valueOptions = [1 => $this->t('Yes'), 0 => $this->t('No')];
@@ -286,7 +288,7 @@ class BooleanOperator extends FilterPluginBase implements FilterOperatorsInterfa
   /**
    * {@inheritdoc}
    */
-  public function defaultExposeOptions() {
+  public function defaultExposeOptions(): void {
     parent::defaultExposeOptions();
     $this->options['expose']['operator_id'] = '';
     $this->options['expose']['label'] = $this->value_value;
@@ -296,7 +298,7 @@ class BooleanOperator extends FilterPluginBase implements FilterOperatorsInterfa
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $field = "$this->tableAlias.$this->realField";
 

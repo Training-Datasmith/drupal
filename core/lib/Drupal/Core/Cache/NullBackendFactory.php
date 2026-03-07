@@ -10,7 +10,7 @@ class NullBackendFactory implements CacheFactoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function get($bin) {
+  public function get($bin): \Drupal\Core\Cache\NullBackend {
     return new NullBackend($bin);
   }
 

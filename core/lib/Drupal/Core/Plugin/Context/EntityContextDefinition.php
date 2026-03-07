@@ -32,7 +32,7 @@ class EntityContextDefinition extends ContextDefinition {
    * @return string
    *   The entity type ID.
    */
-  protected function getEntityTypeId() {
+  protected function getEntityTypeId(): string {
     // The data type is the entity type ID prefixed by 'entity:' (7 characters).
     return substr($this->getDataType(), 7);
   }
@@ -94,10 +94,8 @@ class EntityContextDefinition extends ContextDefinition {
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type from which to derive a context definition.
-   *
-   * @return static
    */
-  public static function fromEntityType(EntityTypeInterface $entity_type) {
+  public static function fromEntityType(EntityTypeInterface $entity_type): static {
     return new static('entity:' . $entity_type->id(), $entity_type->getLabel());
   }
 

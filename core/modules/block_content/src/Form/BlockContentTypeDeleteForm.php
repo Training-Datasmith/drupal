@@ -26,9 +26,7 @@ class BlockContentTypeDeleteForm extends EntityDeleteForm {
       $form['description'] = ['#markup' => $caption];
       return $form;
     }
-    else {
-      return parent::buildForm($form, $form_state);
-    }
+    return parent::buildForm($form, $form_state);
   }
 
 }

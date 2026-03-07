@@ -28,13 +28,6 @@ class Date extends NumericDate implements ContainerFactoryPluginInterface {
   use FieldAPIHandlerTrait;
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * Date format for SQL conversion.
    *
    * @var string
@@ -66,14 +59,13 @@ class Date extends NumericDate implements ContainerFactoryPluginInterface {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack used to determine the current time.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, DateFormatterInterface $date_formatter, RequestStack $request_stack) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, RequestStack $request_stack) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->dateFormatter = $date_formatter;
     $this->requestStack = $request_stack;
 
     $definition = $this->getFieldStorageDefinition();
@@ -185,7 +177,7 @@ class Date extends NumericDate implements ContainerFactoryPluginInterface {
    * @return string
    *   The time zone name.
    */
-  protected function getTimezone() {
+  protected function getTimezone(): string {
     return $this->dateFormat === DateTimeItemInterface::DATE_STORAGE_FORMAT
       ? DateTimeItemInterface::STORAGE_TIMEZONE
       : date_default_timezone_get();
@@ -204,13 +196,13 @@ class Date extends NumericDate implements ContainerFactoryPluginInterface {
    * @return int
    *   The computed offset in seconds.
    */
-  protected function getOffset($time, $timezone) {
+  protected function getOffset($time, $timezone): int {
     // Date-only fields do not have a time zone or offset from UTC associated
     // with them. For relative (i.e. 'offset') comparisons, we need to compute
     // the user's offset from UTC for use in the query.
     $origin_offset = 0;
     if ($this->dateFormat === DateTimeItemInterface::DATE_STORAGE_FORMAT && $this->value['type'] === 'offset') {
-      $origin_offset = $origin_offset + timezone_offset_get(new \DateTimeZone(date_default_timezone_get()), new \DateTime($time, new \DateTimeZone($timezone)));
+      return $origin_offset + timezone_offset_get(new \DateTimeZone(date_default_timezone_get()), new \DateTime($time, new \DateTimeZone($timezone)));
     }
 
     return $origin_offset;

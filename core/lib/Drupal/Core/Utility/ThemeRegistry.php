@@ -24,10 +24,8 @@ class ThemeRegistry extends CacheCollector implements DestructableInterface {
    * This is only allowed if all modules and the request method is GET. _theme()
    * should be very rarely called on POST requests and this avoids polluting
    * the runtime cache.
-   *
-   * @var bool
    */
-  protected $persistable;
+  protected bool $persistable;
 
   /**
    * The complete theme registry array.
@@ -85,7 +83,7 @@ class ThemeRegistry extends CacheCollector implements DestructableInterface {
    *   An array with the keys of the full theme registry, but the values
    *   initialized to NULL.
    */
-  public function initializeRegistry() {
+  public function initializeRegistry(): array {
     // @todo DIC this.
     $this->completeRegistry = \Drupal::service('theme.registry')->get();
 
@@ -95,7 +93,7 @@ class ThemeRegistry extends CacheCollector implements DestructableInterface {
   /**
    * {@inheritdoc}
    */
-  public function has($key) {
+  public function has($key): bool {
     // Since the theme registry allows for theme hooks to be requested that
     // are not registered, just check the existence of the key in the registry.
     // Use array_key_exists() here since a NULL value indicates that the theme
@@ -111,10 +109,10 @@ class ThemeRegistry extends CacheCollector implements DestructableInterface {
     // not yet been requested. Offsets that do not exist at all were not
     // registered in hook_theme().
     if (isset($this->storage[$key])) {
-      return $this->storage[$key];
+        return $this->storage[$key];
     }
-    elseif (array_key_exists($key, $this->storage)) {
-      return $this->resolveCacheMiss($key);
+    if (array_key_exists($key, $this->storage)) {
+        return $this->resolveCacheMiss($key);
     }
   }
 
@@ -150,7 +148,7 @@ class ThemeRegistry extends CacheCollector implements DestructableInterface {
       return;
     }
 
-    $lock_name = $this->cid . ':' . __CLASS__;
+    $lock_name = $this->cid . ':' . self::class;
     if (!$lock || $this->lock->acquire($lock_name)) {
       if ($cached = $this->cache->get($this->cid)) {
         // Use array merge instead of union so that filled in values in $data

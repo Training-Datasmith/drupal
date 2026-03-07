@@ -26,50 +26,19 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class ActiveLinkResponseFilter implements EventSubscriberInterface {
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The current path.
-   *
-   * @var \Drupal\Core\Path\CurrentPathStack
-   */
-  protected $currentPath;
-
-  /**
-   * The path matcher.
-   *
-   * @var \Drupal\Core\Path\PathMatcherInterface
-   */
-  protected $pathMatcher;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new ActiveLinkResponseFilter instance.
    *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
-   * @param \Drupal\Core\Path\CurrentPathStack $current_path
+   * @param \Drupal\Core\Path\CurrentPathStack $currentPath
    *   The current path.
-   * @param \Drupal\Core\Path\PathMatcherInterface $path_matcher
+   * @param \Drupal\Core\Path\PathMatcherInterface $pathMatcher
    *   The path matcher.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(AccountInterface $current_user, CurrentPathStack $current_path, PathMatcherInterface $path_matcher, LanguageManagerInterface $language_manager) {
-    $this->currentUser = $current_user;
-    $this->currentPath = $current_path;
-    $this->pathMatcher = $path_matcher;
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\Core\Path\CurrentPathStack $currentPath, protected \Drupal\Core\Path\PathMatcherInterface $pathMatcher, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+  {
   }
 
   /**
@@ -78,11 +47,11 @@ class ActiveLinkResponseFilter implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The response event.
    */
-  public function onResponse(ResponseEvent $event) {
+  public function onResponse(ResponseEvent $event): void {
     $response = $event->getResponse();
 
     // Only care about HTML responses.
-    if (stripos($response->headers->get('Content-Type', ''), 'text/html') === FALSE) {
+    if (stripos((string) $response->headers->get('Content-Type', ''), 'text/html') === FALSE) {
       return;
     }
 
@@ -133,7 +102,7 @@ class ActiveLinkResponseFilter implements EventSubscriberInterface {
    *   https://www.drupal.org/comment/7938201#comment-7938201) then we can get
    *   rid of this manual parsing and use DOMDocument instead.
    */
-  public static function setLinkActiveClass($html_markup, $current_path, $is_front, $url_language, array $query) {
+  public static function setLinkActiveClass($html_markup, string $current_path, $is_front, $url_language, array $query) {
     $search_key_current_path = 'data-drupal-link-system-path="' . $current_path . '"';
     $search_key_front = 'data-drupal-link-system-path="&lt;front&gt;"';
 

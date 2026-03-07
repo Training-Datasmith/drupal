@@ -13,26 +13,24 @@ use Drupal\Core\Ajax\CommandInterface;
 class EditorDialogSave implements CommandInterface {
 
   /**
-   * An array of values that will be passed back to the editor by the dialog.
-   *
-   * @var array
-   */
-  protected array $values;
-
-  /**
    * Constructs an EditorDialogSave object.
    *
    * @param array $values
    *   The values that should be passed to the form constructor in Drupal.
    */
-  public function __construct(array $values) {
-    $this->values = $values;
+  public function __construct(
+      /**
+       * An array of values that will be passed back to the editor by the dialog.
+       */
+      protected array $values
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     return [
       'command' => 'editorDialogSave',
       'values' => $this->values,

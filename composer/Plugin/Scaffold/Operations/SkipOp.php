@@ -19,33 +19,31 @@ class SkipOp extends AbstractOperation {
   const ID = 'skip';
 
   /**
-   * The message to output while processing.
-   *
-   * @var string
-   */
-  protected $message;
-
-  /**
    * SkipOp constructor.
    *
    * @param string $message
    *   (optional) A custom message to output while skipping.
    */
-  public function __construct($message = "  - Skip <info>[dest-rel-path]</info>: disabled") {
-    $this->message = $message;
+  public function __construct(
+      /**
+       * The message to output while processing.
+       */
+      protected $message = "  - Skip <info>[dest-rel-path]</info>: disabled"
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function generateContents() {
+  protected function generateContents(): string {
     return '';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function process(ScaffoldFilePath $destination, IOInterface $io, ScaffoldOptions $options) {
+  public function process(ScaffoldFilePath $destination, IOInterface $io, ScaffoldOptions $options): \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult {
     $interpolator = $destination->getInterpolator();
     $io->write($interpolator->interpolate($this->message));
     return new ScaffoldResult($destination, FALSE);

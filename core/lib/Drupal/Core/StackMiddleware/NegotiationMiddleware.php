@@ -61,7 +61,7 @@ class NegotiationMiddleware implements HttpKernelInterface {
    *
    * @return $this
    */
-  public function registerFormat($format, $mime_type) {
+  public function registerFormat($format, $mime_type): static {
     $this->formats[$format] = $mime_type;
     return $this;
   }

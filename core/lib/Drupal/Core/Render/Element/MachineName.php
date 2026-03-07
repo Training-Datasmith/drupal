@@ -77,7 +77,7 @@ class MachineName extends Textfield {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#default_value' => NULL,
@@ -104,7 +104,7 @@ class MachineName extends Textfield {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?string {
     if ($input !== FALSE && $input !== NULL) {
       // This should be a string, but allow other scalars since they might be
       // valid input in programmatic form submissions.
@@ -126,7 +126,7 @@ class MachineName extends Textfield {
    * @return array
    *   The processed element.
    */
-  public static function processMachineName(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processMachineName(array &$element, FormStateInterface $form_state, &$complete_form): array {
     // We need to pass the langcode to the client.
     $language = \Drupal::languageManager()->getCurrentLanguage();
 
@@ -245,14 +245,14 @@ class MachineName extends Textfield {
    * - Does not exceed the maximum length (via #maxlength).
    * - Cannot be changed after creation (via #disabled).
    */
-  public static function validateMachineName(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateMachineName(array &$element, FormStateInterface $form_state, &$complete_form): void {
     // Verify that the machine name not only consists of replacement tokens.
-    if (preg_match('@^' . $element['#machine_name']['replace'] . '+$@', $element['#value'])) {
+    if (preg_match('@^' . $element['#machine_name']['replace'] . '+$@', (string) $element['#value'])) {
       $form_state->setError($element, t('The machine-readable name must contain unique characters.'));
     }
 
     // Verify that the machine name contains no disallowed characters.
-    if (preg_match('@' . $element['#machine_name']['replace_pattern'] . '@', $element['#value'])) {
+    if (preg_match('@' . $element['#machine_name']['replace_pattern'] . '@', (string) $element['#value'])) {
       if (!isset($element['#machine_name']['error'])) {
         // Since a hyphen is the most common alternative replacement character,
         // a corresponding validation error message is supported here.
@@ -290,7 +290,7 @@ class MachineName extends Textfield {
    * @see \Drupal\Core\Transliteration\PhpTransliteration::readLanguageOverrides()
    */
   private static function getTransliterationLanguageOverrides(LanguageInterface $language) {
-    $overrides = &drupal_static(__CLASS__ . '_' . __METHOD__, []);
+    $overrides = &drupal_static(self::class . '_' . __METHOD__, []);
     $langcode = $language->getId();
 
     if (isset($overrides[$langcode])) {

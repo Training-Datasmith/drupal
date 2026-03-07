@@ -127,14 +127,10 @@ class Config {
     }
 
     // Find the packages which should not be cleaned up.
-    $do_not_clean = array_filter($this->configData, function ($paths) {
-      return $paths === FALSE;
-    });
+    $do_not_clean = array_filter($this->configData, fn($paths) => $paths === FALSE);
 
     // Ensure the values are arrays.
-    $this->configData = array_map(function ($paths) {
-      return (array) $paths;
-    }, $this->configData);
+    $this->configData = array_map(fn($paths) => (array) $paths, $this->configData);
 
     // Merge root config with defaults.
     foreach (array_change_key_case(static::$defaultConfig, CASE_LOWER) as $package => $paths) {

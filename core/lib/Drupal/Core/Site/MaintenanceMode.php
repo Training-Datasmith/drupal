@@ -14,36 +14,21 @@ use Drupal\Core\State\StateInterface;
 class MaintenanceMode implements MaintenanceModeInterface {
 
   /**
-   * The state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $config;
-
-  /**
    * Constructs a new maintenance mode service.
    *
    * @param \Drupal\Core\State\StateInterface $state
    *   The state.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   The config factory.
    */
-  public function __construct(StateInterface $state, ConfigFactoryInterface $config_factory) {
-    $this->state = $state;
-    $this->config = $config_factory;
+  public function __construct(protected \Drupal\Core\State\StateInterface $state, protected \Drupal\Core\Config\ConfigFactoryInterface $config)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match) {
+  public function applies(RouteMatchInterface $route_match): bool {
     if (!$this->state->get('system.maintenance_mode')) {
       return FALSE;
     }
@@ -67,7 +52,7 @@ class MaintenanceMode implements MaintenanceModeInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSiteMaintenanceMessage() {
+  public function getSiteMaintenanceMessage(): \Drupal\Component\Render\FormattableMarkup {
     return new FormattableMarkup($this->config->get('system.maintenance')->get('message'), [
       '@site' => $this->config->get('system.site')->get('name'),
     ]);

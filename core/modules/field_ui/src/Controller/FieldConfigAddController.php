@@ -29,7 +29,7 @@ final class FieldConfigAddController extends ControllerBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('tempstore.private')->get('field_ui'),
     );

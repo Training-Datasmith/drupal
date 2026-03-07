@@ -22,7 +22,7 @@ class ConfigImporterFieldPurger {
    * @param \Drupal\Core\Config\ConfigImporter $config_importer
    *   The config importer.
    */
-  public static function process(array &$context, ConfigImporter $config_importer) {
+  public static function process(array &$context, ConfigImporter $config_importer): void {
     if (!isset($context['sandbox']['field'])) {
       static::initializeSandbox($context, $config_importer);
     }
@@ -118,7 +118,7 @@ class ConfigImporterFieldPurger {
     $field_storage_ids = [];
     foreach ($deletes as $config_name) {
       $field_storage_config_prefix = \Drupal::entityTypeManager()->getDefinition('field_storage_config')->getConfigPrefix();
-      if (str_starts_with($config_name, $field_storage_config_prefix . '.')) {
+      if (str_starts_with((string) $config_name, $field_storage_config_prefix . '.')) {
         $field_storage_ids[] = ConfigEntityStorage::getIDFromConfigName($config_name, $field_storage_config_prefix);
       }
     }

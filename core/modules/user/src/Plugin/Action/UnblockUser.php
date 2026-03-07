@@ -20,7 +20,7 @@ class UnblockUser extends ActionBase {
   /**
    * {@inheritdoc}
    */
-  public function execute($account = NULL) {
+  public function execute($account = NULL): void {
     // Skip unblocking user if they are already unblocked.
     if ($account !== FALSE && $account->isBlocked()) {
       $account->activate();

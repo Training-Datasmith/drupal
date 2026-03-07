@@ -26,10 +26,8 @@ final class Link implements CacheableDependencyInterface {
 
   /**
    * The link URI.
-   *
-   * @var \Drupal\Core\Url
    */
-  protected $uri;
+  protected \Drupal\Core\Url $uri;
 
   /**
    * The URI, as a string.
@@ -39,20 +37,13 @@ final class Link implements CacheableDependencyInterface {
   protected $href;
 
   /**
-   * The link relation type.
-   *
-   * @var string
-   */
-  protected $rel;
-
-  /**
    * The link target attributes.
    *
    * @var string[]
    *   An associative array where the keys are the attribute keys and values are
    *   either string or an array of strings.
    */
-  protected $attributes;
+  protected array $attributes;
 
   /**
    * JSON:API Link constructor.
@@ -65,22 +56,22 @@ final class Link implements CacheableDependencyInterface {
    *   entity on which the link will appear.
    * @param \Drupal\Core\Url $url
    *   The Url object for the link.
-   * @param string $link_relation_type
+   * @param string $rel
    *   An array of registered or extension RFC8288 link relation types.
    * @param array $target_attributes
    *   An associative array of target attributes for the link.
    *
    * @see https://tools.ietf.org/html/rfc8288#section-2.1
    */
-  public function __construct(CacheableMetadata $cacheability, Url $url, string $link_relation_type, array $target_attributes = []) {
+  public function __construct(CacheableMetadata $cacheability, Url $url, /**
+   * The link relation type.
+   */
+  protected string $rel, array $target_attributes = []) {
     assert(Inspector::assertAllStrings(array_keys($target_attributes)));
-    assert(Inspector::assertAll(function ($target_attribute_value) {
-      return is_string($target_attribute_value) || is_array($target_attribute_value);
-    }, array_values($target_attributes)));
+    assert(Inspector::assertAll(fn($target_attribute_value) => is_string($target_attribute_value) || is_array($target_attribute_value), array_values($target_attributes)));
     $generated_url = $url->setAbsolute()->toString(TRUE);
     $this->href = $generated_url->getGeneratedUrl();
     $this->uri = $url;
-    $this->rel = $link_relation_type;
     $this->attributes = $target_attributes;
     $this->setCacheability($cacheability->addCacheableDependency($generated_url));
   }
@@ -137,7 +128,7 @@ final class Link implements CacheableDependencyInterface {
    *   0 if the links can be considered identical, an integer greater than or
    *   less than 0 otherwise.
    */
-  public static function compare(Link $a, Link $b) {
+  public static function compare(Link $a, Link $b): int {
     // Any string concatenation would work, but a Link header-like format makes
     // it clear what is being compared.
     $a_string = sprintf('<%s>;rel="%s"', $a->getHref(), $a->rel);
@@ -164,7 +155,7 @@ final class Link implements CacheableDependencyInterface {
    * @return static
    *   A new JSON:API Link object with the cacheability of both links merged.
    */
-  public static function merge(Link $a, Link $b) {
+  public static function merge(Link $a, Link $b): static {
     assert(static::compare($a, $b) === 0, 'Only equivalent links can be merged.');
     $merged_cacheability = (new CacheableMetadata())->addCacheableDependency($a)->addCacheableDependency($b);
     return new static($merged_cacheability, $a->getUri(), $a->getLinkRelationType(), $a->getTargetAttributes());

@@ -13,7 +13,7 @@ trait ContextAwarePluginManagerTrait {
    * @return \Drupal\Core\Plugin\Context\ContextHandlerInterface
    *   The context handler service.
    */
-  protected function contextHandler() {
+  protected function contextHandler(): object {
     return \Drupal::service('context.handler');
   }
 

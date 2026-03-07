@@ -28,20 +28,13 @@ abstract class SearchPageFormBase extends EntityForm {
   protected $plugin;
 
   /**
-   * The search page repository.
-   *
-   * @var \Drupal\search\SearchPageRepositoryInterface
-   */
-  protected $searchPageRepository;
-
-  /**
    * Constructs a new search form.
    *
-   * @param \Drupal\search\SearchPageRepositoryInterface $search_page_repository
+   * @param \Drupal\search\SearchPageRepositoryInterface $searchPageRepository
    *   The search page repository.
    */
-  public function __construct(SearchPageRepositoryInterface $search_page_repository) {
-    $this->searchPageRepository = $search_page_repository;
+  public function __construct(protected \Drupal\search\SearchPageRepositoryInterface $searchPageRepository)
+  {
   }
 
   /**
@@ -56,7 +49,7 @@ abstract class SearchPageFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function getBaseFormId() {
+  public function getBaseFormId(): ?string {
     return 'search_entity_form';
   }
 
@@ -71,7 +64,7 @@ abstract class SearchPageFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
@@ -86,7 +79,7 @@ abstract class SearchPageFormBase extends EntityForm {
       '#disabled' => !$this->entity->isNew(),
       '#maxlength' => 64,
       '#machine_name' => [
-        'exists' => [$this, 'exists'],
+        'exists' => $this->exists(...),
       ],
     ];
     $form['path'] = [
@@ -128,7 +121,7 @@ abstract class SearchPageFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     // Ensure each path is unique.
@@ -148,7 +141,7 @@ abstract class SearchPageFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     if ($this->plugin instanceof PluginFormInterface) {
@@ -160,7 +153,7 @@ abstract class SearchPageFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $this->entity->save();
 
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));

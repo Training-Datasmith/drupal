@@ -18,8 +18,6 @@ class FileNameLengthConstraint extends SymfonyConstraint {
 
   /**
    * The maximum file name length.
-   *
-   * @var int
    */
   public int $maxLength = 240;
 

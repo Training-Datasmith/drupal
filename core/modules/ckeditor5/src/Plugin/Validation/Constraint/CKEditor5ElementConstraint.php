@@ -22,7 +22,7 @@ class CKEditor5ElementConstraint extends SymfonyConstraint {
    *
    * @var null|array
    */
-  public $requiredAttributes = NULL;
+  public $requiredAttributes;
 
   public function __construct(
     mixed $options = NULL,

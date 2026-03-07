@@ -17,26 +17,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ViewsMenuLink extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The view storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $viewStorage;
-
-  /**
    * Constructs a \Drupal\views\Plugin\Derivative\ViewsLocalTask instance.
    *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $view_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
    *   The view storage.
    */
-  public function __construct(EntityStorageInterface $view_storage) {
-    $this->viewStorage = $view_storage;
+  public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('view')
     );
@@ -44,8 +37,9 @@ class ViewsMenuLink extends DeriverBase implements ContainerDeriverInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[][]|float[]|int[]
    */
-  public function getDerivativeDefinitions($base_plugin_definition) {
+  public function getDerivativeDefinitions($base_plugin_definition): array {
     $links = [];
     $views = Views::getApplicableViews('uses_menu_links');
 

@@ -25,13 +25,6 @@ class WorkspaceActivateForm extends EntityConfirmFormBase implements WorkspaceSa
   protected $entity;
 
   /**
-   * The workspace replication manager.
-   *
-   * @var \Drupal\workspaces\WorkspaceManagerInterface
-   */
-  protected $workspaceManager;
-
-  /**
    * The messenger service.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -41,20 +34,19 @@ class WorkspaceActivateForm extends EntityConfirmFormBase implements WorkspaceSa
   /**
    * Constructs a new WorkspaceActivateForm.
    *
-   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager
    *   The workspace manager.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, MessengerInterface $messenger) {
-    $this->workspaceManager = $workspace_manager;
+  public function __construct(protected \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager, MessengerInterface $messenger) {
     $this->messenger = $messenger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('workspaces.manager'),
       $container->get('messenger')
@@ -64,14 +56,14 @@ class WorkspaceActivateForm extends EntityConfirmFormBase implements WorkspaceSa
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Would you like to activate the %workspace workspace?', ['%workspace' => $this->entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Activate the %workspace workspace.', ['%workspace' => $this->entity->label()]);
   }
 
@@ -106,7 +98,7 @@ class WorkspaceActivateForm extends EntityConfirmFormBase implements WorkspaceSa
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     try {
       $this->workspaceManager->setActiveWorkspace($this->entity);
       $this->messenger->addMessage($this->t('%workspace_label is now the active workspace.', ['%workspace_label' => $this->entity->label()]));
@@ -135,10 +127,8 @@ class WorkspaceActivateForm extends EntityConfirmFormBase implements WorkspaceSa
     $workspace = $route_match->getParameter('workspace');
     $active_workspace = $this->workspaceManager->getActiveWorkspace();
 
-    $access = AccessResult::allowedIf(!$active_workspace || ($active_workspace && $active_workspace->id() != $workspace->id()))
+    return AccessResult::allowedIf(!$active_workspace || ($active_workspace && $active_workspace->id() != $workspace->id()))
       ->addCacheableDependency($workspace);
-
-    return $access;
   }
 
 }

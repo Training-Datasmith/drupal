@@ -101,7 +101,7 @@ class SystemRequirements implements InstallRequirementsInterface {
     ];
 
     // Tests clean URL support.
-    if ($install_state['interactive'] && !$request_object->query->has('rewrite') && str_contains($software, 'Apache')) {
+    if ($install_state['interactive'] && !$request_object->query->has('rewrite') && str_contains((string) $software, 'Apache')) {
       // If the Apache rewrite module is not enabled, Apache version must be >=
       // 2.2.16 because of the FallbackResource directive in the root .htaccess
       // file. Since the Apache version reported by the server is dependent on
@@ -118,7 +118,7 @@ class SystemRequirements implements InstallRequirementsInterface {
       $apache_version_string = 'Apache';
 
       // Determine the Apache version number: major, minor and revision.
-      if (preg_match('/Apache\/(\d+)\.?(\d+)?\.?(\d+)?/', $software, $matches)) {
+      if (preg_match('/Apache\/(\d+)\.?(\d+)?\.?(\d+)?/', (string) $software, $matches)) {
         $apache_version_string = $matches[0];
 
         // Major version number

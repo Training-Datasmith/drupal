@@ -23,7 +23,7 @@ abstract class Data implements \IteratorAggregate, \Countable {
    *
    * @var list<\Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface>
    */
-  protected $data;
+  protected array $data;
 
   /**
    * The number of resources permitted in this collection.
@@ -95,7 +95,7 @@ abstract class Data implements \IteratorAggregate, \Countable {
   /**
    * {@inheritdoc}
    */
-  public function setTotalCount($count) {
+  public function setTotalCount($count): void {
     $this->count = $count;
   }
 
@@ -128,7 +128,7 @@ abstract class Data implements \IteratorAggregate, \Countable {
    * @param bool $has_next_page
    *   TRUE if the collection has a next page.
    */
-  public function setHasNextPage($has_next_page) {
+  public function setHasNextPage($has_next_page): void {
     $this->hasNextPage = (bool) $has_next_page;
   }
 

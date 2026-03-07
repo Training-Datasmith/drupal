@@ -29,7 +29,7 @@ class SystemMainBlock extends BlockBase implements MainContentBlockPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function setMainContent(array $main_content) {
+  public function setMainContent(array $main_content): void {
     $this->mainContent = $main_content;
   }
 

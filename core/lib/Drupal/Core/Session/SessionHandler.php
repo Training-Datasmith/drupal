@@ -163,7 +163,7 @@ class SessionHandler extends AbstractSessionHandler implements \SessionHandlerIn
    * @internal
    */
   protected function schemaDefinition(): array {
-    $schema = [
+    return [
       'description' => "Drupal's session handlers read and write into the sessions table. Each record represents a user session, either anonymous or authenticated.",
       'fields' => [
         'uid' => [
@@ -213,8 +213,6 @@ class SessionHandler extends AbstractSessionHandler implements \SessionHandlerIn
         ],
       ],
     ];
-
-    return $schema;
   }
 
   /**

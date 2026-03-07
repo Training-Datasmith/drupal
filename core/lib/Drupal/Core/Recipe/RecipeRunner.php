@@ -116,7 +116,7 @@ final class RecipeRunner {
       $values = $recipe->input->getValues();
       // Wrap the replacement strings with `${` and `}`, which is a fairly
       // common style of placeholder.
-      $keys = array_map(fn ($k) => sprintf('${%s}', $k), array_keys($values));
+      $keys = array_map(fn (int|string $k): string => sprintf('${%s}', $k), array_keys($values));
       $replace = array_combine($keys, $values);
 
       // Process the actions.
@@ -125,7 +125,7 @@ final class RecipeRunner {
       foreach ($config->config['actions'] as $config_name => $actions) {
         // If this config name contains an input value, it must begin with the
         // config prefix of a known entity type.
-        if (str_contains($config_name, '${') && empty($config_manager->getEntityTypeIdByName($config_name))) {
+        if (str_contains((string) $config_name, '${') && empty($config_manager->getEntityTypeIdByName($config_name))) {
           throw new ConfigActionException("The entity type for the config name '$config_name' could not be identified.");
         }
         $config_name = str_replace($keys, $replace, $config_name);
@@ -202,12 +202,12 @@ final class RecipeRunner {
     }
     $steps = array_merge($steps, static::toBatchOperationsInstall($recipe, $modules, $themes));
     if ($recipe->config->hasTasks()) {
-      $steps[] = [[RecipeRunner::class, 'installConfig'], [$recipe]];
+      $steps[] = [RecipeRunner::installConfig(...), [$recipe]];
     }
     if (!empty($recipe->content->data)) {
-      $steps[] = [[RecipeRunner::class, 'installContent'], [$recipe]];
+      $steps[] = [RecipeRunner::installContent(...), [$recipe]];
     }
-    $steps[] = [[RecipeRunner::class, 'triggerEvent'], [$recipe]];
+    $steps[] = [RecipeRunner::triggerEvent(...), [$recipe]];
 
     return $steps;
   }
@@ -235,14 +235,14 @@ final class RecipeRunner {
         continue;
       }
       $modules[] = $name;
-      $steps[] = [[RecipeRunner::class, 'installModule'], [$name, $recipe]];
+      $steps[] = [RecipeRunner::installModule(...), [$name, $recipe]];
     }
     foreach ($recipe->install->themes as $name) {
       if (in_array($name, $themes, TRUE)) {
         continue;
       }
       $themes[] = $name;
-      $steps[] = [[RecipeRunner::class, 'installTheme'], [$name, $recipe]];
+      $steps[] = [RecipeRunner::installTheme(...), [$name, $recipe]];
     }
     return $steps ?? [];
   }

@@ -37,15 +37,11 @@ class PathChangedHelper {
 
   /**
    * The URL object for the route whose path has changed.
-   *
-   * @var \Drupal\Core\Url
    */
   protected Url $newUrl;
 
   /**
    * The URL object for the BC route.
-   *
-   * @var \Drupal\Core\Url
    */
   protected Url $oldUrl;
 
@@ -62,11 +58,11 @@ class PathChangedHelper {
    */
   public function __construct(RouteMatchInterface $route_match, Request $request) {
     $bc_route_name = $route_match->getRouteName();
-    if (!str_ends_with($bc_route_name, '.bc')) {
-      throw new \InvalidArgumentException(__CLASS__ . ' expects a route name that ends with ".bc".');
+    if (!str_ends_with((string) $bc_route_name, '.bc')) {
+      throw new \InvalidArgumentException(self::class . ' expects a route name that ends with ".bc".');
     }
     // Strip '.bc' from the end of the route name.
-    $route_name = substr($bc_route_name, 0, -3);
+    $route_name = substr((string) $bc_route_name, 0, -3);
     $args = $route_match->getRawParameters()->all();
     $options = [
       'absolute' => TRUE,

@@ -49,8 +49,7 @@ class PathHooks {
         $output .= '<dd>' . $this->t('The Path module provides a way to search and view a <a href=":aliases">list of all aliases</a> that are in use on your website. Aliases can be added, edited and deleted through this list.', [
           ':aliases' => Url::fromRoute('entity.path_alias.collection')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.path_alias.collection':
         return '<p>' . $this->t("An alias defines a different name for an existing URL path - for example, the alias 'about' for the URL path 'node/1'. A URL path can have multiple aliases.") . '</p>';
@@ -85,7 +84,7 @@ class PathHooks {
    * Implements hook_entity_base_field_info_alter().
    */
   #[Hook('entity_base_field_info_alter')]
-  public function entityBaseFieldInfoAlter(&$fields, EntityTypeInterface $entity_type): void {
+  public function entityBaseFieldInfoAlter(array &$fields, EntityTypeInterface $entity_type): void {
     /** @var \Drupal\Core\Field\BaseFieldDefinition[] $fields */
     if ($entity_type->id() === 'path_alias') {
       $fields['langcode']->setDisplayOptions('form', [
@@ -144,7 +143,7 @@ class PathHooks {
    * Implements hook_field_widget_single_element_form_alter().
    */
   #[Hook('field_widget_single_element_form_alter')]
-  public function fieldWidgetSingleElementFormAlter(&$element, FormStateInterface $form_state, $context): void {
+  public function fieldWidgetSingleElementFormAlter(array &$element, FormStateInterface $form_state, array $context): void {
     $field_definition = $context['items']->getFieldDefinition();
     $field_name = $field_definition->getName();
     $entity_type = $field_definition->getTargetEntityTypeId();

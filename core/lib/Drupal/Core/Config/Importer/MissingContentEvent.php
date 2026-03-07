@@ -12,20 +12,13 @@ use Drupal\Component\EventDispatcher\Event;
 class MissingContentEvent extends Event {
 
   /**
-   * A list of missing content dependencies.
-   *
-   * @var array
-   */
-  protected $missingContent;
-
-  /**
    * Constructs a configuration import missing content event object.
    *
-   * @param array $missing_content
+   * @param array $missingContent
    *   Missing content information.
    */
-  public function __construct(array $missing_content) {
-    $this->missingContent = $missing_content;
+  public function __construct(protected array $missingContent)
+  {
   }
 
   /**
@@ -49,7 +42,7 @@ class MissingContentEvent extends Event {
    * @return $this
    *   The MissingContentEvent object.
    */
-  public function resolveMissingContent($uuid) {
+  public function resolveMissingContent($uuid): static {
     if (isset($this->missingContent[$uuid])) {
       unset($this->missingContent[$uuid]);
     }

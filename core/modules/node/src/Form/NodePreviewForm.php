@@ -18,13 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class NodePreviewForm extends FormBase {
 
   /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
    * The config factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -34,7 +27,7 @@ class NodePreviewForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_display.repository'),
       $container->get('config.factory')
@@ -44,20 +37,19 @@ class NodePreviewForm extends FormBase {
   /**
    * Constructs a new NodePreviewForm.
    *
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
    */
-  public function __construct(EntityDisplayRepositoryInterface $entity_display_repository, ConfigFactoryInterface $config_factory) {
-    $this->entityDisplayRepository = $entity_display_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, ConfigFactoryInterface $config_factory) {
     $this->configFactory = $config_factory;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'node_preview_form_select';
   }
 
@@ -74,7 +66,7 @@ class NodePreviewForm extends FormBase {
    * @return array
    *   The form structure.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?EntityInterface $node = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?EntityInterface $node = NULL): array {
     $view_mode = $node->preview_view_mode;
 
     $query_options = ['query' => ['uuid' => $node->uuid()]];
@@ -127,7 +119,7 @@ class NodePreviewForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $route_parameters = [
       'node_preview' => $form_state->getValue('uuid'),
       'view_mode_id' => $form_state->getValue('view_mode'),

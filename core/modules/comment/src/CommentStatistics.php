@@ -21,48 +21,18 @@ class CommentStatistics implements CommentStatisticsInterface {
   use StringTranslationTrait;
 
   /**
-   * The current database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * The replica database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
    */
-  protected $databaseReplica;
-
-  /**
-   * The current logged in user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
+  protected \Drupal\Core\Database\Connection $databaseReplica;
 
   /**
    * Constructs the CommentStatistics service.
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The active database connection.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current logged in user.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
@@ -72,24 +42,21 @@ class CommentStatistics implements CommentStatisticsInterface {
    *   (Optional) the replica database connection.
    */
   public function __construct(
-    Connection $database,
-    AccountInterface $current_user,
-    EntityTypeManagerInterface $entity_type_manager,
-    StateInterface $state,
+    protected \Drupal\Core\Database\Connection $database,
+    protected \Drupal\Core\Session\AccountInterface $currentUser,
+    protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+    protected \Drupal\Core\State\StateInterface $state,
     protected TimeInterface $time,
     ?Connection $database_replica = NULL,
   ) {
-    $this->database = $database;
-    $this->currentUser = $current_user;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->state = $state;
-    $this->databaseReplica = $database_replica ?: $database;
+    $this->databaseReplica = $database_replica ?: $this->database;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function read($entities, $entity_type, $accurate = TRUE) {
+  public function read($entities, $entity_type, $accurate = TRUE): array {
     $connection = $accurate ? $this->database : $this->databaseReplica;
     $stats = $connection->select('comment_entity_statistics', 'ces')
       ->fields('ces')
@@ -107,7 +74,7 @@ class CommentStatistics implements CommentStatisticsInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete(EntityInterface $entity) {
+  public function delete(EntityInterface $entity): void {
     $this->database->delete('comment_entity_statistics')
       ->condition('entity_id', $entity->id())
       ->condition('entity_type', $entity->getEntityTypeId())
@@ -117,7 +84,7 @@ class CommentStatistics implements CommentStatisticsInterface {
   /**
    * {@inheritdoc}
    */
-  public function create(FieldableEntityInterface $entity, $fields) {
+  public function create(FieldableEntityInterface $entity, $fields): void {
     $query = $this->database->insert('comment_entity_statistics')
       ->fields([
         'entity_id',
@@ -176,7 +143,7 @@ class CommentStatistics implements CommentStatisticsInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRankingInfo() {
+  public function getRankingInfo(): array {
     return [
       'comments' => [
         'title' => $this->t('Number of comments'),
@@ -203,7 +170,7 @@ class CommentStatistics implements CommentStatisticsInterface {
   /**
    * {@inheritdoc}
    */
-  public function update(CommentInterface $comment) {
+  public function update(CommentInterface $comment): void {
     // Allow bulk updates and inserts to temporarily disable the maintenance of
     // the {comment_entity_statistics} table.
     if (!$this->state->get('comment.maintain_entity_statistics')) {

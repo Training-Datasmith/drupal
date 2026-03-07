@@ -64,34 +64,26 @@ class LanguageNegotiationContentEntity extends LanguageNegotiationMethodBase imp
   protected $paths;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new LanguageNegotiationContentEntity instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager) {
     $this->paths = new \SplObjectStorage();
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static($container->get('entity_type.manager'));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLangcode(?Request $request = NULL) {
+  public function getLangcode(?Request $request = NULL): null|int|string {
     if ($request === NULL || $this->languageManager === NULL) {
       return NULL;
     }
@@ -144,8 +136,9 @@ class LanguageNegotiationContentEntity extends LanguageNegotiationMethodBase imp
 
   /**
    * {@inheritdoc}
+   * @return array{url: Drupal\Core\Url, title: mixed, attributes: array{class: array{'language-link'}}, query: non-empty-array}[]
    */
-  public function getLanguageSwitchLinks(Request $request, $type, Url $url) {
+  public function getLanguageSwitchLinks(Request $request, $type, Url $url): array {
     $links = [];
     $query = [];
     parse_str($request->getQueryString() ?? '', $query);

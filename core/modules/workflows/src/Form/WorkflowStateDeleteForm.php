@@ -31,14 +31,14 @@ class WorkflowStateDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'workflow_state_delete_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to delete %state from %workflow?', [
       '%state' => $this->workflow->getTypePlugin()
         ->getState($this->stateId)
@@ -57,7 +57,7 @@ class WorkflowStateDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Delete');
   }
 
@@ -95,7 +95,7 @@ class WorkflowStateDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
 
     $workflow_label = $this->workflow->getTypePlugin()->getState($this->stateId)->label();
     $this->workflow

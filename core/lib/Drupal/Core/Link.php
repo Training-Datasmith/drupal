@@ -18,25 +18,6 @@ class Link implements RenderableInterface {
   protected $linkGenerator;
 
   /**
-   * The link text for the anchor tag as a translated string or render array.
-   *
-   * Strings will be sanitized automatically. If you need to output HTML in
-   * the link text, use a render array or an already sanitized string such as
-   * the output of \Drupal\Component\Utility\Xss::filter() or
-   * \Drupal\Component\Render\FormattableMarkup.
-   *
-   * @var string|array|\Drupal\Component\Render\MarkupInterface
-   */
-  protected $text;
-
-  /**
-   * The URL of the link.
-   *
-   * @var \Drupal\Core\Url
-   */
-  protected $url;
-
-  /**
    * Constructs a new Link object.
    *
    * @param string|array|\Drupal\Component\Render\MarkupInterface $text
@@ -48,9 +29,19 @@ class Link implements RenderableInterface {
    * @param \Drupal\Core\Url $url
    *   The \Drupal\Core\Url object.
    */
-  public function __construct($text, Url $url) {
-    $this->text = $text;
-    $this->url = $url;
+  public function __construct(
+      /**
+       * The link text for the anchor tag as a translated string or render array.
+       *
+       * Strings will be sanitized automatically. If you need to output HTML in
+       * the link text, use a render array or an already sanitized string such as
+       * the output of \Drupal\Component\Utility\Xss::filter() or
+       * \Drupal\Component\Render\FormattableMarkup.
+       */
+      protected $text,
+      protected \Drupal\Core\Url $url
+  )
+  {
   }
 
   /**
@@ -69,10 +60,8 @@ class Link implements RenderableInterface {
    * @param array $options
    *   The options parameter takes exactly the same structure.
    *   See \Drupal\Core\Url::fromUri() for details.
-   *
-   * @return static
    */
-  public static function createFromRoute($text, $route_name, $route_parameters = [], $options = []) {
+  public static function createFromRoute($text, $route_name, $route_parameters = [], $options = []): static {
     return new static($text, new Url($route_name, $route_parameters, $options));
   }
 
@@ -87,10 +76,8 @@ class Link implements RenderableInterface {
    *   \Drupal\Component\Render\FormattableMarkup.
    * @param \Drupal\Core\Url $url
    *   The Url to create the link for.
-   *
-   * @return static
    */
-  public static function fromTextAndUrl($text, Url $url) {
+  public static function fromTextAndUrl($text, Url $url): static {
     return new static($text, $url);
   }
 
@@ -120,7 +107,7 @@ class Link implements RenderableInterface {
    *
    * @return $this
    */
-  public function setText($text) {
+  public function setText($text): static {
     $this->text = $text;
     return $this;
   }
@@ -143,7 +130,7 @@ class Link implements RenderableInterface {
    *
    * @return $this
    */
-  public function setUrl(Url $url) {
+  public function setUrl(Url $url): static {
     $this->url = $url;
     return $this;
   }
@@ -168,7 +155,7 @@ class Link implements RenderableInterface {
   /**
    * {@inheritdoc}
    */
-  public function toRenderable() {
+  public function toRenderable(): array {
     return [
       '#type' => 'link',
       '#url' => $this->url,
@@ -197,7 +184,7 @@ class Link implements RenderableInterface {
    *
    * @return $this
    */
-  public function setLinkGenerator(LinkGeneratorInterface $generator) {
+  public function setLinkGenerator(LinkGeneratorInterface $generator): static {
     $this->linkGenerator = $generator;
 
     return $this;

@@ -124,7 +124,7 @@ class Editor extends ConfigEntityBase implements EditorInterface {
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
     // Create a dependency on the associated FilterFormat.
     $text_format = $this->getFilterFormat();
@@ -145,7 +145,7 @@ class Editor extends ConfigEntityBase implements EditorInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasAssociatedFilterFormat() {
+  public function hasAssociatedFilterFormat(): bool {
     return $this->format !== NULL;
   }
 
@@ -183,7 +183,7 @@ class Editor extends ConfigEntityBase implements EditorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setEditor($editor) {
+  public function setEditor($editor): static {
     $this->editor = $editor;
     return $this;
   }
@@ -198,7 +198,7 @@ class Editor extends ConfigEntityBase implements EditorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSettings(array $settings) {
+  public function setSettings(array $settings): static {
     $this->settings = $settings;
     return $this;
   }
@@ -213,7 +213,7 @@ class Editor extends ConfigEntityBase implements EditorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setImageUploadSettings(array $image_upload_settings) {
+  public function setImageUploadSettings(array $image_upload_settings): static {
     $this->image_upload = $image_upload_settings;
     return $this;
   }

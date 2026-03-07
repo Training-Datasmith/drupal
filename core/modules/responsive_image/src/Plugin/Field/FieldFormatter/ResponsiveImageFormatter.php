@@ -30,32 +30,6 @@ use Drupal\Core\Utility\LinkGeneratorInterface;
 class ResponsiveImageFormatter extends ImageFormatterBase {
 
   /**
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $responsiveImageStyleStorage;
-
-  /**
-   * The image style entity storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $imageStyleStorage;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The link generator.
-   *
-   * @var \Drupal\Core\Utility\LinkGeneratorInterface
-   */
-  protected $linkGenerator;
-
-  /**
    * Constructs a ResponsiveImageFormatter object.
    *
    * @param string $plugin_id
@@ -72,28 +46,23 @@ class ResponsiveImageFormatter extends ImageFormatterBase {
    *   The view mode.
    * @param array $third_party_settings
    *   Any third party settings.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $responsive_image_style_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $responsiveImageStyleStorage
    *   The responsive image style storage.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $image_style_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $imageStyleStorage
    *   The image style storage.
-   * @param \Drupal\Core\Utility\LinkGeneratorInterface $link_generator
+   * @param \Drupal\Core\Utility\LinkGeneratorInterface $linkGenerator
    *   The link generator service.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, EntityStorageInterface $responsive_image_style_storage, EntityStorageInterface $image_style_storage, LinkGeneratorInterface $link_generator, AccountInterface $current_user) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, protected \Drupal\Core\Entity\EntityStorageInterface $responsiveImageStyleStorage, protected \Drupal\Core\Entity\EntityStorageInterface $imageStyleStorage, protected \Drupal\Core\Utility\LinkGeneratorInterface $linkGenerator, protected \Drupal\Core\Session\AccountInterface $currentUser) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-
-    $this->responsiveImageStyleStorage = $responsive_image_style_storage;
-    $this->imageStyleStorage = $image_style_storage;
-    $this->linkGenerator = $link_generator;
-    $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -130,7 +99,7 @@ class ResponsiveImageFormatter extends ImageFormatterBase {
 
     $responsive_image_options = [];
     $responsive_image_styles = $this->responsiveImageStyleStorage->loadMultiple();
-    uasort($responsive_image_styles, '\Drupal\responsive_image\Entity\ResponsiveImageStyle::sort');
+    uasort($responsive_image_styles, \Drupal\responsive_image\Entity\ResponsiveImageStyle::sort(...));
     if ($responsive_image_styles && !empty($responsive_image_styles)) {
       foreach ($responsive_image_styles as $machine_name => $responsive_image_style) {
         if ($responsive_image_style->hasImageStyleMappings()) {
@@ -192,7 +161,7 @@ class ResponsiveImageFormatter extends ImageFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $responsive_image_style = $this->responsiveImageStyleStorage->load($this->getSetting('responsive_image_style'));
@@ -222,8 +191,9 @@ class ResponsiveImageFormatter extends ImageFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
     $files = $this->getEntitiesToView($items, $langcode);
 

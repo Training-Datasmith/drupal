@@ -15,11 +15,16 @@ class PluginManagerPass implements CompilerPassInterface {
    */
   public function process(ContainerBuilder $container): void {
     foreach ($container->getDefinitions() as $service_id => $definition) {
-      if (str_starts_with($service_id, 'plugin.manager.') && !$definition->hasTag('plugin_manager_cache_clear')) {
-        if (is_subclass_of($definition->getClass(), '\Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface')) {
-          $definition->addTag('plugin_manager_cache_clear');
+        if (!str_starts_with($service_id, 'plugin.manager.')) {
+            continue;
         }
-      }
+        if ($definition->hasTag('plugin_manager_cache_clear')) {
+            continue;
+        }
+        if (!is_subclass_of($definition->getClass(), \Drupal\Component\Plugin\Discovery\CachedDiscoveryInterface::class)) {
+            continue;
+        }
+        $definition->addTag('plugin_manager_cache_clear');
     }
   }
 

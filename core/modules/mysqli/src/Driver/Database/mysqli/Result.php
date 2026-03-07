@@ -52,16 +52,14 @@ class Result extends ResultBase {
     // Drupal to be less strict in testing, and never rely on this value in
     // runtime (which would be healthy anyway).
     if ($this->mysqliConnection->info !== NULL) {
-      $matches = [];
-      if (preg_match('/\s(\d+)\s/', $this->mysqliConnection->info, $matches) === 1) {
-        return (int) $matches[0];
-      }
-      else {
+        $matches = [];
+        if (preg_match('/\s(\d+)\s/', $this->mysqliConnection->info, $matches) === 1) {
+          return (int) $matches[0];
+        }
         throw new DatabaseExceptionWrapper('Invalid data in the $info property of the mysqli connection - ' . $this->mysqliConnection->info);
-      }
     }
-    elseif ($this->mysqliConnection->affected_rows !== NULL) {
-      return $this->mysqliConnection->affected_rows;
+    if ($this->mysqliConnection->affected_rows !== NULL) {
+        return $this->mysqliConnection->affected_rows;
     }
     throw new DatabaseExceptionWrapper('Unable to retrieve affected rows data');
   }
@@ -87,7 +85,7 @@ class Result extends ResultBase {
     }
 
     // Stringify all non-NULL column values.
-    $row = array_map(fn ($value) => $value === NULL ? NULL : (string) $value, $mysqli_row);
+    $row = array_map(fn ($value): ?string => $value === NULL ? NULL : (string) $value, $mysqli_row);
 
     return $this->assocToFetchMode($row, $mode, $fetchOptions);
   }

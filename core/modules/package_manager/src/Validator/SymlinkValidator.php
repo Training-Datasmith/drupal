@@ -23,15 +23,15 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class SymlinkValidator implements EventSubscriberInterface {
+final readonly class SymlinkValidator implements EventSubscriberInterface {
 
   use BaseRequirementValidatorTrait;
 
   public function __construct(
-    private readonly PathLocator $pathLocator,
-    private readonly NoUnsupportedLinksExistInterface $precondition,
-    private readonly PathFactoryInterface $pathFactory,
-    private readonly PathListFactoryInterface $pathListFactory,
+    private PathLocator $pathLocator,
+    private NoUnsupportedLinksExistInterface $precondition,
+    private PathFactoryInterface $pathFactory,
+    private PathListFactoryInterface $pathListFactory,
   ) {}
 
   /**

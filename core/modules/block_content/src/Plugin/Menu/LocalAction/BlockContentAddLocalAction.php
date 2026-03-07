@@ -29,7 +29,7 @@ class BlockContentAddLocalAction extends LocalActionDefault {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -42,7 +42,7 @@ class BlockContentAddLocalAction extends LocalActionDefault {
   /**
    * {@inheritdoc}
    */
-  public function getOptions(RouteMatchInterface $route_match) {
+  public function getOptions(RouteMatchInterface $route_match): array {
     $options = parent::getOptions($route_match);
     // If the route specifies a theme, append it to the query string.
     if ($theme = $route_match->getParameter('theme')) {

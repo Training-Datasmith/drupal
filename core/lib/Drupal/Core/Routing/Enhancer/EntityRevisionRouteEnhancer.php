@@ -21,7 +21,7 @@ class EntityRevisionRouteEnhancer implements EnhancerInterface {
    * @return bool
    *   TRUE if the enhancer runs on the current route, FALSE otherwise.
    */
-  protected function applies(Route $route) {
+  protected function applies(Route $route): bool {
     // Check whether there is any entity revision parameter.
     $parameters = $route->getOption('parameters') ?: [];
     foreach ($parameters as $info) {
@@ -35,7 +35,7 @@ class EntityRevisionRouteEnhancer implements EnhancerInterface {
   /**
    * {@inheritdoc}
    */
-  public function enhance(array $defaults, Request $request) {
+  public function enhance(array $defaults, Request $request): array {
     /** @var \Symfony\Component\Routing\Route $route */
     $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
     if (!$this->applies($route)) {
@@ -45,7 +45,7 @@ class EntityRevisionRouteEnhancer implements EnhancerInterface {
     $options = $route->getOptions();
     if (isset($options['parameters'])) {
       foreach ($options['parameters'] as $name => $details) {
-        if (!empty($details['type']) && str_contains($details['type'], 'entity_revision:')) {
+        if (!empty($details['type']) && str_contains((string) $details['type'], 'entity_revision:')) {
           $defaults['_entity_revision'] = $defaults[$name];
           break;
         }

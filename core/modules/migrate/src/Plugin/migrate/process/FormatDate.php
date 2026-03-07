@@ -127,10 +127,7 @@ class FormatDate extends ProcessPluginBase {
     try {
       $transformed = DateTimePlus::createFromFormat($fromFormat, $value, $from_timezone, $settings)->format($toFormat, ['timezone' => $to_timezone]);
     }
-    catch (\InvalidArgumentException $e) {
-      throw new MigrateException(sprintf("Format date plugin could not transform '%s' using the format '%s'. Error: %s", $value, $fromFormat, $e->getMessage()), $e->getCode(), $e);
-    }
-    catch (\UnexpectedValueException $e) {
+    catch (\InvalidArgumentException|\UnexpectedValueException $e) {
       throw new MigrateException(sprintf("Format date plugin could not transform '%s' using the format '%s'. Error: %s", $value, $fromFormat, $e->getMessage()), $e->getCode(), $e);
     }
 

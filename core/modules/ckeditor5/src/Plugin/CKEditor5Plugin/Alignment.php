@@ -39,7 +39,7 @@ class Alignment extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return static::DEFAULT_CONFIGURATION;
   }
 
@@ -48,7 +48,7 @@ class Alignment extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
    *
    * Form for choosing which alignment types are available.
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['enabled_alignments'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Enabled Alignments'),
@@ -72,7 +72,7 @@ class Alignment extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Match the config schema structure at
     // ckeditor5.plugin.ckeditor5_alignment.
     $form_value = $form_state->getValue('enabled_alignments');
@@ -83,7 +83,7 @@ class Alignment extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['enabled_alignments'] = $form_state->getValue('enabled_alignments');
   }
 
@@ -96,9 +96,7 @@ class Alignment extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
     $enabled_alignments = $this->configuration['enabled_alignments'];
     $all_alignment_options = $static_plugin_config['alignment']['options'];
 
-    $configured_alignment_options = array_filter($all_alignment_options, function ($option) use ($enabled_alignments) {
-      return in_array($option['name'], $enabled_alignments, TRUE);
-    });
+    $configured_alignment_options = array_filter($all_alignment_options, fn(array $option) => in_array($option['name'], $enabled_alignments, TRUE));
 
     return [
       'alignment' => [
@@ -114,7 +112,7 @@ class Alignment extends CKEditor5PluginDefault implements CKEditor5PluginConfigu
     $enabled_alignments = $this->configuration['enabled_alignments'];
     $plugin_definition = $this->getPluginDefinition();
     $all_elements = $plugin_definition->getElements();
-    $subset = HTMLRestrictions::fromString(implode($all_elements));
+    $subset = HTMLRestrictions::fromString(implode('', $all_elements));
     foreach ($plugin_definition->getCKEditor5Config()['alignment']['options'] as $configured_alignment) {
       if (!in_array($configured_alignment['name'], $enabled_alignments, TRUE)) {
         $element_string = '<$text-container class="' . $configured_alignment["className"] . '">';

@@ -32,7 +32,7 @@ class Tasks extends InstallTasks {
   /**
    * {@inheritdoc}
    */
-  public function name() {
+  public function name(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('SQLite');
   }
 
@@ -63,7 +63,7 @@ class Tasks extends InstallTasks {
   /**
    * {@inheritdoc}
    */
-  protected function connect() {
+  protected function connect(): bool {
     try {
       // This doesn't actually test the connection.
       Database::setActiveConnection();

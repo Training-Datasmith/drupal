@@ -15,20 +15,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class LanguageFormBase extends EntityForm {
 
   /**
-   * The configurable language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a ContentEntityForm object.
    *
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $language_manager
+   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
    *   The configurable language manager.
    */
-  public function __construct(ConfigurableLanguageManagerInterface $language_manager) {
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager)
+  {
   }
 
   /**
@@ -89,9 +82,9 @@ abstract class LanguageFormBase extends EntityForm {
   /**
    * Validates the language editing element.
    */
-  public function validateCommon(array $form, FormStateInterface $form_state) {
+  public function validateCommon(array $form, FormStateInterface $form_state): void {
     // Ensure sane field values for langcode and name.
-    if (!isset($form['langcode_view']) && !preg_match('@^' . LanguageInterface::VALID_LANGCODE_REGEX . '$@', $form_state->getValue('langcode'))) {
+    if (!isset($form['langcode_view']) && !preg_match('@^' . LanguageInterface::VALID_LANGCODE_REGEX . '$@', (string) $form_state->getValue('langcode'))) {
       $form_state->setErrorByName('langcode', $this->t('%field must be a valid language tag as <a href=":url">defined by the W3C</a>.', [
         '%field' => $form['langcode']['#title'],
         ':url' => 'https://www.w3.org/International/articles/language-tags/',

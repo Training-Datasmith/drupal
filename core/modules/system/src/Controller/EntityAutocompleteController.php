@@ -19,13 +19,6 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class EntityAutocompleteController extends ControllerBase {
 
   /**
-   * The autocomplete matcher for entity references.
-   *
-   * @var \Drupal\Core\Entity\EntityAutocompleteMatcherInterface
-   */
-  protected $matcher;
-
-  /**
    * The key value store.
    *
    * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
@@ -40,15 +33,14 @@ class EntityAutocompleteController extends ControllerBase {
    * @param \Drupal\Core\KeyValueStore\KeyValueStoreInterface $key_value
    *   The key value factory.
    */
-  public function __construct(EntityAutocompleteMatcherInterface $matcher, KeyValueStoreInterface $key_value) {
-    $this->matcher = $matcher;
+  public function __construct(protected \Drupal\Core\Entity\EntityAutocompleteMatcherInterface $matcher, KeyValueStoreInterface $key_value) {
     $this->keyValue = $key_value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity.autocomplete_matcher'),
       $container->get('keyvalue')->get('entity_autocomplete')
@@ -75,7 +67,7 @@ class EntityAutocompleteController extends ControllerBase {
    *   Thrown if the selection settings key is not found in the key/value store
    *   or if it does not match the stored data.
    */
-  public function handleAutocomplete(Request $request, $target_type, $selection_handler, $selection_settings_key) {
+  public function handleAutocomplete(Request $request, string $target_type, string $selection_handler, $selection_settings_key) {
     $matches = [];
 
     // Get the typed string from the URL, if it exists.
@@ -84,7 +76,7 @@ class EntityAutocompleteController extends ControllerBase {
     // Check this string for emptiness, but allow any non-empty string.
     if (is_string($input) && strlen($input)) {
       $tag_list = Tags::explode($input);
-      $typed_string = !empty($tag_list) ? mb_strtolower(array_pop($tag_list)) : '';
+      $typed_string = !empty($tag_list) ? mb_strtolower((string) array_pop($tag_list)) : '';
 
       // Selection settings are passed in as a hashed key of a serialized array
       // stored in the key/value store.

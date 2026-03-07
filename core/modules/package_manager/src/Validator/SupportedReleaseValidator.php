@@ -86,9 +86,11 @@ final class SupportedReleaseValidator implements EventSubscriberInterface {
     foreach ($updated_packages as $package_name => $staged_package) {
       // Only packages of the types 'drupal-module' or 'drupal-theme' that
       // start with 'drupal/' will have update XML from drupal.org.
-      if (!in_array($staged_package->type, ['drupal-module', 'drupal-theme'], TRUE)
-         || !str_starts_with($package_name, 'drupal/')) {
-        continue;
+      if (!in_array($staged_package->type, ['drupal-module', 'drupal-theme'], TRUE)) {
+          continue;
+      }
+      if (!str_starts_with((string) $package_name, 'drupal/')) {
+          continue;
       }
       $project_name = $staged[$package_name]->getProjectName();
       if (empty($project_name)) {

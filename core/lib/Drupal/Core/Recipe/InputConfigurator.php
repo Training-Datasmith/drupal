@@ -187,35 +187,35 @@ final class InputConfigurator {
    */
   private function getDefaultValue(DataDefinition $definition): mixed {
     $settings = $definition->getSetting('default');
-
     if ($settings['source'] === 'config') {
-      [$name, $key] = $settings['config'];
-      $config = \Drupal::config($name);
-      if ($config->isNew()) {
+        [$name, $key] = $settings['config'];
+        $config = \Drupal::config($name);
+        if ($config->isNew()) {
+          return array_key_exists('fallback', $settings)
+            ? $settings['fallback']
+            : throw new \RuntimeException("The '$name' config object does not exist.");
+        }
+        return $config->get($key);
+    }
+
+    if ($settings['source'] === 'env') {
+        // getenv() accepts NULL to return an array of all environment variables,
+        // but this makes no sense in a recipe. There is no valid situation where
+        // the name of the environment variable should be empty.
+        if (empty($settings['env'])) {
+          throw new \RuntimeException("The name of the environment variable cannot be empty.");
+        }
+        $name = $settings['env'];
+        $value = getenv($name);
+        // If the variable is defined, getenv() will return it as a string.
+        // Otherwise, try to return a fallback value, and if that fails, throw an
+        // exception (to be consistent with the `config` behavior).
+        if (is_string($value)) {
+          return $value;
+        }
         return array_key_exists('fallback', $settings)
           ? $settings['fallback']
-          : throw new \RuntimeException("The '$name' config object does not exist.");
-      }
-      return $config->get($key);
-    }
-    elseif ($settings['source'] === 'env') {
-      // getenv() accepts NULL to return an array of all environment variables,
-      // but this makes no sense in a recipe. There is no valid situation where
-      // the name of the environment variable should be empty.
-      if (empty($settings['env'])) {
-        throw new \RuntimeException("The name of the environment variable cannot be empty.");
-      }
-      $name = $settings['env'];
-      $value = getenv($name);
-      // If the variable is defined, getenv() will return it as a string.
-      // Otherwise, try to return a fallback value, and if that fails, throw an
-      // exception (to be consistent with the `config` behavior).
-      if (is_string($value)) {
-        return $value;
-      }
-      return array_key_exists('fallback', $settings)
-        ? $settings['fallback']
-        : throw new \RuntimeException("The '$name' environment variable is not defined.");
+          : throw new \RuntimeException("The '$name' environment variable is not defined.");
     }
     return $settings['value'];
   }

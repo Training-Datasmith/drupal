@@ -14,13 +14,6 @@ class PagerManager implements PagerManagerInterface {
   use DependencySerializationTrait;
 
   /**
-   * The pager parameters.
-   *
-   * @var \Drupal\Core\Pager\PagerParametersInterface
-   */
-  protected $pagerParams;
-
-  /**
    * An associative array of pagers.
    *
    * Implemented as an array consisting of:
@@ -41,17 +34,17 @@ class PagerManager implements PagerManagerInterface {
   /**
    * Construct a PagerManager object.
    *
-   * @param \Drupal\Core\Pager\PagerParametersInterface $pager_params
+   * @param \Drupal\Core\Pager\PagerParametersInterface $pagerParams
    *   The pager parameters.
    */
-  public function __construct(PagerParametersInterface $pager_params) {
-    $this->pagerParams = $pager_params;
+  public function __construct(protected \Drupal\Core\Pager\PagerParametersInterface $pagerParams)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createPager($total, $limit, $element = 0) {
+  public function createPager($total, $limit, $element = 0): \Drupal\Core\Pager\Pager {
     $currentPage = $this->pagerParams->findPage($element);
     $pager = new Pager($total, $limit, $currentPage);
     $this->setPager($pager, $element);
@@ -74,8 +67,9 @@ class PagerManager implements PagerManagerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getUpdatedParameters(array $query, $element, $index) {
+  public function getUpdatedParameters(array $query, $element, $index): array {
     // Build the 'page' query parameter. This is built based on the current
     // page of each pager element (or NULL if the pager is not set), with the
     // exception of the requested page index for the current element.
@@ -91,7 +85,7 @@ class PagerManager implements PagerManagerInterface {
     // from the current request. In case of collision, the parameters passed
     // into this function take precedence.
     if ($current_query = $this->pagerParams->getQueryParameters()) {
-      $query = array_merge($current_query, $query);
+      return array_merge($current_query, $query);
     }
     return $query;
   }

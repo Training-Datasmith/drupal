@@ -230,7 +230,7 @@ class BigPipe {
    *   \Drupal\big_pipe\Render\BigPipeResponse, which is itself an internal
    *   class.
    */
-  public function sendContent(BigPipeResponse $response) {
+  public function sendContent(BigPipeResponse $response): void {
     $content = $response->getContent();
     $attachments = $response->getAttachments();
 
@@ -338,7 +338,7 @@ class BigPipe {
    *   error logging is configured to be verbose, the exception is rethrown to
    *   simplify debugging.
    */
-  protected function sendNoJsPlaceholders($html, $no_js_placeholders, AttachedAssetsInterface $cumulative_assets) {
+  protected function sendNoJsPlaceholders($html, array $no_js_placeholders, AttachedAssetsInterface $cumulative_assets) {
     // Split the HTML on every no-JS placeholder string.
     $placeholder_strings = array_keys($no_js_placeholders);
     $fragments = static::splitHtmlOnPlaceholders($html, $placeholder_strings);
@@ -388,10 +388,8 @@ class BigPipe {
         if ($this->configFactory->get('system.logging')->get('error_level') === ERROR_REPORTING_DISPLAY_VERBOSE) {
           throw $e;
         }
-        else {
-          trigger_error($e, E_USER_WARNING);
-          continue;
-        }
+        trigger_error($e, E_USER_WARNING);
+        continue;
       }
 
       // Create a new HtmlResponse. Ensure the CSS and (non-bottom) JS is sent
@@ -401,7 +399,7 @@ class BigPipe {
       // @see \Drupal\Core\Theme\ThemePreprocess::preprocessHtml()
       $css_placeholder = '<nojs-bigpipe-placeholder-styles-placeholder token="' . $token . '">';
       $js_placeholder = '<nojs-bigpipe-placeholder-scripts-placeholder token="' . $token . '">';
-      $elements['#markup'] = BigPipeMarkup::create($css_placeholder . $js_placeholder . (string) $elements['#markup']);
+      $elements['#markup'] = BigPipeMarkup::create($css_placeholder . $js_placeholder . $elements['#markup']);
       $elements['#attached']['html_response_attachment_placeholders']['styles'] = $css_placeholder;
       $elements['#attached']['html_response_attachment_placeholders']['scripts'] = $js_placeholder;
 
@@ -424,10 +422,8 @@ class BigPipe {
         if ($this->configFactory->get('system.logging')->get('error_level') === ERROR_REPORTING_DISPLAY_VERBOSE) {
           throw $e;
         }
-        else {
-          trigger_error($e, E_USER_WARNING);
-          continue;
-        }
+        trigger_error($e, E_USER_WARNING);
+        continue;
       }
 
       // Send this embedded HTML response.
@@ -630,9 +626,7 @@ EOF;
           if ($this->configFactory->get('system.logging')->get('error_level') === ERROR_REPORTING_DISPLAY_VERBOSE) {
             throw $e;
           }
-          else {
-            trigger_error($e, E_USER_WARNING);
-          }
+          trigger_error($e, E_USER_WARNING);
         }
       }
       $iterations++;
@@ -698,7 +692,7 @@ EOF;
    * @param string $post_body
    *   The HTML response's content after the closing </body> tag.
    */
-  protected function sendPostBody($post_body) {
+  protected function sendPostBody(string $post_body) {
     $this->sendChunk('</body>' . $post_body);
   }
 
@@ -752,7 +746,7 @@ EOF;
    *   kept: if the same placeholder occurs multiple times, we only keep the
    *   first occurrence.
    */
-  protected function getPlaceholderOrder($html, $placeholders) {
+  protected function getPlaceholderOrder($html, $placeholders): array {
     if (preg_match_all('/<span data-big-pipe-placeholder-id="([^"]*)">/', $html, $matches)) {
       return array_unique($matches[1]);
     }
@@ -773,25 +767,20 @@ EOF;
    * @return string[]
    *   The resulting HTML fragments.
    */
-  private static function splitHtmlOnPlaceholders($html_string, array $html_placeholders) {
-    $prepare_for_preg_split = function ($placeholder_string) {
-      return '(' . preg_quote($placeholder_string, '/') . ')';
-    };
+  private static function splitHtmlOnPlaceholders($html_string, array $html_placeholders): array|false {
+    $prepare_for_preg_split = (fn($placeholder_string) => '(' . preg_quote((string) $placeholder_string, '/') . ')');
     $preg_placeholder_strings = array_map($prepare_for_preg_split, $html_placeholders);
     $pattern = '/' . implode('|', $preg_placeholder_strings) . '/';
     if (strlen($pattern) < 31000) {
       // Only small (<31K characters) patterns can be handled by preg_split().
       $flags = PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE;
-      $result = preg_split($pattern, $html_string, 0, $flags);
+      return preg_split($pattern, $html_string, 0, $flags);
     }
-    else {
-      // For large amounts of placeholders we use a simpler but slower approach.
-      foreach ($html_placeholders as $placeholder) {
-        $html_string = str_replace($placeholder, "\x1F" . $placeholder . "\x1F", $html_string);
-      }
-      $result = array_filter(explode("\x1F", $html_string));
+    // For large amounts of placeholders we use a simpler but slower approach.
+    foreach ($html_placeholders as $placeholder) {
+      $html_string = str_replace($placeholder, "\x1F" . $placeholder . "\x1F", $html_string);
     }
-    return $result;
+    return array_filter(explode("\x1F", $html_string));
   }
 
 }

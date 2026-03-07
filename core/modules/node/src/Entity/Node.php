@@ -109,12 +109,12 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
    *   TRUE if the node is being previewed and NULL if it is not.
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public $in_preview = NULL;
+  public $in_preview;
 
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     foreach (array_keys($this->getTranslationLanguages()) as $langcode) {
@@ -136,7 +136,7 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record) {
+  public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record): void {
     parent::preSaveRevision($storage, $record);
 
     if (!$this->isNewRevision() && $this->getOriginal() && (!isset($record->revision_log) || $record->revision_log === '')) {
@@ -151,7 +151,7 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     if ($update && \Drupal::moduleHandler()->moduleExists('search')) {
       // Remove deleted translations from the search index.
       foreach ($this->translations as $langcode => $translation) {
@@ -177,7 +177,7 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     // Ensure that all nodes deleted are removed from the search index.
@@ -193,7 +193,7 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $nodes) {
+  public static function postDelete(EntityStorageInterface $storage, array $nodes): void {
     parent::postDelete($storage, $nodes);
     \Drupal::service('node.grant_storage')->deleteNodeRecords(array_keys($nodes));
   }
@@ -223,7 +223,7 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title) {
+  public function setTitle($title): static {
     $this->set('title', $title);
     return $this;
   }
@@ -238,7 +238,7 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime($timestamp): static {
     $this->set('created', $timestamp);
     return $this;
   }
@@ -246,14 +246,14 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public function isPromoted() {
+  public function isPromoted(): bool {
     return (bool) $this->get('promote')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPromoted($promoted) {
+  public function setPromoted($promoted): static {
     $this->set('promote', $promoted ? NodeInterface::PROMOTED : NodeInterface::NOT_PROMOTED);
     return $this;
   }
@@ -261,14 +261,14 @@ class Node extends EditorialContentEntityBase implements NodeInterface {
   /**
    * {@inheritdoc}
    */
-  public function isSticky() {
+  public function isSticky(): bool {
     return (bool) $this->get('sticky')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setSticky($sticky) {
+  public function setSticky($sticky): static {
     $this->set('sticky', $sticky ? NodeInterface::STICKY : NodeInterface::NOT_STICKY);
     return $this;
   }

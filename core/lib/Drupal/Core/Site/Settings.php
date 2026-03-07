@@ -14,18 +14,9 @@ use Drupal\DrupalInstalled;
 final class Settings {
 
   /**
-   * Array with the settings.
-   *
-   * @var array
-   */
-  private $storage = [];
-
-  /**
    * Singleton instance.
-   *
-   * @var \Drupal\Core\Site\Settings
    */
-  private static $instance = NULL;
+  private static self $instance;
 
   /**
    * Information about all deprecated settings, keyed by legacy settings name.
@@ -34,11 +25,10 @@ final class Settings {
    *   - 'replacement': The new name for the setting.
    *   - 'message': The deprecation message to use for trigger_error().
    *
-   * @var array
    *
    * @see self::handleDeprecations()
    */
-  private static $deprecatedSettings = [
+  private static array $deprecatedSettings = [
     'state_cache' => [
       'replacement' => '',
       'message' => 'The "state_cache" setting is deprecated in drupal:11.0.0. This setting should be removed from the settings file, since its usage has been removed. See https://www.drupal.org/node/3177901.',
@@ -52,11 +42,13 @@ final class Settings {
   /**
    * Constructor.
    *
-   * @param array $settings
+   * @param array $storage
    *   Array with the settings.
    */
-  public function __construct(array $settings) {
-    $this->storage = $settings;
+  public function __construct(/**
+   * Array with the settings.
+   */
+  private array $storage) {
     self::$instance = $this;
   }
 
@@ -140,7 +132,7 @@ final class Settings {
    *
    * @see default.settings.php
    */
-  public static function initialize($app_root, $site_path, &$class_loader) {
+  public static function initialize(string $app_root, string $site_path, &$class_loader): void {
     // Export these settings.php variables to the global namespace.
     global $config;
     $settings = [];
@@ -206,7 +198,7 @@ final class Settings {
    *
    * @see https://www.drupal.org/project/drupal/issues/2926309
    */
-  public static function getApcuPrefix($identifier, $root, $site_path = '') {
+  public static function getApcuPrefix(string $identifier, string $root, string $site_path = ''): string {
     if (static::get('apcu_ensure_unique_prefix', TRUE)) {
       return 'drupal.' . $identifier . '.' . (class_exists(DrupalInstalled::class) ? DrupalInstalled::VERSIONS_HASH : \Drupal::VERSION) . '.' . static::get('deployment_identifier') . '.' . hash_hmac('sha256', $identifier, static::get('hash_salt') . '.' . $root . '/' . $site_path);
     }

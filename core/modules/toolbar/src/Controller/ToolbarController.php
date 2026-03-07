@@ -34,7 +34,7 @@ class ToolbarController extends ControllerBase implements TrustedCallbackInterfa
    * @return \Drupal\Core\Ajax\AjaxResponse
    *   The AJAX response containing the rendered toolbar subtrees.
    */
-  public function subtreesAjax() {
+  public function subtreesAjax(): \Drupal\Core\Ajax\AjaxResponse {
     [$subtrees] = toolbar_get_rendered_subtrees();
     $response = new AjaxResponse();
     $response->addCommand(new SetSubtreesCommand($subtrees));
@@ -79,7 +79,7 @@ class ToolbarController extends ControllerBase implements TrustedCallbackInterfa
    *
    * @see \Drupal\Core\Render\RendererInterface::render()
    */
-  public static function preRenderAdministrationTray(array $element) {
+  public static function preRenderAdministrationTray(array $element): array {
     $menu_tree = \Drupal::service('toolbar.menu_tree');
     // Load the administrative menu. The first level is the "Administration"
     // link. In order to load the children of that link, start and end on the
@@ -105,7 +105,7 @@ class ToolbarController extends ControllerBase implements TrustedCallbackInterfa
    *
    * @internal
    */
-  public static function preRenderGetRenderedSubtrees(array $data) {
+  public static function preRenderGetRenderedSubtrees(array $data): array {
     $menu_tree = \Drupal::service('toolbar.menu_tree');
     $renderer = \Drupal::service('renderer');
     // Load the administration menu. The first level is the "Administration"
@@ -129,9 +129,7 @@ class ToolbarController extends ControllerBase implements TrustedCallbackInterfa
       $link = $element->link;
       if ($element->subtree) {
         $subtree = $menu_tree->build($element->subtree);
-        $output = $renderer->executeInRenderContext(new RenderContext(), function () use ($renderer, $subtree) {
-          return $renderer->render($subtree);
-        });
+        $output = $renderer->executeInRenderContext(new RenderContext(), fn() => $renderer->render($subtree));
         $cacheability = $cacheability->merge(CacheableMetadata::createFromRenderArray($subtree));
       }
       else {
@@ -155,7 +153,7 @@ class ToolbarController extends ControllerBase implements TrustedCallbackInterfa
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['preRenderAdministrationTray', 'preRenderGetRenderedSubtrees'];
   }
 

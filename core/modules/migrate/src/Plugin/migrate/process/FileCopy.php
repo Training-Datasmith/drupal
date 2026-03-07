@@ -53,27 +53,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class FileCopy extends FileProcessBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The stream wrapper manager service.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
-   * An instance of the download process plugin.
-   *
-   * @var \Drupal\migrate\Plugin\MigrateProcessInterface
-   */
-  protected $downloadPlugin;
-
-  /**
    * Constructs a file_copy process plugin.
    *
    * @param array $configuration
@@ -82,27 +61,24 @@ class FileCopy extends FileProcessBase implements ContainerFactoryPluginInterfac
    *   The plugin ID.
    * @param array $plugin_definition
    *   The plugin definition.
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrappers
+   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
    *   The stream wrapper manager service.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
-   * @param \Drupal\migrate\Plugin\MigrateProcessInterface $download_plugin
+   * @param \Drupal\migrate\Plugin\MigrateProcessInterface $downloadPlugin
    *   An instance of the download plugin for handling remote URIs.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, StreamWrapperManagerInterface $stream_wrappers, FileSystemInterface $file_system, MigrateProcessInterface $download_plugin) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager, protected \Drupal\Core\File\FileSystemInterface $fileSystem, protected \Drupal\migrate\Plugin\MigrateProcessInterface $downloadPlugin) {
     $configuration += [
       'move' => FALSE,
     ];
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->streamWrapperManager = $stream_wrappers;
-    $this->fileSystem = $file_system;
-    $this->downloadPlugin = $download_plugin;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -183,9 +159,7 @@ class FileCopy extends FileProcessBase implements ContainerFactoryPluginInterfac
       if ($this->configuration['move']) {
         return $this->fileSystem->move($source, $destination, $fileExists);
       }
-      else {
-        return $this->fileSystem->copy($source, $destination, $fileExists);
-      }
+      return $this->fileSystem->copy($source, $destination, $fileExists);
     }
     catch (FileException) {
       return FALSE;
@@ -227,7 +201,7 @@ class FileCopy extends FileProcessBase implements ContainerFactoryPluginInterfac
    *   TRUE if the source and destination URIs refer to the same physical path,
    *   otherwise FALSE.
    */
-  protected function isLocationUnchanged($source, $destination) {
+  protected function isLocationUnchanged($source, $destination): bool {
     return $this->fileSystem->realpath($source) === $this->fileSystem->realpath($destination);
   }
 
@@ -244,7 +218,7 @@ class FileCopy extends FileProcessBase implements ContainerFactoryPluginInterfac
    * @return bool
    *   TRUE if the URI is local, FALSE otherwise.
    */
-  protected function isLocalUri($uri) {
+  protected function isLocalUri($uri): bool {
     $scheme = StreamWrapperManager::getScheme($uri);
 
     // The vfs scheme is vfsStream, which is used in testing. vfsStream is a

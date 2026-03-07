@@ -18,40 +18,24 @@ class ThemeHandler implements ThemeHandlerInterface {
   protected $list;
 
   /**
-   * The config factory to get the installed themes.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * An extension discovery instance.
-   *
-   * @var \Drupal\Core\Extension\ThemeExtensionList
-   */
-  protected $themeList;
-
-  /**
-   * The app root.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
    * Constructs a new ThemeHandler.
    *
    * @param string $root
    *   The app root.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory to get the installed themes.
-   * @param \Drupal\Core\Extension\ThemeExtensionList $theme_list
+   * @param \Drupal\Core\Extension\ThemeExtensionList $themeList
    *   An extension discovery instance.
    */
-  public function __construct($root, ConfigFactoryInterface $config_factory, ThemeExtensionList $theme_list) {
-    $this->root = $root;
-    $this->configFactory = $config_factory;
-    $this->themeList = $theme_list;
+  public function __construct(
+      /**
+       * The app root.
+       */
+      protected $root,
+      protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory,
+      protected \Drupal\Core\Extension\ThemeExtensionList $themeList
+  )
+  {
   }
 
   /**
@@ -88,7 +72,7 @@ class ThemeHandler implements ThemeHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function addTheme(Extension $theme) {
+  public function addTheme(Extension $theme): void {
     if (!empty($theme->info['libraries'])) {
       foreach ($theme->info['libraries'] as $library => $name) {
         $theme->libraries[$library] = $name;
@@ -106,7 +90,7 @@ class ThemeHandler implements ThemeHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function refreshInfo() {
+  public function refreshInfo(): void {
     $installed = $this->configFactory->get('core.extension')->get('theme');
     // Only refresh the info if a theme has been installed. Modules are
     // installed before themes by the installer and this method is called during
@@ -120,7 +104,7 @@ class ThemeHandler implements ThemeHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): void {
     $this->themeList->reset();
     $this->list = NULL;
   }
@@ -150,8 +134,9 @@ class ThemeHandler implements ThemeHandlerInterface {
 
   /**
    * {@inheritdoc}
+   * @return non-falsy-string[]
    */
-  public function getThemeDirectories() {
+  public function getThemeDirectories(): array {
     $dirs = [];
     foreach ($this->listInfo() as $name => $theme) {
       $dirs[$name] = $this->root . '/' . $theme->getPath();
@@ -162,7 +147,7 @@ class ThemeHandler implements ThemeHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function themeExists($theme) {
+  public function themeExists($theme): bool {
     $themes = $this->listInfo();
     return isset($themes[$theme]);
   }
@@ -186,7 +171,10 @@ class ThemeHandler implements ThemeHandlerInterface {
     if (isset($themes[$name])) {
       if (!empty($themes[$name]->info['hidden'])) {
         $theme_config = $this->configFactory->get('system.theme');
-        return $name == $theme_config->get('default') || $name == $theme_config->get('admin');
+        if ($name == $theme_config->get('default')) {
+            return true;
+        }
+        return $name == $theme_config->get('admin');
       }
       return TRUE;
     }

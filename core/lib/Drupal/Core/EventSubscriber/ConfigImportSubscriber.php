@@ -27,25 +27,11 @@ class ConfigImportSubscriber extends ConfigImportValidateEventSubscriberBase {
   protected $themeData;
 
   /**
-   * Module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
-
-  /**
-   * The theme extension list.
-   *
-   * @var \Drupal\Core\Extension\ThemeExtensionList
-   */
-  protected ThemeExtensionList $themeList;
-
-  /**
    * Constructs the ConfigImportSubscriber.
    *
-   * @param \Drupal\Core\Extension\ThemeExtensionList $theme_extension_list
+   * @param \Drupal\Core\Extension\ThemeExtensionList $themeList
    *   The theme extension list.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
    * @param \Traversable $uninstallValidators
    *   The uninstall validator services.
@@ -53,14 +39,16 @@ class ConfigImportSubscriber extends ConfigImportValidateEventSubscriberBase {
    *   The database connection.
    */
   public function __construct(
-    ThemeExtensionList $theme_extension_list,
-    ModuleExtensionList $extension_list_module,
-    #[AutowireIterator(tag: 'module_install.uninstall_validator')]
-    protected \Traversable $uninstallValidators,
-    protected readonly Connection $connection,
-  ) {
-    $this->themeList = $theme_extension_list;
-    $this->moduleExtensionList = $extension_list_module;
+      /**
+       * The theme extension list.
+       */
+      protected ThemeExtensionList $themeList,
+      protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList,
+      #[AutowireIterator(tag: 'module_install.uninstall_validator')]
+      protected \Traversable $uninstallValidators,
+      protected readonly Connection $connection
+  )
+  {
   }
 
   /**
@@ -71,7 +59,7 @@ class ConfigImportSubscriber extends ConfigImportValidateEventSubscriberBase {
    *
    * @throws \Drupal\Core\Config\ConfigNameException
    */
-  public function onConfigImporterValidate(ConfigImporterEvent $event) {
+  public function onConfigImporterValidate(ConfigImporterEvent $event): void {
     foreach (['delete', 'create', 'update'] as $op) {
       foreach ($event->getConfigImporter()->getUnprocessedConfiguration($op) as $name) {
         try {
@@ -112,18 +100,18 @@ class ConfigImportSubscriber extends ConfigImportValidateEventSubscriberBase {
     // Ensure the profile is not changing.
     if ($install_profile !== $new_install_profile) {
       if (InstallerKernel::installationAttempted()) {
-        $config_importer->logError($this->t('The selected installation profile %install_profile does not match the profile stored in configuration %config_profile.', [
-          '%install_profile' => $install_profile,
-          '%config_profile' => $new_install_profile,
-        ]));
-        // If this error has occurred the other checks are irrelevant.
-        return;
+          $config_importer->logError($this->t('The selected installation profile %install_profile does not match the profile stored in configuration %config_profile.', [
+            '%install_profile' => $install_profile,
+            '%config_profile' => $new_install_profile,
+          ]));
+          // If this error has occurred the other checks are irrelevant.
+          return;
       }
-      elseif ($new_install_profile) {
-        $config_importer->logError($this->t('Cannot change the install profile from %profile to %new_profile once Drupal is installed.', [
-          '%profile' => $install_profile,
-          '%new_profile' => $new_install_profile,
-        ]));
+      if ($new_install_profile) {
+          $config_importer->logError($this->t('Cannot change the install profile from %profile to %new_profile once Drupal is installed.', [
+            '%profile' => $install_profile,
+            '%new_profile' => $new_install_profile,
+          ]));
       }
     }
     elseif ($new_install_profile && !isset($core_extension['module'][$new_install_profile])) {
@@ -278,7 +266,7 @@ class ConfigImportSubscriber extends ConfigImportValidateEventSubscriberBase {
     foreach ($config_importer->getStorageComparer()->getSourceStorage()->listAll() as $name) {
       // Ensure that the config owner is installed. This checks all
       // configuration including configuration entities.
-      [$owner] = explode('.', $name, 2);
+      [$owner] = explode('.', (string) $name, 2);
       if ($owner !== 'core') {
         $message = FALSE;
         if (!isset($core_extension['module'][$owner]) && isset($module_data[$owner])) {
@@ -381,10 +369,10 @@ class ConfigImportSubscriber extends ConfigImportValidateEventSubscriberBase {
    *   A list of human-readable extension names, or machine names if
    *   human-readable names are not available.
    */
-  protected function getNames(array $names, array $extension_data) {
+  protected function getNames(array $names, array $extension_data): array {
     return array_map(function ($name) use ($extension_data) {
       if (isset($extension_data[$name])) {
-        $name = $extension_data[$name]->info['name'];
+        return $extension_data[$name]->info['name'];
       }
       return $name;
     }, $names);

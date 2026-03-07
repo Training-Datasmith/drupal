@@ -52,13 +52,6 @@ class EntityCondition {
   ];
 
   /**
-   * The field to be evaluated.
-   *
-   * @var string
-   */
-  protected $field;
-
-  /**
    * The condition operator.
    *
    * @var string
@@ -66,19 +59,18 @@ class EntityCondition {
   protected $operator;
 
   /**
-   * The value against which the field should be evaluated.
-   *
-   * @var mixed
-   */
-  protected $value;
-
-  /**
    * Constructs a new EntityCondition object.
+   * @param string $field
+   * @param mixed $value
    */
-  public function __construct($field, $value, $operator = NULL) {
-    $this->field = $field;
-    $this->value = $value;
-    $this->operator = ($operator) ? $operator : '=';
+  public function __construct(/**
+   * The field to be evaluated.
+   */
+  protected $field, /**
+   * The value against which the field should be evaluated.
+   */
+  protected $value, $operator = NULL) {
+    $this->operator = $operator ?: '=';
   }
 
   /**
@@ -124,18 +116,18 @@ class EntityCondition {
    * @return self
    *   An EntityCondition object with defaults.
    */
-  public static function createFromQueryParameter($parameter) {
+  public static function createFromQueryParameter(array $parameter): static {
     static::validate($parameter);
     $field = $parameter[static::PATH_KEY];
-    $value = (isset($parameter[static::VALUE_KEY])) ? $parameter[static::VALUE_KEY] : NULL;
-    $operator = (isset($parameter[static::OPERATOR_KEY])) ? $parameter[static::OPERATOR_KEY] : NULL;
+    $value = $parameter[static::VALUE_KEY] ?? NULL;
+    $operator = $parameter[static::OPERATOR_KEY] ?? NULL;
     return new static($field, $value, $operator);
   }
 
   /**
    * Validates the filter has the required fields.
    */
-  protected static function validate($parameter) {
+  protected static function validate(array $parameter) {
     $valid_key_combinations = [
       [static::PATH_KEY, static::VALUE_KEY],
       [static::PATH_KEY, static::OPERATOR_KEY],
@@ -143,9 +135,7 @@ class EntityCondition {
     ];
 
     $given_keys = array_keys($parameter);
-    $valid_key_set = array_reduce($valid_key_combinations, function ($valid, $set) use ($given_keys) {
-      return ($valid) ? $valid : count(array_diff($set, $given_keys)) === 0;
-    }, FALSE);
+    $valid_key_set = array_reduce($valid_key_combinations, fn($valid, array $set) => $valid ?: count(array_diff($set, $given_keys)) === 0, FALSE);
 
     $has_operator_key = isset($parameter[static::OPERATOR_KEY]);
     $has_path_key = isset($parameter[static::PATH_KEY]);

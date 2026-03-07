@@ -35,8 +35,6 @@ class FileUploadHandler implements FileUploadHandlerInterface {
 
   /**
    * The file validator.
-   *
-   * @var \Drupal\file\Validation\FileValidatorInterface
    */
   protected FileValidatorInterface $fileValidator;
 
@@ -105,7 +103,7 @@ class FileUploadHandler implements FileUploadHandlerInterface {
     }
 
     // Lock based on the prepared file URI.
-    $lock_id = $this->generateLockId($destinationFilename);
+    $lock_id = static::generateLockId($destinationFilename);
 
     try {
       if (!$this->lock->acquire($lock_id)) {
@@ -149,7 +147,7 @@ class FileUploadHandler implements FileUploadHandlerInterface {
 
       // Update the filename with any changes as a result of security or
       // renaming due to an existing file.
-      $file->setFilename(basename($file->getFileUri()));
+      $file->setFilename(basename((string) $file->getFileUri()));
 
       if ($fileExists === FileExists::Replace) {
         $existingFile = $this->fileRepository->loadByUri($file->getFileUri());

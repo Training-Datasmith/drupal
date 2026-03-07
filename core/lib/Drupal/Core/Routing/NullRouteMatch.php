@@ -13,21 +13,21 @@ class NullRouteMatch implements RouteMatchInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRouteName() {
+  public function getRouteName(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRouteObject() {
+  public function getRouteObject(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getParameter($parameter_name) {
+  public function getParameter($parameter_name): null {
     return NULL;
   }
 
@@ -41,7 +41,7 @@ class NullRouteMatch implements RouteMatchInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRawParameter($parameter_name) {
+  public function getRawParameter($parameter_name): null {
     return NULL;
   }
 

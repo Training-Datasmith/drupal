@@ -27,14 +27,15 @@ class ChainedPlaceholderStrategy implements PlaceholderStrategyInterface {
    * @param \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $strategy
    *   The strategy to add to the placeholder strategies.
    */
-  public function addPlaceholderStrategy(PlaceholderStrategyInterface $strategy) {
+  public function addPlaceholderStrategy(PlaceholderStrategyInterface $strategy): void {
     $this->placeholderStrategies[] = $strategy;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function processPlaceholders(array $placeholders) {
+  public function processPlaceholders(array $placeholders): array {
     if (empty($placeholders)) {
       return [];
     }

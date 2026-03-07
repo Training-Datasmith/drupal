@@ -48,7 +48,7 @@ class DurationIso8601 extends StringData implements DurationInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDuration(\DateInterval $duration, $notify = TRUE) {
+  public function setDuration(\DateInterval $duration, $notify = TRUE): void {
     // Generate an ISO 8601 formatted string as supported by
     // DateInterval::__construct() and setValue().
     $this->value = $duration->format('%rP%yY%mM%dDT%hH%mM%sS');

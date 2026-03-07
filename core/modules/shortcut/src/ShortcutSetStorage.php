@@ -28,13 +28,6 @@ class ShortcutSetStorage extends ConfigEntityStorage implements ShortcutSetStora
   protected $moduleHandler;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a ShortcutSetStorageController object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_info
@@ -52,17 +45,16 @@ class ShortcutSetStorage extends ConfigEntityStorage implements ShortcutSetStora
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
    */
-  public function __construct(EntityTypeInterface $entity_info, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, Connection $connection) {
+  public function __construct(EntityTypeInterface $entity_info, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, ModuleHandlerInterface $module_handler, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, protected \Drupal\Core\Database\Connection $connection) {
     parent::__construct($entity_info, $config_factory, $uuid_service, $language_manager, $memory_cache);
 
     $this->moduleHandler = $module_handler;
-    $this->connection = $connection;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_info) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_info): static {
     return new static(
       $entity_info,
       $container->get('config.factory'),
@@ -77,7 +69,7 @@ class ShortcutSetStorage extends ConfigEntityStorage implements ShortcutSetStora
   /**
    * {@inheritdoc}
    */
-  public function deleteAssignedShortcutSets(ShortcutSetInterface $entity) {
+  public function deleteAssignedShortcutSets(ShortcutSetInterface $entity): void {
     // First, delete any user assignments for this set, so that each of these
     // users will go back to using whatever default set applies.
     $this->connection->delete('shortcut_set_users')
@@ -88,28 +80,24 @@ class ShortcutSetStorage extends ConfigEntityStorage implements ShortcutSetStora
   /**
    * {@inheritdoc}
    */
-  public function assignUser(ShortcutSetInterface $shortcut_set, $account) {
+  public function assignUser(ShortcutSetInterface $shortcut_set, $account): void {
     $current_shortcut_set = $this->getDisplayedToUser($account);
     $this->connection->merge('shortcut_set_users')
       ->key('uid', $account->id())
       ->fields(['set_name' => $shortcut_set->id()])
       ->execute();
-    if ($current_shortcut_set instanceof ShortcutSetInterface) {
-      Cache::invalidateTags($current_shortcut_set->getCacheTagsToInvalidate());
-    }
+    Cache::invalidateTags($current_shortcut_set->getCacheTagsToInvalidate());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function unassignUser($account) {
+  public function unassignUser($account): bool {
     $current_shortcut_set = $this->getDisplayedToUser($account);
     $deleted = $this->connection->delete('shortcut_set_users')
       ->condition('uid', $account->id())
       ->execute();
-    if ($current_shortcut_set instanceof ShortcutSetInterface) {
-      Cache::invalidateTags($current_shortcut_set->getCacheTagsToInvalidate());
-    }
+    Cache::invalidateTags($current_shortcut_set->getCacheTagsToInvalidate());
     return (bool) $deleted;
   }
 

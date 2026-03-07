@@ -19,7 +19,7 @@ class LastTimestamp extends Date {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->additional_fields['comment_count'] = 'comment_count';
@@ -33,9 +33,7 @@ class LastTimestamp extends Date {
     if (empty($this->options['empty_zero']) || $comment_count) {
       return parent::render($values);
     }
-    else {
-      return NULL;
-    }
+    return NULL;
   }
 
 }

@@ -31,7 +31,7 @@ class VideoFile extends File {
   /**
    * {@inheritdoc}
    */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display) {
+  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void {
     $display->setComponent($this->getSourceFieldDefinition($type)->getName(), [
       'type' => 'file_video',
       'label' => 'visually_hidden',

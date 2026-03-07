@@ -24,13 +24,13 @@ class BlockViewBuilder extends EntityViewBuilder implements TrustedCallbackInter
   /**
    * {@inheritdoc}
    */
-  public function buildComponents(array &$build, array $entities, array $displays, $view_mode) {
+  public function buildComponents(array &$build, array $entities, array $displays, $view_mode): void {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function view(EntityInterface $entity, $view_mode = 'full', $langcode = NULL) {
+  public function view(EntityInterface $entity, $view_mode = 'full', $langcode = NULL): mixed {
     $build = $this->viewMultiple([$entity], $view_mode, $langcode);
     return reset($build);
   }
@@ -38,7 +38,7 @@ class BlockViewBuilder extends EntityViewBuilder implements TrustedCallbackInter
   /**
    * {@inheritdoc}
    */
-  public function viewMultiple(array $entities = [], $view_mode = 'full', $langcode = NULL) {
+  public function viewMultiple(array $entities = [], $view_mode = 'full', $langcode = NULL): array {
     /** @var \Drupal\block\BlockInterface[] $entities */
     $build = [];
     foreach ($entities as $entity) {
@@ -176,7 +176,7 @@ class BlockViewBuilder extends EntityViewBuilder implements TrustedCallbackInter
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     // Blocks do not use a view cache tag, they have no mechanisms that would
     // require an invalidation of view related caches.
     return [];
@@ -185,7 +185,7 @@ class BlockViewBuilder extends EntityViewBuilder implements TrustedCallbackInter
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['preRender', 'lazyBuilder'];
   }
 
@@ -217,7 +217,7 @@ class BlockViewBuilder extends EntityViewBuilder implements TrustedCallbackInter
    * - if there is content, moves the contextual links from the block content to
    *   the block itself.
    */
-  public static function preRender($build) {
+  public static function preRender(array $build) {
     $content = $build['#block']->getPlugin()->build();
     // Remove the block entity from the render array, to ensure that blocks
     // can be rendered without the block config entity.

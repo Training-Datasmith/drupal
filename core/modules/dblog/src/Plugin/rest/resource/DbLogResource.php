@@ -38,7 +38,7 @@ class DbLogResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    *   Thrown when no log entry was provided.
    */
-  public function get($id = NULL) {
+  public function get($id = NULL): \Drupal\rest\ResourceResponse {
     if ($id) {
       $record = Database::getConnection()->select('watchdog', 'w')
         ->fields('w')

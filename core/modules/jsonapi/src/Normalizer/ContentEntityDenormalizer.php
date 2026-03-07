@@ -32,7 +32,7 @@ final class ContentEntityDenormalizer extends EntityDenormalizerBase {
    * @return array
    *   The modified input data.
    */
-  protected function prepareInput(array $data, ResourceType $resource_type, $format, array $context) {
+  protected function prepareInput(array $data, ResourceType $resource_type, $format, array $context): array {
     $data_internal = [];
 
     $field_map = $this->fieldManager->getFieldMap()[$resource_type->getEntityTypeId()];

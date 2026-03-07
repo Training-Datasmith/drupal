@@ -45,17 +45,6 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
   protected $versionIdentifier;
 
   /**
-   * The object's fields.
-   *
-   * This refers to "fields" in the JSON:API sense of the word. Config entities
-   * do not have real fields, so in that case, this will be an array of values
-   * for config entity attributes.
-   *
-   * @var \Drupal\Core\Field\FieldItemListInterface[]|mixed[]
-   */
-  protected $fields;
-
-  /**
    * The resource object's links.
    *
    * @var \Drupal\jsonapi\JsonApiResource\LinkCollection
@@ -64,10 +53,8 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
 
   /**
    * The resource language.
-   *
-   * @var \Drupal\Core\Language\LanguageInterface
    */
-  protected $language;
+  protected \Drupal\Core\Language\LanguageInterface $language;
 
   /**
    * ResourceObject constructor.
@@ -88,13 +75,19 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
    * @param \Drupal\Core\Language\LanguageInterface|null $language
    *   (optional) The resource language.
    */
-  public function __construct(CacheableDependencyInterface $cacheability, ResourceType $resource_type, $id, $revision_id, array $fields, LinkCollection $links, ?LanguageInterface $language = NULL) {
+  public function __construct(CacheableDependencyInterface $cacheability, ResourceType $resource_type, $id, ?string $revision_id, /**
+   * The object's fields.
+   *
+   * This refers to "fields" in the JSON:API sense of the word. Config entities
+   * do not have real fields, so in that case, this will be an array of values
+   * for config entity attributes.
+   */
+  protected array $fields, LinkCollection $links, ?LanguageInterface $language = NULL) {
     assert(is_null($revision_id) || $resource_type->isVersionable());
     $this->setCacheability($cacheability);
     $this->resourceType = $resource_type;
     $this->resourceIdentifier = new ResourceIdentifier($resource_type, $id);
     $this->versionIdentifier = $revision_id ? 'id:' . $revision_id : NULL;
-    $this->fields = $fields;
     $this->links = $links->withContext($this);
 
     // If the specified language empty it falls back the same way as in the
@@ -118,7 +111,7 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
    * @return static
    *   An instantiated resource object.
    */
-  public static function createFromEntity(ResourceType $resource_type, EntityInterface $entity, ?LinkCollection $links = NULL) {
+  public static function createFromEntity(ResourceType $resource_type, EntityInterface $entity, ?LinkCollection $links = NULL): static {
     return new static(
       $entity,
       $resource_type,
@@ -139,7 +132,7 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
    * @return bool
    *   TRUE if the resource object has the given field, FALSE otherwise.
    */
-  public function hasField($public_field_name) {
+  public function hasField($public_field_name): bool {
     return isset($this->fields[$public_field_name]);
   }
 
@@ -301,13 +294,13 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
    * @return array<string, \Drupal\Core\Field\FieldItemListInterface<\Drupal\Core\Field\FieldItemInterface>>
    *   The fields extracted from a content entity.
    */
-  protected static function extractContentEntityFields(ResourceType $resource_type, ContentEntityInterface $entity) {
+  protected static function extractContentEntityFields(ResourceType $resource_type, ContentEntityInterface $entity): array {
     $output = [];
     $fields = TypedDataInternalPropertiesHelper::getNonInternalProperties($entity->getTypedData());
     // Filter the array based on the field names.
     $enabled_field_names = array_filter(
       array_keys($fields),
-      [$resource_type, 'isFieldEnabled']
+      $resource_type->isFieldEnabled(...)
     );
 
     // Special handling for user entities that allows a JSON:API user agent to
@@ -341,16 +334,15 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
    *   The label field name.
    */
   protected static function getLabelFieldName(EntityInterface $entity) {
-    $label_field_name = $entity->getEntityType()->getKey('label');
     // Special handling for user entities that allows a JSON:API user agent to
     // access the display name of a user. This is useful when displaying the
     // name of a node's author.
     // @see \Drupal\jsonapi\JsonApiResource\ResourceObject::extractContentEntityFields()
     // @todo Eliminate this special casing in https://www.drupal.org/project/drupal/issues/3079254.
     if ($entity->getEntityTypeId() === 'user') {
-      $label_field_name = 'display_name';
+      return 'display_name';
     }
-    return $label_field_name;
+    return $entity->getEntityType()->getKey('label');
   }
 
   /**
@@ -364,19 +356,17 @@ class ResourceObject implements CacheableDependencyInterface, ResourceIdentifier
    * @return array
    *   The fields extracted from a config entity.
    */
-  protected static function extractConfigEntityFields(ResourceType $resource_type, ConfigEntityInterface $entity) {
+  protected static function extractConfigEntityFields(ResourceType $resource_type, ConfigEntityInterface $entity): array {
     $enabled_public_fields = [];
     $fields = $entity->toArray();
     // Filter the array based on the field names.
-    $enabled_field_names = array_filter(array_keys($fields), function ($internal_field_name) use ($resource_type) {
-      // Config entities have "fields" which aren't known to the resource type,
-      // these fields should not be excluded because they cannot be enabled or
-      // disabled.
-      return !$resource_type->hasField($internal_field_name) || $resource_type->isFieldEnabled($internal_field_name);
-    });
+    $enabled_field_names = array_filter(array_keys($fields), 
+        // Config entities have "fields" which aren't known to the resource type,
+        // these fields should not be excluded because they cannot be enabled or
+        // disabled.
+        fn(int|string $internal_field_name) => !$resource_type->hasField($internal_field_name) || $resource_type->isFieldEnabled($internal_field_name));
     // Return a sub-array of $output containing the keys in $enabled_fields.
     $input = array_intersect_key($fields, array_flip($enabled_field_names));
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
     foreach ($input as $field_name => $field_value) {
       $public_field_name = $resource_type->getPublicName($field_name);
       $enabled_public_fields[$public_field_name] = $field_value;

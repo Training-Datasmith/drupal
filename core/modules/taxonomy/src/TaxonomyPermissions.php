@@ -19,26 +19,19 @@ class TaxonomyPermissions implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a TaxonomyPermissions instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static($container->get('entity_type.manager'));
   }
 
@@ -48,8 +41,8 @@ class TaxonomyPermissions implements ContainerInjectionInterface {
    * @return array
    *   Permissions array.
    */
-  public function permissions() {
-    return $this->generatePermissions(Vocabulary::loadMultiple(), [$this, 'buildPermissions']);
+  public function permissions(): array {
+    return $this->generatePermissions(Vocabulary::loadMultiple(), $this->buildPermissions(...));
   }
 
   /**
@@ -61,7 +54,7 @@ class TaxonomyPermissions implements ContainerInjectionInterface {
    * @return array
    *   An array of permission names and descriptions.
    */
-  protected function buildPermissions(VocabularyInterface $vocabulary) {
+  protected function buildPermissions(VocabularyInterface $vocabulary): array {
     $id = $vocabulary->id();
     $args = ['%vocabulary' => $vocabulary->label()];
 

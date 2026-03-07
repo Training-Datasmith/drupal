@@ -51,9 +51,7 @@ abstract readonly class RelativeOrderBase implements OrderInterface {
           if ($class_and_method[0] === ProceduralCall::class) {
             return $class_and_method[1];
           }
-          else {
-            return $class_and_method[0] . '::' . $class_and_method[1];
-          }
+          return $class_and_method[0] . '::' . $class_and_method[1];
         },
         $this->classesAndMethods,
       ),

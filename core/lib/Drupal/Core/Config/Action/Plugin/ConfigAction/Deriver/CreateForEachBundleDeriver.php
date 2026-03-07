@@ -40,7 +40,7 @@ final class CreateForEachBundleDeriver extends DeriverBase implements ContainerD
     // vocabularies, and so forth.
     $bundle_entity_types = array_filter(
       $this->entityTypeManager->getDefinitions(),
-      fn (EntityTypeInterface $entity_type) => is_string($entity_type->getBundleOf()),
+      fn (EntityTypeInterface $entity_type): bool => is_string($entity_type->getBundleOf()),
     );
     $base_plugin_definition['entity_types'] = array_keys($bundle_entity_types);
 

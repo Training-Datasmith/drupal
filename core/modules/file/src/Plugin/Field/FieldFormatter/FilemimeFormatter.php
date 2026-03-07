@@ -23,7 +23,7 @@ class FilemimeFormatter extends BaseFieldFileFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     return parent::isApplicable($field_definition) && $field_definition->getName() === 'filemime';
   }
 
@@ -60,11 +60,10 @@ class FilemimeFormatter extends BaseFieldFileFormatterBase {
   protected function viewValue(FieldItemInterface $item) {
     $value = $item->value;
     if ($this->getSetting('filemime_image') && $value) {
-      $file_icon = [
+      return [
         '#theme' => 'image__file_icon',
         '#file' => $item->getEntity(),
       ];
-      return $file_icon;
     }
     return $value;
   }

@@ -16,11 +16,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 class EntityReverse extends RelationshipPluginBase {
 
   /**
-   * The views plugin join manager.
-   */
-  public ViewsHandlerManager $joinManager;
-
-  /**
    * The alias for the left table.
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
@@ -35,7 +30,7 @@ class EntityReverse extends RelationshipPluginBase {
    *   The plugin ID for the plugin instance.
    * @param array $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\views\Plugin\ViewsHandlerManager $join_manager
+   * @param \Drupal\views\Plugin\ViewsHandlerManager $joinManager
    *   The views plugin join manager.
    */
   public function __construct(
@@ -43,16 +38,15 @@ class EntityReverse extends RelationshipPluginBase {
     $plugin_id,
     $plugin_definition,
     #[Autowire(service: 'plugin.manager.views.join')]
-    ViewsHandlerManager $join_manager,
+    public ViewsHandlerManager $joinManager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->joinManager = $join_manager;
   }
 
   /**
    * Called to implement a relationship in a query.
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     // First, relate our base table to the current base table to the
     // field, using the base table's id field to the field's column.

@@ -18,46 +18,33 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityDisplayRebuilder implements ContainerInjectionInterface {
 
   /**
-   * The field storage config storage.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManager
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepository
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The entity type bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
    * Constructs a new EntityDisplayRebuilder.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity manager.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityDisplayRepository = $entity_display_repository;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
+  public function __construct(
+      /**
+       * The field storage config storage.
+       */
+      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+      /**
+       * The display repository.
+       */
+      protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository,
+      protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_display.repository'),
@@ -73,22 +60,18 @@ class EntityDisplayRebuilder implements ContainerInjectionInterface {
    * @param string $bundle
    *   The bundle we need to rebuild.
    */
-  public function rebuildEntityTypeDisplays($entity_type_id, $bundle) {
+  public function rebuildEntityTypeDisplays($entity_type_id, $bundle): void {
     // Get the displays.
     $view_modes = $this->entityDisplayRepository->getViewModeOptions($entity_type_id);
     $form_modes = $this->entityDisplayRepository->getFormModeOptions($entity_type_id);
 
     // Save view mode displays.
-    $view_mode_ids = array_map(function ($view_mode) use ($entity_type_id, $bundle) {
-      return "$entity_type_id.$bundle.$view_mode";
-    }, array_keys($view_modes));
+    $view_mode_ids = array_map(fn(int|string $view_mode) => "$entity_type_id.$bundle.$view_mode", array_keys($view_modes));
     foreach ($this->entityTypeManager->getStorage('entity_view_display')->loadMultiple($view_mode_ids) as $display) {
       $display->save();
     }
     // Save form mode displays.
-    $form_mode_ids = array_map(function ($form_mode) use ($entity_type_id, $bundle) {
-      return "$entity_type_id.$bundle.$form_mode";
-    }, array_keys($form_modes));
+    $form_mode_ids = array_map(fn(int|string $form_mode) => "$entity_type_id.$bundle.$form_mode", array_keys($form_modes));
     foreach ($this->entityTypeManager->getStorage('entity_form_display')->loadMultiple($form_mode_ids) as $display) {
       $display->save();
     }

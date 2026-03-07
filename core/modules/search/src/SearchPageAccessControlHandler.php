@@ -24,9 +24,7 @@ class SearchPageAccessControlHandler extends EntityAccessControlHandler {
       if ($entity->isDefaultSearch()) {
         return AccessResult::forbidden()->addCacheableDependency($entity);
       }
-      else {
-        return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
-      }
+      return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
     }
     if ($operation == 'view') {
       if (!$entity->status()) {

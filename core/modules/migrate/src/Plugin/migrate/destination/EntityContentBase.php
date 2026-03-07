@@ -101,23 +101,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityContentBase extends Entity implements HighestIdInterface, MigrateValidatableEntityInterface {
 
   /**
-   * Field type plugin manager.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected $fieldTypeManager;
-
-  /**
-   * The account switcher service.
-   *
-   * @var \Drupal\Core\Session\AccountSwitcherInterface
-   */
-  protected $accountSwitcher;
-
-  /**
    * Entity type bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
    */
   protected EntityTypeBundleInfoInterface $entityTypeBundleInfo;
 
@@ -138,18 +122,16 @@ class EntityContentBase extends Entity implements HighestIdInterface, MigrateVal
    *   The list of bundles this entity type has.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
    *   The entity field manager.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
    *   The field type plugin manager service.
-   * @param \Drupal\Core\Session\AccountSwitcherInterface $account_switcher
+   * @param \Drupal\Core\Session\AccountSwitcherInterface $accountSwitcher
    *   The account switcher service.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface|null $entity_type_bundle_info
    *   The entity type bundle info service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ?AccountSwitcherInterface $account_switcher = NULL, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager, protected ?\Drupal\Core\Session\AccountSwitcherInterface $accountSwitcher = NULL, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles);
     $this->entityFieldManager = $entity_field_manager;
-    $this->fieldTypeManager = $field_type_manager;
-    $this->accountSwitcher = $account_switcher;
     if ($entity_type_bundle_info === NULL) {
       @trigger_error('Calling ' . __NAMESPACE__ . '\EntityContentBase::__construct() without the $entity_type_bundle_info argument is deprecated in drupal:11.2.0 and will be required in drupal:12.0.0. See https://www.drupal.org/node/3476634', E_USER_DEPRECATED);
       $entity_type_bundle_info = \Drupal::service('entity_type.bundle.info');
@@ -160,7 +142,7 @@ class EntityContentBase extends Entity implements HighestIdInterface, MigrateVal
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     $entity_type = static::getEntityTypeId($plugin_id);
     return new static(
       $configuration,
@@ -204,17 +186,21 @@ class EntityContentBase extends Entity implements HighestIdInterface, MigrateVal
   /**
    * {@inheritdoc}
    */
-  public function isEntityValidationRequired(FieldableEntityInterface $entity) {
-    // Prioritize the entity method over migration config because it won't be
-    // possible to save that entity non validated.
-    /* @see \Drupal\Core\Entity\ContentEntityBase::preSave() */
-    return $entity->isValidationRequired() || !empty($this->configuration['validate']);
+  public function isEntityValidationRequired(FieldableEntityInterface $entity): bool
+  {
+      // Prioritize the entity method over migration config because it won't be
+      // possible to save that entity non validated.
+      /* @see \Drupal\Core\Entity\ContentEntityBase::preSave() */
+      if ($entity->isValidationRequired()) {
+          return true;
+      }
+      return !empty($this->configuration['validate']);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateEntity(FieldableEntityInterface $entity) {
+  public function validateEntity(FieldableEntityInterface $entity): void {
     // Entity validation can require the user that owns the entity. Switch to
     // use that user during validation.
     // As an example:
@@ -254,7 +240,7 @@ class EntityContentBase extends Entity implements HighestIdInterface, MigrateVal
    * @return array
    *   An array containing the entity ID.
    */
-  protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []) {
+  protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []): array {
     $entity->setSyncing(TRUE);
     $entity->save();
     return [$entity->id()];
@@ -263,14 +249,15 @@ class EntityContentBase extends Entity implements HighestIdInterface, MigrateVal
   /**
    * {@inheritdoc}
    */
-  public function isTranslationDestination() {
+  public function isTranslationDestination(): bool {
     return !empty($this->configuration['translations']);
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getIds() {
+  public function getIds(): array {
     $ids = [];
 
     $id_key = $this->getKey('id');
@@ -379,7 +366,7 @@ class EntityContentBase extends Entity implements HighestIdInterface, MigrateVal
   /**
    * {@inheritdoc}
    */
-  public function rollback(array $destination_identifier) {
+  public function rollback(array $destination_identifier): void {
     if ($this->isTranslationDestination()) {
       // Attempt to remove the translation.
       $entity = $this->storage->load(reset($destination_identifier));
@@ -408,7 +395,7 @@ class EntityContentBase extends Entity implements HighestIdInterface, MigrateVal
   /**
    * {@inheritdoc}
    */
-  public function getHighestId() {
+  public function getHighestId(): int {
     $values = $this->storage->getQuery()
       ->accessCheck(FALSE)
       ->sort($this->getKey('id'), 'DESC')

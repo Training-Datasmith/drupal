@@ -12,20 +12,13 @@ use Symfony\Component\Routing\RouteCollection;
 class ModuleRouteSubscriber extends RouteSubscriberBase {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a ModuleRouteSubscriber object.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(ModuleHandlerInterface $module_handler) {
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
@@ -72,8 +65,8 @@ class ModuleRouteSubscriber extends RouteSubscriberBase {
    * @return array
    *   An array of exploded (and trimmed) values.
    */
-  protected function explodeString($string, $separator = ',') {
-    return array_filter(array_map('trim', explode($separator, $string)));
+  protected function explodeString($string, $separator = ','): array {
+    return array_filter(array_map(trim(...), explode($separator, $string)));
   }
 
 }

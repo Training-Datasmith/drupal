@@ -130,7 +130,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public function setTheme($theme) {
+  public function setTheme($theme): static {
     $this->theme = $theme;
     return $this;
   }
@@ -145,7 +145,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
     if ($this->isReusable() || $this->getOriginal()?->isReusable()) {
       static::invalidateBlockPluginCache();
@@ -155,7 +155,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     /** @var \Drupal\block_content\BlockContentInterface $block */
@@ -169,7 +169,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
     /** @var \Drupal\block_content\BlockContentInterface $block */
     foreach ($entities as $block) {
@@ -191,7 +191,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record) {
+  public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record): void {
     parent::preSaveRevision($storage, $record);
 
     if (!$this->isNewRevision() && $this->getOriginal() && empty($record->revision_log_message)) {
@@ -254,7 +254,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public function setInfo($info) {
+  public function setInfo($info): static {
     $this->set('info', $info);
     return $this;
   }
@@ -262,7 +262,7 @@ class BlockContent extends EditorialContentEntityBase implements BlockContentInt
   /**
    * {@inheritdoc}
    */
-  public function isReusable() {
+  public function isReusable(): bool {
     return (bool) $this->get('reusable')->value;
   }
 

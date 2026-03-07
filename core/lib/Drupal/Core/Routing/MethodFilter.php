@@ -14,7 +14,7 @@ class MethodFilter implements FilterInterface {
   /**
    * {@inheritdoc}
    */
-  public function filter(RouteCollection $collection, Request $request) {
+  public function filter(RouteCollection $collection, Request $request): RouteCollection {
     $method = $request->getMethod();
 
     $all_supported_methods = [];

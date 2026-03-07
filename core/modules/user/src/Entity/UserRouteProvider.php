@@ -15,7 +15,7 @@ class UserRouteProvider implements EntityRouteProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
+  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
     $route_collection = new RouteCollection();
     $route = (new Route('/user/{user}'))
       ->setDefaults([

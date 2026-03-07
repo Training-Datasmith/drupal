@@ -38,13 +38,6 @@ class Router extends UrlMatcher implements RequestMatcherInterface, RouterInterf
   private array $deprecatedProperties = ['urlGenerator' => 'url_generator'];
 
   /**
-   * The route provider responsible for the first-pass match.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
    * The list of available enhancers.
    *
    * @var \Drupal\Core\Routing\EnhancerInterface[]
@@ -61,14 +54,13 @@ class Router extends UrlMatcher implements RequestMatcherInterface, RouterInterf
   /**
    * Constructs a new Router.
    *
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider.
    * @param \Drupal\Core\Path\CurrentPathStack $current_path
    *   The current path stack.
    */
-  public function __construct(RouteProviderInterface $route_provider, CurrentPathStack $current_path) {
+  public function __construct(protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, CurrentPathStack $current_path) {
     parent::__construct($current_path);
-    $this->routeProvider = $route_provider;
   }
 
   /**
@@ -77,7 +69,7 @@ class Router extends UrlMatcher implements RequestMatcherInterface, RouterInterf
    * @param \Drupal\Core\Routing\FilterInterface $route_filter
    *   The route filter.
    */
-  public function addRouteFilter(FilterInterface $route_filter) {
+  public function addRouteFilter(FilterInterface $route_filter): void {
     $this->filters[] = $route_filter;
   }
 
@@ -87,7 +79,7 @@ class Router extends UrlMatcher implements RequestMatcherInterface, RouterInterf
    * @param \Drupal\Core\Routing\EnhancerInterface $route_enhancer
    *   The route enhancer.
    */
-  public function addRouteEnhancer(EnhancerInterface $route_enhancer) {
+  public function addRouteEnhancer(EnhancerInterface $route_enhancer): void {
     $this->enhancers[] = $route_enhancer;
   }
 
@@ -173,7 +165,7 @@ class Router extends UrlMatcher implements RequestMatcherInterface, RouterInterf
       }
 
       $hostMatches = [];
-      if ($compiledRoute->getHostRegex() && !preg_match($compiledRoute->getHostRegex(), $this->context->getHost(), $hostMatches)) {
+      if ($compiledRoute->getHostRegex() && !preg_match($compiledRoute->getHostRegex(), (string) $this->context->getHost(), $hostMatches)) {
         $routes->remove($name);
         continue;
       }
@@ -293,7 +285,7 @@ class Router extends UrlMatcher implements RequestMatcherInterface, RouterInterf
     }
     krsort($buckets);
 
-    $flattened = array_reduce($buckets, 'array_merge', []);
+    $flattened = array_reduce($buckets, array_merge(...), []);
 
     // Add them back onto a new route collection.
     $collection = new RouteCollection();

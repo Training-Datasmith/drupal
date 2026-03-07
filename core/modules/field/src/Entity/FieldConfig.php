@@ -142,7 +142,7 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public function postCreate(EntityStorageInterface $storage) {
+  public function postCreate(EntityStorageInterface $storage): void {
     parent::postCreate($storage);
 
     // Validate that we have a valid storage for this field. This throws an
@@ -164,7 +164,7 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
    * @throws \Drupal\Core\Entity\EntityStorageException
    *   In case of failures at the configuration storage level.
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
 
     $storage_definition = $this->getFieldStorageDefinition();
@@ -200,7 +200,7 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
     // Mark the field_storage_config as a dependency.
     $this->addDependency('config', $this->getFieldStorageDefinition()->getConfigDependencyName());
@@ -210,7 +210,7 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $fields) {
+  public static function preDelete(EntityStorageInterface $storage, array $fields): void {
     /** @var \Drupal\Core\Field\DeletedFieldsRepositoryInterface $deleted_fields_repository */
     $deleted_fields_repository = \Drupal::service('entity_field.deleted_fields_repository');
     $entity_type_manager = \Drupal::entityTypeManager();
@@ -236,7 +236,7 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $fields) {
+  public static function postDelete(EntityStorageInterface $storage, array $fields): void {
     parent::postDelete($storage, $fields);
     // If this is part of a configuration synchronization then the following
     // configuration updates are not necessary.
@@ -331,14 +331,14 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public function isDisplayConfigurable($context) {
+  public function isDisplayConfigurable($context): bool {
     return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDisplayOptions($display_context) {
+  public function getDisplayOptions($display_context): array {
     // Hide configurable fields by default.
     return ['region' => 'hidden'];
   }
@@ -346,14 +346,14 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
   /**
    * {@inheritdoc}
    */
-  public function isReadOnly() {
+  public function isReadOnly(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isComputed() {
+  public function isComputed(): bool {
     return FALSE;
   }
 
@@ -378,7 +378,7 @@ class FieldConfig extends FieldConfigBase implements FieldConfigInterface {
    *   The field config entity if one exists for the provided field
    *   name, otherwise NULL.
    */
-  public static function loadByName($entity_type_id, $bundle, $field_name) {
+  public static function loadByName(string $entity_type_id, string $bundle, string $field_name) {
     return \Drupal::entityTypeManager()->getStorage('field_config')->load($entity_type_id . '.' . $bundle . '.' . $field_name);
   }
 

@@ -31,7 +31,7 @@ class MappedDiff extends Diff {
    * @param array $mapped_to_lines
    *   This array should have the same number of elements as $to_lines.
    */
-  public function __construct($from_lines, $to_lines, $mapped_from_lines, $mapped_to_lines) {
+  public function __construct($from_lines, $to_lines, array|string $mapped_from_lines, array|string $mapped_to_lines) {
 
     assert(sizeof($from_lines) == sizeof($mapped_from_lines));
     assert(sizeof($to_lines) == sizeof($mapped_to_lines));

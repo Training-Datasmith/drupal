@@ -12,7 +12,7 @@ class RoleStorage extends ConfigEntityStorage implements RoleStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function isPermissionInRoles($permission, array $rids) {
+  public function isPermissionInRoles($permission, array $rids): bool {
     foreach ($this->loadMultiple($rids) as $role) {
       /** @var \Drupal\user\RoleInterface $role */
       if ($role->hasPermission($permission)) {

@@ -26,9 +26,7 @@ class MediaTypeAccessControlHandler extends EntityAccessControlHandler {
     if ($operation === 'view label') {
       return AccessResult::allowedIfHasPermission($account, 'view media');
     }
-    else {
-      return parent::checkAccess($entity, $operation, $account);
-    }
+    return parent::checkAccess($entity, $operation, $account);
   }
 
 }

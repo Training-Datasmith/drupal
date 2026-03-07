@@ -36,7 +36,7 @@ class Mini extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     if (!empty($this->options['offset'])) {
       return $this->formatPlural($this->options['items_per_page'],
         'Mini pager, @count item, skip @skip',
@@ -52,7 +52,7 @@ class Mini extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     parent::query();
 
     // Only modify the query if we don't want to do a total row count.
@@ -72,14 +72,14 @@ class Mini extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function useCountQuery() {
+  public function useCountQuery(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function postExecute(&$result) {
+  public function postExecute(&$result): void {
     // Only modify the result if we didn't do a total row count.
     if (!$this->view->get_total_rows) {
       $this->total_items = $this->getCurrentPage() * $this->getItemsPerPage() + count($result);
@@ -95,7 +95,7 @@ class Mini extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function render($input) {
+  public function render($input): array {
     // The 1, 3 indexes are correct, see
     // \Drupal\Core\Pager\PagerPreprocess::preprocessPager().
     $tags = [

@@ -11,20 +11,6 @@ use Drupal\Core\Database\Query\PagerSelectExtender;
 class StringDatabaseStorage implements StringStorageInterface {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * Additional database connection options to use in queries.
-   *
-   * @var array
-   */
-  protected $options = [];
-
-  /**
    * Constructs a new StringDatabaseStorage class.
    *
    * @param \Drupal\Core\Database\Connection $connection
@@ -32,23 +18,22 @@ class StringDatabaseStorage implements StringStorageInterface {
    * @param array $options
    *   (optional) Any additional database connection options to use in queries.
    */
-  public function __construct(Connection $connection, array $options = []) {
-    $this->connection = $connection;
-    $this->options = $options;
+  public function __construct(protected \Drupal\Core\Database\Connection $connection, protected array $options = [])
+  {
   }
 
   /**
    * {@inheritdoc}
    */
   public function getStrings(array $conditions = [], array $options = []) {
-    return $this->dbStringLoad($conditions, $options, 'Drupal\locale\SourceString');
+    return $this->dbStringLoad($conditions, $options, \Drupal\locale\SourceString::class);
   }
 
   /**
    * {@inheritdoc}
    */
   public function getTranslations(array $conditions = [], array $options = []) {
-    return $this->dbStringLoad($conditions, ['translation' => TRUE] + $options, 'Drupal\locale\TranslationString');
+    return $this->dbStringLoad($conditions, ['translation' => TRUE] + $options, \Drupal\locale\TranslationString::class);
   }
 
   /**
@@ -112,7 +97,7 @@ class StringDatabaseStorage implements StringStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function save($string) {
+  public function save($string): static {
     if ($string->isNew()) {
       $result = $this->dbStringInsert($string);
       if ($string->isSource() && $result) {
@@ -141,7 +126,7 @@ class StringDatabaseStorage implements StringStorageInterface {
       foreach ($locations as $type => $location) {
         foreach ($location as $name => $lid) {
           // Make sure that the name isn't longer than 255 characters.
-          $name = substr($name, 0, 255);
+          $name = substr((string) $name, 0, 255);
           if (!$lid) {
             $this->dbDelete('locales_location', ['sid' => $string->getId(), 'type' => $type, 'name' => $name])
               ->execute();
@@ -185,7 +170,7 @@ class StringDatabaseStorage implements StringStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($string) {
+  public function delete($string): static {
     if ($keys = $this->dbStringKeys($string)) {
       $this->dbDelete('locales_target', $keys)->execute();
       if ($string->isSource()) {
@@ -203,7 +188,7 @@ class StringDatabaseStorage implements StringStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteStrings($conditions) {
+  public function deleteStrings($conditions): void {
     $lids = $this->dbStringSelect($conditions, ['fields' => ['lid']])->execute()->fetchCol();
     if ($lids) {
       $this->dbDelete('locales_target', ['lid' => $lids])->execute();
@@ -215,21 +200,21 @@ class StringDatabaseStorage implements StringStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteTranslations($conditions) {
+  public function deleteTranslations($conditions): void {
     $this->dbDelete('locales_target', $conditions)->execute();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createString($values = []) {
+  public function createString($values = []): \Drupal\locale\SourceString {
     return new SourceString($values + ['storage' => $this]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createTranslation($values = []) {
+  public function createTranslation($values = []): \Drupal\locale\TranslationString {
     return new TranslationString($values + [
       'storage' => $this,
       'is_new' => TRUE,
@@ -250,16 +235,14 @@ class StringDatabaseStorage implements StringStorageInterface {
    *   - 't' for "language", "translation", "customized" (locales_target
    *     table fields)
    */
-  protected function dbFieldTable($field) {
+  protected function dbFieldTable($field): string {
     if (in_array($field, ['language', 'translation', 'customized'])) {
-      return 't';
+        return 't';
     }
-    elseif (in_array($field, ['type', 'name'])) {
-      return 'l';
+    if (in_array($field, ['type', 'name'])) {
+        return 'l';
     }
-    else {
-      return 's';
-    }
+    return 's';
   }
 
   /**
@@ -271,12 +254,12 @@ class StringDatabaseStorage implements StringStorageInterface {
    * @return string|null
    *   The table name.
    */
-  protected function dbStringTable($string) {
+  protected function dbStringTable($string): ?string {
     if ($string->isSource()) {
-      return 'locales_source';
+        return 'locales_source';
     }
-    elseif ($string->isTranslation()) {
-      return 'locales_target';
+    if ($string->isTranslation()) {
+        return 'locales_target';
     }
     return NULL;
   }
@@ -290,7 +273,7 @@ class StringDatabaseStorage implements StringStorageInterface {
    * @return array
    *   Array with key fields if the string has all keys, or empty array if not.
    */
-  protected function dbStringKeys($string) {
+  protected function dbStringKeys($string): array {
     if ($string->isSource()) {
       $keys = ['lid'];
     }
@@ -300,9 +283,7 @@ class StringDatabaseStorage implements StringStorageInterface {
     if (!empty($keys) && ($values = $string->getValues($keys)) && count($keys) == count($values)) {
       return $values;
     }
-    else {
-      return [];
-    }
+    return [];
   }
 
   /**
@@ -318,7 +299,7 @@ class StringDatabaseStorage implements StringStorageInterface {
    * @return \Drupal\locale\StringInterface[]
    *   Array of objects of the class requested.
    */
-  protected function dbStringLoad(array $conditions, array $options, $class) {
+  protected function dbStringLoad(array $conditions, array $options, $class): array {
     $strings = [];
     $result = $this->dbStringSelect($conditions, $options)->execute();
     foreach ($result as $item) {
@@ -444,7 +425,7 @@ class StringDatabaseStorage implements StringStorageInterface {
     }
 
     if (!empty($options['pager limit'])) {
-      $query = $query->extend(PagerSelectExtender::class)->limit($options['pager limit']);
+      return $query->extend(PagerSelectExtender::class)->limit($options['pager limit']);
     }
 
     return $query;
@@ -477,9 +458,7 @@ class StringDatabaseStorage implements StringStorageInterface {
         ->fields($fields)
         ->execute();
     }
-    else {
-      throw new StringStorageException('The string cannot be saved: ' . $string->getString());
-    }
+    throw new StringStorageException('The string cannot be saved: ' . $string->getString());
   }
 
   /**
@@ -495,7 +474,7 @@ class StringDatabaseStorage implements StringStorageInterface {
    * @throws \Drupal\locale\StringStorageException
    *   If the string is not suitable for this storage, an exception is thrown.
    */
-  protected function dbStringUpdate($string) {
+  protected function dbStringUpdate($string): ?int {
     if ($string->isSource()) {
       $values = $string->getValues(['source', 'context', 'version']);
     }
@@ -508,9 +487,7 @@ class StringDatabaseStorage implements StringStorageInterface {
         ->fields($values)
         ->execute();
     }
-    else {
-      throw new StringStorageException('The string cannot be updated: ' . $string->getString());
-    }
+    throw new StringStorageException('The string cannot be updated: ' . $string->getString());
   }
 
   /**

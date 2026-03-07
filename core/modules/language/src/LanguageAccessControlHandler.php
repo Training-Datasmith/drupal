@@ -18,25 +18,18 @@ class LanguageAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    switch ($operation) {
-      case 'view':
-        return parent::checkAccess($entity, $operation, $account);
-
-      case 'update':
+    return match ($operation) {
+        'view' => parent::checkAccess($entity, $operation, $account),
         /** @var \Drupal\Core\Language\LanguageInterface $entity */
-        return AccessResult::allowedIf(!$entity->isLocked())->addCacheableDependency($entity)
-          ->andIf(parent::checkAccess($entity, $operation, $account));
-
-      case 'delete':
+        'update' => AccessResult::allowedIf(!$entity->isLocked())->addCacheableDependency($entity)
+          ->andIf(parent::checkAccess($entity, $operation, $account)),
         /** @var \Drupal\Core\Language\LanguageInterface $entity */
-        return AccessResult::allowedIf(!$entity->isLocked())->addCacheableDependency($entity)
+        'delete' => AccessResult::allowedIf(!$entity->isLocked())->addCacheableDependency($entity)
           ->andIf(AccessResult::allowedIf(!$entity->isDefault())->addCacheableDependency($entity))
-          ->andIf(parent::checkAccess($entity, $operation, $account));
-
-      default:
+          ->andIf(parent::checkAccess($entity, $operation, $account)),
         // No opinion.
-        return AccessResult::neutral();
-    }
+        default => AccessResult::neutral(),
+    };
   }
 
 }

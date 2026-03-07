@@ -25,9 +25,9 @@ use Drupal\package_manager\Exception\FailureMarkerExistsException;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class FailureMarker implements EventSubscriberInterface {
+final readonly class FailureMarker implements EventSubscriberInterface {
 
-  public function __construct(private readonly PathLocator $pathLocator) {
+  public function __construct(private PathLocator $pathLocator) {
   }
 
   /**
@@ -59,11 +59,11 @@ final class FailureMarker implements EventSubscriberInterface {
    */
   public function write(SandboxManagerBase $sandbox_manager, TranslatableMarkup $message, ?\Throwable $throwable = NULL): void {
     $data = [
-      'stage_class' => get_class($sandbox_manager),
+      'stage_class' => $sandbox_manager::class,
       'stage_type' => $sandbox_manager->getType(),
       'stage_file' => (new \ReflectionObject($sandbox_manager))->getFileName(),
       'message' => (string) $message,
-      'throwable_class' => $throwable ? get_class($throwable) : FALSE,
+      'throwable_class' => $throwable ? $throwable::class : FALSE,
       'throwable_message' => $throwable?->getMessage() ?? 'Not available',
       'throwable_backtrace' => $throwable?->getTraceAsString() ?? 'Not available.',
     ];

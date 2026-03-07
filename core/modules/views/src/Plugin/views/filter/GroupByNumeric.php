@@ -15,7 +15,7 @@ class GroupByNumeric extends NumericFilter {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $field = $this->getField();
 
@@ -75,7 +75,7 @@ class GroupByNumeric extends NumericFilter {
   /**
    * {@inheritdoc}
    */
-  public function canGroup() {
+  public function canGroup(): bool {
     return FALSE;
   }
 

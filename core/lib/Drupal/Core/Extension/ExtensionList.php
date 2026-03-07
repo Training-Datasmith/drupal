@@ -21,48 +21,11 @@ use Drupal\Core\State\StateInterface;
 abstract class ExtensionList {
 
   /**
-   * The type of the extension.
-   *
-   * Possible values: "module", "theme", "profile" or "database_driver".
-   *
-   * @var string
-   */
-  protected $type;
-
-  /**
-   * The app root.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
-   * The cache.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
    * Default values to be merged into *.info.yml file arrays.
    *
    * @var mixed[]
    */
   protected $defaults = [];
-
-  /**
-   * The info parser.
-   *
-   * @var \Drupal\Core\Extension\InfoParserInterface
-   */
-  protected $infoParser;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
 
   /**
    * The cached extensions.
@@ -103,20 +66,6 @@ abstract class ExtensionList {
   protected $addedPathNames = [];
 
   /**
-   * The state store.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * The install profile used by the site.
-   *
-   * @var string|false|null
-   */
-  protected $installProfile;
-
-  /**
    * Constructs a new instance.
    *
    * @param string $root
@@ -125,23 +74,36 @@ abstract class ExtensionList {
    *   The extension type.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache.
-   * @param \Drupal\Core\Extension\InfoParserInterface $info_parser
+   * @param \Drupal\Core\Extension\InfoParserInterface $infoParser
    *   The info parser.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state.
-   * @param string $install_profile
+   * @param string $installProfile
    *   The install profile used by the site.
    */
-  public function __construct($root, $type, CacheBackendInterface $cache, InfoParserInterface $info_parser, ModuleHandlerInterface $module_handler, StateInterface $state, $install_profile) {
-    $this->root = $root;
-    $this->type = $type;
-    $this->cache = $cache;
-    $this->infoParser = $info_parser;
-    $this->moduleHandler = $module_handler;
-    $this->state = $state;
-    $this->installProfile = $install_profile;
+  public function __construct(
+      /**
+       * The app root.
+       */
+      protected $root,
+      /**
+       * The type of the extension.
+       *
+       * Possible values: "module", "theme", "profile" or "database_driver".
+       */
+      protected $type,
+      protected \Drupal\Core\Cache\CacheBackendInterface $cache,
+      protected \Drupal\Core\Extension\InfoParserInterface $infoParser,
+      protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
+      protected \Drupal\Core\State\StateInterface $state,
+      /**
+       * The install profile used by the site.
+       */
+      protected $installProfile
+  )
+  {
   }
 
   /**
@@ -403,9 +365,7 @@ abstract class ExtensionList {
    *   An array of arrays of .info.yml entries keyed by the machine name.
    */
   protected function recalculateInfo() {
-    return array_map(function (Extension $extension) {
-      return $extension->info;
-    }, $this->getList());
+    return array_map(fn(Extension $extension) => $extension->info, $this->getList());
   }
 
   /**
@@ -440,9 +400,7 @@ abstract class ExtensionList {
     $extensions = $this->getList();
     ksort($extensions);
 
-    return array_map(function (Extension $extension) {
-      return $extension->getPathname();
-    }, $extensions);
+    return array_map(fn(Extension $extension) => $extension->getPathname(), $extensions);
   }
 
   /**
@@ -464,7 +422,7 @@ abstract class ExtensionList {
    *
    * @see ::getPathname
    */
-  public function setPathname($extension_name, $pathname) {
+  public function setPathname($extension_name, $pathname): void {
     $this->addedPathNames[$extension_name] = $pathname;
   }
 
@@ -511,13 +469,13 @@ abstract class ExtensionList {
    */
   public function getPathname($extension_name) {
     if (isset($this->addedPathNames[$extension_name])) {
-      return $this->addedPathNames[$extension_name];
+        return $this->addedPathNames[$extension_name];
     }
-    elseif (isset($this->pathNames[$extension_name])) {
-      return $this->pathNames[$extension_name];
+    if (isset($this->pathNames[$extension_name])) {
+        return $this->pathNames[$extension_name];
     }
-    elseif (($path_names = $this->getPathNames()) && isset($path_names[$extension_name])) {
-      return $path_names[$extension_name];
+    if (($path_names = $this->getPathNames()) && isset($path_names[$extension_name])) {
+        return $path_names[$extension_name];
     }
     throw new UnknownExtensionException("The {$this->type} $extension_name does not exist.");
   }
@@ -598,7 +556,7 @@ abstract class ExtensionList {
    *   and 0 if they are equal.
    */
   public static function sortByName(Extension $a, Extension $b): int {
-    return strcasecmp($a->info['name'], $b->info['name']);
+    return strcasecmp((string) $a->info['name'], (string) $b->info['name']);
   }
 
 }

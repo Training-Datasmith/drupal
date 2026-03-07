@@ -96,9 +96,7 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
     if (isset($element)) {
       return $element;
     }
-    else {
-      throw new \InvalidArgumentException("The configuration property $name doesn't exist.");
-    }
+    throw new \InvalidArgumentException("The configuration property $name doesn't exist.");
   }
 
   /**
@@ -128,7 +126,7 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
   /**
    * {@inheritdoc}
    */
-  public function onChange($name) {
+  public function onChange($name): void {
     // Notify the parent of changes.
     if (isset($this->parent)) {
       $this->parent->onChange($this->name);
@@ -159,7 +157,7 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
    * @return \Drupal\Core\TypedData\TypedDataInterface
    *   A typed data object created from the given parameters.
    */
-  protected function createElement($definition, $value, $key) {
+  protected function createElement(\Drupal\Core\TypedData\DataDefinitionInterface $definition, $value, $key) {
     return $this->getTypedDataManager()->create($definition, $value, $key, $this);
   }
 
@@ -177,7 +175,7 @@ abstract class ArrayElement extends Element implements \IteratorAggregate, Typed
    * @return \Drupal\Core\TypedData\DataDefinitionInterface
    *   A data definition object for the given parameters.
    */
-  protected function buildDataDefinition($definition, $value, $key) {
+  protected function buildDataDefinition(array $definition, $value, $key) {
     return $this->getTypedDataManager()->buildDataDefinition($definition, $value, $key, $this);
   }
 

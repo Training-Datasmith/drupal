@@ -86,40 +86,34 @@ class LanguageHooks {
         ]) . '</li>';
         $output .= '<li>' . $this->t('<em>Account administration pages</em> follows the configuration set as <em>Administration pages language</em> on the profile page of an administrative user. This method is similar to the <em>User</em> method, but only sets the interface text language on administration pages, independent of the interface text language on other pages.') . '</li>';
         $output .= '<li>' . $this->t("<em>Selected language</em> allows you to specify the site's default language or a specific language as the fall-back language. This method should be listed last.") . '</li></ul></dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.configurable_language.collection':
         $output = '<p>' . $this->t('Reorder the configured languages to set their order in the language switcher block and, when editing content, in the list of selectable languages. This ordering does not impact <a href=":detection">detection and selection</a>.', [':detection' => Url::fromRoute('language.negotiation')->toString()]) . '</p>';
-        $output .= '<p>' . $this->t('The site default language can also be set. It is not recommended to change the default language on a working site. <a href=":language-detection">Configure the Selected language</a> setting on the detection and selection page to change the fallback language for language selection.', [
+        return $output . ('<p>' . $this->t('The site default language can also be set. It is not recommended to change the default language on a working site. <a href=":language-detection">Configure the Selected language</a> setting on the detection and selection page to change the fallback language for language selection.', [
           ':language-detection' => Url::fromRoute('language.negotiation')->toString(),
-        ]) . '</p>';
-        return $output;
+        ]) . '</p>');
 
       case 'language.add':
         return '<p>' . $this->t('Add a language to be supported by your site. If your desired language is not available, pick <em>Custom language...</em> at the end and provide a language code and other details manually.') . '</p>';
 
       case 'language.negotiation':
-        $output = '<p>' . $this->t('Define how to decide which language is used to display page elements (primarily text provided by modules, such as field labels and help text). This decision is made by evaluating a series of detection methods for languages; the first detection method that gets a result will determine which language is used for that type of text. Be aware that some language detection methods are unreliable under certain conditions, such as browser detection when page-caching is enabled and a user is not currently logged in. Define the order of evaluation of language detection methods on this page. The default language can be changed in the <a href=":admin-change-language">list of languages</a>.', [
+        return '<p>' . $this->t('Define how to decide which language is used to display page elements (primarily text provided by modules, such as field labels and help text). This decision is made by evaluating a series of detection methods for languages; the first detection method that gets a result will determine which language is used for that type of text. Be aware that some language detection methods are unreliable under certain conditions, such as browser detection when page-caching is enabled and a user is not currently logged in. Define the order of evaluation of language detection methods on this page. The default language can be changed in the <a href=":admin-change-language">list of languages</a>.', [
           ':admin-change-language' => Url::fromRoute('entity.configurable_language.collection')->toString(),
         ]) . '</p>';
-        return $output;
 
       case 'language.negotiation_session':
-        $output = '<p>' . $this->t('Determine the language from a request/session parameter. Example: "http://example.com?language=de" sets language to German based on the use of "de" within the "language" parameter.') . '</p>';
-        return $output;
+        return '<p>' . $this->t('Determine the language from a request/session parameter. Example: "http://example.com?language=de" sets language to German based on the use of "de" within the "language" parameter.') . '</p>';
 
       case 'language.negotiation_browser':
-        $output = '<p>' . $this->t('Browsers use different language codes to refer to the same languages. Internally, a best effort is made to determine the correct language based on the code that the browser sends. You can add and edit additional mappings from browser language codes to <a href=":configure-languages">site languages</a>.', [
+        return '<p>' . $this->t('Browsers use different language codes to refer to the same languages. Internally, a best effort is made to determine the correct language based on the code that the browser sends. You can add and edit additional mappings from browser language codes to <a href=":configure-languages">site languages</a>.', [
           ':configure-languages' => Url::fromRoute('entity.configurable_language.collection')->toString(),
         ]) . '</p>';
-        return $output;
 
       case 'language.negotiation_selected':
-        $output = '<p>' . $this->t('Changing the selected language here (and leaving this option as the last among the detection and selection options) is the easiest way to change the fallback language for the website, if you need to change how your site works by default (e.g., when using an empty path prefix or using the default domain). <a href=":admin-change-language">Changing the site\'s default language</a> itself might have other undesired side effects.', [
+        return '<p>' . $this->t('Changing the selected language here (and leaving this option as the last among the detection and selection options) is the easiest way to change the fallback language for the website, if you need to change how your site works by default (e.g., when using an empty path prefix or using the default domain). <a href=":admin-change-language">Changing the site\'s default language</a> itself might have other undesired side effects.', [
           ':admin-change-language' => Url::fromRoute('entity.configurable_language.collection')->toString(),
         ]) . '</p>';
-        return $output;
 
       case 'entity.block.edit_form':
         if (($block = $route_match->getParameter('block')) && $block->getPluginId() == 'language_block:language_interface') {
@@ -146,7 +140,7 @@ class LanguageHooks {
    * @see \Drupal\Core\Render\Element\Select
    */
   #[Hook('element_info_alter')]
-  public function elementInfoAlter(&$type): void {
+  public function elementInfoAlter(array &$type): void {
     // Alter the language_select element so that it will be rendered like a
     // select field.
     if (isset($type['language_select'])) {
@@ -159,11 +153,11 @@ class LanguageHooks {
       $type['language_select']['#process'] = array_merge($type['language_select']['#process'], [
         'language_process_language_select',
             [
-              'Drupal\Core\Render\Element\Select',
+              \Drupal\Core\Render\Element\Select::class,
               'processSelect',
             ],
             [
-              'Drupal\Core\Render\Element\RenderElementBase',
+              \Drupal\Core\Render\Element\RenderElementBase::class,
               'processAjaxForm',
             ],
       ]);
@@ -197,7 +191,7 @@ class LanguageHooks {
    * Implements hook_entity_bundle_delete().
    */
   #[Hook('entity_bundle_delete')]
-  public function entityBundleDelete($entity_type_id, $bundle): void {
+  public function entityBundleDelete(?string $entity_type_id, ?string $bundle): void {
     // Remove the content language settings associated with the bundle.
     $settings = ContentLanguageSettings::loadByEntityTypeBundle($entity_type_id, $bundle);
     if (!$settings->isNew()) {
@@ -259,7 +253,7 @@ class LanguageHooks {
    * Implements hook_form_alter().
    */
   #[Hook('form_alter')]
-  public function formAlter(&$form, FormStateInterface $form_state) : void {
+  public function formAlter(array &$form, FormStateInterface $form_state) : void {
     // Content entity forms may have added a langcode field. But content
     // language configuration should decide if it should be exposed or not in
     // the forms.
@@ -280,9 +274,9 @@ class LanguageHooks {
    * Implements hook_field_info_alter().
    */
   #[Hook('field_info_alter')]
-  public function fieldInfoAlter(&$info): void {
+  public function fieldInfoAlter(array &$info): void {
     // Change the default behavior of language field.
-    $info['language']['class'] = '\Drupal\language\DefaultLanguageItem';
+    $info['language']['class'] = \Drupal\language\DefaultLanguageItem::class;
   }
 
   /**

@@ -15,26 +15,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SystemMenuBlock extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The menu storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $menuStorage;
-
-  /**
    * Constructs new SystemMenuBlock.
    *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $menu_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $menuStorage
    *   The menu storage.
    */
-  public function __construct(EntityStorageInterface $menu_storage) {
-    $this->menuStorage = $menu_storage;
+  public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $menuStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('menu')
     );

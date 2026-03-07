@@ -60,8 +60,7 @@ class ImageHooks {
         $output .= '<dd>' . $this->t('You can also configure a default image that will be used if no image is uploaded in an image field. This default can be defined for all instances of the field in the field storage settings when you create a field, and the setting can be overridden for each entity sub-type that uses the field.') . '</dd>';
         $output .= '<dt>' . $this->t('Configuring displays and form displays') . '</dt>';
         $output .= '<dd>' . $this->t('On the <em>Manage display</em> page, you can choose the image formatter, which determines the image style used to display the image in each display mode and whether or not to display the image as a link. On the <em>Manage form display</em> page, you can configure the image upload widget, including setting the preview image style shown on the entity edit form.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.image_style.collection':
         return '<p>' . $this->t('Image styles commonly provide thumbnail sizes by scaling and cropping images, but can also add various effects before an image is displayed. When an image is displayed with a style, a new file is created and the original image is left unchanged.') . '</p>';

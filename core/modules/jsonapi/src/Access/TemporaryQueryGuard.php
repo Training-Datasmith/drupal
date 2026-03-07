@@ -60,7 +60,7 @@ class TemporaryQueryGuard {
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager
    *   The entity field manager.
    */
-  public static function setFieldManager(EntityFieldManagerInterface $field_manager) {
+  public static function setFieldManager(EntityFieldManagerInterface $field_manager): void {
     static::$fieldManager = $field_manager;
   }
 
@@ -72,7 +72,7 @@ class TemporaryQueryGuard {
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
    */
-  public static function setModuleHandler(ModuleHandlerInterface $module_handler) {
+  public static function setModuleHandler(ModuleHandlerInterface $module_handler): void {
     static::$moduleHandler = $module_handler;
   }
 
@@ -86,13 +86,11 @@ class TemporaryQueryGuard {
    * @param \Drupal\Core\Cache\CacheableMetadata $cacheability
    *   Collects cacheability for the query.
    */
-  public static function applyAccessControls(Filter $filter, QueryInterface $query, CacheableMetadata $cacheability) {
+  public static function applyAccessControls(Filter $filter, QueryInterface $query, CacheableMetadata $cacheability): void {
     assert(static::$fieldManager !== NULL);
     assert(static::$moduleHandler !== NULL);
     $filtered_fields = static::collectFilteredFields($filter->root());
-    $field_specifiers = array_map(function ($field) {
-      return explode('.', $field);
-    }, $filtered_fields);
+    $field_specifiers = array_map(fn($field) => explode('.', (string) $field), $filtered_fields);
     static::secureQuery($query, $query->getEntityTypeId(), static::buildTree($field_specifiers), $cacheability);
   }
 
@@ -150,7 +148,7 @@ class TemporaryQueryGuard {
         // type specifier, like so: `entity:node`. This extracts the `entity`
         // portion. JSON:API will have already validated that the property
         // exists.
-        $split_specifier = explode(':', $specifier, 2);
+        $split_specifier = explode(':', (string) $specifier, 2);
         [$property_name, $target_entity_type_id] = array_merge($split_specifier, count($split_specifier) === 2 ? [] : [NULL]);
         // The specifier is either a field property or a delta. If it is a data
         // reference or a delta, then it needs to be traversed to the next
@@ -209,7 +207,7 @@ class TemporaryQueryGuard {
   /**
    * Prefixes all fields in an EntityConditionGroup.
    */
-  protected static function addConditionFieldPrefix(EntityConditionGroup $group, $field_prefix) {
+  protected static function addConditionFieldPrefix(EntityConditionGroup $group, $field_prefix): \Drupal\jsonapi\Query\EntityConditionGroup {
     $prefixed = [];
     foreach ($group->members() as $member) {
       if ($member instanceof EntityConditionGroup) {
@@ -235,7 +233,7 @@ class TemporaryQueryGuard {
    *   An EntityConditionGroup or NULL if no conditions need to be applied to
    *   secure an entity query.
    */
-  protected static function getAccessCondition($entity_type_id, CacheableMetadata $cacheability) {
+  protected static function getAccessCondition($entity_type_id, CacheableMetadata $cacheability): ?\Drupal\jsonapi\Query\EntityConditionGroup {
     $current_user = \Drupal::currentUser();
     $entity_type = \Drupal::entityTypeManager()->getDefinition($entity_type_id);
 
@@ -308,16 +306,17 @@ class TemporaryQueryGuard {
         $specific_condition = new EntityCondition('uid', '0', '!=');
         break;
     }
-
     // Return a combined condition.
     if ($generic_condition && $specific_condition) {
-      return new EntityConditionGroup('AND', [$generic_condition, $specific_condition]);
+        return new EntityConditionGroup('AND', [$generic_condition, $specific_condition]);
     }
-    elseif ($generic_condition) {
-      return $generic_condition instanceof EntityConditionGroup ? $generic_condition : new EntityConditionGroup('AND', [$generic_condition]);
+    if ($generic_condition) {
+        return $generic_condition instanceof EntityConditionGroup ? $generic_condition : new EntityConditionGroup('AND', [$generic_condition]);
     }
-    elseif ($specific_condition) {
-      return $specific_condition instanceof EntityConditionGroup ? $specific_condition : new EntityConditionGroup('AND', [$specific_condition]);
+
+    // Return a combined condition.
+    if ($specific_condition) {
+        return $specific_condition instanceof EntityConditionGroup ? $specific_condition : new EntityConditionGroup('AND', [$specific_condition]);
     }
 
     return NULL;
@@ -431,7 +430,7 @@ class TemporaryQueryGuard {
    *   The array of access results, keyed by subset. See
    *   hook_jsonapi_entity_filter_access() for details.
    */
-  protected static function getAccessResultsFromEntityFilterHook(EntityTypeInterface $entity_type, AccountInterface $account) {
+  protected static function getAccessResultsFromEntityFilterHook(EntityTypeInterface $entity_type, AccountInterface $account): array {
     /** @var \Drupal\Core\Access\AccessResultInterface[] $combined_access_results */
     $combined_access_results = [
       JsonApiFilter::AMONG_ALL => AccessResult::neutral(),
@@ -446,7 +445,7 @@ class TemporaryQueryGuard {
     foreach (['jsonapi_entity_filter_access', 'jsonapi_' . $entity_type->id() . '_filter_access'] as $hook) {
       static::$moduleHandler->invokeAllWith(
         $hook,
-        function (callable $hook, string $module) use (&$combined_access_results, $entity_type, $account) {
+        function (callable $hook, string $module) use (&$combined_access_results, $entity_type, $account): void {
           $module_access_results = $hook($entity_type, $account);
           if ($module_access_results) {
             foreach ($module_access_results as $subset => $access_result) {
@@ -484,7 +483,7 @@ class TemporaryQueryGuard {
    *   An EntityConditionGroup or NULL if no conditions need to be applied to
    *   secure an entity query.
    */
-  protected static function getCommentAccessCondition(EntityTypeInterface $comment_entity_type, AccountInterface $current_user, CacheableMetadata $cacheability, $depth = 1) {
+  protected static function getCommentAccessCondition(EntityTypeInterface $comment_entity_type, AccountInterface $current_user, CacheableMetadata $cacheability, $depth = 1): \Drupal\jsonapi\Query\EntityConditionGroup {
     // If a comment is assigned to another entity or author the cache needs to
     // be invalidated.
     $cacheability->addCacheTags($comment_entity_type->getListCacheTags());
@@ -549,7 +548,7 @@ class TemporaryQueryGuard {
    * @return \Drupal\jsonapi\Query\EntityConditionGroup
    *   An EntityConditionGroup which cannot evaluate to TRUE.
    */
-  protected static function alwaysFalse(EntityTypeInterface $entity_type) {
+  protected static function alwaysFalse(EntityTypeInterface $entity_type): \Drupal\jsonapi\Query\EntityConditionGroup {
     return new EntityConditionGroup('AND', [
       new EntityCondition($entity_type->getKey('id'), 1, '<'),
       new EntityCondition($entity_type->getKey('id'), 1, '>'),
@@ -570,7 +569,7 @@ class TemporaryQueryGuard {
    * @return array
    *   An array of entity query condition field names.
    */
-  protected static function collectFilteredFields(EntityConditionGroup $group, array $fields = []) {
+  protected static function collectFilteredFields(EntityConditionGroup $group, array $fields = []): array {
     foreach ($group->members() as $member) {
       if ($member instanceof EntityConditionGroup) {
         $fields = static::collectFilteredFields($member, $fields);
@@ -587,7 +586,7 @@ class TemporaryQueryGuard {
    *
    * @see \Drupal\jsonapi\IncludeResolver::buildTree()
    */
-  protected static function buildTree(array $paths) {
+  protected static function buildTree(array $paths): array {
     $merged = [];
     foreach ($paths as $parts) {
       // This complex expression is needed to handle the string, "0", which

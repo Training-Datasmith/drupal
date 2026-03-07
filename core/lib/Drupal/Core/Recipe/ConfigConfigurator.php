@@ -13,17 +13,17 @@ use Drupal\Core\Config\StorageInterface;
  * @internal
  *   This API is experimental.
  */
-final class ConfigConfigurator {
+final readonly class ConfigConfigurator {
 
   /**
    * The configuration directory for the recipe.
    */
-  public readonly ?string $recipeConfigDirectory;
+  public ?string $recipeConfigDirectory;
 
   /**
    * Indicates how the shipped and active config are compared.
    */
-  private readonly bool|array $strict;
+  private bool|array $strict;
 
   /**
    * @param array $config
@@ -33,7 +33,7 @@ final class ConfigConfigurator {
    * @param \Drupal\Core\Config\StorageInterface $active_configuration
    *   The active configuration storage.
    */
-  public function __construct(public readonly array $config, string $recipe_directory, StorageInterface $active_configuration) {
+  public function __construct(public array $config, string $recipe_directory, StorageInterface $active_configuration) {
     $this->recipeConfigDirectory = is_dir($recipe_directory . '/config') ? $recipe_directory . '/config' : NULL;
     // @todo Consider defaulting this to FALSE in https://drupal.org/i/3478669.
     $this->strict = $config['strict'] ?? TRUE;

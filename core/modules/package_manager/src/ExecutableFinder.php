@@ -112,7 +112,7 @@ final class ExecutableFinder implements ExecutableFinderInterface, LoggerAwareIn
     $composer_json = Json::decode($composer_json);
 
     foreach ($composer_json['bin'] ?? [] as $bin) {
-      if (str_ends_with($bin, '/composer')) {
+      if (str_ends_with((string) $bin, '/composer')) {
         $bin = $this->composerPackagePath . '/' . $bin;
 
         // For extra security, try to disable the binary's execute permission.

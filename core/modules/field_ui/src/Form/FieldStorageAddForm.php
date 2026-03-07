@@ -52,7 +52,7 @@ class FieldStorageAddForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.field.field_type'),
@@ -66,7 +66,7 @@ class FieldStorageAddForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'field_ui_field_storage_add_form';
   }
 
@@ -74,7 +74,7 @@ class FieldStorageAddForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state, $entity_type_id = NULL, $bundle = NULL, $selected_field_type = NULL, $display_as_group = 'false') {
-    $display_as_group = str_contains($display_as_group, 'true');
+    $display_as_group = str_contains((string) $display_as_group, 'true');
     if (!$form_state->get('entity_type_id')) {
       $form_state->set('entity_type_id', $entity_type_id);
     }
@@ -112,10 +112,10 @@ class FieldStorageAddForm extends FormBase {
       '#description' => $this->t('A unique machine-readable name containing letters, numbers, and underscores.'),
       // Calculate characters depending on the length of the field prefix
       // setting. Maximum length is 32.
-      '#maxlength' => FieldStorageConfig::NAME_MAX_LENGTH - strlen($field_prefix),
+      '#maxlength' => FieldStorageConfig::NAME_MAX_LENGTH - strlen((string) $field_prefix),
       '#machine_name' => [
         'source' => ['label'],
-        'exists' => [$this, 'fieldNameExists'],
+        'exists' => $this->fieldNameExists(...),
       ],
       '#required' => TRUE,
     ];
@@ -237,7 +237,7 @@ class FieldStorageAddForm extends FormBase {
       }
       $group_field_options[$option['unique_identifier']] = $radio_element;
     }
-    uasort($group_field_options, [SortArray::class, 'sortByWeightProperty']);
+    uasort($group_field_options, SortArray::sortByWeightProperty(...));
 
     /** @var \Drupal\Core\Field\FieldTypeCategoryInterface $category_info */
     $category_info = $this->fieldTypeCategoryManager
@@ -270,7 +270,7 @@ class FieldStorageAddForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // Missing subtype.
     if (!$form_state->getValue('field_options_wrapper') && isset($form['field_options_wrapper']['fields'])) {
       $form_state->setErrorByName('field_options_wrapper', $this->t('You need to select a field type.'));
@@ -309,7 +309,7 @@ class FieldStorageAddForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $form_state->setRedirectUrl($this->getRedirectUrl($form_state->getValue('field_name')));
   }
 
@@ -457,7 +457,7 @@ class FieldStorageAddForm extends FormBase {
     ];
     $default_options = [];
     // Check if we're dealing with a preconfigured field.
-    if (strpos($field_storage_type, 'field_ui:') === 0) {
+    if (str_starts_with($field_storage_type, 'field_ui:')) {
       [, $field_type, $preset_key] = explode(':', $field_storage_type, 3);
       $default_options = $this->getNewFieldDefaults($field_type, $preset_key);
     }
@@ -508,7 +508,7 @@ class FieldStorageAddForm extends FormBase {
    * @return bool
    *   Whether or not the field machine name is taken.
    */
-  public function fieldNameExists($value, $element, FormStateInterface $form_state) {
+  public function fieldNameExists(string $value, $element, FormStateInterface $form_state): bool {
     // Add the field prefix.
     $field_name = $this->configFactory->get('field_ui.settings')->get('field_prefix') . $value;
 
@@ -519,14 +519,14 @@ class FieldStorageAddForm extends FormBase {
   /**
    * Submit handler for displaying fields after a group is selected.
    */
-  public static function rebuildWithOptions($form, FormStateInterface &$form_state) {
+  public static function rebuildWithOptions($form, FormStateInterface &$form_state): void {
     $form_state->setRebuild();
   }
 
   /**
    * Submit handler for resetting the form.
    */
-  public static function startOver($form, FormStateInterface &$form_state) {
+  public static function startOver($form, FormStateInterface &$form_state): void {
     $form_state->unsetValue('new_storage_type');
     $form_state->setRebuild();
   }

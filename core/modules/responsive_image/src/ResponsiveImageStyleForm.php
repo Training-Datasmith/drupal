@@ -16,16 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ResponsiveImageStyleForm extends EntityForm {
 
   /**
-   * The breakpoint manager.
-   *
-   * @var \Drupal\breakpoint\BreakpointManagerInterface
-   */
-  protected $breakpointManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('breakpoint.manager')
     );
@@ -34,11 +27,11 @@ class ResponsiveImageStyleForm extends EntityForm {
   /**
    * Constructs the responsive image style form.
    *
-   * @param \Drupal\breakpoint\BreakpointManagerInterface $breakpoint_manager
+   * @param \Drupal\breakpoint\BreakpointManagerInterface $breakpointManager
    *   The breakpoint manager.
    */
-  public function __construct(BreakpointManagerInterface $breakpoint_manager) {
-    $this->breakpointManager = $breakpoint_manager;
+  public function __construct(protected \Drupal\breakpoint\BreakpointManagerInterface $breakpointManager)
+  {
   }
 
   /**
@@ -52,7 +45,7 @@ class ResponsiveImageStyleForm extends EntityForm {
    * @return array
    *   The array containing the complete form.
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     if ($this->operation == 'duplicate') {
       $form['#title'] = $this->t('<em>Duplicate responsive image style</em> @label', ['@label' => $this->entity->label()]);
       $this->entity = $this->entity->createDuplicate();
@@ -210,14 +203,14 @@ class ResponsiveImageStyleForm extends EntityForm {
   /**
    * Get the form for mapping breakpoints to image styles.
    */
-  public function breakpointMappingFormAjax($form, FormStateInterface $form_state) {
+  public function breakpointMappingFormAjax(array $form, FormStateInterface $form_state) {
     return $form['keyed_styles'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
     // Only validate on edit.
     if ($form_state->hasValue('keyed_styles')) {
@@ -247,7 +240,7 @@ class ResponsiveImageStyleForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     /** @var \Drupal\responsive_image\ResponsiveImageStyleInterface $responsive_image_style */
     $responsive_image_style = $this->entity;
     // Remove all the existing mappings and replace with submitted values.

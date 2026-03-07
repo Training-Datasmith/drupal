@@ -27,12 +27,12 @@ class NumberListField extends NumericArgument {
    *
    * @var array
    */
-  protected $allowedValues = NULL;
+  protected $allowedValues;
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $field_storage = $this->getFieldStorageDefinition();
@@ -52,7 +52,7 @@ class NumberListField extends NumericArgument {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['summary']['human'] = [
@@ -76,10 +76,7 @@ class NumberListField extends NumericArgument {
     if (isset($this->allowedValues[$value]) && !empty($this->options['summary']['human'])) {
       return FieldFilteredMarkup::create($this->allowedValues[$value]);
     }
-    // Else, fallback to the key.
-    else {
-      return $value;
-    }
+    return $value;
   }
 
 }

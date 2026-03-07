@@ -19,43 +19,19 @@ use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 class ThemeController extends ControllerBase {
 
   /**
-   * The theme handler service.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
-   * An extension discovery instance.
-   *
-   * @var \Drupal\Core\Extension\ThemeExtensionList
-   */
-  protected $themeList;
-
-  /**
-   * The theme installer service.
-   *
-   * @var \Drupal\Core\Extension\ThemeInstallerInterface
-   */
-  protected $themeInstaller;
-
-  /**
    * Constructs a new ThemeController.
    *
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
-   * @param \Drupal\Core\Extension\ThemeExtensionList $theme_list
+   * @param \Drupal\Core\Extension\ThemeExtensionList $themeList
    *   The theme extension list.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param \Drupal\Core\Extension\ThemeInstallerInterface $theme_installer
+   * @param \Drupal\Core\Extension\ThemeInstallerInterface $themeInstaller
    *   The theme installer.
    */
-  public function __construct(ThemeHandlerInterface $theme_handler, ThemeExtensionList $theme_list, ConfigFactoryInterface $config_factory, ThemeInstallerInterface $theme_installer) {
-    $this->themeHandler = $theme_handler;
-    $this->themeList = $theme_list;
+  public function __construct(protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler, protected \Drupal\Core\Extension\ThemeExtensionList $themeList, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Extension\ThemeInstallerInterface $themeInstaller) {
     $this->configFactory = $config_factory;
-    $this->themeInstaller = $theme_installer;
   }
 
   /**
@@ -148,7 +124,7 @@ class ThemeController extends ControllerBase {
    * @return bool
    *   Whether experimental themes will be installed.
    */
-  protected function willInstallExperimentalTheme($theme) {
+  protected function willInstallExperimentalTheme($theme): bool {
     $all_themes = $this->themeList->getList();
     $dependencies = array_keys($all_themes[$theme]->requires);
     $themes_to_enable = array_merge([$theme], $dependencies);

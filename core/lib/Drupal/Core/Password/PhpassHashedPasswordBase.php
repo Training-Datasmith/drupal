@@ -94,10 +94,10 @@ abstract class PhpassHashedPasswordBase implements PasswordInterface {
    */
   protected function enforceLog2Boundaries($count_log2) {
     if ($count_log2 < static::MIN_HASH_COUNT) {
-      return static::MIN_HASH_COUNT;
+        return static::MIN_HASH_COUNT;
     }
-    elseif ($count_log2 > static::MAX_HASH_COUNT) {
-      return static::MAX_HASH_COUNT;
+    if ($count_log2 > static::MAX_HASH_COUNT) {
+        return static::MAX_HASH_COUNT;
     }
 
     return (int) $count_log2;
@@ -124,7 +124,7 @@ abstract class PhpassHashedPasswordBase implements PasswordInterface {
    *   A string containing the hashed password (and salt) or FALSE on failure.
    *   The return string will be truncated at HASH_LENGTH characters max.
    */
-  protected function crypt($algo, #[\SensitiveParameter] $password, $setting) {
+  protected function crypt($algo, #[\SensitiveParameter] string $password, $setting) {
     // Prevent DoS attacks by refusing to hash large passwords.
     if (strlen($password) > PasswordInterface::PASSWORD_MAX_LENGTH) {
       return FALSE;

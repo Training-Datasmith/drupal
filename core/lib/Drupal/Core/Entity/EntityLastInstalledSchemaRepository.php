@@ -13,44 +13,29 @@ use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 class EntityLastInstalledSchemaRepository implements EntityLastInstalledSchemaRepositoryInterface {
 
   /**
-   * The key-value factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
-   */
-  protected $keyValueFactory;
-
-  /**
-   * The cache backend.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cacheBackend;
-
-  /**
    * The loaded installed entity type definitions.
    *
    * @var array|null
    */
-  protected $entityTypeDefinitions = NULL;
+  protected $entityTypeDefinitions;
 
   /**
    * The loaded installed field storage definitions.
    *
    * @var array|null
    */
-  protected $entityFieldStorageDefinitions = NULL;
+  protected $entityFieldStorageDefinitions;
 
   /**
    * Constructs a new EntityLastInstalledSchemaRepository.
    *
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
    *   The key-value factory.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cacheBackend
    *   The cache backend.
    */
-  public function __construct(KeyValueFactoryInterface $key_value_factory, CacheBackendInterface $cache) {
-    $this->keyValueFactory = $key_value_factory;
-    $this->cacheBackend = $cache;
+  public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory, protected \Drupal\Core\Cache\CacheBackendInterface $cacheBackend)
+  {
   }
 
   /**
@@ -65,24 +50,22 @@ class EntityLastInstalledSchemaRepository implements EntityLastInstalledSchemaRe
    */
   public function getLastInstalledDefinitions() {
     if ($this->entityTypeDefinitions) {
-      return $this->entityTypeDefinitions;
+        return $this->entityTypeDefinitions;
     }
-    elseif ($cache = $this->cacheBackend->get('entity_type_definitions.installed')) {
-      $this->entityTypeDefinitions = $cache->data;
-      return $this->entityTypeDefinitions;
+    if ($cache = $this->cacheBackend->get('entity_type_definitions.installed')) {
+        $this->entityTypeDefinitions = $cache->data;
+        return $this->entityTypeDefinitions;
     }
 
     $all_definitions = $this->keyValueFactory->get('entity.definitions.installed')->getAll();
 
     // Filter out field storage definitions.
-    $filtered_keys = array_filter(array_keys($all_definitions), function ($key) {
-        return str_ends_with($key, '.entity_type');
-    });
+    $filtered_keys = array_filter(array_keys($all_definitions), fn(int|string $key) => str_ends_with((string) $key, '.entity_type'));
     $entity_type_definitions = array_intersect_key($all_definitions, array_flip($filtered_keys));
 
     // Ensure that the returned array is keyed by the entity type ID.
     $keys = array_keys($entity_type_definitions);
-    $keys = array_map(function ($key) {
+    $keys = array_map(function (int|string $key): string {
       $parts = explode('.', $key);
       return $parts[0];
     }, $keys);
@@ -95,7 +78,7 @@ class EntityLastInstalledSchemaRepository implements EntityLastInstalledSchemaRe
   /**
    * {@inheritdoc}
    */
-  public function setLastInstalledDefinition(EntityTypeInterface $entity_type) {
+  public function setLastInstalledDefinition(EntityTypeInterface $entity_type): static {
     $entity_type_id = $entity_type->id();
     $this->keyValueFactory->get('entity.definitions.installed')->set($entity_type_id . '.entity_type', $entity_type);
     $this->cacheBackend->delete('entity_type_definitions.installed');
@@ -106,7 +89,7 @@ class EntityLastInstalledSchemaRepository implements EntityLastInstalledSchemaRe
   /**
    * {@inheritdoc}
    */
-  public function deleteLastInstalledDefinition($entity_type_id) {
+  public function deleteLastInstalledDefinition($entity_type_id): static {
     $this->keyValueFactory->get('entity.definitions.installed')->delete($entity_type_id . '.entity_type');
     // Clean up field storage definitions as well. Even if the entity type
     // isn't currently fieldable, there might be legacy definitions or an
@@ -140,7 +123,7 @@ class EntityLastInstalledSchemaRepository implements EntityLastInstalledSchemaRe
   /**
    * {@inheritdoc}
    */
-  public function setLastInstalledFieldStorageDefinitions($entity_type_id, array $storage_definitions) {
+  public function setLastInstalledFieldStorageDefinitions($entity_type_id, array $storage_definitions): void {
     $this->keyValueFactory->get('entity.definitions.installed')->set($entity_type_id . '.field_storage_definitions', $storage_definitions);
     unset($this->entityFieldStorageDefinitions[$entity_type_id]);
     $this->cacheBackend->delete($entity_type_id . '.field_storage_definitions.installed');
@@ -149,7 +132,7 @@ class EntityLastInstalledSchemaRepository implements EntityLastInstalledSchemaRe
   /**
    * {@inheritdoc}
    */
-  public function setLastInstalledFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition) {
+  public function setLastInstalledFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition): void {
     $entity_type_id = $storage_definition->getTargetEntityTypeId();
     unset($this->entityFieldStorageDefinitions[$entity_type_id]);
     $definitions = $this->getLastInstalledFieldStorageDefinitions($entity_type_id);
@@ -160,7 +143,7 @@ class EntityLastInstalledSchemaRepository implements EntityLastInstalledSchemaRe
   /**
    * {@inheritdoc}
    */
-  public function deleteLastInstalledFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition) {
+  public function deleteLastInstalledFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition): void {
     $entity_type_id = $storage_definition->getTargetEntityTypeId();
     $definitions = $this->getLastInstalledFieldStorageDefinitions($entity_type_id);
     unset($definitions[$storage_definition->getName()]);

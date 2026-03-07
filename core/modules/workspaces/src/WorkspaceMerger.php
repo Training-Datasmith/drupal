@@ -23,7 +23,7 @@ class WorkspaceMerger implements WorkspaceMergerInterface {
   /**
    * {@inheritdoc}
    */
-  public function merge() {
+  public function merge(): void {
     if (!$this->sourceWorkspace->hasParent() || $this->sourceWorkspace->parent->target_id != $this->targetWorkspace->id()) {
       throw new \InvalidArgumentException('The contents of a workspace can only be merged into its parent workspace.');
     }
@@ -95,7 +95,7 @@ class WorkspaceMerger implements WorkspaceMergerInterface {
   /**
    * {@inheritdoc}
    */
-  public function checkConflictsOnTarget() {
+  public function checkConflictsOnTarget(): void {
     // Nothing to do for now, we can not get to a conflicting state because an
     // entity which is being edited in a workspace can not be edited in any
     // other workspace.
@@ -103,8 +103,9 @@ class WorkspaceMerger implements WorkspaceMergerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getDifferringRevisionIdsOnTarget() {
+  public function getDifferringRevisionIdsOnTarget(): array {
     $target_revision_difference = [];
 
     $tracked_entities_on_source = $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
@@ -127,8 +128,9 @@ class WorkspaceMerger implements WorkspaceMergerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getDifferringRevisionIdsOnSource() {
+  public function getDifferringRevisionIdsOnSource(): array {
     $source_revision_difference = [];
 
     $tracked_entities_on_source = $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
@@ -152,7 +154,7 @@ class WorkspaceMerger implements WorkspaceMergerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getNumberOfChangesOnTarget() {
+  public function getNumberOfChangesOnTarget(): int {
     $total_changes = $this->getDifferringRevisionIdsOnTarget();
     return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
   }
@@ -160,7 +162,7 @@ class WorkspaceMerger implements WorkspaceMergerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getNumberOfChangesOnSource() {
+  public function getNumberOfChangesOnSource(): int {
     $total_changes = $this->getDifferringRevisionIdsOnSource();
     return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
   }

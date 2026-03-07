@@ -22,7 +22,7 @@ class ConfigImporterBatch {
    * @param array $context
    *   The batch context.
    */
-  public static function process(ConfigImporter $config_importer, $sync_step, &$context) {
+  public static function process(ConfigImporter $config_importer, $sync_step, array &$context): void {
     if (!isset($context['sandbox']['config_importer'])) {
       $context['sandbox']['config_importer'] = $config_importer;
     }
@@ -50,7 +50,7 @@ class ConfigImporterBatch {
    * @param array $operations
    *   A list of the operations that had not been completed by the batch API.
    */
-  public static function finish($success, $results, $operations) {
+  public static function finish($success, array $results, $operations): void {
     $messenger = \Drupal::messenger();
     if ($success) {
       if (!empty($results['errors'])) {

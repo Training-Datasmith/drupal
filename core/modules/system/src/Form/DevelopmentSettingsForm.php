@@ -32,7 +32,7 @@ class DevelopmentSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $instance = new static(
       $container->get('keyvalue'),
       $container->get('kernel')
@@ -44,14 +44,14 @@ class DevelopmentSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'development_settings_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $development_settings = $this->keyValueFactory->get('development_settings');
     $form['description'] = [
       '#plain_text' => $this->t('These settings should only be enabled on development environments and never on production.'),
@@ -119,7 +119,7 @@ class DevelopmentSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $development_settings = $this->keyValueFactory->get('development_settings');
     $disable_rendered_output_cache_bins_previous = $development_settings->get('disable_rendered_output_cache_bins', FALSE);
     $disable_rendered_output_cache_bins = (bool) $form_state->getValue('disable_rendered_output_cache_bins');

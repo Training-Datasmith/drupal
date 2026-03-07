@@ -35,7 +35,7 @@ class Color {
    *
    * @throws \InvalidArgumentException
    */
-  public static function hexToRgb($hex) {
+  public static function hexToRgb($hex): array {
     if (!self::validateHex($hex)) {
       throw new \InvalidArgumentException("'$hex' is not a valid hex value.");
     }
@@ -68,7 +68,7 @@ class Color {
    * @return string
    *   The lowercase simple color representation of the given color.
    */
-  public static function rgbToHex($input) {
+  public static function rgbToHex($input): string {
     // Remove named array keys if input comes from Color::hex2rgb().
     if (is_array($input)) {
       $rgb = array_values($input);
@@ -96,7 +96,7 @@ class Color {
    * @return string
    *   The 6 character hex color.
    */
-  public static function normalizeHexLength($hex) {
+  public static function normalizeHexLength($hex): string {
     // Ignore '#' prefixes.
     $hex = ltrim($hex, '#');
 

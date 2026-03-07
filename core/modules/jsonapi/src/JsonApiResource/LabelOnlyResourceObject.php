@@ -27,7 +27,7 @@ final class LabelOnlyResourceObject extends ResourceObject {
   /**
    * {@inheritdoc}
    */
-  public static function createFromEntity(ResourceType $resource_type, EntityInterface $entity, ?LinkCollection $links = NULL) {
+  public static function createFromEntity(ResourceType $resource_type, EntityInterface $entity, ?LinkCollection $links = NULL): self {
     $resource_object = new static(
       $entity,
       $resource_type,
@@ -56,14 +56,14 @@ final class LabelOnlyResourceObject extends ResourceObject {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   An entity.
    */
-  protected function setEntity(EntityInterface $entity) {
+  protected function setEntity(EntityInterface $entity): void {
     $this->entity = $entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function extractFieldsFromEntity(ResourceType $resource_type, EntityInterface $entity) {
+  protected static function extractFieldsFromEntity(ResourceType $resource_type, EntityInterface $entity): array {
     $fields = parent::extractFieldsFromEntity($resource_type, $entity);
     $public_label_field_name = $resource_type->getPublicName(static::getLabelFieldName($entity));
     return array_intersect_key($fields, [$public_label_field_name => TRUE]);

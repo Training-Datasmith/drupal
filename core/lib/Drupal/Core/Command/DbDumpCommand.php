@@ -78,7 +78,7 @@ class DbDumpCommand extends DbCommandBase {
    * @return string
    *   The PHP script.
    */
-  protected function generateScript(Connection $connection, array $schema_only = [], int $insert_count = 1000) {
+  protected function generateScript(Connection $connection, array $schema_only = [], int $insert_count = 1000): string {
     $tables = '';
 
     $schema_only_patterns = [];
@@ -89,7 +89,7 @@ class DbDumpCommand extends DbCommandBase {
     foreach ($this->getTables($connection) as $table) {
       $schema = $this->getTableSchema($connection, $table);
       // Check for schema only.
-      if (empty($schema_only_patterns) || preg_replace($schema_only_patterns, '', $table)) {
+      if (empty($schema_only_patterns) || preg_replace($schema_only_patterns, '', (string) $table)) {
         $data = $this->getTableData($connection, $table);
       }
       else {
@@ -114,13 +114,13 @@ class DbDumpCommand extends DbCommandBase {
    * @return array
    *   An array of table names.
    */
-  protected function getTables(Connection $connection) {
+  protected function getTables(Connection $connection): array {
     $tables = array_values($connection->schema()->findTables('%'));
 
     foreach ($tables as $key => $table) {
       // Remove any explicitly excluded tables.
       foreach ($this->excludeTables as $pattern) {
-        if (preg_match('/^' . $pattern . '$/', $table)) {
+        if (preg_match('/^' . $pattern . '$/', (string) $table)) {
           unset($tables[$key]);
         }
       }
@@ -145,7 +145,7 @@ class DbDumpCommand extends DbCommandBase {
    *
    * @todo This implementation is hard-coded for MySQL.
    */
-  protected function getTableSchema(Connection $connection, $table) {
+  protected function getTableSchema(Connection $connection, string $table): array {
     // Check this is MySQL.
     if ($connection->databaseType() !== 'mysql') {
       throw new \RuntimeException('This script can only be used with MySQL database backends.');
@@ -156,7 +156,7 @@ class DbDumpCommand extends DbCommandBase {
     while (($row = $query->fetchAssoc()) !== FALSE) {
       $name = $row['Field'];
       // Parse out the field type and meta information.
-      preg_match('@([a-z]+)(?:\((\d+)(?:,(\d+))?\))?\s*(unsigned)?@', $row['Type'], $matches);
+      preg_match('@([a-z]+)(?:\((\d+)(?:,(\d+))?\))?\s*(unsigned)?@', (string) $row['Type'], $matches);
       $type = $this->fieldTypeMap($connection, $matches[1]);
       if ($row['Extra'] === 'auto_increment') {
         // If this is an auto increment, then the type is 'serial'.
@@ -237,7 +237,7 @@ class DbDumpCommand extends DbCommandBase {
    * @param array &$definition
    *   The schema definition to modify.
    */
-  protected function getTableIndexes(Connection $connection, $table, &$definition) {
+  protected function getTableIndexes(Connection $connection, string $table, array &$definition) {
     // Note, this query doesn't support ordering, so that is worked around
     // below by keying the array on Seq_in_index.
     $query = $connection->query("SHOW INDEX FROM {" . $table . "}");
@@ -274,7 +274,7 @@ class DbDumpCommand extends DbCommandBase {
    * @param array &$definition
    *   The schema definition to modify.
    */
-  protected function getTableCollation(Connection $connection, $table, &$definition) {
+  protected function getTableCollation(Connection $connection, $table, array &$definition) {
     // Remove identifier quotes from the table name. See
     // \Drupal\mysql\Driver\Database\mysql\Connection::$identifierQuotes.
     $table = trim($connection->prefixTables('{' . $table . '}'), '"');
@@ -283,7 +283,7 @@ class DbDumpCommand extends DbCommandBase {
 
     // Map the collation to a character set. For example, 'utf8mb4_general_ci'
     // (MySQL 5) or 'utf8mb4_0900_ai_ci' (MySQL 8) will be mapped to 'utf8mb4'.
-    [$charset] = explode('_', $data['Collation'], 2);
+    [$charset] = explode('_', (string) $data['Collation'], 2);
 
     // Set `mysql_character_set`. This will be ignored by other backends.
     $definition['mysql_character_set'] = $charset;
@@ -302,7 +302,7 @@ class DbDumpCommand extends DbCommandBase {
    * @return array
    *   The data from the table as an array.
    */
-  protected function getTableData(Connection $connection, $table) {
+  protected function getTableData(Connection $connection, string $table): array {
     $order = $this->getFieldOrder($connection, $table);
     $query = $connection->query("SELECT * FROM {" . $table . "} " . $order);
     $results = [];
@@ -326,7 +326,7 @@ class DbDumpCommand extends DbCommandBase {
    */
   protected function fieldTypeMap(Connection $connection, $type) {
     // Convert everything to lowercase.
-    $map = array_map('strtolower', $connection->schema()->getFieldTypeMap());
+    $map = array_map(strtolower(...), $connection->schema()->getFieldTypeMap());
     $map = array_flip($map);
 
     // The MySql map contains type:size. Remove the size part.
@@ -346,7 +346,7 @@ class DbDumpCommand extends DbCommandBase {
    */
   protected function fieldSizeMap(Connection $connection, $type) {
     // Convert everything to lowercase.
-    $map = array_map('strtolower', $connection->schema()->getFieldTypeMap());
+    $map = array_map(strtolower(...), $connection->schema()->getFieldTypeMap());
     $map = array_flip($map);
 
     // Do nothing if the field type is not defined.
@@ -373,7 +373,7 @@ class DbDumpCommand extends DbCommandBase {
    * @return string
    *   The order string to append to the query.
    */
-  protected function getFieldOrder(Connection $connection, $table) {
+  protected function getFieldOrder(Connection $connection, string $table): string {
     // @todo this is MySQL only since there are no Database API functions for
     // table column data.
     // @todo this code is duplicated in `core/scripts/migrate-db.sh`.
@@ -389,7 +389,7 @@ class DbDumpCommand extends DbCommandBase {
       $order .= $row['COLUMN_NAME'] . ', ';
     }
     if (!empty($order)) {
-      $order = ' ORDER BY ' . rtrim($order, ', ');
+      return ' ORDER BY ' . rtrim($order, ', ');
     }
     return $order;
   }
@@ -400,7 +400,7 @@ class DbDumpCommand extends DbCommandBase {
    * @return string
    *   The template for the generated PHP script.
    */
-  protected function getTemplate() {
+  protected function getTemplate(): string {
     // The template contains an instruction for the file to be ignored by PHPCS.
     // This is because the files can be huge and coding standards are
     // irrelevant.
@@ -449,7 +449,7 @@ END_OF_SCRIPT;
    * @return string
    *   The table create statement, and if there is data, the insert command.
    */
-  protected function getTableScript($table, array $schema, array $data, int $insert_count = 1000) {
+  protected function getTableScript(string $table, array $schema, array $data, int $insert_count = 1000): string {
     $output = '';
     $output .= "\$connection->schema()->createTable('" . $table . "', " . Variable::export($schema) . ");\n\n";
     if (!empty($data)) {

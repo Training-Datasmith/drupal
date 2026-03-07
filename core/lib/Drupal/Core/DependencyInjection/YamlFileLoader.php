@@ -44,20 +44,14 @@ class YamlFileLoader
     ];
 
     /**
-     * @var \Drupal\Core\DependencyInjection\ContainerBuilder $container
-     */
-    protected $container;
-
-    /**
      * File cache object.
      *
      * @var \Drupal\Component\FileCache\FileCacheInterface
      */
     protected $fileCache;
 
-    public function __construct(ContainerBuilder $container)
+    public function __construct(protected \Drupal\Core\DependencyInjection\ContainerBuilder $container)
     {
-        $this->container = $container;
         $this->fileCache = FileCacheFactory::get('container_yaml_loader');
     }
 
@@ -67,7 +61,7 @@ class YamlFileLoader
      * @param mixed $file
      *   The resource
      */
-    public function load($file)
+    public function load(string $file): void
     {
         // Load from the file cache, fall back to loading the file.
         $content = $this->fileCache->get($file);
@@ -109,11 +103,8 @@ class YamlFileLoader
 
     /**
      * Parses definitions
-     *
-     * @param array $content
-     * @param string $file
      */
-    private function parseDefinitions($content, $file)
+    private function parseDefinitions(array $content, string $file): void
     {
         if (!isset($content['services'])) {
             return;
@@ -142,10 +133,6 @@ class YamlFileLoader
     }
 
     /**
-     * @param array  $content
-     * @param string $file
-     *
-     * @return array
      *
      * @throws InvalidArgumentException
      */
@@ -201,15 +188,12 @@ class YamlFileLoader
     /**
      * Parses a definition.
      *
-     * @param string $id
      * @param array $service
-     * @param string $file
-     * @param array $defaults
      *
      * @throws InvalidArgumentException
      *   When tags are invalid.
      */
-    private function parseDefinition(string $id, $service, string $file, array $defaults)
+    private function parseDefinition(string $id, $service, string $file, array $defaults): void
     {
         if (\is_string($service) && str_starts_with($service, '@')) {
             $this->container->setAlias($id, $alias = new Alias(substr($service, 1)));
@@ -466,7 +450,7 @@ class YamlFileLoader
      * @throws InvalidArgumentException
      *   When service file is not valid.
      */
-    private function validate($content, $file)
+    private function validate($content, $file): ?array
     {
         if (null === $content) {
             return $content;
@@ -510,7 +494,7 @@ class YamlFileLoader
               }
 
               if ($forLocator) {
-                 $argument = new ServiceLocatorArgument($argument);
+                 return new ServiceLocatorArgument($argument);
               }
 
               return $argument;
@@ -522,7 +506,7 @@ class YamlFileLoader
 
         }
         if (is_array($value)) {
-            $value = array_map([$this, 'resolveServices'], $value);
+            $value = array_map($this->resolveServices(...), $value);
         } elseif (is_string($value) && str_starts_with($value, '@=')) {
             // Not supported.
             //return new Expression(substr($value, 2));

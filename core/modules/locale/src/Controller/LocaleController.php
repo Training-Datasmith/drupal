@@ -41,10 +41,10 @@ class LocaleController extends ControllerBase {
    * @return array
    *   The render array for the string search screen.
    */
-  public function translatePage() {
+  public function translatePage(): array {
     return [
-      'filter' => $this->formBuilder()->getForm('Drupal\locale\Form\TranslateFilterForm'),
-      'form' => $this->formBuilder()->getForm('Drupal\locale\Form\TranslateEditForm'),
+      'filter' => $this->formBuilder()->getForm(\Drupal\locale\Form\TranslateFilterForm::class),
+      'form' => $this->formBuilder()->getForm(\Drupal\locale\Form\TranslateEditForm::class),
     ];
   }
 

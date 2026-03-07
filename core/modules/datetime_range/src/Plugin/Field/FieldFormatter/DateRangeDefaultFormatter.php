@@ -36,17 +36,16 @@ class DateRangeDefaultFormatter extends DateTimeDefaultFormatter {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $form = parent::settingsForm($form, $form_state);
-    $form = $this->dateTimeRangeSettingsForm($form);
 
-    return $form;
+    return $this->dateTimeRangeSettingsForm($form);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     return array_merge(parent::settingsSummary(), $this->dateTimeRangeSettingsSummary());
   }
 

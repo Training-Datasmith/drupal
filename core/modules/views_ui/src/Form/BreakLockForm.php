@@ -24,10 +24,8 @@ class BreakLockForm extends EntityConfirmFormBase {
 
   /**
    * Stores the shared tempstore.
-   *
-   * @var \Drupal\Core\TempStore\SharedTempStore
    */
-  protected $tempStore;
+  protected \Drupal\Core\TempStore\SharedTempStore $tempStore;
 
   /**
    * Constructs a \Drupal\views_ui\Form\BreakLockForm object.
@@ -45,7 +43,7 @@ class BreakLockForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('tempstore.shared')
@@ -55,21 +53,21 @@ class BreakLockForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_break_lock_confirm';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Do you want to break the lock on view %name?', ['%name' => $this->entity->id()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $locked = $this->tempStore->getMetadata($this->entity->id());
     $account = $this->entityTypeManager->getStorage('user')->load($locked->getOwnerId());
     $username = [
@@ -89,7 +87,7 @@ class BreakLockForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Break lock');
   }
 
@@ -107,7 +105,7 @@ class BreakLockForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->tempStore->delete($this->entity->id());
     $form_state->setRedirectUrl($this->entity->toUrl('edit-form'));
     $this->messenger()->addStatus($this->t('The lock has been broken and you may now edit this view.'));

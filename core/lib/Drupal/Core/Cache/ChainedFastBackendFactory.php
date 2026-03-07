@@ -100,9 +100,7 @@ class ChainedFastBackendFactory implements CacheFactoryInterface {
         $bin
       );
     }
-    else {
-      return $this->container->get($this->consistentServiceName)->get($bin);
-    }
+    return $this->container->get($this->consistentServiceName)->get($bin);
   }
 
 }

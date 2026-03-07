@@ -28,7 +28,7 @@ class HTTPStatusCode extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     // Get all possible status codes defined by symfony.
@@ -42,7 +42,7 @@ class HTTPStatusCode extends AreaPluginBase {
     ] + $options;
 
     // Add the HTTP status code, so it's easier for people to find it.
-    array_walk($options, function ($title, $code) use (&$options) {
+    array_walk($options, function ($title, $code) use (&$options): void {
       $options[$code] = $this->t('@code (@title)', ['@code' => $code, '@title' => $title]);
     });
 

@@ -40,13 +40,6 @@ class Permission extends AccessPluginBase implements CacheableDependencyInterfac
   protected $usesOptions = TRUE;
 
   /**
-   * The permission handler.
-   *
-   * @var \Drupal\user\PermissionHandlerInterface
-   */
-  protected $permissionHandler;
-
-  /**
    * Module extension list.
    */
   protected ModuleExtensionList $moduleExtensionList;
@@ -60,7 +53,7 @@ class Permission extends AccessPluginBase implements CacheableDependencyInterfac
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\user\PermissionHandlerInterface $permission_handler
+   * @param \Drupal\user\PermissionHandlerInterface $permissionHandler
    *   The permission handler.
    * @param \Drupal\Core\Extension\ModuleExtensionList|\Drupal\Core\Extension\ModuleHandlerInterface $module_extension_list
    *   The module extension list.
@@ -69,12 +62,11 @@ class Permission extends AccessPluginBase implements CacheableDependencyInterfac
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    PermissionHandlerInterface $permission_handler,
+    protected \Drupal\user\PermissionHandlerInterface $permissionHandler,
     #[Autowire(service: 'extension.list.module')]
     ModuleExtensionList|ModuleHandlerInterface $module_extension_list,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->permissionHandler = $permission_handler;
     if ($module_extension_list instanceof ModuleHandlerInterface) {
       @trigger_error('Calling ' . __METHOD__ . '() with the $module_extension_list argument as ModuleHandlerInterface is deprecated in drupal:10.3.0 and will be required in drupal:12.0.0. See https://www.drupal.org/node/3310017', E_USER_DEPRECATED);
       $module_extension_list = \Drupal::service('extension.list.module');
@@ -92,7 +84,7 @@ class Permission extends AccessPluginBase implements CacheableDependencyInterfac
   /**
    * {@inheritdoc}
    */
-  public function alterRouteDefinition(Route $route) {
+  public function alterRouteDefinition(Route $route): void {
     $route->setRequirement('_permission', $this->options['perm']);
   }
 
@@ -121,7 +113,7 @@ class Permission extends AccessPluginBase implements CacheableDependencyInterfac
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     // Get list of permissions.
     $perms = [];
@@ -129,7 +121,7 @@ class Permission extends AccessPluginBase implements CacheableDependencyInterfac
     foreach ($permissions as $perm => $perm_item) {
       $provider = $perm_item['provider'];
       $display_name = $this->moduleExtensionList->getName($provider);
-      $perms[$display_name][$perm] = strip_tags($perm_item['title']);
+      $perms[$display_name][$perm] = strip_tags((string) $perm_item['title']);
     }
 
     $form['perm'] = [
@@ -144,21 +136,21 @@ class Permission extends AccessPluginBase implements CacheableDependencyInterfac
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return ['user.permissions'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return [];
   }
 

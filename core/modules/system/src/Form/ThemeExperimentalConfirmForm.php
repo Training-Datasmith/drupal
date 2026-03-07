@@ -19,36 +19,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ThemeExperimentalConfirmForm extends ConfirmFormBase {
 
   /**
-   * An extension discovery instance.
-   *
-   * @var \Drupal\Core\Extension\ThemeExtensionList
-   */
-  protected $themeList;
-
-  /**
-   * The theme installer service.
-   *
-   * @var \Drupal\Core\Extension\ThemeInstallerInterface
-   */
-  protected $themeInstaller;
-
-  /**
    * Constructs a ThemeExperimentalConfirmForm object.
    *
-   * @param \Drupal\Core\Extension\ThemeExtensionList $theme_list
+   * @param \Drupal\Core\Extension\ThemeExtensionList $themeList
    *   The theme extension list.
-   * @param \Drupal\Core\Extension\ThemeInstallerInterface $theme_installer
+   * @param \Drupal\Core\Extension\ThemeInstallerInterface $themeInstaller
    *   The theme installer.
    */
-  public function __construct(ThemeExtensionList $theme_list, ThemeInstallerInterface $theme_installer) {
-    $this->themeList = $theme_list;
-    $this->themeInstaller = $theme_installer;
+  public function __construct(protected \Drupal\Core\Extension\ThemeExtensionList $themeList, protected \Drupal\Core\Extension\ThemeInstallerInterface $themeInstaller)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('extension.list.theme'),
       $container->get('theme_installer')
@@ -58,35 +43,35 @@ class ThemeExperimentalConfirmForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you wish to install an experimental theme?');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('system.themes_page');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Continue');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Would you like to continue with the above?');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_themes_experimental_confirm_form';
   }
 
@@ -103,12 +88,8 @@ class ThemeExperimentalConfirmForm extends ConfirmFormBase {
 
     $dependencies = array_keys($all_themes[$theme]->requires);
     $themes = array_merge([$theme], $dependencies);
-    $is_experimental = function ($theme) use ($all_themes) {
-      return isset($all_themes[$theme]) && $all_themes[$theme]->isExperimental();
-    };
-    $get_label = function ($theme) use ($all_themes) {
-      return $all_themes[$theme]->info['name'];
-    };
+    $is_experimental = (fn($theme) => isset($all_themes[$theme]) && $all_themes[$theme]->isExperimental());
+    $get_label = (fn($theme) => $all_themes[$theme]->info['name']);
 
     $items = [];
     if (!empty($dependencies)) {
@@ -143,7 +124,7 @@ class ThemeExperimentalConfirmForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $args = $form_state->getBuildInfo()['args'];
     $theme = $args[0] ?? NULL;
     $set_default = $args[1] ?? FALSE;

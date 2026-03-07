@@ -34,20 +34,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class LocaleConfigSubscriber implements EventSubscriberInterface {
 
   /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The typed configuration manager.
-   *
-   * @var \Drupal\locale\LocaleConfigManager
-   */
-  protected $localeConfigManager;
-
-  /**
    * The language manager.
    *
    * @var \Drupal\Core\Language\LanguageManagerInterface
@@ -57,14 +43,13 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
   /**
    * Constructs a LocaleConfigSubscriber.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
-   * @param \Drupal\locale\LocaleConfigManager $locale_config_manager
+   * @param \Drupal\locale\LocaleConfigManager $localeConfigManager
    *   The typed configuration manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LocaleConfigManager $locale_config_manager) {
-    $this->configFactory = $config_factory;
-    $this->localeConfigManager = $locale_config_manager;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\locale\LocaleConfigManager $localeConfigManager)
+  {
   }
 
   /**
@@ -83,7 +68,7 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The configuration event.
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     // Only attempt to feed back configuration translation changes to locale if
     // the update itself was not initiated by locale data changes.
     if (!InstallerKernel::installationAttempted() && !$this->localeConfigManager->isUpdatingTranslationsFromLocale()) {
@@ -99,7 +84,7 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
    * @param \Drupal\language\Config\LanguageConfigOverrideCrudEvent $event
    *   The language configuration event.
    */
-  public function onOverrideChange(LanguageConfigOverrideCrudEvent $event) {
+  public function onOverrideChange(LanguageConfigOverrideCrudEvent $event): void {
     // Only attempt to feed back configuration override changes to locale if
     // the update itself was not initiated by locale data changes.
     if (!InstallerKernel::installationAttempted() && !$this->localeConfigManager->isUpdatingTranslationsFromLocale()) {
@@ -122,7 +107,7 @@ class LocaleConfigSubscriber implements EventSubscriberInterface {
    *   override. This allows us to update locale keys for data not in the
    *   override but still in the active configuration.
    */
-  public function updateLocaleStorage(StorableConfigBase $config, $langcode, array $reference_config = []) {
+  public function updateLocaleStorage(StorableConfigBase $config, $langcode, array $reference_config = []): void {
     $name = $config->getName();
     if ($this->localeConfigManager->isSupported($name) && locale_is_translatable($langcode)) {
       $translatables = $this->localeConfigManager->getTranslatableDefaultConfig($name);

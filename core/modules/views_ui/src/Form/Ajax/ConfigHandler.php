@@ -26,7 +26,7 @@ class ConfigHandler extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'handler';
   }
 
@@ -42,14 +42,15 @@ class ConfigHandler extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_config_item_form';
   }
 
   /**
    * {@inheritdoc}
+   * @return array<int|'#button_type'|'#limit_validation_errors'|'#markup'|'#submit'|'#type'|'#value'|'class'|'data-drupal-views-scroll', mixed>[]|\Drupal\Core\StringTranslation\TranslatableMarkup[]|true[][]|\Drupal\Core\StringTranslation\TranslatableMarkup[]|non-falsy-string[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?Request $request = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?Request $request = NULL): array {
     /** @var \Drupal\views\Entity\View $view */
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
@@ -182,7 +183,7 @@ class ConfigHandler extends ViewsFormBase {
       $form['actions']['remove'] = [
         '#type' => 'submit',
         '#value' => $this->t('Remove'),
-        '#submit' => [[$this, 'remove']],
+        '#submit' => [$this->remove(...)],
         '#limit_validation_errors' => [['override']],
         '#button_type' => 'danger',
       ];
@@ -198,7 +199,7 @@ class ConfigHandler extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $form_state->get('handler')->validateOptionsForm($form['options'], $form_state);
 
     if ($form_state->getErrors()) {
@@ -212,7 +213,7 @@ class ConfigHandler extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $id = $form_state->get('id');
@@ -270,7 +271,7 @@ class ConfigHandler extends ViewsFormBase {
   /**
    * Submit handler for removing an item from a view.
    */
-  public function remove(&$form, FormStateInterface $form_state) {
+  public function remove(&$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $type = $form_state->get('type');

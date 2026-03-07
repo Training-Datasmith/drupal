@@ -15,21 +15,21 @@ class ThemeAdminForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_themes_admin_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['system.theme'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?array $theme_options = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?array $theme_options = NULL): array {
     // Administration theme settings.
     $form['admin_theme'] = [
       '#type' => 'details',
@@ -55,7 +55,7 @@ class ThemeAdminForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
     $this->config('system.theme')->set('admin', $form_state->getValue('admin_theme'))->save();
   }

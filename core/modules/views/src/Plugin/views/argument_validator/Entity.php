@@ -21,20 +21,6 @@ use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
 class Entity extends ArgumentValidatorPluginBase {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
    * If this validator can handle multiple arguments.
    *
    * @var bool
@@ -50,16 +36,13 @@ class Entity extends ArgumentValidatorPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
   }
 
   /**
@@ -79,7 +62,7 @@ class Entity extends ArgumentValidatorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $entity_type_id = $this->definition['entity_type'];
@@ -143,7 +126,7 @@ class Entity extends ArgumentValidatorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = []) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = []): void {
     // Filter out unused options so we don't store giant unnecessary arrays.
     // Note that the bundles form option doesn't appear on the form if the
     // entity type doesn't support bundles, so the option may not be set.
@@ -159,7 +142,7 @@ class Entity extends ArgumentValidatorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateArgument($argument) {
+  public function validateArgument($argument): bool {
     $entity_type = $this->definition['entity_type'];
 
     if ($this->multipleCapable && $this->options['multiple'] && isset($argument)) {
@@ -199,7 +182,7 @@ class Entity extends ArgumentValidatorPluginBase {
    * @return bool
    *   True if validated.
    */
-  protected function validateEntity(EntityInterface $entity) {
+  protected function validateEntity(EntityInterface $entity): bool {
     // If access restricted by entity operation.
     if ($this->options['access'] && !$entity->access($this->options['operation'])) {
       return FALSE;
@@ -238,7 +221,7 @@ class Entity extends ArgumentValidatorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getContextDefinition() {
+  public function getContextDefinition(): \Drupal\Core\Plugin\Context\ContextDefinition {
     return EntityContextDefinition::fromEntityTypeId($this->definition['entity_type'])
       ->setLabel($this->argument->adminLabel())
       ->setRequired(FALSE);

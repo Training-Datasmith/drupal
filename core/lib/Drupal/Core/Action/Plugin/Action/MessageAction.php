@@ -24,20 +24,6 @@ use Drupal\Core\Utility\Token;
 class MessageAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The token service.
-   *
-   * @var \Drupal\Core\Utility\Token
-   */
-  protected $token;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * The messenger.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -60,18 +46,15 @@ class MessageAction extends ConfigurableActionBase implements ContainerFactoryPl
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Token $token, RendererInterface $renderer, MessengerInterface $messenger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Utility\Token $token, protected \Drupal\Core\Render\RendererInterface $renderer, MessengerInterface $messenger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->token = $token;
-    $this->renderer = $renderer;
     $this->messenger = $messenger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
+  public function execute($entity = NULL): void {
     if (empty($this->configuration['node'])) {
       $this->configuration['node'] = $entity;
     }
@@ -87,7 +70,7 @@ class MessageAction extends ConfigurableActionBase implements ContainerFactoryPl
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'message' => '',
     ];
@@ -96,7 +79,7 @@ class MessageAction extends ConfigurableActionBase implements ContainerFactoryPl
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['message'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Message'),
@@ -111,7 +94,7 @@ class MessageAction extends ConfigurableActionBase implements ContainerFactoryPl
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['message'] = $form_state->getValue('message');
     unset($this->configuration['node']);
   }

@@ -37,7 +37,7 @@ class DefaultSummary extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if (!empty($this->options['override'])) {
       $this->view->setItemsPerPage(intval($this->options['items_per_page']));
     }
@@ -46,7 +46,7 @@ class DefaultSummary extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['base_path'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Base path'),
@@ -83,7 +83,7 @@ class DefaultSummary extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $rows = [];
     foreach ($this->view->result as $row) {
       // @todo Include separator as an option.

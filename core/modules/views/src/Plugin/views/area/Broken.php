@@ -17,7 +17,7 @@ class Broken extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($empty = FALSE) {
+  public function render($empty = FALSE): array {
     // Simply render nothing by returning an empty render array.
     return [];
   }

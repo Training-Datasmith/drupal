@@ -28,28 +28,7 @@ class TaxonomyIndexTid extends ManyToOne {
    * @var array|null
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public $validated_exposed_input = NULL;
-
-  /**
-   * The vocabulary storage.
-   *
-   * @var \Drupal\taxonomy\VocabularyStorageInterface
-   */
-  protected $vocabularyStorage;
-
-  /**
-   * The term storage.
-   *
-   * @var \Drupal\taxonomy\TermStorageInterface
-   */
-  protected $termStorage;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
+  public $validated_exposed_input;
 
   /**
    * Constructs a TaxonomyIndexTid object.
@@ -60,24 +39,21 @@ class TaxonomyIndexTid extends ManyToOne {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabulary_storage
+   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage
    *   The vocabulary storage.
-   * @param \Drupal\taxonomy\TermStorageInterface $term_storage
+   * @param \Drupal\taxonomy\TermStorageInterface $termStorage
    *   The term storage.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, VocabularyStorageInterface $vocabulary_storage, TermStorageInterface $term_storage, AccountInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage, protected \Drupal\taxonomy\TermStorageInterface $termStorage, protected \Drupal\Core\Session\AccountInterface $currentUser) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->vocabularyStorage = $vocabulary_storage;
-    $this->termStorage = $term_storage;
-    $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -91,7 +67,7 @@ class TaxonomyIndexTid extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if (!empty($this->definition['vocabulary'])) {
@@ -102,7 +78,7 @@ class TaxonomyIndexTid extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  public function hasExtraOptions() {
+  public function hasExtraOptions(): bool {
     return TRUE;
   }
 
@@ -131,7 +107,7 @@ class TaxonomyIndexTid extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  public function buildExtraOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildExtraOptionsForm(&$form, FormStateInterface $form_state): void {
     $vocabularies = $this->vocabularyStorage->loadMultiple();
     $options = [];
     foreach ($vocabularies as $voc) {
@@ -360,7 +336,7 @@ class TaxonomyIndexTid extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  public function validateExposed(&$form, FormStateInterface $form_state) {
+  public function validateExposed(&$form, FormStateInterface $form_state): void {
     if (empty($this->options['exposed'])) {
       return;
     }
@@ -402,7 +378,7 @@ class TaxonomyIndexTid extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  public function buildExposeForm(&$form, FormStateInterface $form_state) {
+  public function buildExposeForm(&$form, FormStateInterface $form_state): void {
     parent::buildExposeForm($form, $form_state);
     if ($this->options['type'] != 'select') {
       unset($form['expose']['reduce']);

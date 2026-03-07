@@ -47,8 +47,7 @@ class MenuLinkContentHooks {
         else {
           $output .= ' ' . $this->t('For more information, see the <a href=":drupal-org-help">online documentation for the Custom Menu Links module</a>. If you install the Menu UI module, it provides an interface for managing menus and menu links.', [':drupal-org-help' => 'https://www.drupal.org/documentation/modules/menu_link']);
         }
-        $output .= '</p>';
-        return $output;
+        return $output . '</p>';
     }
     return NULL;
   }
@@ -127,7 +126,7 @@ class MenuLinkContentHooks {
       $result = $this->menuLinkManager->loadLinksByRoute($url->getRouteName(), $route_parameters);
       if ($result) {
         foreach ($result as $id => $instance) {
-          if ($instance->isDeletable() && str_starts_with($id, 'menu_link_content:')) {
+          if ($instance->isDeletable() && str_starts_with((string) $id, 'menu_link_content:')) {
             $instance->deleteLink();
           }
         }

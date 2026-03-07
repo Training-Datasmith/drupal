@@ -88,14 +88,14 @@ class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface {
    *
    * @var string|null
    */
-  protected $description = NULL;
+  protected $description;
 
   /**
    * Help information shown to the user when creating a Node of this type.
    *
    * @var string|null
    */
-  protected $help = NULL;
+  protected $help;
 
   /**
    * Default value of the 'Create new revision' checkbox of this node type.
@@ -137,7 +137,7 @@ class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface {
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Automatically create new revisions'), pluralize: FALSE)]
-  public function setNewRevision($new_revision) {
+  public function setNewRevision($new_revision): void {
     $this->new_revision = $new_revision;
   }
 
@@ -152,7 +152,7 @@ class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface {
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Set whether to display submission information'), pluralize: FALSE)]
-  public function setDisplaySubmitted($display_submitted) {
+  public function setDisplaySubmitted($display_submitted): void {
     $this->display_submitted = $display_submitted;
   }
 
@@ -172,7 +172,7 @@ class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface {
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Set preview mode'), pluralize: FALSE)]
-  public function setPreviewMode(NodePreviewMode|int $preview_mode) {
+  public function setPreviewMode(NodePreviewMode|int $preview_mode): void {
     if (!$preview_mode instanceof NodePreviewMode) {
       @trigger_error('Calling ' . __METHOD__ . ' with an integer $preview_mode parameter is deprecated in drupal:11.3.0 and is removed in drupal:13.0.0. Use the \Drupal\node\NodePreviewMode enum instead. See https://www.drupal.org/node/3538666', E_USER_DEPRECATED);
       $this->preview_mode = $preview_mode;
@@ -198,7 +198,7 @@ class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     if ($update) {
@@ -211,7 +211,7 @@ class NodeType extends ConfigEntityBundleBase implements NodeTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     // Clear the node type cache to reflect the removal.

@@ -22,14 +22,12 @@ class FileAccessControlHandler extends EntityAccessControlHandler {
     /** @var \Drupal\file\FileInterface $entity */
     if ($operation == 'download' || $operation == 'view') {
       if (\Drupal::service('stream_wrapper_manager')->getScheme($entity->getFileUri()) === 'public') {
-        if ($operation === 'download') {
-          return AccessResult::allowed();
-        }
-        else {
+          if ($operation === 'download') {
+            return AccessResult::allowed();
+          }
           return AccessResult::allowedIfHasPermission($account, 'access content');
-        }
       }
-      elseif ($references = $this->getFileReferences($entity)) {
+      if ($references = $this->getFileReferences($entity)) {
         foreach ($references as $field_name => $entity_map) {
           foreach ($entity_map as $referencing_entities) {
             /** @var \Drupal\Core\Entity\EntityInterface $referencing_entity */
@@ -72,7 +70,7 @@ class FileAccessControlHandler extends EntityAccessControlHandler {
     elseif ($operation == 'delete') {
       $access = AccessResult::allowedIfHasPermission($account, 'delete any file');
       if (!$access->isAllowed() && $account->hasPermission('delete own files')) {
-        $access = $access->orIf(AccessResult::allowedIf($account->id() == $entity->getOwnerId()))->cachePerUser()->addCacheableDependency($entity);
+        return $access->orIf(AccessResult::allowedIf($account->id() == $entity->getOwnerId()))->cachePerUser()->addCacheableDependency($entity);
       }
       return $access;
     }

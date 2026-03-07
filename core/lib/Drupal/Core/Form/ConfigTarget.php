@@ -17,10 +17,8 @@ final class ConfigTarget {
   /**
    * The parents of the form element which maps to this config property.
    *
-   * @var array
    *
    * @see \Drupal\Core\Form\ConfigFormBase::storeConfigKeyToFormElementMap()
-   *
    * @internal
    *   This property is for internal use only.
    */
@@ -183,7 +181,7 @@ final class ConfigTarget {
       : $config->get($this->propertyPaths[0]);
 
     if ($this->fromConfig) {
-      $value = $is_multi_target
+      return $is_multi_target
         ? ($this->fromConfig)(...$value)
         : ($this->fromConfig)($value);
     }
@@ -220,13 +218,13 @@ final class ConfigTarget {
         // If we're targeting multiple property paths, $value needs to be an
         // array with every targeted property path.
         if (!is_array($value)) {
-          throw new \LogicException(sprintf('The toConfig callable returned a %s, but it must be an array with a key-value pair for each of the targeted property paths.', gettype($value)));
+            throw new \LogicException(sprintf('The toConfig callable returned a %s, but it must be an array with a key-value pair for each of the targeted property paths.', gettype($value)));
         }
-        elseif ($missing_keys = array_diff($this->propertyPaths, array_keys($value))) {
-          throw new \LogicException(sprintf('The toConfig callable returned an array that is missing key-value pairs for the following targeted property paths: %s.', implode(', ', $missing_keys)));
+        if ($missing_keys = array_diff($this->propertyPaths, array_keys($value))) {
+            throw new \LogicException(sprintf('The toConfig callable returned an array that is missing key-value pairs for the following targeted property paths: %s.', implode(', ', $missing_keys)));
         }
-        elseif ($unknown_keys = array_diff(array_keys($value), $this->propertyPaths)) {
-          throw new \LogicException(sprintf('The toConfig callable returned an array that contains key-value pairs that do not match targeted property paths: %s.', implode(', ', $unknown_keys)));
+        if ($unknown_keys = array_diff(array_keys($value), $this->propertyPaths)) {
+            throw new \LogicException(sprintf('The toConfig callable returned an array that contains key-value pairs that do not match targeted property paths: %s.', implode(', ', $unknown_keys)));
         }
       }
     }
@@ -238,7 +236,7 @@ final class ConfigTarget {
 
     // Set the returned value, or if a special value (one of the cases in the
     // ToConfig enum): apply the appropriate action.
-    array_walk($value, fn (mixed $value, string $property) => match ($value) {
+    array_walk($value, fn (mixed $value, string $property): ?\Drupal\Core\Config\Config => match ($value) {
       // No-op.
       ToConfig::NoOp => NULL,
       // Delete.

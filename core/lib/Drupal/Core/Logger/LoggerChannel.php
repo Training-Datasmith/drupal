@@ -35,13 +35,6 @@ class LoggerChannel implements LoggerChannelInterface {
   protected $callDepth = 0;
 
   /**
-   * The name of the channel of this logger instance.
-   *
-   * @var string
-   */
-  protected $channel;
-
-  /**
    * Map of PSR3 log constants to RFC 5424 log constants.
    *
    * @var array
@@ -84,8 +77,13 @@ class LoggerChannel implements LoggerChannelInterface {
    * @param string $channel
    *   The channel name for this instance.
    */
-  public function __construct($channel) {
-    $this->channel = $channel;
+  public function __construct(
+      /**
+       * The name of the channel of this logger instance.
+       */
+      protected $channel
+  )
+  {
   }
 
   /**
@@ -133,28 +131,28 @@ class LoggerChannel implements LoggerChannelInterface {
   /**
    * {@inheritdoc}
    */
-  public function setRequestStack(?RequestStack $requestStack = NULL) {
+  public function setRequestStack(?RequestStack $requestStack = NULL): void {
     $this->requestStack = $requestStack;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCurrentUser(?AccountInterface $current_user = NULL) {
+  public function setCurrentUser(?AccountInterface $current_user = NULL): void {
     $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setLoggers(array $loggers) {
+  public function setLoggers(array $loggers): void {
     $this->loggers = $loggers;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addLogger(LoggerInterface $logger, $priority = 0) {
+  public function addLogger(LoggerInterface $logger, $priority = 0): void {
     $this->loggers[$priority][] = $logger;
   }
 
@@ -164,7 +162,7 @@ class LoggerChannel implements LoggerChannelInterface {
    * @return array
    *   An array of sorted loggers by priority.
    */
-  protected function sortLoggers() {
+  protected function sortLoggers(): array {
     krsort($this->loggers);
     return array_merge(...$this->loggers);
   }

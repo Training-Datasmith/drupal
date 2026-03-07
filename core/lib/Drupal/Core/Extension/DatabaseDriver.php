@@ -75,21 +75,21 @@ class DatabaseDriver extends Extension {
   /**
    * {@inheritdoc}
    */
-  public function getName() {
+  public function getName(): string {
     return $this->getNamespace();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPath() {
+  public function getPath(): string {
     return $this->getModule()->getPath() . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Driver' . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . $this->getDriverName();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function load() {
+  public function load(): bool {
     if (!isset($this->classLoader)) {
       if (\Drupal::hasContainer() && \Drupal::hasService('class_loader')) {
         $this->classLoader = \Drupal::service('class_loader');
@@ -221,28 +221,28 @@ class DatabaseDriver extends Extension {
   /**
    * {@inheritdoc}
    */
-  public function getPathname() {
+  public function getPathname(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFilename() {
+  public function getFilename(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getExtensionPathname() {
+  public function getExtensionPathname(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getExtensionFilename() {
+  public function getExtensionFilename(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 

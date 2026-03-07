@@ -25,32 +25,6 @@ class PageCache implements HttpKernelInterface {
   const HEADER = 'X-Drupal-Cache';
 
   /**
-   * The wrapped HTTP kernel.
-   */
-  protected \Closure $httpKernel;
-
-  /**
-   * The cache bin.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * A policy rule determining the cacheability of a request.
-   *
-   * @var \Drupal\Core\PageCache\RequestPolicyInterface
-   */
-  protected $requestPolicy;
-
-  /**
-   * A policy rule determining the cacheability of the response.
-   *
-   * @var \Drupal\Core\PageCache\ResponsePolicyInterface
-   */
-  protected $responsePolicy;
-
-  /**
    * The cache ID for the (master) request.
    *
    * @var string
@@ -60,20 +34,17 @@ class PageCache implements HttpKernelInterface {
   /**
    * Constructs a PageCache object.
    *
-   * @param \Closure $http_kernel
+   * @param \Closure $httpKernel
    *   The decorated kernel.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache bin.
-   * @param \Drupal\Core\PageCache\RequestPolicyInterface $request_policy
+   * @param \Drupal\Core\PageCache\RequestPolicyInterface $requestPolicy
    *   A policy rule determining the cacheability of a request.
-   * @param \Drupal\Core\PageCache\ResponsePolicyInterface $response_policy
+   * @param \Drupal\Core\PageCache\ResponsePolicyInterface $responsePolicy
    *   A policy rule determining the cacheability of the response.
    */
-  public function __construct(\Closure $http_kernel, CacheBackendInterface $cache, RequestPolicyInterface $request_policy, ResponsePolicyInterface $response_policy) {
-    $this->httpKernel = $http_kernel;
-    $this->cache = $cache;
-    $this->requestPolicy = $request_policy;
-    $this->responsePolicy = $response_policy;
+  public function __construct(protected \Closure $httpKernel, protected \Drupal\Core\Cache\CacheBackendInterface $cache, protected \Drupal\Core\PageCache\RequestPolicyInterface $requestPolicy, protected \Drupal\Core\PageCache\ResponsePolicyInterface $responsePolicy)
+  {
   }
 
   /**
@@ -154,8 +125,8 @@ class PageCache implements HttpKernelInterface {
     $last_modified = $response->getLastModified();
     if ($last_modified) {
       // See if the client has provided the required HTTP headers.
-      $if_modified_since = $request->server->has('HTTP_IF_MODIFIED_SINCE') ? strtotime($request->server->get('HTTP_IF_MODIFIED_SINCE')) : FALSE;
-      $if_none_match = $request->server->has('HTTP_IF_NONE_MATCH') ? stripslashes($request->server->get('HTTP_IF_NONE_MATCH')) : FALSE;
+      $if_modified_since = $request->server->has('HTTP_IF_MODIFIED_SINCE') ? strtotime((string) $request->server->get('HTTP_IF_MODIFIED_SINCE')) : FALSE;
+      $if_none_match = $request->server->has('HTTP_IF_NONE_MATCH') ? stripslashes((string) $request->server->get('HTTP_IF_NONE_MATCH')) : FALSE;
 
       if ($if_modified_since && $if_none_match
         // ETag must match.
@@ -218,7 +189,7 @@ class PageCache implements HttpKernelInterface {
    * @return bool
    *   TRUE if the response has been stored successfully, FALSE otherwise.
    */
-  protected function storeResponse(Request $request, Response $response) {
+  protected function storeResponse(Request $request, Response $response): bool {
     // Drupal's primary cache invalidation architecture is cache tags: any
     // response that varies by a configuration value or data in a content
     // entity should have cache tags, to allow for instant cache invalidation

@@ -42,7 +42,7 @@ class CommentPermalinkFormatter extends StringFormatter {
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     return parent::isApplicable($field_definition) && $field_definition->getTargetEntityTypeId() === 'comment' && $field_definition->getName() === 'subject';
   }
 

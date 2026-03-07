@@ -19,27 +19,6 @@ use Drupal\Core\Session\AccountInterface;
 class PathProcessorLanguage implements InboundPathProcessorInterface, OutboundPathProcessorInterface {
 
   /**
-   * A config factory for retrieving required config settings.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $config;
-
-  /**
-   * Language manager for retrieving the URL language type.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The language negotiator.
-   *
-   * @var \Drupal\language\LanguageNegotiatorInterface
-   */
-  protected $negotiator;
-
-  /**
    * Local cache for language path processors.
    *
    * @var array
@@ -54,32 +33,21 @@ class PathProcessorLanguage implements InboundPathProcessorInterface, OutboundPa
   protected $multilingual;
 
   /**
-   * The language configuration event subscriber.
-   *
-   * @var \Drupal\language\EventSubscriber\ConfigSubscriber
-   */
-  protected $configSubscriber;
-
-  /**
    * Constructs a PathProcessorLanguage object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config
    *   A config factory object for retrieving configuration settings.
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $language_manager
+   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
    *   The configurable language manager.
    * @param \Drupal\language\LanguageNegotiatorInterface $negotiator
    *   The language negotiator.
    * @param \Drupal\Core\Session\AccountInterface $current_user
    *   The current active user.
-   * @param \Drupal\language\EventSubscriber\ConfigSubscriber $config_subscriber
+   * @param \Drupal\language\EventSubscriber\ConfigSubscriber $configSubscriber
    *   The language configuration event subscriber.
    */
-  public function __construct(ConfigFactoryInterface $config, ConfigurableLanguageManagerInterface $language_manager, LanguageNegotiatorInterface $negotiator, AccountInterface $current_user, ConfigSubscriber $config_subscriber) {
-    $this->config = $config;
-    $this->languageManager = $language_manager;
-    $this->negotiator = $negotiator;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $config, protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager, protected \Drupal\language\LanguageNegotiatorInterface $negotiator, AccountInterface $current_user, protected \Drupal\language\EventSubscriber\ConfigSubscriber $configSubscriber) {
     $this->negotiator->setCurrentUser($current_user);
-    $this->configSubscriber = $config_subscriber;
   }
 
   /**
@@ -134,20 +102,20 @@ class PathProcessorLanguage implements InboundPathProcessorInterface, OutboundPa
     $weights = [];
     foreach ($this->languageManager->getLanguageTypes() as $type) {
       foreach ($this->negotiator->getNegotiationMethods($type) as $method_id => $method) {
-        if (!isset($this->processors[$scope][$method_id])) {
-          if (is_subclass_of($method['class'], $interface)) {
-            $this->processors[$scope][$method_id] = $this->negotiator->getNegotiationMethodInstance($method_id);
-            $weights[$method_id] = $method['weight'];
+          if (isset($this->processors[$scope][$method_id])) {
+              continue;
           }
-        }
+          if (!is_subclass_of($method['class'], $interface)) {
+              continue;
+          }
+          $this->processors[$scope][$method_id] = $this->negotiator->getNegotiationMethodInstance($method_id);
+          $weights[$method_id] = $method['weight'];
       }
     }
 
     // Sort the processors list, so that their functions are called in the
     // order specified by the weight of the methods.
-    uksort($this->processors[$scope], function ($method_id_a, $method_id_b) use ($weights) {
-      return $weights[$method_id_a] <=> $weights[$method_id_b];
-    });
+    uksort($this->processors[$scope], fn($method_id_a, $method_id_b) => $weights[$method_id_a] <=> $weights[$method_id_b]);
   }
 
   /**
@@ -157,14 +125,14 @@ class PathProcessorLanguage implements InboundPathProcessorInterface, OutboundPa
    * site configuration, thus we inject it in the event subscriber only when
    * it is initialized.
    */
-  public function initConfigSubscriber() {
+  public function initConfigSubscriber(): void {
     $this->configSubscriber->setPathProcessorLanguage($this);
   }
 
   /**
    * Resets the collected processors instances.
    */
-  public function reset() {
+  public function reset(): void {
     $this->processors = [];
   }
 

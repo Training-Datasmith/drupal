@@ -14,13 +14,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class SessionExistsCacheContext implements CacheContextInterface {
 
   /**
-   * The session configuration.
-   *
-   * @var \Drupal\Core\Session\SessionConfigurationInterface
-   */
-  protected $sessionConfiguration;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -30,13 +23,12 @@ class SessionExistsCacheContext implements CacheContextInterface {
   /**
    * Constructs a new SessionExistsCacheContext class.
    *
-   * @param \Drupal\Core\Session\SessionConfigurationInterface $session_configuration
+   * @param \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration
    *   The session configuration.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    */
-  public function __construct(SessionConfigurationInterface $session_configuration, RequestStack $request_stack) {
-    $this->sessionConfiguration = $session_configuration;
+  public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration, RequestStack $request_stack) {
     $this->requestStack = $request_stack;
   }
 
@@ -50,14 +42,14 @@ class SessionExistsCacheContext implements CacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getContext() {
+  public function getContext(): string {
     return $this->sessionConfiguration->hasSession($this->requestStack->getCurrentRequest()) ? '1' : '0';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

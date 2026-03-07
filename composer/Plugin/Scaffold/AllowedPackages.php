@@ -18,27 +18,6 @@ use Composer\Package\PackageInterface;
 class AllowedPackages implements PostPackageEventListenerInterface {
 
   /**
-   * The Composer service.
-   *
-   * @var \Composer\Composer
-   */
-  protected $composer;
-
-  /**
-   * Composer's I/O service.
-   *
-   * @var \Composer\IO\IOInterface
-   */
-  protected $io;
-
-  /**
-   * Manager of the options in the top-level composer.json's 'extra' section.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\ManageOptions
-   */
-  protected $manageOptions;
-
-  /**
    * The list of new packages added by this Composer command.
    *
    * @var array
@@ -52,13 +31,21 @@ class AllowedPackages implements PostPackageEventListenerInterface {
    *   The composer object.
    * @param \Composer\IO\IOInterface $io
    *   IOInterface to write to.
-   * @param \Drupal\Composer\Plugin\Scaffold\ManageOptions $manage_options
+   * @param \Drupal\Composer\Plugin\Scaffold\ManageOptions $manageOptions
    *   Manager of the options in the top-level composer.json's 'extra' section.
    */
-  public function __construct(Composer $composer, IOInterface $io, ManageOptions $manage_options) {
-    $this->composer = $composer;
-    $this->io = $io;
-    $this->manageOptions = $manage_options;
+  public function __construct(
+      /**
+       * The Composer service.
+       */
+      protected \Composer\Composer $composer,
+      /**
+       * Composer's I/O service.
+       */
+      protected \Composer\IO\IOInterface $io,
+      protected \Drupal\Composer\Plugin\Scaffold\ManageOptions $manageOptions
+  )
+  {
   }
 
   /**
@@ -94,7 +81,7 @@ class AllowedPackages implements PostPackageEventListenerInterface {
   /**
    * {@inheritdoc}
    */
-  public function event(PackageEvent $event) {
+  public function event(PackageEvent $event): void {
     $operation = $event->getOperation();
     // Determine the package. Later, in evaluateNewPackages(), we will report
     // which of the newly-installed packages have scaffold operations, and
@@ -117,7 +104,7 @@ class AllowedPackages implements PostPackageEventListenerInterface {
    * @return array
    *   An array of allowed Composer package names.
    */
-  protected function getTopLevelAllowedPackages() {
+  protected function getTopLevelAllowedPackages(): array {
     $implicit_packages = [
       'drupal/legacy-scaffold-assets',
       'drupal/core',
@@ -162,7 +149,7 @@ class AllowedPackages implements PostPackageEventListenerInterface {
    * @return \Composer\Package\PackageInterface[]
    *   Mapping of package names to PackageInterface in priority order.
    */
-  protected function evaluateNewPackages(array $allowed_packages) {
+  protected function evaluateNewPackages(array $allowed_packages): array {
     foreach ($this->newPackages as $name => $newPackage) {
       if (!array_key_exists($name, $allowed_packages)) {
         $this->io->write("Not scaffolding files for <comment>{$name}</comment>, because it is not listed in the element 'extra.drupal-scaffold.allowed-packages' in the root-level composer.json file.");

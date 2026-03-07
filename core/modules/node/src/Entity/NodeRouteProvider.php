@@ -15,7 +15,7 @@ class NodeRouteProvider extends DefaultHtmlRouteProvider {
   /**
    * {@inheritdoc}
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
+  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
     $routes = parent::getRoutes($entity_type);
     // Rename the entity.node.add_form and entity.node.add_page routes to keep
     // BC.

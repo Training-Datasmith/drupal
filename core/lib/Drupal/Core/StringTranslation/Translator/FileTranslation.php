@@ -18,31 +18,18 @@ use Drupal\Core\Language\LanguageInterface;
 class FileTranslation extends StaticTranslation {
 
   /**
-   * Directory to find translation files in the file system.
-   *
-   * @var string
-   */
-  protected $directory;
-
-  /**
-   * The file system.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Constructs a StaticTranslation object.
    *
    * @param string $directory
    *   The directory to retrieve file translations from.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
    */
-  public function __construct($directory, FileSystemInterface $file_system) {
+  public function __construct(/**
+   * Directory to find translation files in the file system.
+   */
+  protected $directory, protected \Drupal\Core\File\FileSystemInterface $fileSystem) {
     parent::__construct();
-    $this->directory = $directory;
-    $this->fileSystem = $file_system;
   }
 
   /**
@@ -56,11 +43,9 @@ class FileTranslation extends StaticTranslation {
     $files = $this->findTranslationFiles($langcode);
 
     if (!empty($files)) {
-      return $this->filesToArray($langcode, $files);
+      return static::filesToArray($langcode, $files);
     }
-    else {
-      return [];
-    }
+    return [];
   }
 
   /**
@@ -82,11 +67,10 @@ class FileTranslation extends StaticTranslation {
    * @see \Drupal\Core\File\FileSystemInterface::scanDirectory()
    */
   public function findTranslationFiles($langcode = NULL) {
-    $files = [];
     if (is_dir($this->directory)) {
-      $files = $this->fileSystem->scanDirectory($this->directory, $this->getTranslationFilesPattern($langcode), ['recurse' => FALSE]);
+      return $this->fileSystem->scanDirectory($this->directory, $this->getTranslationFilesPattern($langcode), ['recurse' => FALSE]);
     }
-    return $files;
+    return [];
   }
 
   /**
@@ -99,7 +83,7 @@ class FileTranslation extends StaticTranslation {
    * @return string
    *   String file pattern.
    */
-  protected function getTranslationFilesPattern($langcode = NULL) {
+  protected function getTranslationFilesPattern($langcode = NULL): string {
     // The file name matches: drupal-[release version].[language code].po
     // When provided the $langcode is use as language code. If not provided all
     // language codes will match.

@@ -25,16 +25,14 @@ class MenuAccessControlHandler extends EntityAccessControlHandler {
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     // There are no restrictions on viewing the label of a menu.
     if ($operation === 'view label') {
-      return AccessResult::allowed();
+        return AccessResult::allowed();
     }
-    // Locked menus should not be deleted.
-    elseif ($operation === 'delete') {
-      if ($entity->isLocked()) {
-        return AccessResult::forbidden('The Menu config entity is locked.')->addCacheableDependency($entity);
-      }
-      else {
+    // There are no restrictions on viewing the label of a menu.
+    if ($operation === 'delete') {
+        if ($entity->isLocked()) {
+          return AccessResult::forbidden('The Menu config entity is locked.')->addCacheableDependency($entity);
+        }
         return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
-      }
     }
 
     return parent::checkAccess($entity, $operation, $account);

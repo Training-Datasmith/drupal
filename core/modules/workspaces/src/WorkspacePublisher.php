@@ -39,7 +39,7 @@ class WorkspacePublisher implements WorkspacePublisherInterface {
   /**
    * {@inheritdoc}
    */
-  public function publish() {
+  public function publish(): void {
     if ($this->sourceWorkspace->hasParent()) {
       throw new WorkspacePublishException('Only top-level workspaces can be published.');
     }
@@ -58,7 +58,7 @@ class WorkspacePublisher implements WorkspacePublisherInterface {
 
     try {
       $transaction = $this->database->startTransaction();
-      $this->workspaceManager->executeOutsideWorkspace(function () use ($tracked_entities) {
+      $this->workspaceManager->executeOutsideWorkspace(function () use ($tracked_entities): void {
         $max_execution_time = ini_get('max_execution_time');
         $step_size = Settings::get('entity_update_batch_size', 50);
         $counter = 0;
@@ -123,14 +123,14 @@ class WorkspacePublisher implements WorkspacePublisherInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTargetLabel() {
+  public function getTargetLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Live');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function checkConflictsOnTarget() {
+  public function checkConflictsOnTarget(): void {
     // Nothing to do for now, we can not get to a conflicting state because an
     // entity which is being edited in a workspace can not be edited in any
     // other workspace.
@@ -138,8 +138,9 @@ class WorkspacePublisher implements WorkspacePublisherInterface {
 
   /**
    * {@inheritdoc}
+   * @return non-empty-array[]
    */
-  public function getDifferringRevisionIdsOnTarget() {
+  public function getDifferringRevisionIdsOnTarget(): array {
     $target_revision_difference = [];
 
     $tracked_entities = $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
@@ -171,7 +172,7 @@ class WorkspacePublisher implements WorkspacePublisherInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDifferringRevisionIdsOnSource() {
+  public function getDifferringRevisionIdsOnSource(): array {
     // Get the tracked revisions that haven't been published.
     return $this->workspaceTracker->getTrackedEntities($this->sourceWorkspace->id());
   }
@@ -179,7 +180,7 @@ class WorkspacePublisher implements WorkspacePublisherInterface {
   /**
    * {@inheritdoc}
    */
-  public function getNumberOfChangesOnTarget() {
+  public function getNumberOfChangesOnTarget(): int {
     $total_changes = $this->getDifferringRevisionIdsOnTarget();
     return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
   }
@@ -187,7 +188,7 @@ class WorkspacePublisher implements WorkspacePublisherInterface {
   /**
    * {@inheritdoc}
    */
-  public function getNumberOfChangesOnSource() {
+  public function getNumberOfChangesOnSource(): int {
     $total_changes = $this->getDifferringRevisionIdsOnSource();
     return count($total_changes, COUNT_RECURSIVE) - count($total_changes);
   }

@@ -148,7 +148,7 @@ trait InsertTrait {
    * @return array
    *   An array of insert placeholders.
    */
-  protected function getInsertPlaceholderFragment(array $nested_insert_values, array $default_fields) {
+  protected function getInsertPlaceholderFragment(array $nested_insert_values, array $default_fields): array {
     $max_placeholder = 0;
     $values = [];
     if ($nested_insert_values) {

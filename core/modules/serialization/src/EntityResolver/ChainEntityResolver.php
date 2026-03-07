@@ -29,7 +29,7 @@ class ChainEntityResolver implements ChainEntityResolverInterface {
   /**
    * {@inheritdoc}
    */
-  public function addResolver(EntityResolverInterface $resolver) {
+  public function addResolver(EntityResolverInterface $resolver): void {
     $this->resolvers[] = $resolver;
   }
 

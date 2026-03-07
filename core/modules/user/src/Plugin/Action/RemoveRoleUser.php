@@ -18,7 +18,7 @@ class RemoveRoleUser extends ChangeUserRoleBase {
   /**
    * {@inheritdoc}
    */
-  public function execute($account = NULL) {
+  public function execute($account = NULL): void {
     $rid = $this->configuration['rid'];
     // Skip removing the role from the user if they already don't have it.
     if ($account !== FALSE && $account->hasRole($rid)) {

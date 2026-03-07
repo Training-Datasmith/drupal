@@ -20,8 +20,6 @@ class FileExtensionConstraint extends SymfonyConstraint {
 
   /**
    * The allowed file extensions.
-   *
-   * @var string
    */
   public string $extensions;
 

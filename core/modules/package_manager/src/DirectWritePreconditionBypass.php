@@ -29,8 +29,6 @@ final class DirectWritePreconditionBypass implements ActiveAndStagingDirsAreDiff
 
   /**
    * Whether or not the decorated precondition is being bypassed.
-   *
-   * @var bool
    */
   private static bool $isBypassed = FALSE;
 

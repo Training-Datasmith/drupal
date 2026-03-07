@@ -21,25 +21,11 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
   use LayoutEntityHelperTrait;
 
   /**
-   * Inline block usage tracking service.
-   *
-   * @var \Drupal\layout_builder\InlineBlockUsageInterface
-   */
-  protected $usage;
-
-  /**
    * The block content storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
   protected $blockContentStorage;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
 
   /**
    * Constructs a new EntityOperations object.
@@ -51,17 +37,15 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_storage_manager
    *   The section storage manager.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, InlineBlockUsageInterface $usage, SectionStorageManagerInterface $section_storage_manager) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->blockContentStorage = $entityTypeManager->getStorage('block_content');
-    $this->usage = $usage;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\layout_builder\InlineBlockUsageInterface $usage, SectionStorageManagerInterface $section_storage_manager) {
+    $this->blockContentStorage = $this->entityTypeManager->getStorage('block_content');
     $this->sectionStorageManager = $section_storage_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('inline_block.usage'),
@@ -109,7 +93,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @return int[]
    *   The block content IDs that were removed.
    */
-  protected function getRemovedBlockIds(EntityInterface $entity) {
+  protected function getRemovedBlockIds(EntityInterface $entity): array {
     $original_sections = $this->getEntitySections($entity->getOriginal());
     $current_sections = $this->getEntitySections($entity);
     // Avoid un-needed conversion from revision IDs to block content IDs by
@@ -133,7 +117,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The parent entity.
    */
-  public function handleEntityDelete(EntityInterface $entity) {
+  public function handleEntityDelete(EntityInterface $entity): void {
     $this->usage->removeByLayoutEntity($entity);
   }
 
@@ -143,7 +127,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The parent entity.
    */
-  public function handlePreSave(EntityInterface $entity) {
+  public function handlePreSave(EntityInterface $entity): void {
     if (($entity instanceof SynchronizableInterface && $entity->isSyncing())
       || !$this->isLayoutCompatibleEntity($entity)
     ) {
@@ -189,7 +173,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
    * @param int $limit
    *   The maximum number of inline blocks to remove.
    */
-  public function removeUnused($limit = 100) {
+  public function removeUnused($limit = 100): void {
     $this->deleteBlocksAndUsage($this->usage->getUnused($limit));
   }
 
@@ -206,8 +190,7 @@ class InlineBlockEntityOperations implements ContainerInjectionInterface {
     if ($revision_ids) {
       $query = $this->blockContentStorage->getQuery()->accessCheck(FALSE);
       $query->condition('revision_id', $revision_ids, 'IN');
-      $block_ids = $query->execute();
-      return $block_ids;
+      return $query->execute();
     }
     return [];
   }

@@ -65,7 +65,7 @@ class FinishResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onAllResponds(ResponseEvent $event) {
+  public function onAllResponds(ResponseEvent $event): void {
     $response = $event->getResponse();
     // Always add the 'http_response' cache tag to be able to invalidate every
     // response, for example after rebuilding routes.
@@ -80,7 +80,7 @@ class FinishResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespond(ResponseEvent $event) {
+  public function onRespond(ResponseEvent $event): void {
     if (!$event->isMainRequest()) {
       return;
     }

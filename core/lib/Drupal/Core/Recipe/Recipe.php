@@ -34,7 +34,7 @@ use Symfony\Component\Validator\Validation;
  * @internal
  *   This API is experimental.
  */
-final class Recipe {
+final readonly class Recipe {
 
   const COMPOSER_PROJECT_TYPE = 'drupal-recipe';
 
@@ -65,16 +65,16 @@ final class Recipe {
    *   Any extra information to expose to specific modules.
    */
   public function __construct(
-    public readonly string $name,
-    public readonly string $description,
-    public readonly string $type,
-    public readonly RecipeConfigurator $recipes,
-    public readonly InstallConfigurator $install,
-    public readonly ConfigConfigurator $config,
-    public readonly InputConfigurator $input,
-    public readonly Finder $content,
-    public readonly string $path,
-    private readonly array $extra,
+    public string $name,
+    public string $description,
+    public string $type,
+    public RecipeConfigurator $recipes,
+    public InstallConfigurator $install,
+    public ConfigConfigurator $config,
+    public InputConfigurator $input,
+    public Finder $content,
+    public string $path,
+    private array $extra,
   ) {}
 
   /**
@@ -321,7 +321,7 @@ final class Recipe {
     if (count($violations) > 0) {
       throw RecipeFileException::fromViolationList($file, $violations);
     }
-    $recipe_data += [
+    return $recipe_data + [
       'description' => '',
       'type' => '',
       'recipes' => [],
@@ -329,7 +329,6 @@ final class Recipe {
       'config' => [],
       'content' => [],
     ];
-    return $recipe_data;
   }
 
   /**
@@ -462,7 +461,7 @@ final class Recipe {
   private static function validateKeysAreValidExtensionNames(array $value, ExecutionContextInterface $context): void {
     $keys = array_keys($value);
     foreach ($keys as $key) {
-      if (!preg_match(ExtensionDiscovery::PHP_FUNCTION_PATTERN, $key)) {
+      if (!preg_match(ExtensionDiscovery::PHP_FUNCTION_PATTERN, (string) $key)) {
         $context->addViolation('%name is not a valid extension name.', [
           '%name' => $key,
         ]);

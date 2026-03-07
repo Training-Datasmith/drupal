@@ -63,7 +63,7 @@ class Error {
     $caller = static::getLastCaller($backtrace);
 
     return [
-      '%type' => get_class($exception),
+      '%type' => $exception::class,
       // The standard PHP exception handler considers that the exception message
       // is plain-text. We mimic this behavior here.
       '@message' => $message,
@@ -104,7 +104,7 @@ class Error {
    * @return string
    *   An error message.
    */
-  public static function renderExceptionSafe($exception) {
+  public static function renderExceptionSafe(\Throwable $exception): \Drupal\Component\Render\FormattableMarkup {
     $decode = static::decodeException($exception);
     $backtrace = $decode['backtrace'];
     unset($decode['backtrace'], $decode['exception']);
@@ -168,7 +168,7 @@ class Error {
    * @return string
    *   A plain-text line-wrapped string ready to be put inside <pre>.
    */
-  public static function formatBacktrace(array $backtrace) {
+  public static function formatBacktrace(array $backtrace): string {
     $return = '';
 
     foreach ($backtrace as $trace) {

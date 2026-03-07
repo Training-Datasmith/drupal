@@ -105,7 +105,7 @@ class LinkWidget extends WidgetBase {
    *
    * @see static::getUriAsDisplayableString()
    */
-  protected static function getUserEnteredStringAsUri($string) {
+  protected static function getUserEnteredStringAsUri($string): string {
     // By default, assume the entered string is a URI.
     $uri = trim($string);
 
@@ -140,7 +140,7 @@ class LinkWidget extends WidgetBase {
    *
    * Disallows saving inaccessible or untrusted URLs.
    */
-  public static function validateUriElement($element, FormStateInterface $form_state, $form) {
+  public static function validateUriElement(array $element, FormStateInterface $form_state, $form): void {
     $uri = static::getUserEnteredStringAsUri($element['#value']);
     $form_state->setValueForElement($element, $uri);
 
@@ -148,22 +148,14 @@ class LinkWidget extends WidgetBase {
     // URI , ensure the raw value begins with '/', '?' or '#'.
     // @todo '<front>' is valid input for BC reasons, may be removed by
     //   https://www.drupal.org/node/2421941
-    if (parse_url($uri, PHP_URL_SCHEME) === 'internal' && !in_array($element['#value'][0], ['/', '?', '#'], TRUE) && !str_starts_with($element['#value'], '<front>')) {
+    if (parse_url($uri, PHP_URL_SCHEME) === 'internal' && !in_array($element['#value'][0], ['/', '?', '#'], TRUE) && !str_starts_with((string) $element['#value'], '<front>')) {
       // Display an error message according to the link type.
       $args = ['%link_example' => 'https://example.com'];
-      switch ($element['#link_type']) {
-        case LinkItemInterface::LINK_EXTERNAL:
-          $error_message = new TranslatableMarkup('External links must be a full URL including the protocol, such as %link_example.', $args);
-          break;
-
-        case LinkItemInterface::LINK_INTERNAL:
-          $error_message = new TranslatableMarkup('Enter a content title to select it, or enter an internal path starting with /, ? or #.');
-          break;
-
-        case LinkItemInterface::LINK_GENERIC:
-        default:
-          $error_message = new TranslatableMarkup('Enter a content title to select it, or enter an internal path starting with /, ? or #. External links must be a full URL including the protocol, such as %link_example.', $args);
-      }
+      $error_message = match ($element['#link_type']) {
+          LinkItemInterface::LINK_EXTERNAL => new TranslatableMarkup('External links must be a full URL including the protocol, such as %link_example.', $args),
+          LinkItemInterface::LINK_INTERNAL => new TranslatableMarkup('Enter a content title to select it, or enter an internal path starting with /, ? or #.'),
+          default => new TranslatableMarkup('Enter a content title to select it, or enter an internal path starting with /, ? or #. External links must be a full URL including the protocol, such as %link_example.', $args),
+      };
       $form_state->setError($element, $error_message);
       return;
     }
@@ -174,7 +166,7 @@ class LinkWidget extends WidgetBase {
    *
    * Requires the URL value if a link title was filled in.
    */
-  public static function validateTitleNoLink(&$element, FormStateInterface $form_state, $form) {
+  public static function validateTitleNoLink(array &$element, FormStateInterface $form_state, $form): void {
     if ($element['uri']['#value'] === '' && $element['title']['#value'] !== '') {
       $form_state->setError($element['uri'], new TranslatableMarkup('The @uri field is required when the @title field is specified.', [
         '@title' => $element['title']['#title'],
@@ -186,7 +178,7 @@ class LinkWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     /** @var \Drupal\link\LinkItemInterface $item */
     $item = $items[$delta];
 
@@ -368,7 +360,7 @@ class LinkWidget extends WidgetBase {
    *   Returns TRUE if the LinkItem field is configured to support links to
    *   routes, otherwise FALSE.
    */
-  protected function supportsInternalLinks() {
+  protected function supportsInternalLinks(): bool {
     $link_type = $this->getFieldSetting('link_type');
     return (bool) ($link_type & LinkItemInterface::LINK_INTERNAL);
   }
@@ -380,7 +372,7 @@ class LinkWidget extends WidgetBase {
    *   Returns TRUE if the LinkItem field is configured to support links to
    *   external URLs, otherwise FALSE.
    */
-  protected function supportsExternalLinks() {
+  protected function supportsExternalLinks(): bool {
     $link_type = $this->getFieldSetting('link_type');
     return (bool) ($link_type & LinkItemInterface::LINK_EXTERNAL);
   }
@@ -414,8 +406,9 @@ class LinkWidget extends WidgetBase {
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $placeholder_title = $this->getSetting('placeholder_title');
@@ -438,7 +431,7 @@ class LinkWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
     foreach ($values as &$value) {
       $value['uri'] = static::getUserEnteredStringAsUri($value['uri']);
       $value += ['options' => []];
@@ -452,7 +445,7 @@ class LinkWidget extends WidgetBase {
    * Override the '%uri' message parameter, to ensure that 'internal:' URIs
    * show a validation error message that doesn't mention that scheme.
    */
-  public function flagErrors(FieldItemListInterface $items, ConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state) {
+  public function flagErrors(FieldItemListInterface $items, ConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state): void {
     /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
     foreach ($violations as $offset => $violation) {
       $parameters = $violation->getParameters();

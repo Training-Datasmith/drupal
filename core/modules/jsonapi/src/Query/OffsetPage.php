@@ -52,20 +52,6 @@ class OffsetPage {
   const SIZE_MAX = 50;
 
   /**
-   * The offset for the query.
-   *
-   * @var int
-   */
-  protected $offset;
-
-  /**
-   * The size of the query.
-   *
-   * @var int
-   */
-  protected $size;
-
-  /**
    * Instantiates an OffsetPage object.
    *
    * @param int $offset
@@ -73,9 +59,17 @@ class OffsetPage {
    * @param int $size
    *   The query size limit.
    */
-  public function __construct($offset, $size) {
-    $this->offset = $offset;
-    $this->size = $size;
+  public function __construct(
+      /**
+       * The offset for the query.
+       */
+      protected $offset,
+      /**
+       * The size of the query.
+       */
+      protected $size
+  )
+  {
   }
 
   /**
@@ -107,7 +101,7 @@ class OffsetPage {
    * @return static
    *   An OffsetPage object with defaults.
    */
-  public static function createFromQueryParameter($parameter) {
+  public static function createFromQueryParameter($parameter): static {
     if (!is_array($parameter)) {
       $cacheability = (new CacheableMetadata())->addCacheContexts(['url.query_args:page']);
       throw new CacheableBadRequestHttpException($cacheability, 'The page parameter needs to be an array.');

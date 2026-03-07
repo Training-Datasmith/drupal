@@ -19,9 +19,9 @@ use Drupal\update\UpdateManagerInterface;
  *   at any time without warning. External code should use the Update Status API
  *   directly.
  */
-final class ProjectInfo {
+final readonly class ProjectInfo {
 
-  public function __construct(private readonly string $name) {
+  public function __construct(private string $name) {
   }
 
   /**
@@ -104,7 +104,7 @@ final class ProjectInfo {
       throw new \RuntimeException('There was a problem getting update information. Try again later.');
     }
 
-    $support_branches = explode(',', $available_updates['supported_branches']);
+    $support_branches = explode(',', (string) $available_updates['supported_branches']);
     $installable_releases = [];
     foreach ($available_updates['releases'] as $release_info) {
       try {

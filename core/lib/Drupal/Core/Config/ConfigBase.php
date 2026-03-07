@@ -91,7 +91,7 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface {
    *
    * @see Config::MAX_NAME_LENGTH
    */
-  public static function validateName($name) {
+  public static function validateName($name): void {
     // The name must be namespaced by owner.
     if (!str_contains($name, '.')) {
       throw new ConfigNameException("Missing namespace in Config object name $name.");
@@ -132,16 +132,12 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface {
     if (empty($key)) {
       return $this->data;
     }
-    else {
-      $parts = explode('.', $key);
-      if (count($parts) == 1) {
-        return $this->data[$key] ?? NULL;
-      }
-      else {
-        $value = NestedArray::getValue($this->data, $parts, $key_exists);
-        return $key_exists ? $value : NULL;
-      }
+    $parts = explode('.', $key);
+    if (count($parts) == 1) {
+      return $this->data[$key] ?? NULL;
     }
+    $value = NestedArray::getValue($this->data, $parts, $key_exists);
+    return $key_exists ? $value : NULL;
   }
 
   /**
@@ -205,7 +201,7 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface {
    */
   protected function validateKeys(array $data) {
     foreach ($data as $key => $value) {
-      if (str_contains($key, '.')) {
+      if (str_contains((string) $key, '.')) {
         throw new ConfigValueException("$key key contains a dot which is not supported.");
       }
       if (is_array($value)) {
@@ -284,7 +280,7 @@ abstract class ConfigBase implements RefinableCacheableDependencyInterface {
       $data = (string) $data;
     }
     elseif (is_array($data)) {
-      array_walk_recursive($data, function (&$value) {
+      array_walk_recursive($data, function (&$value): void {
         if ($value instanceof MarkupInterface) {
           $value = (string) $value;
         }

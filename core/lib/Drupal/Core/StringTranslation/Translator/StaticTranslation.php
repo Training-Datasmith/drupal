@@ -10,21 +10,18 @@ namespace Drupal\Core\StringTranslation\Translator;
 class StaticTranslation implements TranslatorInterface {
 
   /**
-   * String translations.
-   *
-   * @var array
-   *   Array of cached translations indexed by language and context.
-   */
-  protected $translations;
-
-  /**
    * Constructs a translator from an array of translations.
    *
    * @param array $translations
    *   Array of override strings indexed by language and context.
    */
-  public function __construct($translations = []) {
-    $this->translations = $translations;
+  public function __construct(
+      /**
+       * String translations.
+       */
+      protected $translations = []
+  )
+  {
   }
 
   /**
@@ -34,18 +31,13 @@ class StaticTranslation implements TranslatorInterface {
     if (!isset($this->translations[$langcode])) {
       $this->translations[$langcode] = $this->getLanguage($langcode);
     }
-    if (isset($this->translations[$langcode][$context][$string])) {
-      return $this->translations[$langcode][$context][$string];
-    }
-    else {
-      return FALSE;
-    }
+    return $this->translations[$langcode][$context][$string] ?? FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): void {
     $this->translations = [];
   }
 
@@ -60,7 +52,7 @@ class StaticTranslation implements TranslatorInterface {
    *   source string belongs to. The second level is using original strings as
    *   keys. An empty array will be returned when no translations are available.
    */
-  protected function getLanguage($langcode) {
+  protected function getLanguage($langcode): array {
     // This class is usually a base class but we do not declare as abstract
     // because it can be used on its own, by passing a simple array on the
     // constructor. This can be useful while testing, but it does not support

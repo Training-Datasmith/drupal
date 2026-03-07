@@ -15,26 +15,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ContentPreprocess implements ContainerInjectionInterface {
 
   /**
-   * The route match service.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructor.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   Current route match service.
    */
-  public function __construct(RouteMatchInterface $route_match) {
-    $this->routeMatch = $route_match;
+  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('current_route_match')
     );
@@ -46,7 +39,7 @@ class ContentPreprocess implements ContainerInjectionInterface {
    *
    * @see hook_preprocess_HOOK()
    */
-  public function preprocessNode(array &$variables) {
+  public function preprocessNode(array &$variables): void {
     // Set the 'page' template variable when the node is being displayed on the
     // "Latest version" tab provided by content_moderation.
     $variables['page'] = $variables['page'] || $this->isLatestVersionPage($variables['node']);
@@ -61,7 +54,7 @@ class ContentPreprocess implements ContainerInjectionInterface {
    * @return bool
    *   True if the current route is the latest version tab of the given node.
    */
-  public function isLatestVersionPage(Node $node) {
+  public function isLatestVersionPage(Node $node): bool {
     return $this->routeMatch->getRouteName() == 'entity.node.latest_version'
            && ($pageNode = $this->routeMatch->getParameter('node'))
            && $pageNode->id() == $node->id();

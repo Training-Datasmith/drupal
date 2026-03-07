@@ -48,31 +48,21 @@ class CheckProvider implements CheckProviderInterface {
   protected $staticRequirementMap;
 
   /**
-   * An array to map dynamic requirement keys to service IDs.
-   *
-   * @var array
-   */
-  protected $dynamicRequirementMap;
-
-  /**
    * Constructs a CheckProvider object.
    *
-   * @param array $dynamic_requirements_map
+   * @param array $dynamicRequirementMap
    *   An array to map dynamic requirement keys to service IDs.
    * @param \Psr\Container\ContainerInterface $container
    *   The check provider service locator.
    */
-  public function __construct(
-    array $dynamic_requirements_map,
-    protected ContainerInterface $container,
-  ) {
-    $this->dynamicRequirementMap = $dynamic_requirements_map;
+  public function __construct(protected array $dynamicRequirementMap, protected ContainerInterface $container)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addCheckService($service_id, $service_method, array $applies_checks = [], $needs_incoming_request = FALSE) {
+  public function addCheckService($service_id, $service_method, array $applies_checks = [], $needs_incoming_request = FALSE): void {
     $this->checkIds[] = $service_id;
     $this->checkMethods[$service_id] = $service_method;
     if ($needs_incoming_request) {
@@ -93,7 +83,7 @@ class CheckProvider implements CheckProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setChecks(RouteCollection $routes) {
+  public function setChecks(RouteCollection $routes): void {
     foreach ($routes as $route) {
       if ($checks = $this->applies($route)) {
         $route->setOption('_access_checks', $checks);
@@ -104,7 +94,7 @@ class CheckProvider implements CheckProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function loadCheck($service_id) {
+  public function loadCheck($service_id): array {
     if (empty($this->checks[$service_id])) {
       if (!in_array($service_id, $this->checkIds)) {
         throw new \InvalidArgumentException(sprintf('No check has been registered for %s', $service_id));
@@ -134,7 +124,7 @@ class CheckProvider implements CheckProviderInterface {
    *   An array of service ids for the access checks that apply to passed
    *   route.
    */
-  protected function applies(Route $route) {
+  protected function applies(Route $route): array {
     $checks = [];
 
     // Iterate through map requirements from appliesTo() on access checkers.

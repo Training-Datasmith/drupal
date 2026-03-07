@@ -12,35 +12,25 @@ class SubformState extends FormStateDecoratorBase implements SubformStateInterfa
   use FormStateValuesTrait;
 
   /**
-   * The parent form.
-   *
-   * @var mixed[]
-   */
-  protected $parentForm;
-
-  /**
-   * The subform.
-   *
-   * @var mixed[]
-   */
-  protected $subform;
-
-  /**
    * Constructs a new instance.
    *
    * @param mixed[] $subform
    *   The subform for which to create a form state.
-   * @param mixed[] $parent_form
+   * @param mixed[] $parentForm
    *   The subform's parent form.
    * @param \Drupal\Core\Form\FormStateInterface $parent_form_state
    *   The parent form state.
    * @param \Drupal\Core\Form\FormInterface|null $subformFormObject
    *   The subform form object when it's not the same as the parent form.
    */
-  protected function __construct(array &$subform, array &$parent_form, FormStateInterface $parent_form_state, protected readonly ?FormInterface $subformFormObject = NULL) {
+  protected function __construct(/**
+   * The subform.
+   */
+  protected array &$subform, /**
+   * The parent form.
+   */
+  protected array &$parentForm, FormStateInterface $parent_form_state, protected readonly ?FormInterface $subformFormObject = NULL) {
     $this->decoratedFormState = $parent_form_state;
-    $this->parentForm = $parent_form;
-    $this->subform = $subform;
   }
 
   /**
@@ -54,10 +44,8 @@ class SubformState extends FormStateDecoratorBase implements SubformStateInterfa
    *   The parent form state.
    * @param \Drupal\Core\Form\FormInterface|null $subform_form_object
    *   The subform form object when it's not the same as the parent form.
-   *
-   * @return static
    */
-  public static function createForSubform(array &$subform, array &$parent_form, FormStateInterface $parent_form_state, ?FormInterface $subform_form_object = NULL) {
+  public static function createForSubform(array &$subform, array &$parent_form, FormStateInterface $parent_form_state, ?FormInterface $subform_form_object = NULL): static {
     return new static($subform, $parent_form, $parent_form_state, $subform_form_object);
   }
 
@@ -147,7 +135,7 @@ class SubformState extends FormStateDecoratorBase implements SubformStateInterfa
   /**
    * {@inheritdoc}
    */
-  public function setErrorByName($name, $message = '') {
+  public function setErrorByName($name, $message = ''): static {
     $parents = $this->subform['#array_parents'];
     $parents[] = $name;
     $name = implode('][', $parents);

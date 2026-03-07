@@ -52,7 +52,7 @@ final class Target
     public const TARGET_ALL        = 31;
 
     /** @var array<string, int> */
-    private static $map = [
+    private static array $map = [
         'ALL'        => self::TARGET_ALL,
         'CLASS'      => self::TARGET_CLASS,
         'METHOD'     => self::TARGET_METHOD,
@@ -61,7 +61,8 @@ final class Target
         'ANNOTATION' => self::TARGET_ANNOTATION,
     ];
 
-    /** @phpstan-var list<string> */
+    /** @phpstan-var list<string>
+     * @var string[] */
     public $value;
 
     /**
@@ -97,7 +98,7 @@ final class Target
             throw new InvalidArgumentException(
                 sprintf(
                     '@Target expects either a string value, or an array of strings, "%s" given.',
-                    is_object($values['value']) ? get_class($values['value']) : gettype($values['value'])
+                    get_debug_type($values['value'])
                 )
             );
         }

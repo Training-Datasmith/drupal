@@ -16,13 +16,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class FileUrlGenerator implements FileUrlGeneratorInterface {
 
   /**
-   * The stream wrapper manager.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -30,26 +23,17 @@ class FileUrlGenerator implements FileUrlGeneratorInterface {
   protected $requestStack;
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a new file URL generator object.
    *
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager
+   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
    *   The stream wrapper manager.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(StreamWrapperManagerInterface $stream_wrapper_manager, RequestStack $request_stack, ModuleHandlerInterface $module_handler) {
-    $this->streamWrapperManager = $stream_wrapper_manager;
+  public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager, RequestStack $request_stack, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler) {
     $this->requestStack = $request_stack;
-    $this->moduleHandler = $module_handler;
   }
 
   /**
@@ -88,20 +72,20 @@ class FileUrlGenerator implements FileUrlGeneratorInterface {
     $this->moduleHandler->alter('file_url', $uri);
 
     $scheme = StreamWrapperManager::getScheme($uri);
-
     if (!$scheme) {
-      $baseUrl = $relative ? base_path() : $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost() . base_path();
-      return $this->generatePath($baseUrl, $uri);
+        $baseUrl = $relative ? base_path() : $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost() . base_path();
+        return $this->generatePath($baseUrl, $uri);
     }
-    elseif ($scheme == 'http' || $scheme == 'https' || $scheme == 'data') {
-      // Check for HTTP and data URI-encoded URLs so that we don't have to
-      // implement getExternalUrl() for the HTTP and data schemes.
-      return $relative ? $this->transformRelative($uri) : $uri;
+    if ($scheme == 'http' || $scheme == 'https' || $scheme == 'data') {
+        // Check for HTTP and data URI-encoded URLs so that we don't have to
+        // implement getExternalUrl() for the HTTP and data schemes.
+        return $relative ? $this->transformRelative($uri) : $uri;
     }
-    elseif ($wrapper = $this->streamWrapperManager->getViaUri($uri)) {
-      // Attempt to return an external URL using the appropriate wrapper.
-      $externalUrl = $wrapper->getExternalUrl();
-      return $relative ? $this->transformRelative($externalUrl) : $externalUrl;
+
+    if ($wrapper = $this->streamWrapperManager->getViaUri($uri)) {
+        // Attempt to return an external URL using the appropriate wrapper.
+        $externalUrl = $wrapper->getExternalUrl();
+        return $relative ? $this->transformRelative($externalUrl) : $externalUrl;
     }
     throw new InvalidStreamWrapperException();
   }
@@ -128,24 +112,20 @@ class FileUrlGenerator implements FileUrlGeneratorInterface {
     if (mb_substr($uri, 0, 1) == '/') {
       return $uri;
     }
-    else {
-      // If this is not a properly formatted stream, then it is a shipped
-      // file. Therefore, return the urlencoded URI with the base URL
-      // prepended.
-      $options = UrlHelper::parse($uri);
-      $path = $base_url . UrlHelper::encodePath($options['path']);
-      // Append the query.
-      if ($options['query']) {
-        $path .= '?' . UrlHelper::buildQuery($options['query']);
-      }
-
-      // Append fragment.
-      if ($options['fragment']) {
-        $path .= '#' . $options['fragment'];
-      }
-
-      return $path;
+    // If this is not a properly formatted stream, then it is a shipped
+    // file. Therefore, return the urlencoded URI with the base URL
+    // prepended.
+    $options = UrlHelper::parse($uri);
+    $path = $base_url . UrlHelper::encodePath($options['path']);
+    // Append the query.
+    if ($options['query']) {
+      $path .= '?' . UrlHelper::buildQuery($options['query']);
     }
+    // Append fragment.
+    if ($options['fragment']) {
+      $path .= '#' . $options['fragment'];
+    }
+    return $path;
   }
 
   /**
@@ -157,47 +137,42 @@ class FileUrlGenerator implements FileUrlGeneratorInterface {
     $this->moduleHandler->alter('file_url', $uri);
 
     $scheme = StreamWrapperManager::getScheme($uri);
-
     if (!$scheme) {
-      // Allow for:
-      // - root-relative URIs (e.g. /foo.jpg in https://example.com/foo.jpg)
-      // - protocol-relative URIs (e.g. //bar.jpg, which is expanded to
-      //   https://example.com/bar.jpg by the browser when viewing a page over
-      //   HTTP and to https://example.com/bar.jpg when viewing a HTTPS page)
-      // Both types of relative URIs are characterized by a leading slash, hence
-      // we can use a single check.
-      if (mb_substr($uri, 0, 2) == '//') {
-        return Url::fromUri($uri);
-      }
-      elseif (mb_substr($uri, 0, 1) == '/') {
-        return Url::fromUri('base:' . str_replace($this->requestStack->getCurrentRequest()->getBasePath(), '', $uri));
-      }
-      else {
+        // Allow for:
+        // - root-relative URIs (e.g. /foo.jpg in https://example.com/foo.jpg)
+        // - protocol-relative URIs (e.g. //bar.jpg, which is expanded to
+        //   https://example.com/bar.jpg by the browser when viewing a page over
+        //   HTTP and to https://example.com/bar.jpg when viewing a HTTPS page)
+        // Both types of relative URIs are characterized by a leading slash, hence
+        // we can use a single check.
+        if (mb_substr((string) $uri, 0, 2) == '//') {
+            return Url::fromUri($uri);
+        }
+        if (mb_substr((string) $uri, 0, 1) == '/') {
+            return Url::fromUri('base:' . str_replace($this->requestStack->getCurrentRequest()->getBasePath(), '', $uri));
+        }
         // If this is not a properly formatted stream, then it is a shipped
         // file. Therefore, return the urlencoded URI.
         $options = UrlHelper::parse($uri);
         return Url::fromUri('base:' . UrlHelper::encodePath($options['path']), $options);
-      }
     }
-    elseif ($scheme == 'http' || $scheme == 'https' || $scheme == 'data') {
-      // Check for HTTP and data URI-encoded URLs so that we don't have to
-      // implement getExternalUrl() for the HTTP and data schemes.
-      $options = UrlHelper::parse($uri);
-      return Url::fromUri(urldecode($options['path']), $options);
+    if ($scheme == 'http' || $scheme == 'https' || $scheme == 'data') {
+        // Check for HTTP and data URI-encoded URLs so that we don't have to
+        // implement getExternalUrl() for the HTTP and data schemes.
+        $options = UrlHelper::parse($uri);
+        return Url::fromUri(urldecode((string) $options['path']), $options);
     }
-    elseif ($wrapper = $this->streamWrapperManager->getViaUri($uri)) {
-      $external_url = $wrapper->getExternalUrl();
-      $options = UrlHelper::parse($external_url);
 
-      // @todo Switch to dependency injected request_context service after
-      // https://www.drupal.org/project/drupal/issues/3256884 is fixed.
-      if (UrlHelper::externalIsLocal($external_url, \Drupal::service('router.request_context')->getCompleteBaseUrl())) {
-        // Attempt to return an external URL using the appropriate wrapper.
-        return Url::fromUri('base:' . $this->transformRelative(urldecode($options['path']), FALSE), $options);
-      }
-      else {
-        return Url::fromUri(urldecode($options['path']), $options);
-      }
+    if ($wrapper = $this->streamWrapperManager->getViaUri($uri)) {
+        $external_url = $wrapper->getExternalUrl();
+        $options = UrlHelper::parse($external_url);
+        // @todo Switch to dependency injected request_context service after
+        // https://www.drupal.org/project/drupal/issues/3256884 is fixed.
+        if (UrlHelper::externalIsLocal($external_url, \Drupal::service('router.request_context')->getCompleteBaseUrl())) {
+          // Attempt to return an external URL using the appropriate wrapper.
+          return Url::fromUri('base:' . $this->transformRelative(urldecode((string) $options['path']), FALSE), $options);
+        }
+        return Url::fromUri(urldecode((string) $options['path']), $options);
     }
     throw new InvalidStreamWrapperException();
   }
@@ -223,9 +198,9 @@ class FileUrlGenerator implements FileUrlGeneratorInterface {
     // base path, add it to the host to be removed from the URL as well.
     $base_path = !$root_relative ? $request->getBasePath() : '';
 
-    $host = preg_quote($host, '@');
-    $port = preg_quote($port, '@');
-    $base_path = preg_quote($base_path, '@');
+    $host = preg_quote((string) $host, '@');
+    $port = preg_quote((string) $port, '@');
+    $base_path = preg_quote((string) $base_path, '@');
 
     return preg_replace("@^https?://{$host}(:{$port})?{$base_path}($|/)@", '/', $file_url);
   }

@@ -20,7 +20,7 @@ class ScaleAndCrop extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     return [
       'x' => [
         'description' => 'The horizontal offset for the start of the crop, in pixels',
@@ -44,7 +44,7 @@ class ScaleAndCrop extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function validateArguments(array $arguments) {
+  protected function validateArguments(array $arguments): array {
     $actualWidth = $this->getToolkit()->getWidth();
     $actualHeight = $this->getToolkit()->getHeight();
 
@@ -75,7 +75,7 @@ class ScaleAndCrop extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function execute(array $arguments = []) {
+  protected function execute(array $arguments = []): bool {
     return $this->getToolkit()->apply('resize', $arguments['resize'])
         && $this->getToolkit()->apply('crop', $arguments);
   }

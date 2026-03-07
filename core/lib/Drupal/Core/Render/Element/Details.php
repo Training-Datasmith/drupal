@@ -41,7 +41,7 @@ class Details extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#open' => FALSE,
       '#summary_attributes' => [],
@@ -68,7 +68,7 @@ class Details extends RenderElementBase {
    * @return array
    *   The modified element.
    */
-  public static function preRenderDetails($element) {
+  public static function preRenderDetails(array $element): array {
     Element::setAttributes($element, ['id']);
 
     // The .js-form-wrapper class is required for #states to treat details like

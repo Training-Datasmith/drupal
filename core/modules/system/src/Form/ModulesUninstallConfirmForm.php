@@ -22,34 +22,6 @@ class ModulesUninstallConfirmForm extends ConfirmFormBase {
   use ConfigDependencyDeleteFormTrait;
 
   /**
-   * The module installer service.
-   *
-   * @var \Drupal\Core\Extension\ModuleInstallerInterface
-   */
-  protected $moduleInstaller;
-
-  /**
-   * The expirable key value store.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
-   */
-  protected $keyValueExpirable;
-
-  /**
-   * The configuration manager.
-   *
-   * @var \Drupal\Core\Config\ConfigManagerInterface
-   */
-  protected $configManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * An array of modules to uninstall.
    *
    * @var array
@@ -57,41 +29,29 @@ class ModulesUninstallConfirmForm extends ConfirmFormBase {
   protected $modules = [];
 
   /**
-   * The module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
-
-  /**
    * Constructs a ModulesUninstallConfirmForm object.
    *
-   * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
+   * @param \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller
    *   The module installer.
-   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $key_value_expirable
+   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable
    *   The key value expirable factory.
-   * @param \Drupal\Core\Config\ConfigManagerInterface $config_manager
+   * @param \Drupal\Core\Config\ConfigManagerInterface $configManager
    *   The configuration manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
    * @param string|false|null $installProfile
    *   The install profile.
    */
-  public function __construct(ModuleInstallerInterface $module_installer, KeyValueStoreExpirableInterface $key_value_expirable, ConfigManagerInterface $config_manager, EntityTypeManagerInterface $entity_type_manager, ModuleExtensionList $extension_list_module, protected string|false|null $installProfile = NULL) {
-    $this->moduleInstaller = $module_installer;
-    $this->keyValueExpirable = $key_value_expirable;
-    $this->configManager = $config_manager;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->moduleExtensionList = $extension_list_module;
+  public function __construct(protected \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller, protected \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable, protected \Drupal\Core\Config\ConfigManagerInterface $configManager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList, protected string|false|null $installProfile = NULL) {
     $this->installProfile ??= \Drupal::installProfile();
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_installer'),
       $container->get('keyvalue.expirable')->get('modules_uninstall'),
@@ -105,35 +65,35 @@ class ModulesUninstallConfirmForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Confirm uninstall');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Uninstall');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('system.modules_uninstall');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Would you like to continue with uninstalling the above?');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_modules_uninstall_confirm_form';
   }
 
@@ -155,9 +115,7 @@ class ModulesUninstallConfirmForm extends ConfirmFormBase {
     $form['text']['#markup'] = '<p>' . $this->t('The following modules will be completely uninstalled from your site, and <em>all data from these modules will be lost</em>!') . '</p>';
     $form['modules'] = [
       '#theme' => 'item_list',
-      '#items' => array_map(function ($module) use ($data) {
-        return $data[$module]->info['name'];
-      }, $this->modules),
+      '#items' => array_map(fn($module) => $data[$module]->info['name'], $this->modules),
     ];
 
     if (!empty($this->installProfile) && in_array($this->installProfile, $this->modules, TRUE)) {
@@ -173,7 +131,7 @@ class ModulesUninstallConfirmForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Clear the key value store entry.
     $account = $this->currentUser()->id();
     $this->keyValueExpirable->delete($account);

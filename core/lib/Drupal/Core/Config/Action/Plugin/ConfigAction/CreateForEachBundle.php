@@ -42,7 +42,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   admin_label: new TranslatableMarkup('Create entities for each bundle of an entity type'),
   deriver: CreateForEachBundleDeriver::class,
 )]
-final class CreateForEachBundle implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class CreateForEachBundle implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   /**
    * The placeholder which is replaced with the ID of the current bundle.
@@ -59,9 +59,9 @@ final class CreateForEachBundle implements ConfigActionPluginInterface, Containe
   private const LABEL_PLACEHOLDER = '%label';
 
   public function __construct(
-    private readonly ConfigManagerInterface $configManager,
-    private readonly string $createAction,
-    private readonly ConfigActionManager $configActionManager,
+    private ConfigManagerInterface $configManager,
+    private string $createAction,
+    private ConfigActionManager $configActionManager,
   ) {}
 
   /**

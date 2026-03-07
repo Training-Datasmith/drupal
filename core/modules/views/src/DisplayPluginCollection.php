@@ -17,10 +17,8 @@ class DisplayPluginCollection extends DefaultLazyPluginCollection {
 
   /**
    * Stores a reference to the view which has this displays attached.
-   *
-   * @var \Drupal\views\ViewExecutable
    */
-  protected $view;
+  protected \Drupal\views\ViewExecutable $view;
 
   /**
    * {@inheritdoc}
@@ -62,7 +60,7 @@ class DisplayPluginCollection extends DefaultLazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function clear() {
+  public function clear(): void {
     foreach (array_filter($this->pluginInstances) as $display) {
       if ($display instanceof DisplayPluginInterface) {
         $display->destroy();
@@ -106,7 +104,7 @@ class DisplayPluginCollection extends DefaultLazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function remove($instance_id) {
+  public function remove($instance_id): void {
     $this->get($instance_id)->remove();
 
     parent::remove($instance_id);

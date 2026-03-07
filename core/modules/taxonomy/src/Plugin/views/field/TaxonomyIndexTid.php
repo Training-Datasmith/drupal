@@ -19,13 +19,6 @@ use Drupal\taxonomy\VocabularyStorageInterface;
 class TaxonomyIndexTid extends PrerenderList {
 
   /**
-   * The vocabulary storage.
-   *
-   * @var \Drupal\taxonomy\VocabularyStorageInterface
-   */
-  protected $vocabularyStorage;
-
-  /**
    * Constructs a TaxonomyIndexTid object.
    *
    * @param array $configuration
@@ -34,18 +27,17 @@ class TaxonomyIndexTid extends PrerenderList {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabulary_storage
+   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage
    *   The vocabulary storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, VocabularyStorageInterface $vocabulary_storage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->vocabularyStorage = $vocabulary_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -57,7 +49,7 @@ class TaxonomyIndexTid extends PrerenderList {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     // @todo Wouldn't it be possible to use $this->base_table and no if here?
@@ -85,7 +77,7 @@ class TaxonomyIndexTid extends PrerenderList {
   /**
    * Provide "link to term" option.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['link_to_taxonomy'] = [
       '#title' => $this->t('Link this field to its term page'),
       '#type' => 'checkbox',
@@ -123,14 +115,14 @@ class TaxonomyIndexTid extends PrerenderList {
   /**
    * Add this term to the query.
    */
-  public function query() {
+  public function query(): void {
     $this->addAdditionalFields();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function preRender(&$values) {
+  public function preRender(&$values): void {
     $vocabularies = $this->vocabularyStorage->loadMultiple();
     $this->field_alias = $this->aliases['nid'];
     $nids = [];

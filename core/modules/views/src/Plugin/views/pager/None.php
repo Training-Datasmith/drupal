@@ -24,7 +24,7 @@ class None extends PagerPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     // If the pager is set to none, then it should show all items.
@@ -34,7 +34,7 @@ class None extends PagerPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if (!empty($this->options['offset'])) {
       return $this->t('All items, skip @skip', ['@skip' => $this->options['offset']]);
     }
@@ -54,7 +54,7 @@ class None extends PagerPluginBase {
   /**
    * Provide the default form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['offset'] = [
       '#type' => 'number',
@@ -68,28 +68,28 @@ class None extends PagerPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usePager() {
+  public function usePager(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function useCountQuery() {
+  public function useCountQuery(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getItemsPerPage() {
+  public function getItemsPerPage(): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function executeCountQuery(&$count_query) {
+  public function executeCountQuery(&$count_query): void {
     // If we are displaying all items, never count. But we can update the count
     // in post_execute.
   }
@@ -97,14 +97,14 @@ class None extends PagerPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function postExecute(&$result) {
+  public function postExecute(&$result): void {
     $this->total_items = count($result);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // The only query modifications we might do are offsets.
     if (!empty($this->options['offset'])) {
       $this->view->query->setOffset($this->options['offset']);

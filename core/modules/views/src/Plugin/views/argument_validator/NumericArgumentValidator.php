@@ -20,14 +20,14 @@ class NumericArgumentValidator extends ArgumentValidatorPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateArgument($argument) {
+  public function validateArgument($argument): bool {
     return is_numeric($argument);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getContextDefinition() {
+  public function getContextDefinition(): \Drupal\Core\Plugin\Context\ContextDefinition {
     return new ContextDefinition('integer', $this->argument->adminLabel(), FALSE);
   }
 

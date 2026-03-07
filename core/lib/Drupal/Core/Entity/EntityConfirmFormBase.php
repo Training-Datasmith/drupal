@@ -76,7 +76,7 @@ abstract class EntityConfirmFormBase extends EntityForm implements ConfirmFormIn
         '#type' => 'submit',
         '#value' => $this->getConfirmText(),
         '#submit' => [
-          [$this, 'submitForm'],
+          $this->submitForm(...),
         ],
       ],
       'cancel' => ConfirmFormHelper::buildCancelLink($this, $this->getRequest()),

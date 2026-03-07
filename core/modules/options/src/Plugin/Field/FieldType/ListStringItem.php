@@ -44,7 +44,7 @@ class ListStringItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -61,18 +61,17 @@ class ListStringItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  protected function allowedValuesDescription() {
+  protected function allowedValuesDescription(): string {
     $description = '<p>' . $this->t('The name will be used in displayed options and edit forms.');
     $description .= '<br/>' . $this->t('The value is automatically generated machine name of the name provided and will be the stored value.');
     $description .= '</p>';
-    $description .= '<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>';
-    return $description;
+    return $description . ('<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function validateAllowedValue($option) {
+  protected static function validateAllowedValue($option): ?\Drupal\Core\StringTranslation\TranslatableMarkup {
     if (mb_strlen($option) > 255) {
       return new TranslatableMarkup('Allowed values list: each key must be a string at most 255 characters long.');
     }
@@ -82,7 +81,7 @@ class ListStringItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  protected static function castAllowedValue($value) {
+  protected static function castAllowedValue($value): string {
     return (string) $value;
   }
 

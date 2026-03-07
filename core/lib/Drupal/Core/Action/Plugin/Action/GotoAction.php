@@ -26,20 +26,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class GotoAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The event dispatcher service.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $dispatcher;
-
-  /**
-   * The unrouted URL assembler service.
-   *
-   * @var \Drupal\Core\Utility\UnroutedUrlAssemblerInterface
-   */
-  protected $unroutedUrlAssembler;
-
-  /**
    * Constructs a GotoAction object.
    *
    * @param array $configuration
@@ -50,20 +36,17 @@ class GotoAction extends ConfigurableActionBase implements ContainerFactoryPlugi
    *   The plugin implementation definition.
    * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
    *   The tempstore factory.
-   * @param \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $url_assembler
+   * @param \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler
    *   The unrouted URL assembler service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $dispatcher, UnroutedUrlAssemblerInterface $url_assembler) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher, protected \Drupal\Core\Utility\UnroutedUrlAssemblerInterface $unroutedUrlAssembler) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->dispatcher = $dispatcher;
-    $this->unroutedUrlAssembler = $url_assembler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function execute($object = NULL) {
+  public function execute($object = NULL): void {
     $url = $this->configuration['url'];
     // Leave external URLs unchanged, and assemble others as absolute URLs
     // relative to the site's base URL.
@@ -85,7 +68,7 @@ class GotoAction extends ConfigurableActionBase implements ContainerFactoryPlugi
       $url = $this->unroutedUrlAssembler->assemble($uri, $options);
     }
     $response = new RedirectResponse($url);
-    $listener = function ($event) use ($response) {
+    $listener = function ($event) use ($response): void {
       $event->setResponse($response);
     };
     // Add the listener to the event dispatcher.
@@ -95,7 +78,7 @@ class GotoAction extends ConfigurableActionBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'url' => '',
     ];
@@ -104,7 +87,7 @@ class GotoAction extends ConfigurableActionBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('URL'),
@@ -118,7 +101,7 @@ class GotoAction extends ConfigurableActionBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['url'] = $form_state->getValue('url');
   }
 

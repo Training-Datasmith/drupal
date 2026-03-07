@@ -44,7 +44,7 @@ class GeneratedLink extends BubbleableMetadata implements MarkupInterface, \Coun
    *
    * @return $this
    */
-  public function setGeneratedLink($generated_link) {
+  public function setGeneratedLink($generated_link): static {
     $this->generatedLink = $generated_link;
     return $this;
   }
@@ -52,7 +52,7 @@ class GeneratedLink extends BubbleableMetadata implements MarkupInterface, \Coun
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     return (string) $this->generatedLink;
   }
 

@@ -55,7 +55,7 @@ class GDToolkit extends ImageToolkitBase {
    * @see \Drupal\system\Plugin\ImageToolkit\GDToolkit::setImage()
    * @see http://php.net/manual/function.getimagesize.php
    */
-  protected $preLoadInfo = NULL;
+  protected $preLoadInfo;
 
   /**
    * Constructs a GDToolkit object.
@@ -122,14 +122,14 @@ class GDToolkit extends ImageToolkitBase {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['image_jpeg_quality'] = [
       '#type' => 'number',
       '#title' => $this->t('JPEG quality'),
       '#description' => $this->t('Define the image quality for JPEG manipulations. Ranges from 0 to 100. Higher values mean better image quality but bigger files.'),
       '#min' => 0,
       '#max' => 100,
-      '#default_value' => $this->configFactory->getEditable('system.image.gd')->get('jpeg_quality', FALSE),
+      '#default_value' => $this->configFactory->getEditable('system.image.gd')->get('jpeg_quality'),
       '#field_suffix' => $this->t('%'),
     ];
     return $form;
@@ -138,7 +138,7 @@ class GDToolkit extends ImageToolkitBase {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configFactory->getEditable('system.image.gd')
       ->set('jpeg_quality', $form_state->getValue(['gd', 'image_jpeg_quality']))
       ->save();
@@ -180,7 +180,7 @@ class GDToolkit extends ImageToolkitBase {
       $this->logger->error("The image toolkit '@toolkit' failed loading image '@image'. Reported error: @class - @message", [
         '@toolkit' => $this->getPluginId(),
         '@image' => $this->getSource(),
-        '@class' => get_class($t),
+        '@class' => $t::class,
         '@message' => $t->getMessage(),
       ]);
       $this->preLoadInfo = NULL;
@@ -191,20 +191,18 @@ class GDToolkit extends ImageToolkitBase {
     if (imageistruecolor($image)) {
       return TRUE;
     }
-    else {
-      // Convert indexed images to truecolor, copying the image to a new
-      // truecolor image, so that filters work correctly and don't result
-      // in unnecessary dither.
-      $data = [
-        'width' => imagesx($image),
-        'height' => imagesy($image),
-        'extension' => image_type_to_extension($this->getType(), FALSE),
-        'transparent_color' => $this->getTransparentColor(),
-        'is_temp' => TRUE,
-      ];
-      if ($this->apply('create_new', $data)) {
-        imagecopy($this->getImage(), $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
-      }
+    // Convert indexed images to truecolor, copying the image to a new
+    // truecolor image, so that filters work correctly and don't result
+    // in unnecessary dither.
+    $data = [
+      'width' => imagesx($image),
+      'height' => imagesy($image),
+      'extension' => image_type_to_extension($this->getType(), FALSE),
+      'transparent_color' => $this->getTransparentColor(),
+      'is_temp' => TRUE,
+    ];
+    if ($this->apply('create_new', $data)) {
+      imagecopy($this->getImage(), $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
     }
     return (bool) $this->getImage();
   }
@@ -212,7 +210,7 @@ class GDToolkit extends ImageToolkitBase {
   /**
    * {@inheritdoc}
    */
-  public function isValid() {
+  public function isValid(): bool {
     return ((bool) $this->preLoadInfo || isset($this->image));
   }
 
@@ -245,7 +243,7 @@ class GDToolkit extends ImageToolkitBase {
         $this->logger->error("The image toolkit '@toolkit' failed saving image '@image'. Reported error: @class - @message", [
           '@toolkit' => $this->getPluginId(),
           '@image' => $destination,
-          '@class' => get_class($t),
+          '@class' => $t::class,
           '@message' => $t->getMessage(),
         ]);
         $success = FALSE;
@@ -268,7 +266,7 @@ class GDToolkit extends ImageToolkitBase {
         $this->logger->error("The image toolkit '@toolkit' failed saving image '@image'. Reported error: @class - @message", [
           '@toolkit' => $this->getPluginId(),
           '@image' => $destination,
-          '@class' => get_class($t),
+          '@class' => $t::class,
           '@message' => $t->getMessage(),
         ]);
         $success = FALSE;
@@ -290,7 +288,7 @@ class GDToolkit extends ImageToolkitBase {
   /**
    * {@inheritdoc}
    */
-  public function parseFile() {
+  public function parseFile(): bool {
     $data = @getimagesize($this->getSource());
     if ($data && in_array($data[2], static::supportedTypes())) {
       $this->setType($data[2]);
@@ -306,7 +304,7 @@ class GDToolkit extends ImageToolkitBase {
    * @return string|null
    *   A color string like '#rrggbb', or NULL if not set or not relevant.
    */
-  public function getTransparentColor() {
+  public function getTransparentColor(): ?string {
     if (!$this->getImage() || $this->getType() != IMAGETYPE_GIF) {
       return NULL;
     }
@@ -337,14 +335,12 @@ class GDToolkit extends ImageToolkitBase {
    */
   public function getWidth() {
     if ($this->preLoadInfo) {
-      return $this->preLoadInfo[0];
+        return $this->preLoadInfo[0];
     }
-    elseif ($res = $this->getImage()) {
-      return imagesx($res);
+    if ($res = $this->getImage()) {
+        return imagesx($res);
     }
-    else {
-      return NULL;
-    }
+    return NULL;
   }
 
   /**
@@ -352,14 +348,12 @@ class GDToolkit extends ImageToolkitBase {
    */
   public function getHeight() {
     if ($this->preLoadInfo) {
-      return $this->preLoadInfo[1];
+        return $this->preLoadInfo[1];
     }
-    elseif ($res = $this->getImage()) {
-      return imagesy($res);
+    if ($res = $this->getImage()) {
+        return imagesy($res);
     }
-    else {
-      return NULL;
-    }
+    return NULL;
   }
 
   /**
@@ -382,7 +376,7 @@ class GDToolkit extends ImageToolkitBase {
    *
    * @return $this
    */
-  public function setType($type) {
+  public function setType($type): static {
     if (in_array($type, static::supportedTypes())) {
       $this->type = $type;
     }
@@ -392,14 +386,15 @@ class GDToolkit extends ImageToolkitBase {
   /**
    * {@inheritdoc}
    */
-  public function getMimeType() {
+  public function getMimeType(): string {
     return $this->getType() ? image_type_to_mime_type($this->getType()) : '';
   }
 
   /**
    * {@inheritdoc}
+   * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, value: mixed, severity?: Drupal\Core\Extension\Requirement\RequirementSeverity::Warning, description: (array{'#theme': 'item_list', '#items': list{0: Drupal\Core\StringTranslation\TranslatableMarkup, 1: Drupal\Core\StringTranslation\TranslatableMarkup, 2?: Drupal\Core\StringTranslation\TranslatableMarkup, 3?: Drupal\Core\StringTranslation\TranslatableMarkup}} | Drupal\Core\StringTranslation\TranslatableMarkup)}[]
    */
-  public function getRequirements() {
+  public function getRequirements(): array {
     $requirements = [];
 
     $info = gd_info();
@@ -417,7 +412,7 @@ class GDToolkit extends ImageToolkitBase {
       IMG_WEBP => 'WEBP',
       IMG_AVIF => 'AVIF',
     ];
-    $supported_formats = array_filter($check_formats, fn($type) => imagetypes() & $type, ARRAY_FILTER_USE_KEY);
+    $supported_formats = array_filter($check_formats, fn($type): int => imagetypes() & $type, ARRAY_FILTER_USE_KEY);
     $unsupported_formats = array_diff_key($check_formats, $supported_formats);
 
     $descriptions = [];
@@ -471,15 +466,16 @@ class GDToolkit extends ImageToolkitBase {
   /**
    * {@inheritdoc}
    */
-  public static function isAvailable() {
+  public static function isAvailable(): bool {
     // GD2 support is available.
     return function_exists('imagegd2');
   }
 
   /**
    * {@inheritdoc}
+   * @return lowercase-string[]
    */
-  public static function getSupportedExtensions() {
+  public static function getSupportedExtensions(): array {
     $extensions = [];
     foreach (static::supportedTypes() as $image_type) {
       // @todo Automatically fetch possible extensions for each mime type.
@@ -513,7 +509,7 @@ class GDToolkit extends ImageToolkitBase {
     if (in_array($extension, ['jpe', 'jpg'])) {
       $extension = 'jpeg';
     }
-    foreach ($this->supportedTypes() as $type) {
+    foreach (static::supportedTypes() as $type) {
       if (image_type_to_extension($type, FALSE) === $extension) {
         return $type;
       }
@@ -555,7 +551,7 @@ class GDToolkit extends ImageToolkitBase {
    *   An array of available image types. An image type is represented by a PHP
    *   IMAGETYPE_* constant (e.g. IMAGETYPE_JPEG, IMAGETYPE_PNG, etc.).
    */
-  protected static function supportedTypes() {
+  protected static function supportedTypes(): array {
     $types = [
       IMAGETYPE_PNG,
       IMAGETYPE_JPEG,

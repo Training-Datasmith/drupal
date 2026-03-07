@@ -48,12 +48,9 @@ trait ConfigFormBaseTrait {
     }
     if (in_array($name, $this->getEditableConfigNames())) {
       // Get a mutable object from the factory.
-      $config = $config_factory->getEditable($name);
+      return $config_factory->getEditable($name);
     }
-    else {
-      $config = $config_factory->get($name);
-    }
-    return $config;
+    return $config_factory->get($name);
   }
 
   /**

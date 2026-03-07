@@ -8,27 +8,6 @@ namespace Drupal\Component\Utility;
 class ArgumentsResolver implements ArgumentsResolverInterface {
 
   /**
-   * An associative array of parameter names to scalar candidate values.
-   *
-   * @var array
-   */
-  protected $scalars;
-
-  /**
-   * An associative array of parameter names to object candidate values.
-   *
-   * @var array
-   */
-  protected $objects;
-
-  /**
-   * An array object candidates tried on every parameter regardless of name.
-   *
-   * @var array
-   */
-  protected $wildcards;
-
-  /**
    * Constructs a new ArgumentsResolver.
    *
    * @param array $scalars
@@ -39,16 +18,15 @@ class ArgumentsResolver implements ArgumentsResolverInterface {
    *   An array object candidates tried on every parameter regardless of its
    *   name.
    */
-  public function __construct(array $scalars, array $objects, array $wildcards) {
-    $this->scalars = $scalars;
-    $this->objects = $objects;
-    $this->wildcards = $wildcards;
+  public function __construct(protected array $scalars, protected array $objects, protected array $wildcards)
+  {
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getArguments(callable $callable) {
+  public function getArguments(callable $callable): array {
     $arguments = [];
     foreach ($this->getReflector($callable)->getParameters() as $parameter) {
       $arguments[] = $this->getArgument($parameter);
@@ -118,7 +96,7 @@ class ArgumentsResolver implements ArgumentsResolverInterface {
    * @return \ReflectionFunctionAbstract
    *   The ReflectionMethod or ReflectionFunction to introspect the callable.
    */
-  protected function getReflector(callable $callable) {
+  protected function getReflector(callable $callable): \ReflectionMethod|\ReflectionFunction {
     if (is_array($callable)) {
       return new \ReflectionMethod($callable[0], $callable[1]);
     }

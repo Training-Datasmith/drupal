@@ -137,7 +137,7 @@ final class ChangeLogger implements EventSubscriberInterface, LoggerAwareInterfa
     // dispatches PostRequireEvent.
     if ($requested_log) {
       $message = $this->t("Requested changes:\n@change_list", [
-        '@change_list' => implode("\n", array_map('strval', $requested_log)),
+        '@change_list' => implode("\n", array_map(strval(...), $requested_log)),
       ]);
       $this->logger?->info($message);
     }
@@ -171,7 +171,7 @@ final class ChangeLogger implements EventSubscriberInterface, LoggerAwareInterfa
       $applied_log[] = $this->t('- Uninstalled @name', ['@name' => $name]);
     }
     $message = $this->t("Applied changes:\n@change_list", [
-      '@change_list' => implode("\n", array_map('strval', $applied_log)),
+      '@change_list' => implode("\n", array_map(strval(...), $applied_log)),
     ]);
     $this->logger?->info($message);
   }

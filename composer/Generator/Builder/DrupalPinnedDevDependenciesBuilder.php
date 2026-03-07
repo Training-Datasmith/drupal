@@ -12,7 +12,7 @@ class DrupalPinnedDevDependenciesBuilder extends DrupalPackageBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getPath() {
+  public function getPath(): string {
     return 'PinnedDevDependencies';
   }
 
@@ -41,7 +41,7 @@ class DrupalPinnedDevDependenciesBuilder extends DrupalPackageBuilder {
    * @return array
    *   The initial package metadata.
    */
-  protected function initialPackageMetadata() {
+  protected function initialPackageMetadata(): array {
     return [
       "name" => "drupal/core-dev-pinned",
       "type" => "metapackage",

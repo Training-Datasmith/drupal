@@ -23,25 +23,11 @@ use Symfony\Component\HttpFoundation\Request;
 class HelpBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * The current request.
    *
    * @var \Symfony\Component\HttpFoundation\Request
    */
   protected $request;
-
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
 
   /**
    * Creates a HelpBlock instance.
@@ -54,23 +40,21 @@ class HelpBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   The plugin implementation definition.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Request $request, ModuleHandlerInterface $module_handler, RouteMatchInterface $route_match) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, Request $request, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->request = $request;
-    $this->moduleHandler = $module_handler;
-    $this->routeMatch = $route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -83,15 +67,16 @@ class HelpBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]|array<int, non-empty-array>
    */
-  public function build() {
+  public function build(): array {
     // Do not show on a 403 or 404 page.
     if ($this->request->attributes->has('exception')) {
       return [];
     }
 
     $build = [];
-    $this->moduleHandler->invokeAllWith('help', function (callable $hook, string $module) use (&$build) {
+    $this->moduleHandler->invokeAllWith('help', function (callable $hook, string $module) use (&$build): void {
       // Don't add empty strings to $build array.
       if ($help = $hook($this->routeMatch->getRouteName(), $this->routeMatch)) {
         // Convert strings to #markup render arrays so that they will XSS admin
@@ -105,7 +90,7 @@ class HelpBlock extends BlockBase implements ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return Cache::mergeContexts(parent::getCacheContexts(), ['route']);
   }
 

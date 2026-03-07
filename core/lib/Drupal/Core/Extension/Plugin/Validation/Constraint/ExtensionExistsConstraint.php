@@ -19,8 +19,6 @@ class ExtensionExistsConstraint extends SymfonyConstraint {
 
   /**
    * The type of extension to look for. Can be 'module' or 'theme'.
-   *
-   * @var string
    */
   public string $type;
 

@@ -21,16 +21,16 @@ class UserNameConstraintValidator extends ConstraintValidator {
       return;
     }
     $name = $items instanceof FieldItemListInterface ? $items->first()->value : $items;
-    if (str_starts_with($name, ' ')) {
+    if (str_starts_with((string) $name, ' ')) {
       $this->context->addViolation($constraint->spaceBeginMessage);
     }
-    if (str_ends_with($name, ' ')) {
+    if (str_ends_with((string) $name, ' ')) {
       $this->context->addViolation($constraint->spaceEndMessage);
     }
-    if (str_contains($name, '  ')) {
+    if (str_contains((string) $name, '  ')) {
       $this->context->addViolation($constraint->multipleSpacesMessage);
     }
-    if (preg_match('/[^\x{80}-\x{F7} a-z0-9@+_.\'-]/i', $name)
+    if (preg_match('/[^\x{80}-\x{F7} a-z0-9@+_.\'-]/i', (string) $name)
       || preg_match(
         // Non-printable ISO-8859-1 + NBSP.
         '/[\x{80}-\x{A0}' .
@@ -50,11 +50,11 @@ class UserNameConstraintValidator extends ConstraintValidator {
         '\x{FFF9}-\x{FFFD}' .
         // NULL byte and control characters.
         '\x{0}-\x{1F}]/u',
-        $name)
+        (string) $name)
     ) {
       $this->context->addViolation($constraint->invalidMessage);
     }
-    if (mb_strlen($name) > UserInterface::USERNAME_MAX_LENGTH) {
+    if (mb_strlen((string) $name) > UserInterface::USERNAME_MAX_LENGTH) {
       $this->context->addViolation($constraint->tooLongMessage,
         ['%name' => $name, '%max' => UserInterface::USERNAME_MAX_LENGTH]);
     }

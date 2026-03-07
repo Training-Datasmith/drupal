@@ -17,7 +17,7 @@ class DblogOperations extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function clickSortable() {
+  public function clickSortable(): bool {
     return FALSE;
   }
 

@@ -31,7 +31,7 @@ class Weight extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#delta' => 10,
@@ -45,8 +45,9 @@ class Weight extends FormElementBase {
 
   /**
    * Expands a weight element into a select/number element.
+   * @return mixed[]
    */
-  public static function processWeight(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processWeight(&$element, FormStateInterface $form_state, &$complete_form): array {
     // If the number of options is small enough, use a select field. Otherwise,
     // use a number field.
     $type = $element['#delta'] <= \Drupal::config('system.site')->get('weight_select_max') ? 'select' : 'number';

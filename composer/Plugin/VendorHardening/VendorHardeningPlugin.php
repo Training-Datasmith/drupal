@@ -281,7 +281,7 @@ class VendorHardeningPlugin implements PluginInterface, EventSubscriberInterface
     $installed_packages = [];
     foreach ($this->getInstalledPackages() as $package) {
       // Normalize package names to lower case.
-      $installed_packages[strtolower($package->getName())] = $package;
+      $installed_packages[strtolower((string) $package->getName())] = $package;
     }
 
     $all_cleanup_paths = $this->config->getAllCleanupPaths();

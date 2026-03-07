@@ -17,11 +17,6 @@ use Drupal\Core\TypedData\DataReferenceDefinitionInterface;
 class Tables implements TablesInterface {
 
   /**
-   * @var \Drupal\Core\Database\Query\SelectInterface
-   */
-  protected $sqlQuery;
-
-  /**
    * Entity table array.
    *
    * This array contains at most two entries: one for the data, one for the
@@ -55,7 +50,7 @@ class Tables implements TablesInterface {
    *
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
    */
-  protected $entityFieldManager;
+  protected object $entityFieldManager;
 
   /**
    * List of case sensitive fields.
@@ -65,11 +60,10 @@ class Tables implements TablesInterface {
   protected $caseSensitiveFields = [];
 
   /**
-   * @param \Drupal\Core\Database\Query\SelectInterface $sql_query
+   * @param \Drupal\Core\Database\Query\SelectInterface $sqlQuery
    *   The SQL query.
    */
-  public function __construct(SelectInterface $sql_query) {
-    $this->sqlQuery = $sql_query;
+  public function __construct(protected \Drupal\Core\Database\Query\SelectInterface $sqlQuery) {
     $this->entityTypeManager = \Drupal::entityTypeManager();
     $this->entityFieldManager = \Drupal::service('entity_field.manager');
   }
@@ -77,7 +71,7 @@ class Tables implements TablesInterface {
   /**
    * {@inheritdoc}
    */
-  public function addField($field, $type, $langcode) {
+  public function addField($field, $type, $langcode): int|string {
     $entity_type_id = $this->sqlQuery->getMetaData('entity_type');
     $all_revisions = $this->sqlQuery->getMetaData('all_revisions');
     // This variable ensures grouping works correctly. For example, given the
@@ -358,7 +352,7 @@ class Tables implements TablesInterface {
    * @throws \Drupal\Core\Entity\Query\QueryException
    *   When an invalid property has been passed.
    */
-  protected function ensureEntityTable($index_prefix, $property, $type, $langcode, $base_table, $id_field, $entity_tables) {
+  protected function ensureEntityTable(string $index_prefix, $property, $type, $langcode, $base_table, $id_field, $entity_tables) {
     foreach ($entity_tables as $table => $mapping) {
       if (isset($mapping[$property])) {
         // Ensure a table joined multiple times through different index prefixes
@@ -404,7 +398,7 @@ class Tables implements TablesInterface {
    * @return string
    *   The alias of the joined table.
    */
-  protected function ensureFieldTable($index_prefix, &$field, $type, $langcode, $base_table, $entity_id_field, $field_id_field, $delta) {
+  protected function ensureFieldTable(string $index_prefix, &$field, $type, $langcode, $base_table, $entity_id_field, $field_id_field, $delta) {
     $field_name = $field->getName();
     if (!isset($this->fieldTables[$index_prefix . $field_name])) {
       $entity_type_id = $this->sqlQuery->getMetaData('entity_type');
@@ -436,7 +430,7 @@ class Tables implements TablesInterface {
    * @return string
    *   Returns the alias of the joined table.
    */
-  protected function addJoin($type, $table, $join_condition, $langcode, $delta = NULL) {
+  protected function addJoin($type, $table, string $join_condition, $langcode, $delta = NULL) {
     $arguments = [];
     if ($langcode) {
       $entity_type_id = $this->sqlQuery->getMetaData('entity_type');
@@ -469,7 +463,7 @@ class Tables implements TablesInterface {
    *   by column name and where values are incrementing integers. If the table
    *   mapping is not available, then FALSE is returned.
    */
-  protected function getTableMapping($table, $entity_type_id) {
+  protected function getTableMapping($table, $entity_type_id): false|array {
     $storage = $this->entityTypeManager->getStorage($entity_type_id);
     if ($storage instanceof SqlEntityStorageInterface) {
       $mapping = $storage->getTableMapping()->getAllColumns($table);

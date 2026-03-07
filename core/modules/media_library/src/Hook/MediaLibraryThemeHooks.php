@@ -67,7 +67,7 @@ class MediaLibraryThemeHooks {
    * Implements hook_preprocess_media().
    */
   #[Hook('preprocess_media')]
-  public function preprocessMedia(&$variables): void {
+  public function preprocessMedia(array &$variables): void {
     if ($variables['view_mode'] === 'media_library') {
       /** @var \Drupal\media\MediaInterface $media */
       $media = $variables['media'];
@@ -88,7 +88,7 @@ class MediaLibraryThemeHooks {
    * Implements hook_preprocess_views_view_fields().
    */
   #[Hook('preprocess_views_view_fields')]
-  public function preprocessViewsViewFields(&$variables): void {
+  public function preprocessViewsViewFields(array &$variables): void {
     // Add classes to media rendered entity field so it can be targeted for
     // JavaScript mouseover and click events.
     if ($variables['view']->id() === 'media_library' && isset($variables['fields']['rendered_entity'])) {

@@ -148,7 +148,7 @@ class StaticMap extends ProcessPluginBase {
         if (array_key_exists('default_value', $this->configuration) && $this->configuration['default_value'] === $this->configuration['map']['']) {
           return $this->configuration['default_value'];
         }
-        @trigger_error('Relying on mapping NULL values via an empty string map key in ' . __CLASS__ . '::transform() is deprecated in drupal:11.3.0 and will trigger a Drupal\migrate\MigrateSkipRowException from drupal:12.0.0. Set the empty string map value as the "default_value" in the plugin configuration. See https://www.drupal.org/node/3557003', E_USER_DEPRECATED);
+        @trigger_error('Relying on mapping NULL values via an empty string map key in ' . self::class . '::transform() is deprecated in drupal:11.3.0 and will trigger a Drupal\migrate\MigrateSkipRowException from drupal:12.0.0. Set the empty string map value as the "default_value" in the plugin configuration. See https://www.drupal.org/node/3557003', E_USER_DEPRECATED);
         // Preserve the current behavior of returning the value mapped to an
         // empty string for NULL.
         return $this->configuration['map'][''];
@@ -182,9 +182,7 @@ class StaticMap extends ProcessPluginBase {
       if (empty($this->configuration['bypass'])) {
         throw new MigrateSkipRowException(sprintf("No static mapping found for '%s' and no default value provided for destination '%s'.", Variable::export($value), $destination_property));
       }
-      else {
-        return $value;
-      }
+      return $value;
     }
     return $new_value;
   }

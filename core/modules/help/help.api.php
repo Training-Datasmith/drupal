@@ -29,12 +29,10 @@ use Drupal\Core\Url;
  * for more information.
  * @}
  */
-
 /**
  * @addtogroup hooks
  * @{
  */
-
 /**
  * Provide online user help.
  *
@@ -65,21 +63,17 @@ use Drupal\Core\Url;
  *   The current route match. This can be used to generate different help
  *   output for different pages that share the same route.
  *
- * @return string|\Stringable|array|null
+ * @return string|null
  *   A render array, localized string, or object that can be rendered into
  *   a string, containing the help text.
  */
-function hook_help($route_name, RouteMatchInterface $route_match): string|\Stringable|array|null {
-  switch ($route_name) {
-    // Main module help for the block module.
-    case 'help.page.block':
-      return '<p>' . t('Blocks are boxes of content rendered into an area, or region, of a web page. The default theme Olivero, for example, implements the regions "Sidebar", "Highlighted", "Content", "Header", "Footer Top", "Footer Bottom", etc., and a block may appear in any one of these areas. The <a href=":blocks">blocks administration page</a> provides a drag-and-drop interface for assigning a block to a region, and for controlling the order of blocks within regions.', [':blocks' => Url::fromRoute('block.admin_display')->toString()]) . '</p>';
-
-    // Help for another path in the block module.
-    case 'block.admin_display':
-      return '<p>' . t('This page provides a drag-and-drop interface for assigning a block to a region, and for controlling the order of blocks within regions. Since not all themes implement the same regions, or display regions in the same way, blocks are positioned on a per-theme basis. Remember that your changes will not be saved until you click the <em>Save blocks</em> button at the bottom of the page.') . '</p>';
-  }
-  return NULL;
+function hook_help($route_name, RouteMatchInterface $route_match): ?string
+{
+    return match ($route_name) {
+        'help.page.block' => '<p>' . t('Blocks are boxes of content rendered into an area, or region, of a web page. The default theme Olivero, for example, implements the regions "Sidebar", "Highlighted", "Content", "Header", "Footer Top", "Footer Bottom", etc., and a block may appear in any one of these areas. The <a href=":blocks">blocks administration page</a> provides a drag-and-drop interface for assigning a block to a region, and for controlling the order of blocks within regions.', [':blocks' => Url::fromRoute('block.admin_display')->toString()]) . '</p>',
+        'block.admin_display' => '<p>' . t('This page provides a drag-and-drop interface for assigning a block to a region, and for controlling the order of blocks within regions. Since not all themes implement the same regions, or display regions in the same way, blocks are positioned on a per-theme basis. Remember that your changes will not be saved until you click the <em>Save blocks</em> button at the bottom of the page.') . '</p>',
+        default => NULL,
+    };
 }
 
 /**
@@ -96,7 +90,7 @@ function hook_help($route_name, RouteMatchInterface $route_match): string|\Strin
  * @see \Drupal\help\Annotation\HelpSection
  * @see \Drupal\help\HelpSectionManager
  */
-function hook_help_section_info_alter(array &$info) {
+function hook_help_section_info_alter(array &$info): void {
   // Alter the header for the module overviews section.
   $info['hook_help']['title'] = t('Overviews of modules');
   // Move the module overviews section to the end.
@@ -109,7 +103,7 @@ function hook_help_section_info_alter(array &$info) {
  * @param array $info
  *   Array of help topic plugin definitions keyed by their plugin ID.
  */
-function hook_help_topics_info_alter(array &$info) {
+function hook_help_topics_info_alter(array &$info): void {
   // Alter the help topic to be displayed on admin/help.
   $info['example.help_topic']['top_level'] = TRUE;
 }

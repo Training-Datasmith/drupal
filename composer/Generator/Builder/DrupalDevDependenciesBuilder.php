@@ -12,7 +12,7 @@ class DrupalDevDependenciesBuilder extends DrupalPackageBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getPath() {
+  public function getPath(): string {
     return 'DevDependencies';
   }
 
@@ -38,7 +38,7 @@ class DrupalDevDependenciesBuilder extends DrupalPackageBuilder {
    * @return array
    *   The initial package metadata.
    */
-  protected function initialPackageMetadata() {
+  protected function initialPackageMetadata(): array {
     return [
       "name" => "drupal/core-dev",
       "type" => "metapackage",

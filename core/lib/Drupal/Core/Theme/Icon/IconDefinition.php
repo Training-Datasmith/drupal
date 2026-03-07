@@ -35,11 +35,11 @@ class IconDefinition implements IconDefinitionInterface {
    *   The additional data of the icon.
    */
   private function __construct(
-    private string $pack_id,
-    private string $icon_id,
-    private string $template,
-    private ?string $source,
-    private ?string $group,
+    private readonly string $pack_id,
+    private readonly string $icon_id,
+    private readonly string $template,
+    private readonly ?string $source,
+    private readonly ?string $group,
     private array $data,
   ) {}
 

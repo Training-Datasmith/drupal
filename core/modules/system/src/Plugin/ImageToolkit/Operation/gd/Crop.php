@@ -20,7 +20,7 @@ class Crop extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     return [
       'x' => [
         'description' => 'The starting x offset at which to start the crop, in pixels',
@@ -44,7 +44,7 @@ class Crop extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function validateArguments(array $arguments) {
+  protected function validateArguments(array $arguments): array {
     // Assure at least one dimension.
     if (empty($arguments['width']) && empty($arguments['height'])) {
       throw new \InvalidArgumentException("At least one dimension ('width' or 'height') must be provided to the image 'crop' operation");
@@ -74,7 +74,7 @@ class Crop extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function execute(array $arguments) {
+  protected function execute(array $arguments): bool {
     // Create a new image of the required dimensions, and copy and resize
     // the original image on it with resampling. Restore the original image upon
     // failure.

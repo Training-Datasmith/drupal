@@ -15,14 +15,14 @@ class ExceptionJsonSubscriber extends HttpExceptionSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  protected function getHandledFormats() {
+  protected function getHandledFormats(): array {
     return ['json', 'drupal_modal', 'drupal_dialog', 'drupal_ajax'];
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function getPriority() {
+  protected static function getPriority(): int {
     // This will fire after the most common HTML handler, since HTML requests
     // are still more common than JSON requests.
     return -75;
@@ -34,7 +34,7 @@ class ExceptionJsonSubscriber extends HttpExceptionSubscriberBase {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on4xx(ExceptionEvent $event) {
+  public function on4xx(ExceptionEvent $event): void {
     /** @var \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $exception */
     $exception = $event->getThrowable();
 

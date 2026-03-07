@@ -16,26 +16,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SwitchToLiveForm extends ConfirmFormBase implements ContainerInjectionInterface, WorkspaceSafeFormInterface {
 
   /**
-   * The workspace manager.
-   *
-   * @var \Drupal\workspaces\WorkspaceManagerInterface
-   */
-  protected $workspaceManager;
-
-  /**
    * Constructs a new SwitchToLiveForm.
    *
-   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager
    *   The workspace manager.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager) {
-    $this->workspaceManager = $workspace_manager;
+  public function __construct(protected \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('workspaces.manager')
     );
@@ -44,35 +37,35 @@ class SwitchToLiveForm extends ConfirmFormBase implements ContainerInjectionInte
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'switch_to_live_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Would you like to switch to the live version of the site?');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Switch to the live version of the site.');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('<current>');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->workspaceManager->switchToLive();
     $this->messenger()->addMessage($this->t('You are now viewing the live version of the site.'));
   }

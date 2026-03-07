@@ -125,7 +125,7 @@ class ModerationStateFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function onChange($delta) {
+  public function onChange($delta): void {
     $this->updateModeratedEntity($this->list[$delta]->value);
 
     parent::onChange($delta);
@@ -134,7 +134,7 @@ class ModerationStateFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     parent::setValue($values, $notify);
     $this->valueComputed = TRUE;
 
@@ -186,7 +186,7 @@ class ModerationStateFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function generateSampleItems($count = 1) {
+  public function generateSampleItems($count = 1): void {
     // No sample items generated since the starting moderation state is always
     // computed based on the default state of the associated workflow.
   }

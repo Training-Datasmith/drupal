@@ -22,8 +22,9 @@ class MailToFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#type': 'link', '#title': mixed, '#url': mixed}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($items as $delta => $item) {

@@ -29,8 +29,6 @@ class Cron implements CronInterface {
 
   /**
    * The queue config.
-   *
-   * @var array
    */
   protected array $queueConfig;
 
@@ -183,9 +181,7 @@ class Cron implements CronInterface {
       }
 
       // Reorder the queue by next 'process_from' timestamp.
-      usort($queues, function (array $queueA, array $queueB) {
-        return $queueA['process_from'] <=> $queueB['process_from'];
-      });
+      usort($queues, fn(array $queueA, array $queueB) => $queueA['process_from'] <=> $queueB['process_from']);
     }
   }
 
@@ -255,7 +251,7 @@ class Cron implements CronInterface {
     $logger = $time_logging_enabled ? $this->logger : new NullLogger();
 
     // Iterate through the modules calling their cron handlers (if any):
-    $this->moduleHandler->invokeAllWith('cron', function (callable $hook, string $module) use (&$module_previous, $logger) {
+    $this->moduleHandler->invokeAllWith('cron', function (callable $hook, string $module) use (&$module_previous, $logger): void {
       if (!$module_previous) {
         $logger->info('Starting execution of @module_cron().', [
           '@module' => $module,

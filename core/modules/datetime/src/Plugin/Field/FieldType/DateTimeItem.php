@@ -60,7 +60,7 @@ class DateTimeItem extends FieldItemBase implements DateTimeItemInterface {
       ->setLabel(new TranslatableMarkup('Computed date'))
       ->setDescription(new TranslatableMarkup('The computed DateTime object.'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\datetime\DateTimeComputed')
+      ->setClass(\Drupal\datetime\DateTimeComputed::class)
       ->setSetting('date source', 'value');
 
     return $properties;
@@ -69,7 +69,7 @@ class DateTimeItem extends FieldItemBase implements DateTimeItemInterface {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -87,7 +87,7 @@ class DateTimeItem extends FieldItemBase implements DateTimeItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
     $element = [];
 
     $element['datetime_type'] = [
@@ -126,7 +126,7 @@ class DateTimeItem extends FieldItemBase implements DateTimeItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('value')->getValue();
     return $value === NULL || $value === '';
   }
@@ -134,7 +134,7 @@ class DateTimeItem extends FieldItemBase implements DateTimeItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function onChange($property_name, $notify = TRUE) {
+  public function onChange($property_name, $notify = TRUE): void {
     // Enforce that the computed date is recalculated.
     if ($property_name == 'value') {
       $this->set('date', NULL);

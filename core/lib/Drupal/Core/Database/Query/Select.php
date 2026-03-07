@@ -152,7 +152,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function addTag($tag) {
+  public function addTag($tag): static {
     $this->alterTags[$tag] = 1;
     return $this;
   }
@@ -160,28 +160,28 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasTag($tag) {
+  public function hasTag($tag): bool {
     return isset($this->alterTags[$tag]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasAllTags(string ...$tags) {
+  public function hasAllTags(string ...$tags): bool {
     return !(bool) array_diff($tags, array_keys($this->alterTags));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasAnyTag(string ...$tags) {
+  public function hasAnyTag(string ...$tags): bool {
     return (bool) array_intersect($tags, array_keys($this->alterTags));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addMetaData($key, $object) {
+  public function addMetaData($key, $object): static {
     $this->alterMetaData[$key] = $object;
     return $this;
   }
@@ -196,7 +196,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function arguments() {
+  public function arguments(): null|float|int|array {
     if (!$this->compiled()) {
       return NULL;
     }
@@ -235,7 +235,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder) {
+  public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder): void {
     $this->condition->compile($connection, $queryPlaceholder);
     $this->having->compile($connection, $queryPlaceholder);
 
@@ -259,7 +259,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function compiled() {
+  public function compiled(): bool {
     if (!$this->condition->compiled() || !$this->having->compiled()) {
       return FALSE;
     }
@@ -290,7 +290,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingCondition($field, $value = NULL, $operator = NULL) {
+  public function havingCondition($field, $value = NULL, $operator = NULL): static {
     $this->having->condition($field, $value, $operator);
     return $this;
   }
@@ -312,7 +312,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function having($snippet, $args = []) {
+  public function having($snippet, $args = []): static {
     $this->having->where($snippet, $args);
     return $this;
   }
@@ -320,7 +320,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingCompile(Connection $connection) {
+  public function havingCompile(Connection $connection): void {
     $this->having->compile($connection, $this);
   }
 
@@ -340,7 +340,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingIsNull($field) {
+  public function havingIsNull($field): static {
     $this->having->isNull($field);
     return $this;
   }
@@ -348,7 +348,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingIsNotNull($field) {
+  public function havingIsNotNull($field): static {
     $this->having->isNotNull($field);
     return $this;
   }
@@ -356,7 +356,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingExists(SelectInterface $select) {
+  public function havingExists(SelectInterface $select): static {
     $this->having->exists($select);
     return $this;
   }
@@ -364,7 +364,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingNotExists(SelectInterface $select) {
+  public function havingNotExists(SelectInterface $select): static {
     $this->having->notExists($select);
     return $this;
   }
@@ -372,7 +372,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function forUpdate($set = TRUE) {
+  public function forUpdate($set = TRUE): static {
     if (isset($set)) {
       $this->forUpdate = $set;
     }
@@ -524,7 +524,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function distinct($distinct = TRUE) {
+  public function distinct($distinct = TRUE): static {
     $this->distinct = $distinct;
     return $this;
   }
@@ -564,7 +564,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function fields($table_alias, array $fields = []) {
+  public function fields($table_alias, array $fields = []): static {
     if ($fields) {
       foreach ($fields as $field) {
         // We don't care what alias was assigned.
@@ -662,7 +662,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function orderBy($field, $direction = 'ASC') {
+  public function orderBy($field, $direction = 'ASC'): static {
     // Only allow ASC and DESC, default to ASC.
     $direction = strtoupper($direction) == 'DESC' ? 'DESC' : 'ASC';
     $this->order[$field] = $direction;
@@ -672,7 +672,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function orderRandom() {
+  public function orderRandom(): static {
     $alias = $this->addExpression('RAND()', 'random_field');
     $this->orderBy($alias);
     return $this;
@@ -681,7 +681,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function range($start = NULL, $length = NULL) {
+  public function range($start = NULL, $length = NULL): static {
     $this->range = $start !== NULL ? ['start' => $start, 'length' => $length] : [];
     return $this;
   }
@@ -689,7 +689,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function union(SelectInterface $query, $type = '') {
+  public function union(SelectInterface $query, $type = ''): static {
     // Handle UNION aliasing.
     switch ($type) {
       // Fold UNION DISTINCT to UNION for better cross database support.
@@ -714,7 +714,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function groupBy($field) {
+  public function groupBy($field): static {
     $this->group[$field] = $field;
     return $this;
   }
@@ -737,7 +737,7 @@ class Select extends Query implements SelectInterface {
    * @return \Drupal\Core\Database\Query\Select
    *   A new query object ready to have COUNT(*) performed on it.
    */
-  protected function prepareCountQuery() {
+  protected function prepareCountQuery(): static {
     // Create our new query object that we will mutate into a count query.
     $count = clone($this);
 
@@ -798,7 +798,7 @@ class Select extends Query implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     // For convenience, we compile the query ourselves if the caller forgot
     // to do it. This allows constructs like "(string) $query" to work. When
     // the query will be executed, it will be recompiled using the proper
@@ -851,7 +851,7 @@ class Select extends Query implements SelectInterface {
         // Run preparation steps on this sub-query before converting to string.
         $subquery = $table['table'];
         $subquery->preExecute();
-        $table_string = '(' . (string) $subquery . ')';
+        $table_string = '(' . $subquery . ')';
       }
       else {
         $table_string = $this->connection->escapeTable($table['table']);
@@ -866,7 +866,7 @@ class Select extends Query implements SelectInterface {
       $query .= $table_string . ' ' . $this->connection->escapeAlias($table['alias']);
 
       if (!empty($table['condition'])) {
-        $query .= ' ON ' . (string) $table['condition'];
+        $query .= ' ON ' . $table['condition'];
       }
     }
 
@@ -878,9 +878,7 @@ class Select extends Query implements SelectInterface {
 
     // GROUP BY.
     if ($this->group) {
-      $group_by_fields = array_map(function (string $field): string {
-        return $this->connection->escapeField($field);
-      }, $this->group);
+      $group_by_fields = array_map(fn(string $field): string => $this->connection->escapeField($field), $this->group);
       $query .= "\nGROUP BY " . implode(', ', $group_by_fields);
     }
 
@@ -894,7 +892,7 @@ class Select extends Query implements SelectInterface {
     // this query, but syntactically they all end up on the same level.
     if ($this->union) {
       foreach ($this->union as $union) {
-        $query .= ' ' . $union['type'] . ' ' . (string) $union['query'];
+        $query .= ' ' . $union['type'] . ' ' . $union['query'];
       }
     }
 

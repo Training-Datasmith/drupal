@@ -14,7 +14,7 @@ class SettingsTrayThemeHooks {
    * Implements hook_preprocess_HOOK() for block templates.
    */
   #[Hook('preprocess_block')]
-  public function preprocessBlock(&$variables): void {
+  public function preprocessBlock(array &$variables): void {
     // Only blocks that have a settings_tray form and have no configuration
     // overrides will have a "Quick Edit" link. We could wait for the contextual
     // links to be initialized on the client side,  and then add the class and

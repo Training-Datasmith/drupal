@@ -21,11 +21,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   id: 'simpleConfigUpdate',
   admin_label: new TranslatableMarkup('Simple configuration update'),
 )]
-final class SimpleConfigUpdate implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class SimpleConfigUpdate implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigFactoryInterface $configFactory,
-    private readonly ConfigManagerInterface $configManager,
+    private ConfigFactoryInterface $configFactory,
+    private ConfigManagerInterface $configManager,
   ) {}
 
   /**

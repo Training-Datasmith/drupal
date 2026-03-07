@@ -24,20 +24,6 @@ use Drupal\search\SearchPageRepositoryInterface;
 class SearchBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The form builder.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-
-  /**
-   * The search page repository.
-   *
-   * @var \Drupal\search\SearchPageRepositoryInterface
-   */
-  protected $searchPageRepository;
-
-  /**
    * Constructs a new SearchLocalTask.
    *
    * @param array $configuration
@@ -46,15 +32,13 @@ class SearchBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    *   The form builder.
-   * @param \Drupal\search\SearchPageRepositoryInterface $search_page_repository
+   * @param \Drupal\search\SearchPageRepositoryInterface $searchPageRepository
    *   The search page repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, FormBuilderInterface $form_builder, SearchPageRepositoryInterface $search_page_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\search\SearchPageRepositoryInterface $searchPageRepository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->formBuilder = $form_builder;
-    $this->searchPageRepository = $search_page_repository;
   }
 
   /**
@@ -75,7 +59,7 @@ class SearchBlock extends BlockBase implements ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'page_id' => NULL,
     ];
@@ -84,7 +68,7 @@ class SearchBlock extends BlockBase implements ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     // The configuration for this block is which search page to connect the
     // form to. Options are all configured/active search pages.
     $options = [];
@@ -109,7 +93,7 @@ class SearchBlock extends BlockBase implements ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     // Handle the #empty_value: using the default requires specifying `null` in
     // the config.
     // @see search.schema.yml

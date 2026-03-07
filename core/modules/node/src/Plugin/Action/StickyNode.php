@@ -20,7 +20,7 @@ class StickyNode extends FieldUpdateActionBase {
   /**
    * {@inheritdoc}
    */
-  protected function getFieldsToUpdate() {
+  protected function getFieldsToUpdate(): array {
     return ['sticky' => NodeInterface::STICKY];
   }
 

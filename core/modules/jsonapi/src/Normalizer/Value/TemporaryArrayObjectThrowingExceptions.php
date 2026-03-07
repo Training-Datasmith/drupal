@@ -21,7 +21,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function append($value): void {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -35,7 +35,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function asort($flags = SORT_REGULAR): TRUE {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -46,7 +46,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function count(): int {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -60,7 +60,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function exchangeArray($array): array {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -71,7 +71,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function getArrayCopy(): array {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -82,7 +82,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function getFlags(): int {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -93,7 +93,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function getIterator(): \Iterator {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -108,7 +108,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function getIteratorClass(): string {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -122,7 +122,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function ksort($flags = SORT_REGULAR): TRUE {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -133,7 +133,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function natcasesort(): TRUE {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -144,7 +144,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function natsort(): TRUE {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -158,7 +158,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function offsetExists($key): bool {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -175,7 +175,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function offsetGet($key): mixed {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -191,7 +191,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function offsetSet($key, $value): void {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -205,7 +205,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function offsetUnset($key): void {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -219,7 +219,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function setFlags($flags): void {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -234,7 +234,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function setIteratorClass($iteratorClass): void {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -250,7 +250,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function uasort($callback): TRUE {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
   /**
@@ -266,7 +266,7 @@ class TemporaryArrayObjectThrowingExceptions extends \ArrayObject {
    *   it is extending \ArrayObject.
    */
   public function uksort($callback): TRUE {
-    throw new \Exception('This ' . __CLASS__ . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
+    throw new \Exception('This ' . self::class . ' does not support this action but it must implement it, because it is extending \ArrayObject.');
   }
 
 }

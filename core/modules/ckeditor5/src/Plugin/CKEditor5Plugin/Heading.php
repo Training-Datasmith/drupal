@@ -49,7 +49,7 @@ class Heading extends CKEditor5PluginDefault implements CKEditor5PluginConfigura
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return static::DEFAULT_CONFIGURATION;
   }
 
@@ -91,7 +91,7 @@ class Heading extends CKEditor5PluginDefault implements CKEditor5PluginConfigura
    *
    * Form for choosing which heading tags are available.
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['enabled_headings'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Enabled Headings'),
@@ -119,7 +119,7 @@ class Heading extends CKEditor5PluginDefault implements CKEditor5PluginConfigura
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Match the config schema structure at ckeditor5.plugin.ckeditor5_heading.
     $form_value = $form_state->getValue('enabled_headings');
     $config_value = array_values(array_filter($form_value));
@@ -129,7 +129,7 @@ class Heading extends CKEditor5PluginDefault implements CKEditor5PluginConfigura
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['enabled_headings'] = $form_state->getValue('enabled_headings');
   }
 
@@ -173,9 +173,7 @@ class Heading extends CKEditor5PluginDefault implements CKEditor5PluginConfigura
     $enabled_headings = $this->getEnabledHeadings();
     $all_heading_options = $static_plugin_config['heading']['options'];
 
-    $configured_heading_options = array_filter($all_heading_options, function ($option) use ($enabled_headings) {
-      return in_array($option['model'], $enabled_headings, TRUE);
-    });
+    $configured_heading_options = array_filter($all_heading_options, fn(array $option) => in_array($option['model'], $enabled_headings, TRUE));
 
     return [
       'heading' => [

@@ -16,37 +16,22 @@ use Symfony\Component\Routing\Route;
 class EntityResolverManager {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The class resolver.
-   *
-   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
-   */
-  protected $classResolver;
-
-  /**
    * The list of all entity types.
    *
    * @var \Drupal\Core\Entity\EntityTypeInterface[]
    */
-  protected ?array $entityTypes;
+  protected ?array $entityTypes = null;
 
   /**
    * Constructs a new EntityRouteAlterSubscriber.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
    *   The class resolver.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ClassResolverInterface $class_resolver) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->classResolver = $class_resolver;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
+  {
   }
 
   /**
@@ -68,7 +53,7 @@ class EntityResolverManager {
    * @see \Drupal\Core\Controller\ControllerResolver::getControllerFromDefinition()
    * @see \Drupal\Core\Controller\ClassResolver::getInstanceFromDefinition()
    */
-  protected function getControllerClass(array $defaults) {
+  protected function getControllerClass(array $defaults): array|null|callable {
     $controller = NULL;
     if (isset($defaults[RouteObjectInterface::CONTROLLER_NAME])) {
       $controller = $defaults[RouteObjectInterface::CONTROLLER_NAME];
@@ -99,16 +84,16 @@ class EntityResolverManager {
 
     $count = substr_count($controller, ':');
     if ($count == 1) {
-      // Controller in the service:method notation. Get the information from the
-      // service. This is dangerous as the controller could depend on services
-      // that could not exist at this point. There is however no other way to
-      // do it, as the container does not allow static introspection.
-      [$class_or_service, $method] = explode(':', $controller, 2);
-      return [$this->classResolver->getInstanceFromDefinition($class_or_service), $method];
+        // Controller in the service:method notation. Get the information from the
+        // service. This is dangerous as the controller could depend on services
+        // that could not exist at this point. There is however no other way to
+        // do it, as the container does not allow static introspection.
+        [$class_or_service, $method] = explode(':', $controller, 2);
+        return [$this->classResolver->getInstanceFromDefinition($class_or_service), $method];
     }
-    elseif (str_contains($controller, '::')) {
-      // Controller in the class::method notation.
-      return explode('::', $controller, 2);
+    if (str_contains($controller, '::')) {
+        // Controller in the class::method notation.
+        return explode('::', $controller, 2);
     }
 
     return NULL;
@@ -216,7 +201,7 @@ class EntityResolverManager {
    * @param \Symfony\Component\Routing\Route $route
    *   The route object to add the upcasting information onto.
    */
-  public function setRouteOptions(Route $route) {
+  public function setRouteOptions(Route $route): void {
     if ($controller = $this->getControllerClass($route->getDefaults())) {
       // Try to use reflection.
       if ($this->setParametersFromReflection($controller, $route)) {

@@ -11,7 +11,7 @@ use Drupal\Core\Datetime\DrupalDateTime;
  *
  * @internal
  */
-final class Announcement {
+final readonly class Announcement {
 
   /**
    * Construct an Announcement object.
@@ -34,14 +34,14 @@ final class Announcement {
    *   Whether this announcement is featured or not.
    */
   public function __construct(
-    public readonly string $id,
-    public readonly string $title,
-    public readonly string $url,
-    public readonly string $date_modified,
-    public readonly string $date_published,
-    public readonly string $content_html,
-    public readonly string $version,
-    public readonly bool $featured,
+    public string $id,
+    public string $title,
+    public string $url,
+    public string $date_modified,
+    public string $date_published,
+    public string $content_html,
+    public string $version,
+    public bool $featured,
   ) {
   }
 
@@ -51,7 +51,7 @@ final class Announcement {
    * @return string
    *   Content of the announcement without markup.
    */
-  public function getContent() {
+  public function getContent(): string {
     return strip_tags($this->content_html);
   }
 

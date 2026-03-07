@@ -30,10 +30,10 @@ class NodePermissions implements ContainerInjectionInterface {
    *
    * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
-  public function nodeTypePermissions() {
+  public function nodeTypePermissions(): array {
     return $this->generatePermissions(
       $this->entityTypeManager->getStorage('node_type')->loadMultiple(),
-      [$this, 'buildPermissions']
+      $this->buildPermissions(...)
     );
   }
 
@@ -46,7 +46,7 @@ class NodePermissions implements ContainerInjectionInterface {
    * @return array
    *   An associative array of permission names and descriptions.
    */
-  protected function buildPermissions(NodeType $type) {
+  protected function buildPermissions(NodeType $type): array {
     $type_id = $type->id();
     $type_params = ['%type_name' => $type->label()];
 

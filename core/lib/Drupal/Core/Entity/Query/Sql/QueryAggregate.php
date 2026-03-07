@@ -37,7 +37,7 @@ class QueryAggregate extends Query implements QueryAggregateInterface {
   /**
    * {@inheritdoc}
    */
-  public function prepare() {
+  public function prepare(): static {
     parent::prepare();
     // Throw away the id fields.
     $this->sqlFields = [];
@@ -72,7 +72,7 @@ class QueryAggregate extends Query implements QueryAggregateInterface {
    * @return $this
    *   Returns the called object.
    */
-  protected function addAggregate() {
+  protected function addAggregate(): static {
     if ($this->aggregate) {
       foreach ($this->aggregate as $aggregate) {
         $sql_field = $this->getSqlField($aggregate['field'], $aggregate['langcode']);
@@ -89,7 +89,7 @@ class QueryAggregate extends Query implements QueryAggregateInterface {
    * @return $this
    *   Returns the called object.
    */
-  protected function compileAggregate() {
+  protected function compileAggregate(): static {
     $this->conditionAggregate->compile($this->sqlQuery);
     return $this;
   }
@@ -100,7 +100,7 @@ class QueryAggregate extends Query implements QueryAggregateInterface {
    * @return $this
    *   Returns the called object.
    */
-  protected function addGroupBy() {
+  protected function addGroupBy(): static {
     foreach ($this->groupBy as $group_by) {
       $field = $group_by['field'];
       $sql_field = $this->getSqlField($field, $group_by['langcode']);
@@ -118,7 +118,7 @@ class QueryAggregate extends Query implements QueryAggregateInterface {
    * @return $this
    *   Returns the called object.
    */
-  protected function addSortAggregate() {
+  protected function addSortAggregate(): static {
     if (!$this->count) {
       foreach ($this->sortAggregate as $alias => $sort) {
         $this->sqlQuery->orderBy($alias, $sort['direction']);
@@ -152,11 +152,11 @@ class QueryAggregate extends Query implements QueryAggregateInterface {
    *   replaced with underscores and if a default fallback to .value happened,
    *   the _value is stripped.
    */
-  public function createSqlAlias($field, $sql_field) {
+  public function createSqlAlias($field, $sql_field): string|array {
     $alias = str_replace('.', '_', $sql_field);
     // If the alias contains of field_*_value remove the _value at the end.
     if (str_starts_with($alias, 'field_') && !str_ends_with($field, '_value') && str_ends_with($alias, '_value')) {
-      $alias = substr($alias, 0, -6);
+      return substr($alias, 0, -6);
     }
     return $alias;
   }

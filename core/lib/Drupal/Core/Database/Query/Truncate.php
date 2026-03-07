@@ -10,13 +10,6 @@ use Drupal\Core\Database\Connection;
 class Truncate extends Query {
 
   /**
-   * The table to truncate.
-   *
-   * @var string
-   */
-  protected $table;
-
-  /**
    * Constructs a Truncate query object.
    *
    * @param \Drupal\Core\Database\Connection $connection
@@ -26,9 +19,11 @@ class Truncate extends Query {
    * @param array $options
    *   Array of database options.
    */
-  public function __construct(Connection $connection, $table, array $options = []) {
+  public function __construct(Connection $connection, /**
+   * The table to truncate.
+   */
+  protected $table, array $options = []) {
     parent::__construct($connection, $options);
-    $this->table = $table;
   }
 
   /**
@@ -68,7 +63,7 @@ class Truncate extends Query {
    * @return string
    *   The prepared statement.
    */
-  public function __toString() {
+  public function __toString(): string {
     // Create a sanitized comment string to prepend to the query.
     $comments = $this->connection->makeComment($this->comments);
 
@@ -77,9 +72,7 @@ class Truncate extends Query {
     if ($this->connection->inTransaction()) {
       return $comments . 'DELETE FROM {' . $this->connection->escapeTable($this->table) . '}';
     }
-    else {
-      return $comments . 'TRUNCATE {' . $this->connection->escapeTable($this->table) . '} ';
-    }
+    return $comments . 'TRUNCATE {' . $this->connection->escapeTable($this->table) . '} ';
   }
 
 }

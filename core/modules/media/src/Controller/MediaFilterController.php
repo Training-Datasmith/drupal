@@ -26,46 +26,23 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class MediaFilterController implements ContainerInjectionInterface {
 
   /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * The media storage.
-   *
-   * @var \Drupal\Core\Entity\ContentEntityStorageInterface
-   */
-  protected $mediaStorage;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * Constructs an MediaFilterController instance.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
-   * @param \Drupal\Core\Entity\ContentEntityStorageInterface $media_storage
+   * @param \Drupal\Core\Entity\ContentEntityStorageInterface $mediaStorage
    *   The media storage.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    */
-  public function __construct(RendererInterface $renderer, ContentEntityStorageInterface $media_storage, EntityRepositoryInterface $entity_repository) {
-    $this->renderer = $renderer;
-    $this->mediaStorage = $media_storage;
-    $this->entityRepository = $entity_repository;
+  public function __construct(protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\Entity\ContentEntityStorageInterface $mediaStorage, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('renderer'),
       $container->get('entity_type.manager')->getStorage('media'),
@@ -152,7 +129,7 @@ class MediaFilterController implements ContainerInjectionInterface {
    *
    * @todo Refactor this to an access checker.
    */
-  private static function checkCsrf(Request $request, AccountInterface $account) {
+  private static function checkCsrf(Request $request, AccountInterface $account): void {
     $header = 'X-Drupal-MediaPreview-CSRF-Token';
 
     if (!$request->headers->has($header)) {

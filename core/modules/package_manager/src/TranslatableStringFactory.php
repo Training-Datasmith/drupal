@@ -18,11 +18,11 @@ use PhpTuf\ComposerStager\API\Translation\Value\TranslationParametersInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class TranslatableStringFactory implements TranslatableFactoryInterface {
+final readonly class TranslatableStringFactory implements TranslatableFactoryInterface {
 
   public function __construct(
-    private readonly TranslatableFactoryInterface $decorated,
-    private readonly TranslationInterface $translation,
+    private TranslatableFactoryInterface $decorated,
+    private TranslationInterface $translation,
   ) {}
 
   /**

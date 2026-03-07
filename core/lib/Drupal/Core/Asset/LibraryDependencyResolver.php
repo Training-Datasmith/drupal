@@ -8,13 +8,6 @@ namespace Drupal\Core\Asset;
 class LibraryDependencyResolver implements LibraryDependencyResolverInterface {
 
   /**
-   * The library discovery service.
-   *
-   * @var \Drupal\Core\Asset\LibraryDiscoveryInterface
-   */
-  protected $libraryDiscovery;
-
-  /**
    * The libraries dependencies.
    *
    * @var array
@@ -24,17 +17,17 @@ class LibraryDependencyResolver implements LibraryDependencyResolverInterface {
   /**
    * Constructs a new LibraryDependencyResolver instance.
    *
-   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $library_discovery
+   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery
    *   The library discovery service.
    */
-  public function __construct(LibraryDiscoveryInterface $library_discovery) {
-    $this->libraryDiscovery = $library_discovery;
+  public function __construct(protected \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLibrariesWithDependencies(array $libraries) {
+  public function getLibrariesWithDependencies(array $libraries): array {
     $return = [];
     foreach ($libraries as $library) {
       if (!isset($this->librariesDependencies[$library])) {
@@ -78,7 +71,7 @@ class LibraryDependencyResolver implements LibraryDependencyResolverInterface {
   /**
    * {@inheritdoc}
    */
-  public function getMinimalRepresentativeSubset(array $libraries) {
+  public function getMinimalRepresentativeSubset(array $libraries): array {
     assert(count($libraries) === count(array_unique($libraries)), '$libraries can\'t contain duplicate items.');
 
     // Determine each library's dependencies.

@@ -53,21 +53,17 @@ class TokenParser
      *
      * @phpstan-var list<mixed[]>
      */
-    private $tokens;
+    private array $tokens;
 
     /**
      * The number of tokens.
-     *
-     * @var int
      */
-    private $numTokens;
+    private readonly int $numTokens;
 
     /**
      * The current array pointer.
-     *
-     * @var int
      */
-    private $pointer = 0;
+    private int $pointer = 0;
 
     public function __construct(string $contents)
     {
@@ -97,11 +93,13 @@ class TokenParser
     {
         for ($i = $this->pointer; $i < $this->numTokens; $i++) {
             $this->pointer++;
-            if (
-                $this->tokens[$i][0] === T_WHITESPACE ||
-                $this->tokens[$i][0] === T_COMMENT ||
-                ($docCommentIsComment && $this->tokens[$i][0] === T_DOC_COMMENT)
-            ) {
+            if ($this->tokens[$i][0] === T_WHITESPACE) {
+                continue;
+            }
+            if ($this->tokens[$i][0] === T_COMMENT) {
+                continue;
+            }
+            if ($docCommentIsComment && $this->tokens[$i][0] === T_DOC_COMMENT) {
                 continue;
             }
 
@@ -116,7 +114,7 @@ class TokenParser
      *
      * @return array<string, string> A list with all found class names for a use statement.
      */
-    public function parseUseStatement()
+    public function parseUseStatement(): array
     {
         $groupRoot     = '';
         $class         = '';
@@ -135,7 +133,7 @@ class TokenParser
             ) {
                 $class .= $token[1];
 
-                $classSplit = explode('\\', $token[1]);
+                $classSplit = explode('\\', (string) $token[1]);
                 $alias      = $classSplit[count($classSplit) - 1];
             } elseif ($token[0] === T_NS_SEPARATOR) {
                 $class .= '\\';
@@ -171,7 +169,7 @@ class TokenParser
      *
      * @return array<string, string> A list with all found use statements.
      */
-    public function parseUseStatements(string $namespaceName)
+    public function parseUseStatements(string $namespaceName): array
     {
         $statements = [];
         while (($token = $this->next())) {
@@ -179,8 +177,10 @@ class TokenParser
                 $statements = array_merge($statements, $this->parseUseStatement());
                 continue;
             }
-
-            if ($token[0] !== T_NAMESPACE || $this->parseNamespace() !== $namespaceName) {
+            if ($token[0] !== T_NAMESPACE) {
+                continue;
+            }
+            if ($this->parseNamespace() !== $namespaceName) {
                 continue;
             }
 
@@ -198,7 +198,7 @@ class TokenParser
      *
      * @return string The found namespace.
      */
-    public function parseNamespace()
+    public function parseNamespace(): string
     {
         $name = '';
         while (

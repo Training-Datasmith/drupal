@@ -51,20 +51,20 @@ class MailFormatHelper {
    * @return string
    *   The content of the email as a string with formatting applied.
    */
-  public static function wrapMail($text, $indent = '') {
+  public static function wrapMail($text, string $indent = ''): string {
     // Convert CRLF into LF.
     $text = str_replace("\r", '', $text);
     // See if soft-wrapping is allowed.
     $clean_indent = static::htmlToTextClean($indent);
-    $soft = !str_contains($clean_indent, ' ');
+    $soft = !str_contains((string) $clean_indent, ' ');
     // Check if the string has line breaks.
     if (str_contains($text, "\n")) {
       // Remove trailing spaces to make existing breaks hard, but leave
       // signature marker untouched (RFC 3676, Section 4.3).
       $text = preg_replace('/(?(?<!^--) +\n|  +\n)/m', "\n", $text);
       // Wrap each line at the needed width.
-      $lines = explode("\n", $text);
-      array_walk($lines, '\Drupal\Core\Mail\MailFormatHelper::wrapMailLine', [
+      $lines = explode("\n", (string) $text);
+      array_walk($lines, \Drupal\Core\Mail\MailFormatHelper::wrapMailLine(...), [
         'soft' => $soft,
         'length' => strlen($indent),
       ]);
@@ -75,11 +75,11 @@ class MailFormatHelper {
       static::wrapMailLine($text, 0, ['soft' => $soft, 'length' => strlen($indent)]);
     }
     // Empty lines with nothing but spaces.
-    $text = preg_replace('/^ +\n/m', "\n", $text);
+    $text = preg_replace('/^ +\n/m', "\n", (string) $text);
     // Space-stuff special lines.
     $text = preg_replace('/^(>| |From)/m', ' $1', $text);
     // Apply indentation. We only include non-'>' indentation on the first line.
-    $text = $indent . substr(preg_replace('/^/m', $clean_indent, $text), strlen($indent));
+    $text = $indent . substr(preg_replace('/^/m', (string) $clean_indent, $text), strlen($indent));
 
     return $text;
   }
@@ -106,7 +106,7 @@ class MailFormatHelper {
    * @return string
    *   The transformed string.
    */
-  public static function htmlToText($string, $allowed_tags = NULL) {
+  public static function htmlToText($string, $allowed_tags = NULL): string {
     // Cache list of supported tags.
     if (empty(static::$supportedTags)) {
       static::$supportedTags = ['a', 'em', 'i', 'strong', 'b', 'br', 'p',
@@ -124,14 +124,14 @@ class MailFormatHelper {
 
     // Apply inline styles.
     $string = preg_replace('!</?(em|i)((?> +)[^>]*)?>!i', '/', $string);
-    $string = preg_replace('!</?(strong|b)((?> +)[^>]*)?>!i', '*', $string);
+    $string = preg_replace('!</?(strong|b)((?> +)[^>]*)?>!i', '*', (string) $string);
 
     // Replace inline <a> tags with the text of link and a footnote.
     // 'See <a href="https://www.drupal.org">the Drupal site</a>' becomes
     // 'See the Drupal site [1]' with the URL included as a footnote.
     static::htmlToMailUrls(NULL, TRUE);
     $pattern = '@(<a[^>]+?href="([^"]*)"[^>]*?>([^<]*)</a>)@i';
-    $string = preg_replace_callback($pattern, [static::class, 'htmlToMailUrls'], $string);
+    $string = preg_replace_callback($pattern, static::htmlToMailUrls(...), (string) $string);
     $urls = static::htmlToMailUrls();
     $footnotes = '';
     if (count($urls)) {
@@ -142,7 +142,7 @@ class MailFormatHelper {
     }
 
     // Split tags from text.
-    $split = preg_split('/<([^>]+?)>/', $string, -1, PREG_SPLIT_DELIM_CAPTURE);
+    $split = preg_split('/<([^>]+?)>/', (string) $string, -1, PREG_SPLIT_DELIM_CAPTURE);
     // Note: PHP ensures the array consists of alternating delimiters and
     // literals and begins and ends with a literal (inserting $null as
     // required).
@@ -218,6 +218,9 @@ class MailFormatHelper {
             // Intentional fall-through to the processing for '/h5' and '/h6'.
           case '/h5':
           case '/h6':
+          // Paragraphs and definition lists.
+          case '/p':
+          case '/dl':
             // Ensure blank new-line.
             $chunk = '';
             break;
@@ -246,13 +249,6 @@ class MailFormatHelper {
             $output .= static::wrapMail('', implode('', $indent)) . "\n";
             $output = static::htmlToTextPad($output, '-');
             break;
-
-          // Paragraphs and definition lists.
-          case '/p':
-          case '/dl':
-            // Ensure blank new-line.
-            $chunk = '';
-            break;
         }
       }
       // Process blocks of text.
@@ -271,7 +267,7 @@ class MailFormatHelper {
         // Format it and apply the current indentation.
         $output .= static::wrapMail($chunk, implode('', $indent)) . $line_endings;
         // Remove non-quotation markers from indentation.
-        $indent = array_map('\Drupal\Core\Mail\MailFormatHelper::htmlToTextClean', $indent);
+        $indent = array_map(\Drupal\Core\Mail\MailFormatHelper::htmlToTextClean(...), $indent);
       }
 
       $tag = !$tag;
@@ -297,7 +293,7 @@ class MailFormatHelper {
    * name="hello_drupal.docx"
    * @endcode
    */
-  protected static function wrapMailLine(&$line, $key, $values) {
+  protected static function wrapMailLine(&$line, $key, array $values) {
     $line_is_mime_header = FALSE;
     $mime_headers = [
       'Content-Type',
@@ -308,17 +304,17 @@ class MailFormatHelper {
 
     // Do not break MIME headers which could be longer than 77 characters.
     foreach ($mime_headers as $header) {
-      if (str_starts_with($line, $header . ': ')) {
+      if (str_starts_with((string) $line, $header . ': ')) {
         $line_is_mime_header = TRUE;
         break;
       }
     }
     if (!$line_is_mime_header) {
       // Use soft-breaks only for purely quoted or un-indented text.
-      $line = wordwrap($line, 77 - $values['length'], $values['soft'] ? "  \n" : "\n");
+      $line = wordwrap((string) $line, 77 - $values['length'], $values['soft'] ? "  \n" : "\n");
     }
     // Break really long words at the maximum width allowed.
-    $line = wordwrap($line, 996 - $values['length'], $values['soft'] ? " \n" : "\n", TRUE);
+    $line = wordwrap((string) $line, 996 - $values['length'], $values['soft'] ? " \n" : "\n", TRUE);
   }
 
   /**
@@ -337,14 +333,14 @@ class MailFormatHelper {
     }
     else {
       if (empty(static::$regexp)) {
-        static::$regexp = '@^' . preg_quote($base_path, '@') . '@';
+        static::$regexp = '@^' . preg_quote((string) $base_path, '@') . '@';
       }
       if ($match) {
         [, , $url, $label] = $match;
         // Ensure all URLs are absolute.
-        static::$urls[] = strpos($url, '://') ? $url : preg_replace(static::$regexp, $base_url . '/', $url);
+        static::$urls[] = strpos((string) $url, '://') ? $url : preg_replace(static::$regexp, $base_url . '/', (string) $url);
         // Strip newlines and carriage returns from anchor text.
-        return preg_replace('/\r?\n|\r/', '', $label) . ' [' . count(static::$urls) . ']';
+        return preg_replace('/\r?\n|\r/', '', (string) $label) . ' [' . count(static::$urls) . ']';
       }
     }
     return static::$urls;
@@ -356,8 +352,8 @@ class MailFormatHelper {
    * Callback for array_map() within
    * \Drupal\Core\Mail\MailFormatHelper::htmlToText().
    */
-  protected static function htmlToTextClean($indent) {
-    return preg_replace('/[^>]/', ' ', $indent);
+  protected static function htmlToTextClean($indent): string|array|null {
+    return preg_replace('/[^>]/', ' ', (string) $indent);
   }
 
   /**
@@ -375,7 +371,7 @@ class MailFormatHelper {
    *
    * @see \Drupal\Core\Mail\MailFormatHelper::htmlToText()
    */
-  protected static function htmlToTextPad($text, $pad, $prefix = '') {
+  protected static function htmlToTextPad($text, $pad, string $prefix = ''): string {
     // Remove last line break.
     $text = substr($text, 0, -1);
     // Calculate needed padding space and add it.

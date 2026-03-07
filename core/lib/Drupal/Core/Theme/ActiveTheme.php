@@ -195,7 +195,7 @@ class ActiveTheme {
    *
    * @see system_region_list()
    */
-  public function getRegions() {
+  public function getRegions(): array {
     return array_keys($this->regions);
   }
 

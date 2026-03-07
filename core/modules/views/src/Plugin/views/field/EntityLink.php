@@ -53,14 +53,14 @@ class EntityLink extends LinkBase {
    * @return string
    *   The link template name.
    */
-  protected function getEntityLinkTemplate() {
+  protected function getEntityLinkTemplate(): string {
     return 'canonical';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultLabel() {
+  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('view');
   }
 
@@ -77,7 +77,7 @@ class EntityLink extends LinkBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['output_url_as_text'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Output the URL as text'),

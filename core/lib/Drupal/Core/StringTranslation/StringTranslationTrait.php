@@ -67,7 +67,7 @@ trait StringTranslationTrait {
    *
    * @ingroup sanitization
    */
-  protected function t($string, array $args = [], array $options = []) {
+  protected function t($string, array $args = [], array $options = []): \Drupal\Core\StringTranslation\TranslatableMarkup {
     // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
     return new TranslatableMarkup($string, $args, $options, $this->getStringTranslation());
   }
@@ -80,7 +80,7 @@ trait StringTranslationTrait {
    * @return \Drupal\Core\StringTranslation\PluralTranslatableMarkup
    *   An object that, when cast to a string, returns the translated string.
    */
-  protected function formatPlural($count, $singular, $plural, array $args = [], array $options = []) {
+  protected function formatPlural($count, $singular, $plural, array $args = [], array $options = []): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     return new PluralTranslatableMarkup($count, $singular, $plural, $args, $options, $this->getStringTranslation());
   }
 

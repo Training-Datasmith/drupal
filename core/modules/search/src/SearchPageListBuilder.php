@@ -31,27 +31,6 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   protected $entities = [];
 
   /**
-   * Stores the configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The search manager.
-   *
-   * @var \Drupal\search\SearchPluginManager
-   */
-  protected $searchManager;
-
-  /**
-   * The search index.
-   *
-   * @var \Drupal\search\SearchIndexInterface
-   */
-  protected $searchIndex;
-
-  /**
    * The messenger.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -65,27 +44,24 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\search\SearchPluginManager $search_manager
+   * @param \Drupal\search\SearchPluginManager $searchManager
    *   The search plugin manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
-   * @param \Drupal\search\SearchIndexInterface $search_index
+   * @param \Drupal\search\SearchIndexInterface $searchIndex
    *   The search index.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, SearchPluginManager $search_manager, ConfigFactoryInterface $config_factory, MessengerInterface $messenger, SearchIndexInterface $search_index) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\search\SearchPluginManager $searchManager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, MessengerInterface $messenger, protected \Drupal\search\SearchIndexInterface $searchIndex) {
     parent::__construct($entity_type, $storage);
-    $this->configFactory = $config_factory;
-    $this->searchManager = $search_manager;
     $this->messenger = $messenger;
-    $this->searchIndex = $search_index;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -99,14 +75,14 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'search_admin_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['search.settings'];
   }
 
@@ -182,7 +158,7 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
     $search_settings = $this->config('search.settings');
     // Collect some stats.
@@ -284,9 +260,7 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
       '#type' => 'select',
       '#title' => $this->t('Search page type'),
       '#empty_option' => $this->t('- Choose page type -'),
-      '#options' => array_map(function ($definition) {
-        return $definition['title'];
-      }, $this->searchManager->getDefinitions()),
+      '#options' => array_map(fn(array $definition) => $definition['title'], $this->searchManager->getDefinitions()),
     ];
     $form['search_pages']['add_page']['add_search_submit'] = [
       '#type' => 'submit',
@@ -314,7 +288,7 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     /** @var \Drupal\search\SearchPageInterface $entity */
@@ -340,13 +314,13 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     $search_settings = $this->config('search.settings');
@@ -371,7 +345,7 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   /**
    * Form submission handler for reindex button on search admin settings form.
    */
-  public function searchAdminReindexSubmit(array &$form, FormStateInterface $form_state) {
+  public function searchAdminReindexSubmit(array &$form, FormStateInterface $form_state): void {
     // Send the user to the confirmation page.
     $form_state->setRedirect('search.reindex_confirm');
   }
@@ -379,7 +353,7 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   /**
    * Form validation handler for adding a new search page.
    */
-  public function validateAddSearchPage(array &$form, FormStateInterface $form_state) {
+  public function validateAddSearchPage(array &$form, FormStateInterface $form_state): void {
     if ($form_state->isValueEmpty('search_type')) {
       $form_state->setErrorByName('search_type', $this->t('You must select the new search page type.'));
     }
@@ -388,7 +362,7 @@ class SearchPageListBuilder extends DraggableListBuilder implements FormInterfac
   /**
    * Form submission handler for adding a new search page.
    */
-  public function submitAddSearchPage(array &$form, FormStateInterface $form_state) {
+  public function submitAddSearchPage(array &$form, FormStateInterface $form_state): void {
     $form_state->setRedirect(
       'search.add_type',
       ['search_plugin_id' => $form_state->getValue('search_type')]

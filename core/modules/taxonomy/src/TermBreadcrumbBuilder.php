@@ -18,36 +18,21 @@ class TermBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity repository manager.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs the TermBreadcrumbBuilder.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityRepository = $entity_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata) {
+  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool {
     $cacheable_metadata->addCacheContexts(['route']);
     return $route_match->getRouteName() == 'entity.taxonomy_term.canonical'
       && $route_match->getParameter('taxonomy_term') instanceof TermInterface;
@@ -56,7 +41,7 @@ class TermBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function build(RouteMatchInterface $route_match) {
+  public function build(RouteMatchInterface $route_match): \Drupal\Core\Breadcrumb\Breadcrumb {
     $breadcrumb = new Breadcrumb();
     $breadcrumb->addLink(Link::createFromRoute($this->t('Home'), '<front>'));
     $term = $route_match->getParameter('taxonomy_term');

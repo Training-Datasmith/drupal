@@ -52,23 +52,21 @@ class FileExtensionFormatter extends BaseFieldFileFormatterBase {
     if (!$this->getSetting('extension_detect_tar')) {
       return pathinfo($filename, PATHINFO_EXTENSION);
     }
-    else {
-      $file_parts = explode('.', basename($filename));
-      if (count($file_parts) > 1) {
-        $extension = array_pop($file_parts);
-        $last_part_in_name = array_pop($file_parts);
-        if ($last_part_in_name === 'tar') {
-          $extension = 'tar.' . $extension;
-        }
-        return $extension;
+    $file_parts = explode('.', basename($filename));
+    if (count($file_parts) > 1) {
+      $extension = array_pop($file_parts);
+      $last_part_in_name = array_pop($file_parts);
+      if ($last_part_in_name === 'tar') {
+        return 'tar.' . $extension;
       }
+      return $extension;
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     // Just show this file extension formatter on the filename field.
     return parent::isApplicable($field_definition) && $field_definition->getName() === 'filename';
   }

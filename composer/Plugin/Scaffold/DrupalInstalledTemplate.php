@@ -26,12 +26,10 @@ class DrupalInstalledTemplate {
   public static function getCode(PackageInterface $root_package, InstalledRepositoryInterface $repository): string {
     // Ensure the packages are sorted consistently.
     $packages = $repository->getPackages();
-    usort($packages, static function (PackageInterface $a, PackageInterface $b) {
-      return $a->getUniqueName() <=> $b->getUniqueName();
-    });
+    usort($packages, static fn(PackageInterface $a, PackageInterface $b) => $a->getUniqueName() <=> $b->getUniqueName());
 
     // Write out a hash of the version information to a file so we can use it.
-    $versions = array_reduce($packages, fn (string $carry, PackageInterface $package) => $carry . $package->getUniqueName() . '-' . $package->getSourceReference() . '|', '');
+    $versions = array_reduce($packages, fn (string $carry, PackageInterface $package): string => $carry . $package->getUniqueName() . '-' . $package->getSourceReference() . '|', '');
     // Add the root_package package version info so custom code changes and
     // root_package package version changes result in the hash changing.
     $versions .= $root_package->getUniqueName() . '-' . $root_package->getSourceReference();

@@ -12,20 +12,13 @@ use Drupal\Core\State\StateInterface;
 class DeletedFieldsRepository implements DeletedFieldsRepositoryInterface {
 
   /**
-   * The state key/value store.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * Constructs a new deleted fields repository.
    *
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key/value store.
    */
-  public function __construct(StateInterface $state) {
-    $this->state = $state;
+  public function __construct(protected \Drupal\Core\State\StateInterface $state)
+  {
   }
 
   /**
@@ -35,9 +28,7 @@ class DeletedFieldsRepository implements DeletedFieldsRepositoryInterface {
     $deleted_field_definitions = $this->state->get('field.field.deleted', []);
 
     if ($field_storage_unique_id) {
-      $deleted_field_definitions = array_filter($deleted_field_definitions, function (FieldDefinitionInterface $field_definition) use ($field_storage_unique_id) {
-        return $field_definition->getFieldStorageDefinition()->getUniqueStorageIdentifier() === $field_storage_unique_id;
-      });
+      return array_filter($deleted_field_definitions, fn(FieldDefinitionInterface $field_definition) => $field_definition->getFieldStorageDefinition()->getUniqueStorageIdentifier() === $field_storage_unique_id);
     }
 
     return $deleted_field_definitions;
@@ -53,7 +44,7 @@ class DeletedFieldsRepository implements DeletedFieldsRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function addFieldDefinition(FieldDefinitionInterface $field_definition) {
+  public function addFieldDefinition(FieldDefinitionInterface $field_definition): static {
     $deleted_field_definitions = $this->state->get('field.field.deleted', []);
     $deleted_field_definitions[$field_definition->getUniqueIdentifier()] = $field_definition;
     $this->state->set('field.field.deleted', $deleted_field_definitions);
@@ -64,7 +55,7 @@ class DeletedFieldsRepository implements DeletedFieldsRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function addFieldStorageDefinition(FieldStorageDefinitionInterface $field_storage_definition) {
+  public function addFieldStorageDefinition(FieldStorageDefinitionInterface $field_storage_definition): static {
     $deleted_storage_definitions = $this->state->get('field.storage.deleted', []);
     $deleted_storage_definitions[$field_storage_definition->getUniqueStorageIdentifier()] = $field_storage_definition;
     $this->state->set('field.storage.deleted', $deleted_storage_definitions);
@@ -75,7 +66,7 @@ class DeletedFieldsRepository implements DeletedFieldsRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeFieldDefinition(FieldDefinitionInterface $field_definition) {
+  public function removeFieldDefinition(FieldDefinitionInterface $field_definition): static {
     $deleted_field_definitions = $this->state->get('field.field.deleted', []);
     unset($deleted_field_definitions[$field_definition->getUniqueIdentifier()]);
     $this->state->set('field.field.deleted', $deleted_field_definitions);
@@ -86,7 +77,7 @@ class DeletedFieldsRepository implements DeletedFieldsRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeFieldStorageDefinition(FieldStorageDefinitionInterface $field_storage_definition) {
+  public function removeFieldStorageDefinition(FieldStorageDefinitionInterface $field_storage_definition): static {
     $deleted_storage_definitions = $this->state->get('field.storage.deleted', []);
     unset($deleted_storage_definitions[$field_storage_definition->getUniqueStorageIdentifier()]);
     $this->state->set('field.storage.deleted', $deleted_storage_definitions);

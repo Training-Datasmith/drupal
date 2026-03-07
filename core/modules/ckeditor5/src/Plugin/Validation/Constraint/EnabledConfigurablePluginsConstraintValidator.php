@@ -71,11 +71,8 @@ class EnabledConfigurablePluginsConstraintValidator extends ConstraintValidator 
   private function getConfigurableEnabledDefinitions(): array {
     $text_editor = $this->createTextEditorObjectFromContext();
     $enabled_definitions = $this->pluginManager->getEnabledDefinitions($text_editor);
-    $configurable_enabled_definitions = array_filter($enabled_definitions, function (CKEditor5PluginDefinition $definition): bool {
-      return $definition->isConfigurable();
-    });
 
-    return $configurable_enabled_definitions;
+    return array_filter($enabled_definitions, fn(CKEditor5PluginDefinition $definition): bool => $definition->isConfigurable());
   }
 
 }

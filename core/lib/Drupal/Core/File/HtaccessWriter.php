@@ -34,7 +34,7 @@ class HtaccessWriter implements HtaccessWriterInterface {
   /**
    * {@inheritdoc}
    */
-  public function ensure() {
+  public function ensure(): void {
     if (!$this->settings->get('auto_create_htaccess', TRUE)) {
       return;
     }
@@ -76,7 +76,7 @@ class HtaccessWriter implements HtaccessWriterInterface {
    *
    * @see \Drupal\Component\FileSecurity\FileSecurity::writeHtaccess()
    */
-  public function write($directory, $deny_public_access = TRUE, $force_overwrite = FALSE) {
+  public function write($directory, $deny_public_access = TRUE, $force_overwrite = FALSE): bool {
     if (!$this->settings->get('auto_create_htaccess', TRUE)) {
       return TRUE;
     }

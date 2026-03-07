@@ -69,7 +69,7 @@ class MediaThemeHooks {
    * Implements hook_preprocess_HOOK() for media reference widgets.
    */
   #[Hook('preprocess_media_reference_help')]
-  public function preprocessMediaReferenceHelp(&$variables): void {
+  public function preprocessMediaReferenceHelp(array &$variables): void {
     // Most of these attribute checks are copied from
     // \Drupal\Core\Form\FormPreprocess::preprocessFieldset(). Our template
     // extends field-multiple-value-form.html.twig to provide our help text, but
@@ -87,7 +87,7 @@ class MediaThemeHooks {
     $variables['legend_span_attributes'] = new Attribute();
     if (!empty($element['#media_help'])) {
       foreach ($element['#media_help'] as $key => $text) {
-        $variables[substr($key, 1)] = $text;
+        $variables[substr((string) $key, 1)] = $text;
       }
     }
   }

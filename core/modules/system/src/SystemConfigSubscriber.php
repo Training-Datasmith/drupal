@@ -16,20 +16,13 @@ class SystemConfigSubscriber implements EventSubscriberInterface {
   use StringTranslationTrait;
 
   /**
-   * The router builder.
-   *
-   * @var \Drupal\Core\Routing\RouteBuilderInterface
-   */
-  protected $routerBuilder;
-
-  /**
    * Constructs the SystemConfigSubscriber.
    *
-   * @param \Drupal\Core\Routing\RouteBuilderInterface $router_builder
+   * @param \Drupal\Core\Routing\RouteBuilderInterface $routerBuilder
    *   The router builder service.
    */
-  public function __construct(RouteBuilderInterface $router_builder) {
-    $this->routerBuilder = $router_builder;
+  public function __construct(protected \Drupal\Core\Routing\RouteBuilderInterface $routerBuilder)
+  {
   }
 
   /**
@@ -38,7 +31,7 @@ class SystemConfigSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The configuration event.
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     $saved_config = $event->getConfig();
     if ($saved_config->getName() == 'system.theme' && ($event->isChanged('admin') || $event->isChanged('default'))) {
       $this->routerBuilder->setRebuildNeeded();
@@ -55,7 +48,7 @@ class SystemConfigSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigImporterEvent $event
    *   The config import event.
    */
-  public function onConfigImporterValidateNotEmpty(ConfigImporterEvent $event) {
+  public function onConfigImporterValidateNotEmpty(ConfigImporterEvent $event): void {
     $importList = $event->getConfigImporter()->getStorageComparer()->getSourceStorage()->listAll();
     if (empty($importList)) {
       $event->getConfigImporter()->logError($this->t('This import is empty and if applied would delete all of your configuration, so has been rejected.'));
@@ -72,7 +65,7 @@ class SystemConfigSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigImporterEvent $event
    *   The config import event.
    */
-  public function onConfigImporterValidateSiteUUID(ConfigImporterEvent $event) {
+  public function onConfigImporterValidateSiteUUID(ConfigImporterEvent $event): void {
     if (!$event->getConfigImporter()->getStorageComparer()->getSourceStorage()->exists('system.site')) {
       $event->getConfigImporter()->logError($this->t('This import does not contain system.site configuration, so has been rejected.'));
     }

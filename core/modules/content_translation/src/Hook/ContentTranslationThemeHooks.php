@@ -24,7 +24,7 @@ class ContentTranslationThemeHooks {
    * Implements hook_preprocess_HOOK() for language-content-settings-table.html.twig.
    */
   #[Hook('preprocess_language_content_settings_table')]
-  public function preprocessLanguageContentSettingsTable(&$variables): void {
+  public function preprocessLanguageContentSettingsTable(array &$variables): void {
     // Alter the 'build' variable injecting the translation settings if the user
     // has the required permission.
     if (!$this->currentUser->hasPermission('administer content translation')) {

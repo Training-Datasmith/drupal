@@ -98,8 +98,7 @@ class SystemHooks {
           ]) . '</dd>';
           $output .= '<dd>' . $this->t('Only the most highly critical security announcements will be shown. <a href=":advisories-list">View all security announcements</a>.', [':advisories-list' => 'https://www.drupal.org/security']) . '</dd>';
         }
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'system.admin_index':
         return '<p>' . $this->t('This page shows you all available administration tasks for each module.') . '</p>';
@@ -165,7 +164,7 @@ class SystemHooks {
    * active theme but no other request-dependent values.
    */
   #[Hook('js_settings_build')]
-  public function jsSettingsBuild(&$settings, AttachedAssetsInterface $assets): void {
+  public function jsSettingsBuild(array &$settings, AttachedAssetsInterface $assets): void {
     // Generate the values for the core/drupal.ajax library.
     // We need to send ajaxPageState settings for core/drupal.ajax if:
     // - ajaxPageState is being loaded in this Response, in which case it will
@@ -193,7 +192,7 @@ class SystemHooks {
    * as well as theme_token ajax state.
    */
   #[Hook('js_settings_alter')]
-  public function jsSettingsAlter(&$settings, AttachedAssetsInterface $assets): void {
+  public function jsSettingsAlter(array &$settings, AttachedAssetsInterface $assets): void {
     // As this is being output in the final response always use the main
     // request.
     $request = \Drupal::requestStack()->getMainRequest();
@@ -261,7 +260,7 @@ class SystemHooks {
    * Implements hook_system_info_alter().
    */
   #[Hook('system_info_alter')]
-  public function systemInfoAlter(&$info, Extension $file, $type): void {
+  public function systemInfoAlter(array &$info, Extension $file, $type): void {
     // Remove page-top and page-bottom from the blocks UI since they are
     // reserved for
     // modules to populate from outside the blocks system.
@@ -313,7 +312,7 @@ class SystemHooks {
    * Implements hook_mail().
    */
   #[Hook('mail')]
-  public function mail($key, &$message, $params): void {
+  public function mail($key, array &$message, array $params): void {
     $token_service = \Drupal::token();
     $context = $params['context'];
     $subject = PlainTextOutput::renderFromHtml($token_service->replace($context['subject'], $context));
@@ -328,7 +327,7 @@ class SystemHooks {
   #[Hook('entity_type_build')]
   public function entityTypeBuild(array &$entity_types): void {
     /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
-    $entity_types['date_format']->setFormClass('add', 'Drupal\system\Form\DateFormatAddForm')->setFormClass('edit', 'Drupal\system\Form\DateFormatEditForm')->setFormClass('delete', 'Drupal\system\Form\DateFormatDeleteForm')->setListBuilderClass('Drupal\system\DateFormatListBuilder')->setLinkTemplate('edit-form', '/admin/config/regional/date-time/formats/manage/{date_format}')->setLinkTemplate('delete-form', '/admin/config/regional/date-time/formats/manage/{date_format}/delete')->setLinkTemplate('collection', '/admin/config/regional/date-time/formats');
+    $entity_types['date_format']->setFormClass('add', \Drupal\system\Form\DateFormatAddForm::class)->setFormClass('edit', \Drupal\system\Form\DateFormatEditForm::class)->setFormClass('delete', \Drupal\system\Form\DateFormatDeleteForm::class)->setListBuilderClass(\Drupal\system\DateFormatListBuilder::class)->setLinkTemplate('edit-form', '/admin/config/regional/date-time/formats/manage/{date_format}')->setLinkTemplate('delete-form', '/admin/config/regional/date-time/formats/manage/{date_format}/delete')->setLinkTemplate('collection', '/admin/config/regional/date-time/formats');
   }
 
   /**
@@ -354,7 +353,7 @@ class SystemHooks {
    * Implements hook_element_info_alter().
    */
   #[Hook('element_info_alter')]
-  public function elementInfoAlter(&$type): void {
+  public function elementInfoAlter(array &$type): void {
     if (isset($type['page'])) {
       $type['page']['#theme_wrappers']['off_canvas_page_wrapper'] = ['#weight' => -1000];
     }

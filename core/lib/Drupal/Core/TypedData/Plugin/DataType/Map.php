@@ -80,7 +80,7 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
    *   TRUE. If a property is updated from a parent object, set it to FALSE to
    *   avoid being notified again.
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     if (isset($values) && !is_array($values)) {
       throw new \InvalidArgumentException("Invalid values given. Values must be represented as an associative array.");
     }
@@ -103,7 +103,7 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
   /**
    * {@inheritdoc}
    */
-  public function getString() {
+  public function getString(): string {
     $strings = [];
     foreach ($this->getProperties() as $property) {
       $strings[] = $property->getString();
@@ -130,7 +130,7 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
   /**
    * {@inheritdoc}
    */
-  public function set($property_name, $value, $notify = TRUE) {
+  public function set($property_name, $value, $notify = TRUE): static {
     // Separate the writing in a protected method, such that onChange
     // implementations can make use of it.
     $this->writePropertyValue($property_name, $value);
@@ -161,8 +161,9 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getProperties($include_computed = FALSE) {
+  public function getProperties($include_computed = FALSE): array {
     $properties = [];
     foreach ($this->definition->getPropertyDefinitions() as $name => $definition) {
       if ($include_computed || !$definition->isComputed()) {
@@ -174,8 +175,9 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function toArray() {
+  public function toArray(): array {
     $values = [];
     foreach ($this->getProperties() as $name => $property) {
       $values[$name] = $property->getValue();
@@ -196,7 +198,7 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     foreach ($this->properties as $property) {
       $definition = $property->getDataDefinition();
       if (!$definition->isComputed() && $property->getValue() !== NULL) {
@@ -233,7 +235,7 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
    *   TRUE. By passing FALSE, overrides of this method can re-use the logic
    *   of parent classes without triggering notification.
    */
-  public function onChange($property_name, $notify = TRUE) {
+  public function onChange($property_name, $notify = TRUE): void {
     // Notify the parent of changes.
     if ($notify && isset($this->parent)) {
       $this->parent->onChange($this->name);
@@ -243,7 +245,7 @@ class Map extends TypedData implements \IteratorAggregate, ComplexDataInterface 
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     // Apply the default value of all properties.
     foreach ($this->getProperties() as $property) {
       $property->applyDefaultValue(FALSE);

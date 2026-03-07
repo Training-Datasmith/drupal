@@ -20,13 +20,6 @@ class DefaultSingleLazyPluginCollection extends LazyPluginCollection {
   use DependencySerializationTrait;
 
   /**
-   * The manager used to instantiate the plugins.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $manager;
-
-  /**
    * An array of configuration to instantiate the plugin with.
    *
    * @var array
@@ -50,8 +43,7 @@ class DefaultSingleLazyPluginCollection extends LazyPluginCollection {
    * @param array $configuration
    *   An array of configuration.
    */
-  public function __construct(PluginManagerInterface $manager, $instance_id, array $configuration) {
-    $this->manager = $manager;
+  public function __construct(protected \Drupal\Component\Plugin\PluginManagerInterface $manager, $instance_id, array $configuration) {
     $this->addInstanceId($instance_id, $configuration);
   }
 
@@ -70,15 +62,13 @@ class DefaultSingleLazyPluginCollection extends LazyPluginCollection {
     if ($plugin instanceof ConfigurableInterface) {
       return $plugin->getConfiguration();
     }
-    else {
-      return $this->configuration;
-    }
+    return $this->configuration;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration(array $configuration) {
+  public function setConfiguration(array $configuration): static {
     $this->configuration = $configuration;
     $plugin = $this->get($this->instanceId);
     if ($plugin instanceof ConfigurableInterface) {
@@ -90,7 +80,7 @@ class DefaultSingleLazyPluginCollection extends LazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function addInstanceId($id, $configuration = NULL) {
+  public function addInstanceId($id, $configuration = NULL): void {
     $this->instanceId = $id;
     // Reset the list of instance IDs since there can be only one.
     $this->instanceIds = [];

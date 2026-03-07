@@ -15,14 +15,14 @@ class PathFilterForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'path_admin_filter_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $keys = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $keys = NULL): array {
     $form['#attributes'] = ['class' => ['search-form']];
     $form['basic'] = [
       '#type' => 'details',
@@ -55,16 +55,16 @@ class PathFilterForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $form_state->setRedirect('entity.path_alias.collection', [], [
-      'query' => ['search' => trim($form_state->getValue('filter'))],
+      'query' => ['search' => trim((string) $form_state->getValue('filter'))],
     ]);
   }
 
   /**
    * Resets the filter selections.
    */
-  public function resetForm(array &$form, FormStateInterface $form_state) {
+  public function resetForm(array &$form, FormStateInterface $form_state): void {
     $form_state->setRedirect('entity.path_alias.collection');
   }
 

@@ -16,10 +16,8 @@ class CurrentPathStack {
 
   /**
    * Static cache of paths.
-   *
-   * @var \SplObjectStorage
    */
-  protected $paths;
+  protected \SplObjectStorage $paths;
 
   /**
    * The request stack.
@@ -69,7 +67,7 @@ class CurrentPathStack {
    *
    * @return $this
    */
-  public function setPath($path, ?Request $request = NULL) {
+  public function setPath($path, ?Request $request = NULL): static {
     if (!isset($request)) {
       $request = $this->requestStack->getCurrentRequest();
     }

@@ -20,46 +20,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityModerationForm extends FormBase {
 
   /**
-   * The moderation information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInfo;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
-
-  /**
-   * The moderation state transition validation service.
-   *
-   * @var \Drupal\content_moderation\StateTransitionValidationInterface
-   */
-  protected $validation;
-
-  /**
    * EntityModerationForm constructor.
    *
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderation_info
+   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
    *   The moderation information service.
    * @param \Drupal\content_moderation\StateTransitionValidationInterface $validation
    *   The moderation state transition validation service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(ModerationInformationInterface $moderation_info, StateTransitionValidationInterface $validation, TimeInterface $time) {
-    $this->moderationInfo = $moderation_info;
-    $this->validation = $validation;
-    $this->time = $time;
+  public function __construct(protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, protected \Drupal\content_moderation\StateTransitionValidationInterface $validation, protected \Drupal\Component\Datetime\TimeInterface $time)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('content_moderation.moderation_information'),
       $container->get('content_moderation.state_transition_validation'),
@@ -70,14 +47,15 @@ class EntityModerationForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'content_moderation_entity_moderation_form';
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ContentEntityInterface $entity = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?ContentEntityInterface $entity = NULL): array {
     $current_state = $entity->moderation_state->value;
     $workflow = $this->moderationInfo->getWorkflowForEntity($entity);
 
@@ -85,9 +63,7 @@ class EntityModerationForm extends FormBase {
     $transitions = $this->validation->getValidTransitions($entity, $this->currentUser());
 
     // Exclude self-transitions.
-    $transitions = array_filter($transitions, function (Transition $transition) use ($current_state) {
-      return $transition->to()->id() != $current_state;
-    });
+    $transitions = array_filter($transitions, fn(Transition $transition) => $transition->to()->id() != $current_state);
 
     $target_states = [];
 
@@ -139,7 +115,7 @@ class EntityModerationForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $form_state->get('entity');
     /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */

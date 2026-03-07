@@ -17,7 +17,7 @@ class LoggingForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_logging_settings';
   }
 

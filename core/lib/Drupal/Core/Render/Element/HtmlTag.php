@@ -52,7 +52,7 @@ class HtmlTag extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderHtmlTag'],
@@ -83,7 +83,7 @@ class HtmlTag extends RenderElementBase {
    * @return array
    *   The element, after the pre-rendering processing run.
    */
-  public static function preRenderHtmlTag($element) {
+  public static function preRenderHtmlTag(array $element): array {
     $attributes = isset($element['#attributes']) ? new Attribute($element['#attributes']) : '';
 
     // An HTML tag should not contain any special characters. Escape them to

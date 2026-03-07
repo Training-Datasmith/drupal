@@ -28,8 +28,9 @@ class PhpArrayDumper extends OptimizedPhpArrayDumper {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  protected function dumpCollection($collection, &$resolve = FALSE) {
+  protected function dumpCollection($collection, &$resolve = FALSE): array {
     $code = [];
 
     foreach ($collection as $key => $value) {
@@ -47,7 +48,7 @@ class PhpArrayDumper extends OptimizedPhpArrayDumper {
   /**
    * {@inheritdoc}
    */
-  protected function getServiceCall($id, $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE) {
+  protected function getServiceCall($id, $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE): string {
     if ($invalid_behavior !== ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE) {
       return '@?' . $id;
     }
@@ -58,14 +59,14 @@ class PhpArrayDumper extends OptimizedPhpArrayDumper {
   /**
    * {@inheritdoc}
    */
-  protected function getParameterCall($name) {
+  protected function getParameterCall($name): string {
     return '%' . $name . '%';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function supportsMachineFormat() {
+  protected function supportsMachineFormat(): bool {
     return FALSE;
   }
 

@@ -26,7 +26,7 @@ class CacheableMetadata implements RefinableCacheableDependencyInterface {
    *
    * @return $this
    */
-  public function setCacheTags(array $cache_tags) {
+  public function setCacheTags(array $cache_tags): static {
     $this->cacheTags = $cache_tags;
     return $this;
   }
@@ -46,7 +46,7 @@ class CacheableMetadata implements RefinableCacheableDependencyInterface {
    *
    * @return $this
    */
-  public function setCacheContexts(array $cache_contexts) {
+  public function setCacheContexts(array $cache_contexts): static {
     $this->cacheContexts = $cache_contexts;
     return $this;
   }
@@ -71,7 +71,7 @@ class CacheableMetadata implements RefinableCacheableDependencyInterface {
    * @throws \InvalidArgumentException
    *   If a non-integer value is supplied.
    */
-  public function setCacheMaxAge($max_age) {
+  public function setCacheMaxAge($max_age): static {
     if (!is_int($max_age)) {
       throw new \InvalidArgumentException('$max_age must be an integer');
     }
@@ -89,7 +89,7 @@ class CacheableMetadata implements RefinableCacheableDependencyInterface {
    * @return static
    *   A new CacheableMetadata object, with the merged data.
    */
-  public function merge(CacheableMetadata $other) {
+  public function merge(CacheableMetadata $other): static {
     $result = clone $this;
 
     // This is called many times per request, so avoid merging unless absolutely
@@ -132,7 +132,7 @@ class CacheableMetadata implements RefinableCacheableDependencyInterface {
    * @param array &$build
    *   A render array.
    */
-  public function applyTo(array &$build) {
+  public function applyTo(array &$build): void {
     $build['#cache']['contexts'] = $this->cacheContexts;
     $build['#cache']['tags'] = $this->cacheTags;
     $build['#cache']['max-age'] = $this->cacheMaxAge;
@@ -143,14 +143,12 @@ class CacheableMetadata implements RefinableCacheableDependencyInterface {
    *
    * @param array $build
    *   A render array.
-   *
-   * @return static
    */
-  public static function createFromRenderArray(array $build) {
+  public static function createFromRenderArray(array $build): static {
     $meta = new static();
-    $meta->cacheContexts = (isset($build['#cache']['contexts'])) ? $build['#cache']['contexts'] : [];
-    $meta->cacheTags = (isset($build['#cache']['tags'])) ? $build['#cache']['tags'] : [];
-    $meta->cacheMaxAge = (isset($build['#cache']['max-age'])) ? $build['#cache']['max-age'] : Cache::PERMANENT;
+    $meta->cacheContexts = $build['#cache']['contexts'] ?? [];
+    $meta->cacheTags = $build['#cache']['tags'] ?? [];
+    $meta->cacheMaxAge = $build['#cache']['max-age'] ?? Cache::PERMANENT;
     return $meta;
   }
 
@@ -162,10 +160,8 @@ class CacheableMetadata implements RefinableCacheableDependencyInterface {
    *   CacheableDependencyInterface, its cacheability metadata will be used,
    *   otherwise, the passed in object must be assumed to be uncacheable, so
    *   max-age 0 is set.
-   *
-   * @return static
    */
-  public static function createFromObject($object) {
+  public static function createFromObject($object): static {
     if ($object instanceof CacheableDependencyInterface) {
       $meta = new static();
       $meta->cacheContexts = $object->getCacheContexts();

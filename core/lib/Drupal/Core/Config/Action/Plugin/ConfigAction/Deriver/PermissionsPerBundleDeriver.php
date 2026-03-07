@@ -23,7 +23,7 @@ final class PermissionsPerBundleDeriver extends DeriverBase implements Container
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get(EntityTypeManagerInterface::class),
     );

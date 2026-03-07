@@ -46,10 +46,10 @@ if (Settings::get('rebuild_access', FALSE) ||
     'apcu_clear_cache',
     'wincache_ucache_clear',
   ];
-  array_map('call_user_func', array_filter($user_caches, 'is_callable'));
+  array_map(call_user_func(...), array_filter($user_caches, is_callable(...)));
 
   drupal_rebuild($autoloader, $request);
   \Drupal::messenger()->addStatus('Cache rebuild complete.');
 }
-$base_path = dirname($request->getBaseUrl(), 2);
+$base_path = dirname((string) $request->getBaseUrl(), 2);
 header('Location: ' . $request->getSchemeAndHttpHost() . $base_path);

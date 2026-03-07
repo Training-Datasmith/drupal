@@ -78,8 +78,9 @@ class ArrayBuild extends ProcessPluginBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array {
     $new_value = [];
 
     foreach ((array) $value as $old_value) {

@@ -27,19 +27,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   entity_types: ['block'],
   deriver: PlaceBlockDeriver::class,
 )]
-final class PlaceBlock implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class PlaceBlock implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigActionPluginInterface $createAction,
-    private readonly string $whichTheme,
-    private readonly ConfigFactoryInterface $configFactory,
-    private readonly ConfigEntityStorageInterface $blockStorage,
+    private ConfigActionPluginInterface $createAction,
+    private string $whichTheme,
+    private ConfigFactoryInterface $configFactory,
+    private ConfigEntityStorageInterface $blockStorage,
   ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get('plugin.manager.config_action')->createInstance('entity_create:createIfNotExists'),
       $plugin_definition['which_theme'],
@@ -78,7 +78,7 @@ final class PlaceBlock implements ConfigActionPluginInterface, ContainerFactoryP
         // \Drupal\block\Entity\Block::sort() here because it seems to be
         // intended to sort blocks in the UI, where we really just want to get
         // the weights right in this situation.
-        uasort($blocks, fn (BlockInterface $a, BlockInterface $b) => $a->getWeight() <=> $b->getWeight());
+        uasort($blocks, fn (BlockInterface $a, BlockInterface $b): int => $a->getWeight() <=> $b->getWeight());
 
         $value['weight'] = match ($value['position']) {
           'first' => reset($blocks)->getWeight() - 1,

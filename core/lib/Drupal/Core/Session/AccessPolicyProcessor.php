@@ -46,12 +46,12 @@ class AccessPolicyProcessor implements AccessPolicyProcessorInterface {
 
     // If running in a fiber, prevent the current user switch from escaping to
     // outside the fiber by resuming the fiber if it was suspended.
-    $fiber = new \Fiber([$this, 'doProcessAccessPolicies']);
+    $fiber = new \Fiber($this->doProcessAccessPolicies(...));
     $fiber->start($account, $scope);
     while (!$fiber->isTerminated()) {
       if ($fiber->isSuspended()) {
         $resume_type = $fiber->resume();
-        if (!$fiber->isTerminated() && $resume_type !== FiberResumeType::Immediate) {
+        if ($resume_type !== FiberResumeType::Immediate) {
           usleep(500);
         }
       }
@@ -143,7 +143,7 @@ class AccessPolicyProcessor implements AccessPolicyProcessorInterface {
 
         $policy_permissions = $access_policy->calculatePermissions($account, $scope);
         if (!$this->validateScope($scope, $policy_permissions)) {
-          throw new AccessPolicyScopeException(sprintf('The access policy "%s" returned permissions for scopes other than "%s".', get_class($access_policy), $scope));
+          throw new AccessPolicyScopeException(sprintf('The access policy "%s" returned permissions for scopes other than "%s".', $access_policy::class, $scope));
         }
 
         $calculated_permissions = $calculated_permissions->merge($policy_permissions);
@@ -157,7 +157,7 @@ class AccessPolicyProcessor implements AccessPolicyProcessorInterface {
 
         $access_policy->alterPermissions($account, $scope, $calculated_permissions);
         if (!$this->validateScope($scope, $calculated_permissions)) {
-          throw new AccessPolicyScopeException(sprintf('The access policy "%s" altered permissions in a scope other than "%s".', get_class($access_policy), $scope));
+          throw new AccessPolicyScopeException(sprintf('The access policy "%s" altered permissions in a scope other than "%s".', $access_policy::class, $scope));
         }
       }
 

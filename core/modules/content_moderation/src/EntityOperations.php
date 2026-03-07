@@ -25,66 +25,27 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityOperations implements ContainerInjectionInterface {
 
   /**
-   * The Moderation Information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInfo;
-
-  /**
-   * The Entity Type Manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The Form Builder service.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-
-  /**
-   * The entity bundle information service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $bundleInfo;
-
-  /**
-   * The router builder service.
-   *
-   * @var \Drupal\Core\Routing\RouteBuilderInterface
-   */
-  protected $routerBuilder;
-
-  /**
    * Constructs a new EntityOperations object.
    *
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderation_info
+   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
    *   Moderation information service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager service.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    *   The form builder.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo
    *   The entity bundle information service.
-   * @param \Drupal\Core\Routing\RouteBuilderInterface $router_builder
+   * @param \Drupal\Core\Routing\RouteBuilderInterface $routerBuilder
    *   The router builder service.
    */
-  public function __construct(ModerationInformationInterface $moderation_info, EntityTypeManagerInterface $entity_type_manager, FormBuilderInterface $form_builder, EntityTypeBundleInfoInterface $bundle_info, RouteBuilderInterface $router_builder) {
-    $this->moderationInfo = $moderation_info;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->formBuilder = $form_builder;
-    $this->bundleInfo = $bundle_info;
-    $this->routerBuilder = $router_builder;
+  public function __construct(protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, protected \Drupal\Core\Routing\RouteBuilderInterface $routerBuilder)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('content_moderation.moderation_information'),
       $container->get('entity_type.manager'),
@@ -102,7 +63,7 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @see hook_entity_presave()
    */
-  public function entityPresave(EntityInterface $entity) {
+  public function entityPresave(EntityInterface $entity): void {
     if (!$this->moderationInfo->isModeratedEntity($entity)) {
       return;
     }
@@ -132,7 +93,7 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @see hook_entity_insert()
    */
-  public function entityInsert(EntityInterface $entity) {
+  public function entityInsert(EntityInterface $entity): void {
     if ($this->moderationInfo->isModeratedEntity($entity)) {
       $this->updateOrCreateFromEntity($entity);
     }
@@ -144,7 +105,7 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @see hook_entity_update()
    */
-  public function entityUpdate(EntityInterface $entity) {
+  public function entityUpdate(EntityInterface $entity): void {
     if ($this->moderationInfo->isModeratedEntity($entity)) {
       $this->updateOrCreateFromEntity($entity);
     }
@@ -221,7 +182,7 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @see hook_entity_delete()
    */
-  public function entityDelete(EntityInterface $entity) {
+  public function entityDelete(EntityInterface $entity): void {
     $content_moderation_state = ContentModerationStateEntity::loadFromModeratedEntity($entity);
     if ($content_moderation_state) {
       $content_moderation_state->delete();
@@ -234,7 +195,7 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @see hook_entity_revision_delete()
    */
-  public function entityRevisionDelete(EntityInterface $entity) {
+  public function entityRevisionDelete(EntityInterface $entity): void {
     if ($content_moderation_state = ContentModerationStateEntity::loadFromModeratedEntity($entity)) {
       if ($content_moderation_state->isDefaultRevision()) {
         $content_moderation_state->delete();
@@ -253,7 +214,7 @@ class EntityOperations implements ContainerInjectionInterface {
    *
    * @see hook_entity_translation_delete()
    */
-  public function entityTranslationDelete(EntityInterface $translation) {
+  public function entityTranslationDelete(EntityInterface $translation): void {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $translation */
     if (!$translation->isDefaultTranslation()) {
       $langcode = $translation->language()->getId();
@@ -271,7 +232,7 @@ class EntityOperations implements ContainerInjectionInterface {
    * @see hook_entity_view()
    * @see EntityFieldManagerInterface::getExtraFields()
    */
-  public function entityView(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+  public function entityView(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode): void {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     if (!$this->moderationInfo->isModeratedEntity($entity)) {
       return;

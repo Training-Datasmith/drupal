@@ -19,36 +19,27 @@ class FieldItemDeriver implements ContainerDeriverInterface {
   protected $derivatives = [];
 
   /**
-   * The base plugin ID this derivative is for.
-   *
-   * @var string
-   */
-  protected $basePluginId;
-
-  /**
-   * The field type plugin manager.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected $fieldTypePluginManager;
-
-  /**
    * Constructs a FieldItemDeriver object.
    *
-   * @param string $base_plugin_id
+   * @param string $basePluginId
    *   The base plugin ID.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_plugin_manager
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypePluginManager
    *   The field type plugin manager.
    */
-  public function __construct($base_plugin_id, FieldTypePluginManagerInterface $field_type_plugin_manager) {
-    $this->basePluginId = $base_plugin_id;
-    $this->fieldTypePluginManager = $field_type_plugin_manager;
+  public function __construct(
+      /**
+       * The base plugin ID this derivative is for.
+       */
+      protected $basePluginId,
+      protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypePluginManager
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $base_plugin_id,
       $container->get('plugin.manager.field.field_type')
@@ -72,8 +63,8 @@ class FieldItemDeriver implements ContainerDeriverInterface {
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     foreach ($this->fieldTypePluginManager->getDefinitions() as $plugin_id => $definition) {
-      $definition['definition_class'] = '\Drupal\Core\Field\TypedData\FieldItemDataDefinition';
-      $definition['list_definition_class'] = '\Drupal\Core\Field\BaseFieldDefinition';
+      $definition['definition_class'] = \Drupal\Core\Field\TypedData\FieldItemDataDefinition::class;
+      $definition['list_definition_class'] = \Drupal\Core\Field\BaseFieldDefinition::class;
       $definition['unwrap_for_canonical_representation'] = FALSE;
       $this->derivatives[$plugin_id] = $definition;
     }

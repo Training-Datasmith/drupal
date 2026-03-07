@@ -41,40 +41,21 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 class FieldBlock extends BlockBase implements ContextAwarePluginInterface, ContainerFactoryPluginInterface {
 
   use FieldLabelOptionsTrait;
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The formatter manager.
-   *
-   * @var \Drupal\Core\Field\FormatterPluginManager
-   */
-  protected $formatterManager;
 
   /**
    * The entity type ID.
-   *
-   * @var string
    */
-  protected $entityTypeId;
+  protected string $entityTypeId;
 
   /**
    * The bundle ID.
-   *
-   * @var string
    */
-  protected $bundle;
+  protected string $bundle;
 
   /**
    * The field name.
-   *
-   * @var string
    */
-  protected $fieldName;
+  protected string $fieldName;
 
   /**
    * The field definition.
@@ -82,20 +63,6 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
    * @var \Drupal\Core\Field\FieldDefinitionInterface
    */
   protected $fieldDefinition;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
 
   /**
    * Constructs a new FieldBlock.
@@ -106,11 +73,11 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
-   * @param \Drupal\Core\Field\FormatterPluginManager $formatter_manager
+   * @param \Drupal\Core\Field\FormatterPluginManager $formatterManager
    *   The formatter manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
@@ -119,18 +86,13 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    EntityFieldManagerInterface $entity_field_manager,
+    protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager,
     #[Autowire(service: 'plugin.manager.field.formatter')]
-    FormatterPluginManager $formatter_manager,
-    ModuleHandlerInterface $module_handler,
+    protected \Drupal\Core\Field\FormatterPluginManager $formatterManager,
+    protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
     #[Autowire(service: 'logger.channel.layout_builder')]
-    LoggerInterface $logger,
+    protected \Psr\Log\LoggerInterface $logger,
   ) {
-    $this->entityFieldManager = $entity_field_manager;
-    $this->formatterManager = $formatter_manager;
-    $this->moduleHandler = $module_handler;
-    $this->logger = $logger;
-
     // Get the entity type and field name from the plugin ID.
     [, $entity_type_id, $bundle, $field_name] = explode(static::DERIVATIVE_SEPARATOR, $plugin_id, 4);
     $this->entityTypeId = $entity_type_id;
@@ -182,7 +144,7 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
   /**
    * {@inheritdoc}
    */
-  public function getPreviewFallbackString() {
+  public function getPreviewFallbackString(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return new TranslatableMarkup('"@field" field', ['@field' => $this->getFieldDefinition()->getLabel()]);
   }
 
@@ -220,7 +182,7 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'label_display' => '0',
       'formatter' => [
@@ -235,13 +197,13 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     $config = $this->getConfiguration();
 
     $form['formatter'] = [
       '#tree' => TRUE,
       '#process' => [
-        [$this, 'formatterSettingsProcessCallback'],
+        $this->formatterSettingsProcessCallback(...),
       ],
     ];
     $form['formatter']['label'] = [
@@ -275,7 +237,7 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
   /**
    * Render API callback: builds the formatter settings elements.
    */
-  public function formatterSettingsProcessCallback(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  public function formatterSettingsProcessCallback(array &$element, FormStateInterface $form_state, array &$complete_form): array {
     if ($formatter = $this->getFormatter($element['#parents'], $form_state)) {
       $element['settings_wrapper']['settings'] = $formatter->settingsForm($complete_form, $form_state);
       $element['settings_wrapper']['settings']['#parents'] = array_merge($element['#parents'], ['settings']);
@@ -305,13 +267,13 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
    * @return array
    *   The formatter third party settings form.
    */
-  protected function thirdPartySettingsForm(FormatterInterface $plugin, FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state) {
+  protected function thirdPartySettingsForm(FormatterInterface $plugin, FieldDefinitionInterface $field_definition, array $form, FormStateInterface $form_state): array {
     $settings_form = [];
     // Invoke hook_field_formatter_third_party_settings_form(), keying resulting
     // subforms by module name.
     $this->moduleHandler->invokeAllWith(
       'field_formatter_third_party_settings_form',
-      function (callable $hook, string $module) use (&$settings_form, $plugin, $field_definition, $form, $form_state) {
+      function (callable $hook, string $module) use (&$settings_form, $plugin, $field_definition, $form, $form_state): void {
         $settings_form[$module] = $hook(
           $plugin,
           $field_definition,
@@ -335,7 +297,7 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     $this->configuration['formatter'] = $form_state->getValue('formatter');
   }
 
@@ -364,7 +326,7 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
    *
    * @see \Drupal\field_ui\Form\EntityDisplayFormBase::getApplicablePluginOptions()
    */
-  protected function getApplicablePluginOptions(FieldDefinitionInterface $field_definition) {
+  protected function getApplicablePluginOptions(FieldDefinitionInterface $field_definition): array {
     $options = $this->formatterManager->getOptions($field_definition->getType());
     $applicable_options = [];
     foreach ($options as $option => $label) {

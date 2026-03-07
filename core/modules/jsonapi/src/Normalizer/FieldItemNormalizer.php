@@ -35,20 +35,13 @@ class FieldItemNormalizer extends NormalizerBase implements DenormalizerInterfac
   use JsonSchemaReflectionTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * FieldItemNormalizer constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -70,9 +63,7 @@ class FieldItemNormalizer extends NormalizerBase implements DenormalizerInterfac
     if ($field_properties = TypedDataInternalPropertiesHelper::getNonInternalProperties($object)) {
       // We normalize each individual value, so each can do their own casting,
       // if needed.
-      $values = array_map(function ($property) use ($format, $context) {
-        return $this->serializer->normalize($property, $format, $context);
-      }, $field_properties);
+      $values = array_map(fn($property) => $this->serializer->normalize($property, $format, $context), $field_properties);
       // Flatten if there is only a single property to normalize.
       $flatten = count($field_properties) === 1 && $object::mainPropertyName() !== NULL;
       $values = static::rasterizeValueRecursive($flatten ? reset($values) : $values);
@@ -109,12 +100,10 @@ class FieldItemNormalizer extends NormalizerBase implements DenormalizerInterfac
       if ($this->serializer->supportsDenormalization($property_value, $property_value_class, $format, $context)) {
         return $this->serializer->denormalize($property_value, $property_value_class, $format, $context);
       }
-      else {
-        if (in_array($property_name, $serialized_property_names, TRUE)) {
-          $property_value = serialize($property_value);
-        }
-        return $property_value;
+      if (in_array($property_name, $serialized_property_names, TRUE)) {
+        return serialize($property_value);
       }
+      return $property_value;
     };
     // Because e.g. the 'bundle' entity key field requires field values to not
     // be expanded to an array of all properties, we special-case single-value
@@ -128,9 +117,7 @@ class FieldItemNormalizer extends NormalizerBase implements DenormalizerInterfac
 
     $data_internal = [];
     if (!empty($property_definitions)) {
-      $writable_properties = array_keys(array_filter($property_definitions, function (DataDefinitionInterface $data_definition) : bool {
-        return !$data_definition->isReadOnly();
-      }));
+      $writable_properties = array_keys(array_filter($property_definitions, fn(DataDefinitionInterface $data_definition): bool => !$data_definition->isReadOnly()));
       $invalid_property_names = [];
       foreach ($data as $property_name => $property_value) {
         if (!isset($property_definitions[$property_name])) {
@@ -154,18 +141,16 @@ class FieldItemNormalizer extends NormalizerBase implements DenormalizerInterfac
             implode("', '", $suggestions)
           ));
         }
-        else {
-          $format = count($invalid_property_names) === 1
-            ? "The property '%s' does not exist on the '%s' field of type '%s'. Writable properties are: '%s'."
-            : "The properties '%s' do not exist on the '%s' field of type '%s'. Writable properties are: '%s'.";
-          throw new UnexpectedValueException(sprintf(
-            $format,
-            implode("', '", array_keys($invalid_property_names)),
-            $item_definition->getFieldDefinition()->getName(),
-            $item_definition->getFieldDefinition()->getType(),
-            implode("', '", $writable_properties)
-          ));
-        }
+        $format = count($invalid_property_names) === 1
+          ? "The property '%s' does not exist on the '%s' field of type '%s'. Writable properties are: '%s'."
+          : "The properties '%s' do not exist on the '%s' field of type '%s'. Writable properties are: '%s'.";
+        throw new UnexpectedValueException(sprintf(
+          $format,
+          implode("', '", array_keys($invalid_property_names)),
+          $item_definition->getFieldDefinition()->getName(),
+          $item_definition->getFieldDefinition()->getType(),
+          implode("', '", $writable_properties)
+        ));
       }
 
       foreach ($data as $property_name => $property_value) {
@@ -203,7 +188,7 @@ class FieldItemNormalizer extends NormalizerBase implements DenormalizerInterfac
     $alternatives = [];
     foreach ($keys as $key) {
       $lev = levenshtein($search_key, $key);
-      if ($lev <= strlen($search_key) / 3 || str_contains($key, $search_key)) {
+      if ($lev <= strlen($search_key) / 3 || str_contains((string) $key, $search_key)) {
         $alternatives[] = $key;
       }
     }
@@ -272,7 +257,7 @@ class FieldItemNormalizer extends NormalizerBase implements DenormalizerInterfac
     }
     // Flatten if there is only a single property to normalize.
     if (count($field_properties) === 1 && $object::mainPropertyName() !== NULL) {
-      $schema = $schema['properties'][$object::mainPropertyName()] ?? [];
+      return $schema['properties'][$object::mainPropertyName()] ?? [];
     }
     return $schema;
   }

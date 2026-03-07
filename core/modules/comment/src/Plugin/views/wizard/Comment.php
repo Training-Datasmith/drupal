@@ -47,7 +47,7 @@ class Comment extends WizardPluginBase {
   /**
    * {@inheritdoc}
    */
-  protected function rowStyleOptions() {
+  protected function rowStyleOptions(): array {
     $options = [];
     $options['entity:comment'] = $this->t('comments');
     $options['fields'] = $this->t('fields');

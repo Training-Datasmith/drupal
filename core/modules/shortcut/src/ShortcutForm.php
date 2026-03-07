@@ -23,7 +23,7 @@ class ShortcutForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
     $form['#attached']['library'][] = 'core/drupal.form';
 
@@ -33,7 +33,7 @@ class ShortcutForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $entity = $this->entity;
     $status = $entity->save();
     $url = $entity->getUrl();

@@ -51,7 +51,7 @@ class ConfigSync extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.storage.sync'),
       $container->get('config.storage'),
@@ -65,14 +65,14 @@ class ConfigSync extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'config_admin_import_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form['actions'] = ['#type' => 'actions'];
     $form['actions']['submit'] = [
       '#type' => 'submit',
@@ -83,19 +83,19 @@ class ConfigSync extends FormBase {
     $storage_comparer = new StorageComparer($syncStorage, $this->activeStorage);
     $storage_comparer->createChangelist();
     if (empty($source_list) || !$storage_comparer->hasChanges()) {
-      $form['no_changes'] = [
-        '#type' => 'table',
-        '#header' => [$this->t('Name'), $this->t('Operations')],
-        '#rows' => [],
-        '#empty' => empty($source_list) ? $this->t('There is no staged configuration.') : $this->t('The staged configuration is identical to the active configuration.'),
-      ];
-      $form['actions']['#access'] = FALSE;
-      return $form;
+        $form['no_changes'] = [
+          '#type' => 'table',
+          '#header' => [$this->t('Name'), $this->t('Operations')],
+          '#rows' => [],
+          '#empty' => empty($source_list) ? $this->t('There is no staged configuration.') : $this->t('The staged configuration is identical to the active configuration.'),
+        ];
+        $form['actions']['#access'] = FALSE;
+        return $form;
     }
-    elseif (!$storage_comparer->validateSiteUuid()) {
-      $this->messenger()->addError($this->t('The staged configuration cannot be imported, because it originates from a different site than this site. You can only synchronize configuration between cloned instances of this site.'));
-      $form['actions']['#access'] = FALSE;
-      return $form;
+    if (!$storage_comparer->validateSiteUuid()) {
+        $this->messenger()->addError($this->t('The staged configuration cannot be imported, because it originates from a different site than this site. You can only synchronize configuration between cloned instances of this site.'));
+        $form['actions']['#access'] = FALSE;
+        return $form;
     }
     // A list of changes will be displayed, so check if the user should be
     // warned of potential losses to configuration.
@@ -223,7 +223,7 @@ class ConfigSync extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $config_importer = $this->configImporterFactory->get($form_state->get('storage_comparer'));
     if ($config_importer->alreadyImporting()) {
       $this->messenger()->addStatus($this->t('Another request may be synchronizing configuration already.'));
@@ -233,12 +233,12 @@ class ConfigSync extends FormBase {
         $sync_steps = $config_importer->initialize();
         $batch_builder = (new BatchBuilder())
           ->setTitle($this->t('Synchronizing configuration'))
-          ->setFinishCallback([ConfigImporterBatch::class, 'finish'])
+          ->setFinishCallback(ConfigImporterBatch::finish(...))
           ->setInitMessage($this->t('Starting configuration synchronization.'))
           ->setProgressMessage($this->t('Completed step @current of @total.'))
           ->setErrorMessage($this->t('Configuration synchronization has encountered an error.'));
         foreach ($sync_steps as $sync_step) {
-          $batch_builder->addOperation([ConfigImporterBatch::class, 'process'], [$config_importer, $sync_step]);
+          $batch_builder->addOperation(ConfigImporterBatch::process(...), [$config_importer, $sync_step]);
         }
 
         batch_set($batch_builder->toArray());

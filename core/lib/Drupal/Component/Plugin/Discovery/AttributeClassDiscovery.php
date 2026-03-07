@@ -58,7 +58,7 @@ class AttributeClassDiscovery implements DiscoveryInterface {
   ) {
     $file_cache_suffix = str_replace('\\', '_', $this->pluginDefinitionAttributeName);
     $this->fileCache = FileCacheFactory::get('attribute_discovery:' . $this->getFileCacheSuffix($file_cache_suffix));
-    $this->rootTwoLevelNamespaces = array_unique(array_map(fn($namespace) => $this->getTwoLevelNamespace($namespace), array_keys($this->getPluginNamespaces())));
+    $this->rootTwoLevelNamespaces = array_unique(array_map($this->getTwoLevelNamespace(...), array_keys($this->getPluginNamespaces())));
   }
 
   /**
@@ -79,12 +79,13 @@ class AttributeClassDiscovery implements DiscoveryInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getDefinitions() {
+  public function getDefinitions(): array {
     $definitions = [];
 
     $autoloader = new MissingClassDetectionClassLoader();
-    spl_autoload_register([$autoloader, 'loadClass']);
+    spl_autoload_register($autoloader->loadClass(...));
 
     // Search for classes within all PSR-4 namespace locations.
     foreach ($this->getPluginNamespaces() as $namespace => $dirs) {
@@ -175,7 +176,7 @@ class AttributeClassDiscovery implements DiscoveryInterface {
                   // @todo Add test coverage for unexpected Error exceptions in
                   // https://www.drupal.org/project/drupal/issues/3520811.
                   $autoloader->reset();
-                  spl_autoload_unregister([$autoloader, 'loadClass']);
+                  spl_autoload_unregister($autoloader->loadClass(...));
                   throw $e;
                 }
                 $autoloader->reset();
@@ -205,7 +206,7 @@ class AttributeClassDiscovery implements DiscoveryInterface {
         }
       }
     }
-    spl_autoload_unregister([$autoloader, 'loadClass']);
+    spl_autoload_unregister($autoloader->loadClass(...));
 
     return $definitions;
   }

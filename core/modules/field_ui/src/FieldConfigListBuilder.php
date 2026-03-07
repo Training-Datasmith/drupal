@@ -35,24 +35,8 @@ class FieldConfigListBuilder extends ConfigEntityListBuilder {
 
   /**
    * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $entityTypeManager;
-
-  /**
-   * The field type plugin manager.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected $fieldTypeManager;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
+  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager;
 
   /**
    * Constructs a new class instance.
@@ -61,23 +45,21 @@ class FieldConfigListBuilder extends ConfigEntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
    *   The field type manager.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface|null $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface|null $entityFieldManager
    *   The entity field manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, FieldTypePluginManagerInterface $field_type_manager, EntityFieldManagerInterface $entity_field_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager) {
     parent::__construct($entity_type, $entity_type_manager->getStorage($entity_type->id()));
 
     $this->entityTypeManager = $entity_type_manager;
-    $this->fieldTypeManager = $field_type_manager;
-    $this->entityFieldManager = $entity_field_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
@@ -89,7 +71,7 @@ class FieldConfigListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render($target_entity_type_id = NULL, $target_bundle = NULL) {
+  public function render($target_entity_type_id = NULL, $target_bundle = NULL): array {
     $this->targetEntityTypeId = $target_entity_type_id;
     $this->targetBundle = $target_bundle;
 
@@ -103,11 +85,10 @@ class FieldConfigListBuilder extends ConfigEntityListBuilder {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function load() {
-    $entities = array_filter($this->entityFieldManager->getFieldDefinitions($this->targetEntityTypeId, $this->targetBundle), function ($field_definition) {
-      return $field_definition instanceof FieldConfigInterface;
-    });
+  public function load(): array {
+    $entities = array_filter($this->entityFieldManager->getFieldDefinitions($this->targetEntityTypeId, $this->targetBundle), fn(\Drupal\Core\Field\FieldDefinitionInterface $field_definition) => $field_definition instanceof FieldConfigInterface);
 
     // Sort the entities using the entity class's sort() method.
     // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
@@ -129,7 +110,7 @@ class FieldConfigListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildRow(EntityInterface $field_config) {
+  public function buildRow(EntityInterface $field_config): array {
     /** @var \Drupal\field\FieldConfigInterface $field_config */
     $field_storage = $field_config->getFieldStorageDefinition();
 
@@ -251,7 +232,7 @@ class FieldConfigListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     /** @var \Drupal\field\FieldConfigInterface $entity */

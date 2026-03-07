@@ -47,8 +47,9 @@ class EntityReferenceLabelFormatter extends EntityReferenceFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return list
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
     $summary[] = $this->getSetting('link') ? $this->t('Link to the referenced entity') : $this->t('No link');
     return $summary;
@@ -56,8 +57,9 @@ class EntityReferenceLabelFormatter extends EntityReferenceFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[][]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
     $output_as_link = $this->getSetting('link');
 

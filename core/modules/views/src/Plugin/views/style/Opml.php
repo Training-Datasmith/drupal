@@ -28,7 +28,7 @@ class Opml extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function attachTo(array &$build, $display_id, Url $feed_url, $title) {
+  public function attachTo(array &$build, $display_id, Url $feed_url, $title): void {
     $display = $this->view->displayHandlers->get($display_id);
     $url_options = [];
     $input = $this->view->getExposedInput();
@@ -55,7 +55,7 @@ class Opml extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $rows = [];
 
     foreach ($this->view->result as $row_index => $row) {

@@ -44,15 +44,11 @@ class FieldConfigEditForm extends EntityForm {
 
   /**
    * The name of the entity type.
-   *
-   * @var string
    */
   protected string $entityTypeId;
 
   /**
    * The entity bundle.
-   *
-   * @var string
    */
   protected string $bundle;
 
@@ -67,7 +63,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.bundle.info'),
       $container->get('typed_data_manager'),
@@ -80,7 +76,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     // Ensure that the form ID remains consistent between both 'default' and
     // 'edit' operations. This is needed because historically it was only
     // possible to edit the field configuration.
@@ -90,7 +86,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
     $form['#entity_builders'][] = 'field_form_field_config_edit_form_entity_builder';
 
@@ -235,7 +231,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function afterBuild(array $element, FormStateInterface $form_state) {
+  public function afterBuild(array $element, FormStateInterface $form_state): array {
     // Delegate ::afterBuild to the subform.
     // @todo remove after https://www.drupal.org/i/3385205 has been addressed.
     if (isset($element['field_storage_submit'])) {
@@ -402,7 +398,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
     // Additional validation to work when JS is disabled.
     if (!$form_state->getValue('label')) {
@@ -431,7 +427,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     $field_storage_form = $this->entityTypeManager->getFormObject('field_storage_config', $this->operation);
@@ -458,7 +454,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     // Save field config.
     try {
       try {
@@ -546,7 +542,7 @@ class FieldConfigEditForm extends EntityForm {
   /**
    * Process handler for subform submit.
    */
-  public static function processFieldStorageSubmit(array $element, FormStateInterface $form_state, &$complete_form) {
+  public static function processFieldStorageSubmit(array $element, FormStateInterface $form_state, array &$complete_form): array {
     // Limit validation errors to the field storage form while the field storage
     // form is being edited.
     $complete_form['#limit_validation_errors'] = [array_slice($element['#parents'], 0, -1)];
@@ -561,7 +557,7 @@ class FieldConfigEditForm extends EntityForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function fieldStorageSubmit(&$form, FormStateInterface $form_state) {
+  public function fieldStorageSubmit(&$form, FormStateInterface $form_state): void {
     // The default value widget needs to be regenerated.
     $form_storage = &$form_state->getStorage();
     unset($form_storage['default_value_widget']);

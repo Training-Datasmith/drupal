@@ -14,7 +14,7 @@ class ProfileTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    */
-  protected function hasPublishedStatus() {
+  protected function hasPublishedStatus(): bool {
     // User status has nothing to do with translations visibility.
     return FALSE;
   }
@@ -22,7 +22,7 @@ class ProfileTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    */
-  protected function hasCreatedTime() {
+  protected function hasCreatedTime(): bool {
     // User creation date has nothing to do with translation creation date.
     return FALSE;
   }
@@ -30,9 +30,9 @@ class ProfileTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    */
-  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity) {
+  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity): void {
     parent::entityFormAlter($form, $form_state, $entity);
-    $form['actions']['submit']['#submit'][] = [$this, 'entityFormSave'];
+    $form['actions']['submit']['#submit'][] = $this->entityFormSave(...);
   }
 
   /**
@@ -42,7 +42,7 @@ class ProfileTranslationHandler extends ContentTranslationHandler {
    *
    * @see \Drupal\Core\Entity\EntityForm::build()
    */
-  public function entityFormSave(array $form, FormStateInterface $form_state) {
+  public function entityFormSave(array $form, FormStateInterface $form_state): void {
     if ($this->getSourceLangcode($form_state)) {
       $entity = $form_state->getFormObject()->getEntity();
       // We need a redirect here, otherwise we would get an access denied page

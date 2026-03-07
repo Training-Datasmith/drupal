@@ -59,24 +59,13 @@ class StaticReflectionParser
 {
     /**
      * The fully qualified class name.
-     *
-     * @var string
      */
-    protected $className;
+    protected string $className;
 
     /**
      * The short class name.
-     *
-     * @var string
      */
-    protected $shortClassName;
-
-    /**
-     * Whether the caller only wants class annotations.
-     *
-     * @var bool
-     */
-    protected $classAnnotationOptimize;
+    protected string $shortClassName;
 
     /**
      * A ClassFinder object which finds the class.
@@ -94,10 +83,8 @@ class StaticReflectionParser
 
     /**
      * The namespace of the class.
-     *
-     * @var string
      */
-    protected $namespace = '';
+    protected string $namespace = '';
 
     /**
      * The use statements of the class.
@@ -153,7 +140,10 @@ class StaticReflectionParser
      * @param bool                 $classAnnotationOptimize Only retrieve the class docComment.
      *                                                         Presumes there is only one statement per line.
      */
-    public function __construct($className, $finder, $classAnnotationOptimize = false)
+    public function __construct($className, $finder, /**
+     * Whether the caller only wants class annotations.
+     */
+    protected $classAnnotationOptimize = false)
     {
         $this->className = ltrim($className, '\\');
         $lastNsPos       = strrpos($this->className, '\\');
@@ -166,7 +156,6 @@ class StaticReflectionParser
         }
 
         $this->finder                  = $finder;
-        $this->classAnnotationOptimize = $classAnnotationOptimize;
     }
 
     /**
@@ -211,7 +200,7 @@ class StaticReflectionParser
                     break;
                 case T_CLASS:
                     // Convert the attributes to fully qualified names.
-                    $this->classAttributes = array_map([$this, 'fullySpecifyName'], $attributeNames);
+                    $this->classAttributes = array_map($this->fullySpecifyName(...), $attributeNames);
                     if ($last_token !== T_PAAMAYIM_NEKUDOTAYIM && $last_token !== T_NEW) {
                         $this->docComment['class'] = $docComment;
                         $docComment                = '';
@@ -224,7 +213,7 @@ class StaticReflectionParser
                 case T_PUBLIC:
                     $token = $tokenParser->next();
                     if ($token[0] === T_VARIABLE) {
-                        $propertyName                                = substr($token[1], 1);
+                        $propertyName                                = substr((string) $token[1], 1);
                         $this->docComment['property'][$propertyName] = $docComment;
                         $attributeNames                              = [];
                         continue 2;
@@ -239,7 +228,6 @@ class StaticReflectionParser
                     // there can be & before the function name so find the
                     // string.
                     while (($token = $tokenParser->next()) && $token[0] !== T_STRING) {
-                        continue;
                     }
                     if ($token === null) {
                         break;
@@ -247,7 +235,7 @@ class StaticReflectionParser
                     $methodName                              = $token[1];
                     $this->docComment['method'][$methodName] = $docComment;
                     $docComment                              = '';
-                    $this->methodAttributes[$methodName]     = array_map([$this, 'fullySpecifyName'], $attributeNames);
+                    $this->methodAttributes[$methodName]     = array_map($this->fullySpecifyName(...), $attributeNames);
                     $attributeNames                          = [];
                     break;
                 case T_EXTENDS:
@@ -292,7 +280,7 @@ class StaticReflectionParser
      *
      * @return ReflectionClass
      */
-    public function getReflectionClass()
+    public function getReflectionClass(): \Drupal\Component\Annotation\Doctrine\StaticReflectionClass
     {
         return new StaticReflectionClass($this);
     }
@@ -340,7 +328,7 @@ class StaticReflectionParser
      *
      * @throws ReflectionException
      */
-    public function getStaticReflectionParserForDeclaringClass($type, $name)
+    public function getStaticReflectionParserForDeclaringClass(string $type, string $name)
     {
         $this->parse();
         if (isset($this->docComment[$type][$name])) {
@@ -356,8 +344,6 @@ class StaticReflectionParser
      * Determines if the class has the provided class attribute.
      *
      * @param string $attribute The fully qualified attribute to check for.
-     *
-     * @return bool
      */
     public function hasClassAttribute(string $attribute): bool
     {
@@ -380,8 +366,6 @@ class StaticReflectionParser
      * Converts a name into a fully specified name.
      *
      * @param string $name The name to convert.
-     *
-     * @return string
      */
     private function fullySpecifyName(string $name): string
     {
@@ -407,7 +391,7 @@ class StaticReflectionParser
             }
         }
         if (! $fullySpecified) {
-            $name = '\\' . $this->namespace . '\\' . $name;
+            return '\\' . $this->namespace . '\\' . $name;
         }
         return $name;
     }

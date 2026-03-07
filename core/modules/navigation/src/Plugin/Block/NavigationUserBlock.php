@@ -33,7 +33,7 @@ final class NavigationUserBlock extends BlockBase {
   public function build(): array {
     return [
       '#create_placeholder' => TRUE,
-      '#lazy_builder' => [static::class . '::buildLinks', [$this->configuration['label']]],
+      '#lazy_builder' => [self::class . '::buildLinks', [$this->configuration['label']]],
       '#cache' => [
         'keys' => ['navigation_user_block'],
       ],

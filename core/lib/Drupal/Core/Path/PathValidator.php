@@ -23,13 +23,6 @@ use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
 class PathValidator implements PathValidatorInterface {
 
   /**
-   * The access aware router.
-   *
-   * @var \Drupal\Core\Routing\AccessAwareRouterInterface
-   */
-  protected $accessAwareRouter;
-
-  /**
    * A router implementation which does not check access.
    *
    * @var \Symfony\Component\Routing\Matcher\UrlMatcherInterface
@@ -37,42 +30,25 @@ class PathValidator implements PathValidatorInterface {
   protected $accessUnawareRouter;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
-   * The path processor.
-   *
-   * @var \Drupal\Core\PathProcessor\InboundPathProcessorInterface
-   */
-  protected $pathProcessor;
-
-  /**
    * Creates a new PathValidator.
    *
-   * @param \Drupal\Core\Routing\AccessAwareRouterInterface $access_aware_router
+   * @param \Drupal\Core\Routing\AccessAwareRouterInterface $accessAwareRouter
    *   The access aware router.
    * @param \Symfony\Component\Routing\Matcher\UrlMatcherInterface $access_unaware_router
    *   A router implementation which does not check access.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
-   * @param \Drupal\Core\PathProcessor\InboundPathProcessorInterface $path_processor
+   * @param \Drupal\Core\PathProcessor\InboundPathProcessorInterface $pathProcessor
    *   The path processor.
    */
-  public function __construct(AccessAwareRouterInterface $access_aware_router, UrlMatcherInterface $access_unaware_router, AccountInterface $account, InboundPathProcessorInterface $path_processor) {
-    $this->accessAwareRouter = $access_aware_router;
+  public function __construct(protected \Drupal\Core\Routing\AccessAwareRouterInterface $accessAwareRouter, UrlMatcherInterface $access_unaware_router, protected \Drupal\Core\Session\AccountInterface $account, protected \Drupal\Core\PathProcessor\InboundPathProcessorInterface $pathProcessor) {
     $this->accessUnawareRouter = $access_unaware_router;
-    $this->account = $account;
-    $this->pathProcessor = $path_processor;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isValid($path) {
+  public function isValid($path): bool {
     return (bool) $this->getUrlIfValid($path);
   }
 
@@ -94,7 +70,7 @@ class PathValidator implements PathValidatorInterface {
    * Helper for getUrlIfValid() and getUrlIfValidWithoutAccessCheck().
    */
   protected function getUrl($path, $access_check) {
-    $path = ltrim($path, '/');
+    $path = ltrim((string) $path, '/');
 
     $parsed_url = UrlHelper::parse($path);
 
@@ -105,18 +81,18 @@ class PathValidator implements PathValidatorInterface {
     if (!empty($parsed_url['fragment'])) {
       $options['fragment'] = $parsed_url['fragment'];
     }
-
     if ($parsed_url['path'] == '<front>') {
-      return new Url('<front>', [], $options);
+        return new Url('<front>', [], $options);
     }
-    elseif ($parsed_url['path'] == '<none>') {
-      return new Url('<none>', [], $options);
+    if ($parsed_url['path'] == '<none>') {
+        return new Url('<none>', [], $options);
     }
-    elseif (UrlHelper::isExternal($path) && UrlHelper::isValid($path)) {
-      if (empty($parsed_url['path'])) {
-        return FALSE;
-      }
-      return Url::fromUri($path);
+
+    if (UrlHelper::isExternal($path) && UrlHelper::isValid($path)) {
+        if (empty($parsed_url['path'])) {
+          return FALSE;
+        }
+        return Url::fromUri($path);
     }
 
     try {
@@ -166,19 +142,7 @@ class PathValidator implements PathValidatorInterface {
       $router->setContext((new RequestContext())->fromRequest($request));
       $result = $router->match($path);
     }
-    catch (ResourceNotFoundException) {
-      $result = FALSE;
-    }
-    catch (ParamNotConvertedException) {
-      $result = FALSE;
-    }
-    catch (AccessDeniedHttpException) {
-      $result = FALSE;
-    }
-    catch (MethodNotAllowedException) {
-      $result = FALSE;
-    }
-    catch (BadRequestException) {
+    catch (ResourceNotFoundException|ParamNotConvertedException|AccessDeniedHttpException|MethodNotAllowedException|BadRequestException) {
       $result = FALSE;
     }
 

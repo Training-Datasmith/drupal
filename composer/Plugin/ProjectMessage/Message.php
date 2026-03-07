@@ -19,13 +19,6 @@ class Message {
   protected $rootPackage;
 
   /**
-   * The name of the event.
-   *
-   * @var string
-   */
-  protected $eventName;
-
-  /**
    * The message to display.
    *
    * @var string[]
@@ -37,12 +30,14 @@ class Message {
    *
    * @param \Composer\Package\RootPackageInterface $root_package
    *   Composer package object for the root package.
-   * @param string $event_name
+   * @param string $eventName
    *   The event name.
    */
-  public function __construct(RootPackageInterface $root_package, $event_name) {
+  public function __construct(RootPackageInterface $root_package, /**
+   * The name of the event.
+   */
+  protected $eventName) {
     $this->rootPackage = $root_package;
-    $this->eventName = $event_name;
   }
 
   public function getText() {

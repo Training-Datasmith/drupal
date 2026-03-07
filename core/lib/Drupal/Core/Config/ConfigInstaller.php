@@ -15,39 +15,11 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class ConfigInstaller implements ConfigInstallerInterface {
 
   /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The active configuration storages, keyed by collection.
    *
    * @var \Drupal\Core\Config\StorageInterface[]
    */
   protected $activeStorages;
-
-  /**
-   * The typed configuration manager.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected $typedConfig;
-
-  /**
-   * The configuration manager.
-   *
-   * @var \Drupal\Core\Config\ConfigManagerInterface
-   */
-  protected $configManager;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
 
   /**
    * The configuration storage that provides the default configuration.
@@ -64,51 +36,34 @@ class ConfigInstaller implements ConfigInstallerInterface {
   protected $isSyncing = FALSE;
 
   /**
-   * The name of the currently active installation profile.
-   *
-   * @var string|false|null
-   */
-  protected $installProfile;
-
-  /**
-   * The extension path resolver.
-   *
-   * @var \Drupal\Core\Extension\ExtensionPathResolver
-   */
-  protected $extensionPathResolver;
-
-  /**
    * Constructs the configuration installer.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
    * @param \Drupal\Core\Config\StorageInterface $active_storage
    *   The active configuration storage.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfig
    *   The typed configuration manager.
-   * @param \Drupal\Core\Config\ConfigManagerInterface $config_manager
+   * @param \Drupal\Core\Config\ConfigManagerInterface $configManager
    *   The configuration manager.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
-   * @param string $install_profile
+   * @param string $installProfile
    *   The name of the currently active installation profile.
-   * @param \Drupal\Core\Extension\ExtensionPathResolver $extension_path_resolver
+   * @param \Drupal\Core\Extension\ExtensionPathResolver $extensionPathResolver
    *   The extension path resolver.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, StorageInterface $active_storage, TypedConfigManagerInterface $typed_config, ConfigManagerInterface $config_manager, EventDispatcherInterface $event_dispatcher, $install_profile, ExtensionPathResolver $extension_path_resolver) {
-    $this->configFactory = $config_factory;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, StorageInterface $active_storage, protected \Drupal\Core\Config\TypedConfigManagerInterface $typedConfig, protected \Drupal\Core\Config\ConfigManagerInterface $configManager, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher, /**
+   * The name of the currently active installation profile.
+   */
+  protected $installProfile, protected \Drupal\Core\Extension\ExtensionPathResolver $extensionPathResolver) {
     $this->activeStorages[$active_storage->getCollectionName()] = $active_storage;
-    $this->typedConfig = $typed_config;
-    $this->configManager = $config_manager;
-    $this->eventDispatcher = $event_dispatcher;
-    $this->installProfile = $install_profile;
-    $this->extensionPathResolver = $extension_path_resolver;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function installDefaultConfig($type, $name, DefaultConfigMode $mode = DefaultConfigMode::All) {
+  public function installDefaultConfig($type, $name, DefaultConfigMode $mode = DefaultConfigMode::All): void {
     $extension_path = $this->extensionPathResolver->getPath($type, $name);
     // Refresh the schema cache if the extension provides configuration schema
     // or is a theme.
@@ -151,7 +106,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
           if ($collection === StorageInterface::DEFAULT_COLLECTION && ($mode === DefaultConfigMode::InstallEntities || $mode === DefaultConfigMode::InstallSimple)) {
             // Filter out config depending on the mode. The mode can be used to
             // only install simple config or config entities.
-            $config_to_create = array_filter($config_to_create, function ($config_name) use ($mode) {
+            $config_to_create = array_filter($config_to_create, function ($config_name) use ($mode): bool {
               $is_config_entity = $this->configManager->getEntityTypeIdByName($config_name) !== NULL;
               if ($is_config_entity) {
                 return $mode === DefaultConfigMode::InstallEntities;
@@ -165,9 +120,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
             // already exists is excluded as it will have already been written.
             // This means that if the configuration is changed by something else
             // during the install it will not be overwritten again.
-            $existing_configuration = array_filter($this->getActiveStorages($collection)->listAll(), function ($config_name) {
-              return !$this->configManager->getEntityTypeIdByName($config_name);
-            });
+            $existing_configuration = array_filter($this->getActiveStorages($collection)->listAll(), fn($config_name) => !$this->configManager->getEntityTypeIdByName($config_name));
             $config_to_create = array_diff_key($config_to_create, array_flip($existing_configuration));
           }
 
@@ -216,7 +169,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function installOptionalConfig(?StorageInterface $storage = NULL, $dependency = []) {
+  public function installOptionalConfig(?StorageInterface $storage = NULL, $dependency = []): void {
     $profile = $this->drupalGetProfile();
     $enabled_extensions = $this->getEnabledExtensions();
     $existing_config = $this->getActiveStorages()->listAll();
@@ -250,13 +203,12 @@ class ConfigInstaller implements ConfigInstallerInterface {
 
     // Filter the list of configuration to only include configuration that
     // should be created.
-    $list = array_filter($list, function ($config_name) use ($existing_config) {
-      // Only list configuration that:
-      // - does not already exist
-      // - is a configuration entity (this also excludes config that has an
-      //   implicit dependency on modules that are not yet installed)
-      return !in_array($config_name, $existing_config) && $this->configManager->getEntityTypeIdByName($config_name);
-    });
+    $list = array_filter($list, 
+        // Only list configuration that:
+        // - does not already exist
+        // - is a configuration entity (this also excludes config that has an
+        //   implicit dependency on modules that are not yet installed)
+        fn($config_name) => !in_array($config_name, $existing_config) && $this->configManager->getEntityTypeIdByName($config_name));
 
     $all_config = array_merge($existing_config, $list);
     $all_config = array_combine($all_config, $all_config);
@@ -441,11 +393,11 @@ class ConfigInstaller implements ConfigInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function installCollectionDefaultConfig($collection) {
+  public function installCollectionDefaultConfig($collection): void {
     $storage = new ExtensionInstallStorage($this->getActiveStorages(StorageInterface::DEFAULT_COLLECTION), InstallStorage::CONFIG_INSTALL_DIRECTORY, $collection, InstallerKernel::installationAttempted(), $this->installProfile);
     // Only install configuration for enabled extensions.
     $enabled_extensions = $this->getEnabledExtensions();
-    $config_to_install = array_filter($storage->listAll(), function ($config_name) use ($enabled_extensions) {
+    $config_to_install = array_filter($storage->listAll(), function ($config_name) use ($enabled_extensions): bool {
       $provider = mb_substr($config_name, 0, strpos($config_name, '.'));
       return in_array($provider, $enabled_extensions);
     });
@@ -459,7 +411,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSourceStorage(StorageInterface $storage) {
+  public function setSourceStorage(StorageInterface $storage): static {
     $this->sourceStorage = $storage;
     return $this;
   }
@@ -491,7 +443,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSyncing($status) {
+  public function setSyncing($status): static {
     if (!$status) {
       $this->sourceStorage = NULL;
     }
@@ -527,7 +479,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    *   Array of configuration object names that already exist keyed by
    *   collection.
    */
-  protected function findPreExistingConfiguration(StorageInterface $storage, array $previous_config_names = []) {
+  protected function findPreExistingConfiguration(StorageInterface $storage, array $previous_config_names = []): array {
     $existing_configuration = [];
     // Gather information about all the supported collections.
     $collection_info = $this->configManager->getConfigCollectionInfo();
@@ -547,7 +499,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function checkConfigurationToInstall($type, $name) {
+  public function checkConfigurationToInstall($type, $name): void {
     if ($this->isSyncing()) {
       // Configuration is assumed to already be checked by the config importer
       // validation events.
@@ -627,7 +579,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    *     - An array that will be filled with the missing dependency names, keyed
    *       by the dependents' names.
    */
-  protected function findDefaultConfigWithUnmetDependencies(StorageInterface $storage, array $enabled_extensions, array $profile_storages = [], array $previously_checked_config = []) {
+  protected function findDefaultConfigWithUnmetDependencies(StorageInterface $storage, array $enabled_extensions, array $profile_storages = [], array $previously_checked_config = []): array {
     $missing_dependencies = [];
     $config_to_create = $this->getConfigToCreate($storage, StorageInterface::DEFAULT_COLLECTION, '', $profile_storages);
     $all_config = array_merge($this->configFactory->listAll(), array_keys($config_to_create), $previously_checked_config[StorageInterface::DEFAULT_COLLECTION] ?? []);
@@ -657,7 +609,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    * @return bool
    *   TRUE if all dependencies are present, FALSE otherwise.
    */
-  protected function validateDependencies($config_name, array $data, array $enabled_extensions, array $all_config) {
+  protected function validateDependencies($config_name, array $data, array $enabled_extensions, array $all_config): bool {
     if (!isset($data['dependencies'])) {
       // Simple config or a config entity without dependencies.
       [$provider] = explode('.', $config_name, 2);
@@ -683,7 +635,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    * @return array
    *   A list of missing config dependencies.
    */
-  protected function getMissingDependencies($config_name, array $data, array $enabled_extensions, array $all_config) {
+  protected function getMissingDependencies($config_name, array $data, array $enabled_extensions, array $all_config): array {
     $missing = [];
     if (isset($data['dependencies'])) {
       [$provider] = explode('.', $config_name, 2);
@@ -727,7 +679,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    * @return array
    *   A list of enabled extensions which includes both modules and themes.
    */
-  protected function getEnabledExtensions() {
+  protected function getEnabledExtensions(): array {
     // Read enabled extensions directly from configuration to avoid circular
     // dependencies on ModuleHandler and ThemeHandler.
     $extension_config = $this->configFactory->get('core.extension');
@@ -754,7 +706,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    *   installing the profile itself, then it will return an empty array as the
    *   profile storage should not be used.
    */
-  protected function getProfileStorages($installing_name = '') {
+  protected function getProfileStorages($installing_name = ''): array {
     $profile = $this->drupalGetProfile();
     $profile_storages = [];
     if ($profile && $profile != $installing_name) {
@@ -779,7 +731,7 @@ class ConfigInstaller implements ConfigInstallerInterface {
    * @return string
    *   The extension's default configuration directory.
    */
-  protected function getDefaultConfigDirectory($type, $name) {
+  protected function getDefaultConfigDirectory(string $type, string $name): string {
     return $this->extensionPathResolver->getPath($type, $name) . '/' . InstallStorage::CONFIG_INSTALL_DIRECTORY;
   }
 

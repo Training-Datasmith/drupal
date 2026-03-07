@@ -19,20 +19,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ContentLanguageSettingsForm extends FormBase {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
    * If this validator can handle multiple arguments.
    *
    * @var bool
@@ -40,32 +26,23 @@ class ContentLanguageSettingsForm extends FormBase {
   protected $multipleCapable = TRUE;
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs an \Drupal\views\Plugin\views\argument_validator\Entity object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ModuleHandlerInterface $module_handler) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
@@ -83,22 +60,20 @@ class ContentLanguageSettingsForm extends FormBase {
     if ($this->moduleHandler->moduleExists('content_translation')) {
       return $this->t('Content language and translation');
     }
-    else {
-      return $this->t('Content language');
-    }
+    return $this->t('Content language');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'language_content_settings_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $entity_types = $this->entityTypeManager->getDefinitions();
     $labels = [];
     $default = [];
@@ -106,8 +81,14 @@ class ContentLanguageSettingsForm extends FormBase {
     $bundles = $this->entityTypeBundleInfo->getAllBundleInfo();
     $language_configuration = [];
     foreach ($entity_types as $entity_type_id => $entity_type) {
-      if (!$entity_type instanceof ContentEntityTypeInterface || !$entity_type->hasKey('langcode') || !isset($bundles[$entity_type_id])) {
-        continue;
+      if (!$entity_type instanceof ContentEntityTypeInterface) {
+          continue;
+      }
+      if (!$entity_type->hasKey('langcode')) {
+          continue;
+      }
+      if (!isset($bundles[$entity_type_id])) {
+          continue;
       }
       $labels[$entity_type_id] = $entity_type->getLabel() ?: $entity_type_id;
       $default[$entity_type_id] = FALSE;
@@ -190,7 +171,7 @@ class ContentLanguageSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $entity_types = $form_state->getValue('entity_types');
     foreach ($form_state->getValue('settings') as $entity_type => $entity_settings) {
       foreach ($entity_settings as $bundle => $bundle_settings) {

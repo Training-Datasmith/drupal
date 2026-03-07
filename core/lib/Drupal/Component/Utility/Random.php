@@ -60,7 +60,7 @@ class Random {
    *
    * @see \Drupal\Component\Utility\Random::name()
    */
-  public function string($length = 8, $unique = FALSE, $validator = NULL) {
+  public function string($length = 8, $unique = FALSE, $validator = NULL): string {
     $counter = 0;
 
     // Continue to loop if $unique is TRUE and the generated string is not
@@ -114,7 +114,7 @@ class Random {
    *
    * @see \Drupal\Component\Utility\Random::string()
    */
-  public function name($length = 8, $unique = FALSE) {
+  public function name($length = 8, $unique = FALSE): string {
     $values = array_merge(range(65, 90), range(97, 122), range(48, 57));
     $max = count($values) - 1;
     $counter = 0;
@@ -194,7 +194,7 @@ class Random {
    * @return string
    *   A random string with the requested number of random words.
    */
-  public function word($length) {
+  public function word($length): string {
     $vowels = ["a", "e", "i", "o", "u"];
     $cons = ["b", "c", "d", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "u", "v", "w", "tr",
       "cr", "br", "fr", "th", "dr", "ch", "ph", "wr", "st", "sp", "sw", "pr",
@@ -222,7 +222,7 @@ class Random {
    *   The generated object, with the specified number of random keys. Each key
    *   has a random string value.
    */
-  public function object($size = 4) {
+  public function object($size = 4): \stdClass {
     $object = new \stdClass();
     for ($i = 0; $i < $size; $i++) {
       $random_key = $this->name();
@@ -245,7 +245,7 @@ class Random {
    * @return string
    *   Nonsense latin words which form sentence(s).
    */
-  public function sentences($min_word_count, $capitalize = FALSE) {
+  public function sentences($min_word_count, $capitalize = FALSE): string {
     // cSpell:disable
     $dictionary = ["abbas", "abdo", "abico", "abigo", "abluo", "accumsan",
       "acsi", "ad", "adipiscing", "aliquam", "aliquip", "amet", "antehabeo",
@@ -310,7 +310,7 @@ class Random {
    * @return string
    *   A string of multiple paragraphs.
    */
-  public function paragraphs($paragraph_count = 12) {
+  public function paragraphs($paragraph_count = 12): string {
     $output = '';
     for ($i = 1; $i <= $paragraph_count; $i++) {
       $output .= $this->sentences(mt_rand(20, 60)) . "\n\n";
@@ -336,20 +336,20 @@ class Random {
     $min = explode('x', $min_resolution);
     $max = explode('x', $max_resolution);
 
-    $width = rand((int) $min[0], (int) $max[0]);
-    $height = rand((int) $min[1], (int) $max[1]);
+    $width = random_int((int) $min[0], (int) $max[0]);
+    $height = random_int((int) $min[1], (int) $max[1]);
 
     // Make an image split into 4 sections with random colors.
     $im = imagecreate($width, $height);
     for ($n = 0; $n < 4; $n++) {
-      $color = imagecolorallocate($im, rand(0, 255), rand(0, 255), rand(0, 255));
+      $color = imagecolorallocate($im, random_int(0, 255), random_int(0, 255), random_int(0, 255));
       $x = $width / 2 * ($n % 2);
       $y = $height / 2 * (int) ($n >= 2);
       imagefilledrectangle($im, (int) $x, (int) $y, (int) ($x + $width / 2), (int) ($y + $height / 2), $color);
     }
 
     // Make a perfect circle in the image middle.
-    $color = imagecolorallocate($im, rand(0, 255), rand(0, 255), rand(0, 255));
+    $color = imagecolorallocate($im, random_int(0, 255), random_int(0, 255), random_int(0, 255));
     $smaller_dimension = min($width, $height);
     imageellipse($im, (int) ($width / 2), (int) ($height / 2), $smaller_dimension, $smaller_dimension, $color);
 

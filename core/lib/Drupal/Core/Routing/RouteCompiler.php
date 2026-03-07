@@ -127,12 +127,9 @@ class RouteCompiler extends SymfonyRouteCompiler implements RouteCompilerInterfa
 
     // Remove placeholders with default values from the outline, so that they
     // will still match.
-    $remove = array_map(function ($a) {
-      return '/{' . $a . '}';
-    }, array_keys($defaults));
-    $path = str_replace($remove, '', $path);
+    $remove = array_map(fn(int|string $a) => '/{' . $a . '}', array_keys($defaults));
 
-    return $path;
+    return str_replace($remove, '', $path);
   }
 
 }

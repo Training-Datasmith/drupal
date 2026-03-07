@@ -12,7 +12,7 @@ use Drupal\Core\Config\StorageInterface;
  * @internal
  *   This API is experimental.
  */
-final class RecipeOverrideConfigStorage implements StorageInterface {
+final readonly class RecipeOverrideConfigStorage implements StorageInterface {
 
   /**
    * @param \Drupal\Core\Config\StorageInterface $recipeStorage
@@ -24,9 +24,9 @@ final class RecipeOverrideConfigStorage implements StorageInterface {
    *   default collection.
    */
   public function __construct(
-    protected readonly StorageInterface $recipeStorage,
-    protected readonly StorageInterface $wrappedStorage,
-    protected readonly string $collection = StorageInterface::DEFAULT_COLLECTION,
+    protected StorageInterface $recipeStorage,
+    protected StorageInterface $wrappedStorage,
+    protected string $collection = StorageInterface::DEFAULT_COLLECTION,
   ) {
   }
 

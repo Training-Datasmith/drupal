@@ -535,7 +535,7 @@ use Drupal\Core\Extension\ThemeSettingsProvider;
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  *   The current state of the form.
  */
-function hook_form_system_theme_settings_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state) {
+function hook_form_system_theme_settings_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state): void {
   // Add a checkbox to toggle the breadcrumb trail.
   $form['toggle_breadcrumb'] = [
     '#type' => 'checkbox',
@@ -560,7 +560,7 @@ function hook_form_system_theme_settings_alter(&$form, \Drupal\Core\Form\FormSta
  * @param string $hook
  *   The name of the theme hook.
  */
-function hook_preprocess(&$variables, $hook): void {
+function hook_preprocess(array &$variables, $hook): void {
   static $hooks;
 
   // Add contextual links to the variables, if the user has permission.
@@ -607,7 +607,7 @@ function hook_preprocess(&$variables, $hook): void {
  * @param array $variables
  *   The variables array (modify in place).
  */
-function hook_preprocess_HOOK(&$variables): void {
+function hook_preprocess_HOOK(array &$variables): void {
   // This example is from \Drupal\node\Hook\NodeThemeHooks::preprocessHtml().
   // It adds the node type to the body classes, when on an individual node page
   // or node preview page.
@@ -723,7 +723,7 @@ function hook_theme_suggestions_HOOK(array $variables): array {
  *
  * @see hook_theme_suggestions_HOOK_alter()
  */
-function hook_theme_suggestions_alter(array &$suggestions, array &$variables, $hook) {
+function hook_theme_suggestions_alter(array &$suggestions, array &$variables, string $hook): void {
   // Add an interface-language specific suggestion to all theme hooks.
   $suggestions[] = $hook . '__' . \Drupal::languageManager()->getCurrentLanguage()->getId();
 }
@@ -773,7 +773,7 @@ function hook_theme_suggestions_alter(array &$suggestions, array &$variables, $h
  * @see hook_theme_suggestions_alter()
  * @see hook_theme_suggestions_HOOK()
  */
-function hook_theme_suggestions_HOOK_alter(array &$suggestions, array &$variables) {
+function hook_theme_suggestions_HOOK_alter(array &$suggestions, array &$variables): void {
   if (empty($variables['header'])) {
     $suggestions[] = 'hookname__no_header';
   }
@@ -862,7 +862,7 @@ function hook_render_template($template_file, $variables): string|\Stringable {
  * @see \Drupal\Core\Render\ElementInfoManager
  * @see \Drupal\Core\Render\Element\ElementInterface
  */
-function hook_element_info_alter(array &$info) {
+function hook_element_info_alter(array &$info): void {
   // Decrease the default size of textfields.
   if (isset($info['textfield']['#size'])) {
     $info['textfield']['#size'] = 40;
@@ -882,7 +882,7 @@ function hook_element_info_alter(array &$info) {
  * @see \Drupal\Core\Render\ElementInfoManager
  * @see \Drupal\Core\Render\Element\ElementInterface
  */
-function hook_element_plugin_alter(array &$definitions) {
+function hook_element_plugin_alter(array &$definitions): void {
   // Use a custom class for the LayoutBuilder element.
   $definitions['layout_builder']['class'] = '\Drupal\my_module\Element\MyLayoutBuilderElement';
 }
@@ -899,7 +899,7 @@ function hook_element_plugin_alter(array &$definitions) {
  *
  * @see \Drupal\Core\Asset\AssetResolver
  */
-function hook_js_alter(&$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language) {
+function hook_js_alter(array &$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language): void {
   // Swap out jQuery to use an updated version of the library.
   $javascript['core/assets/vendor/jquery/jquery.min.js']['data'] = \Drupal::service('extension.list.module')->getPath('jquery_update') . '/jquery.js';
 }
@@ -1006,7 +1006,7 @@ function hook_js_settings_build(array &$settings, \Drupal\Core\Asset\AttachedAss
  *
  * @see \Drupal\Core\Asset\AssetResolver
  */
-function hook_js_settings_alter(array &$settings, \Drupal\Core\Asset\AttachedAssetsInterface $assets) {
+function hook_js_settings_alter(array &$settings, \Drupal\Core\Asset\AttachedAssetsInterface $assets): void {
   // Add settings.
   $settings['user']['uid'] = \Drupal::currentUser();
 
@@ -1040,7 +1040,7 @@ function hook_js_settings_alter(array &$settings, \Drupal\Core\Asset\AttachedAss
  *
  * @see \Drupal\Core\Asset\LibraryDiscoveryParser::parseLibraryInfo()
  */
-function hook_library_info_alter(&$libraries, $extension) {
+function hook_library_info_alter(array &$libraries, $extension): void {
   // Update imaginary library 'foo' to version 2.0.
   if ($extension === 'core' && isset($libraries['foo'])) {
     // Verify existing version is older than the one we are updating to.
@@ -1084,7 +1084,7 @@ function hook_library_info_alter(&$libraries, $extension) {
  *
  * @see Drupal\Core\Asset\LibraryResolverInterface::getCssAssets()
  */
-function hook_css_alter(&$css, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language) {
+function hook_css_alter(array &$css, \Drupal\Core\Asset\AttachedAssetsInterface $assets, \Drupal\Core\Language\LanguageInterface $language): void {
   // Remove defaults.css file.
   $file_path = \Drupal::service('extension.list.module')->getPath('system') . '/defaults.css';
   unset($css[$file_path]);
@@ -1337,7 +1337,7 @@ function hook_theme($existing, $type, $theme, $path): array {
  * @see hook_theme()
  * @see \Drupal\Core\Theme\Registry::processExtension()
  */
-function hook_theme_registry_alter(&$theme_registry) {
+function hook_theme_registry_alter(array &$theme_registry): void {
   // Kill the next/previous my_module topic navigation links.
   foreach ($theme_registry['my_module_topic_navigation']['preprocess functions'] as $key => $value) {
     if ($value == 'template_preprocess_my_module_topic_navigation') {
@@ -1368,7 +1368,7 @@ function hook_theme_registry_alter(&$theme_registry) {
  *   Drupal/Core/Theme/ThemeManagerInterface::getDefaultTemplateVariables().
  *   Passed by reference.
  */
-function hook_template_preprocess_default_variables_alter(&$variables) {
+function hook_template_preprocess_default_variables_alter(array &$variables): void {
   $variables['is_admin'] = \Drupal::currentUser()->hasPermission('access administration pages');
 }
 

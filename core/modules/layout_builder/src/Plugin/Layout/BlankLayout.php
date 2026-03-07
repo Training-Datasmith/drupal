@@ -26,7 +26,7 @@ class BlankLayout extends LayoutDefault {
   /**
    * {@inheritdoc}
    */
-  public function build(array $regions) {
+  public function build(array $regions): array {
     // Return no output.
     return [];
   }

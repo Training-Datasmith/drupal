@@ -56,7 +56,7 @@ class LanguageItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -70,7 +70,7 @@ class LanguageItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     // Treat the values as property value of the language property, if no array
     // is given as this handles language codes and objects.
     if (isset($values) && !is_array($values)) {
@@ -88,7 +88,7 @@ class LanguageItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     // Default to the site's default language. When language module is enabled,
     // this behavior is configurable, see language_field_info_alter().
     $this->setValue(['value' => \Drupal::languageManager()->getDefaultLanguage()->getId()], $notify);
@@ -98,7 +98,7 @@ class LanguageItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function onChange($property_name, $notify = TRUE) {
+  public function onChange($property_name, $notify = TRUE): void {
     // Make sure that the value and the language property stay in sync.
     if ($property_name == 'value') {
       $this->writePropertyValue('language', $this->value);
@@ -129,18 +129,16 @@ class LanguageItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getPossibleValues(?AccountInterface $account = NULL) {
+  public function getPossibleValues(?AccountInterface $account = NULL): array {
     return array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPossibleOptions(?AccountInterface $account = NULL) {
+  public function getPossibleOptions(?AccountInterface $account = NULL): array {
     $languages = \Drupal::languageManager()->getLanguages(LanguageInterface::STATE_ALL);
-    return array_map(function (LanguageInterface $language) {
-      return $language->getName();
-    }, $languages);
+    return array_map(fn(LanguageInterface $language) => $language->getName(), $languages);
   }
 
   /**

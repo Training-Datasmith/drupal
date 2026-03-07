@@ -37,7 +37,7 @@ class AjaxResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The response event, which contains the current request.
    */
-  public function onRequest(RequestEvent $event) {
+  public function onRequest(RequestEvent $event): void {
     // Pass to the Html class that the current request is an Ajax request.
     $request = $event->getRequest();
     if ($request->query->get(static::AJAX_REQUEST_PARAMETER) || $request->request->get(static::AJAX_REQUEST_PARAMETER)) {
@@ -51,7 +51,7 @@ class AjaxResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The response event, which contains the possible AjaxResponse object.
    */
-  public function onResponse(ResponseEvent $event) {
+  public function onResponse(ResponseEvent $event): void {
     $response = $event->getResponse();
     if ($response instanceof AjaxResponse) {
       ($this->processorClosure)()->processAttachments($response);
@@ -80,7 +80,7 @@ class AjaxResponseSubscriber implements EventSubscriberInterface {
       // @see Drupal.ajax.prototype.beforeSend()
       $accept = $event->getRequest()->headers->get('accept', '');
 
-      if (str_contains($accept, 'text/html')) {
+      if (str_contains((string) $accept, 'text/html')) {
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');
 
         // Browser IFRAMEs expect HTML. Browser extensions, such as

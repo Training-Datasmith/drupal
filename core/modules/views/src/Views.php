@@ -54,7 +54,7 @@ class Views {
    * @return \Drupal\views\ViewsData
    *   Returns a views data cache object.
    */
-  public static function viewsData() {
+  public static function viewsData(): object {
     return \Drupal::service('views.views_data');
   }
 
@@ -64,7 +64,7 @@ class Views {
    * @return \Drupal\views\ViewsDataHelper
    *   Returns a views data helper object.
    */
-  public static function viewsDataHelper() {
+  public static function viewsDataHelper(): object {
     return \Drupal::service('views.views_data_helper');
   }
 
@@ -74,7 +74,7 @@ class Views {
    * @return \Drupal\views\ViewExecutableFactory
    *   Returns a views executable factory.
    */
-  public static function executableFactory() {
+  public static function executableFactory(): object {
     return \Drupal::service('views.executable');
   }
 
@@ -84,7 +84,7 @@ class Views {
    * @return \Drupal\views\Analyzer
    *   Returns a view analyzer object.
    */
-  public static function analyzer() {
+  public static function analyzer(): object {
     return \Drupal::service('views.analyzer');
   }
 
@@ -160,7 +160,7 @@ class Views {
    *   A sorted associative array of in the form 'plugin_id' => 'Plugin title'.
    *   If no plugins are found, an empty array is returned.
    */
-  public static function fetchPluginNames($type, $key = NULL, array $base = []) {
+  public static function fetchPluginNames($type, $key = NULL, array $base = []): array {
     $definitions = \Drupal::service('views.plugin_managers')->get($type)->getDefinitions();
     $plugins = [];
 
@@ -176,9 +176,7 @@ class Views {
     }
 
     if (!empty($plugins)) {
-      uasort($plugins, static function ($a, $b) {
-        return strcmp((string) $a, (string) $b);
-      });
+      uasort($plugins, static fn($a, $b) => strcmp((string) $a, (string) $b));
     }
 
     return $plugins;
@@ -190,7 +188,7 @@ class Views {
    * @return array
    *   An array of plugin definitions for all types.
    */
-  public static function getPluginDefinitions() {
+  public static function getPluginDefinitions(): array {
     $plugins = [];
     $pluginManagers = \Drupal::service('views.plugin_managers');
     foreach (ViewExecutable::getPluginTypes() as $plugin_type) {
@@ -203,7 +201,7 @@ class Views {
   /**
    * Gets enabled display extenders.
    */
-  public static function getEnabledDisplayExtenders() {
+  public static function getEnabledDisplayExtenders(): array {
     $enabled = array_filter((array) \Drupal::config('views.settings')->get('display_extenders'));
 
     return array_combine($enabled, $enabled);
@@ -228,7 +226,7 @@ class Views {
    * ];
    * @endcode
    */
-  public static function getApplicableViews($type) {
+  public static function getApplicableViews($type): array {
     // Get all display plugins which provides the type.
     $display_plugins = \Drupal::service('plugin.manager.views.display')->getDefinitions();
 
@@ -325,7 +323,7 @@ class Views {
    *   An associative array for use in select.
    *   - key: view name and display ID separated by ':', or the view name only.
    */
-  public static function getViewsAsOptions($views_only = FALSE, $filter = 'all', $exclude_view = NULL, $optgroup = FALSE, $sort = FALSE) {
+  public static function getViewsAsOptions($views_only = FALSE, $filter = 'all', $exclude_view = NULL, $optgroup = FALSE, $sort = FALSE): array {
 
     // Filter the big views array.
     switch ($filter) {
@@ -394,7 +392,7 @@ class Views {
    *   - views: An array of enabled Views that are currently using this plugin,
    *     keyed by machine name.
    */
-  public static function pluginList() {
+  public static function pluginList(): array {
     $plugin_data = static::getPluginDefinitions();
     $plugins = [];
     foreach (static::getEnabledViews() as $view) {
@@ -532,7 +530,7 @@ class Views {
    * @return array
    *   An array of plugin types.
    */
-  public static function getPluginTypes($type = NULL) {
+  public static function getPluginTypes($type = NULL): array {
     if ($type === NULL) {
       return array_keys(static::$plugins);
     }
@@ -541,9 +539,7 @@ class Views {
       throw new \Exception('Invalid plugin type used. Valid types are "plugin" or "handler".');
     }
 
-    return array_keys(array_filter(static::$plugins, function ($plugin_type) use ($type) {
-      return $plugin_type == $type;
-    }));
+    return array_keys(array_filter(static::$plugins, fn($plugin_type) => $plugin_type == $type));
   }
 
   /**

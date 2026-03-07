@@ -23,8 +23,9 @@ class AuthorNameFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#theme': 'username', '#account': mixed, '#cache': array{tags: (array | float | int)}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($items as $delta => $item) {
@@ -46,7 +47,7 @@ class AuthorNameFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     return $field_definition->getName() === 'name' && $field_definition->getTargetEntityTypeId() === 'comment';
   }
 

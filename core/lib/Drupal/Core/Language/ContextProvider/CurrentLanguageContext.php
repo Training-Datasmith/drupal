@@ -17,35 +17,27 @@ class CurrentLanguageContext implements ContextProviderInterface {
   use StringTranslationTrait;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new CurrentLanguageContext.
    *
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(LanguageManagerInterface $language_manager) {
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+  {
   }
 
   /**
    * {@inheritdoc}
+   * @return \Drupal\Core\Plugin\Context\Context[]
    */
-  public function getRuntimeContexts(array $unqualified_context_ids) {
+  public function getRuntimeContexts(array $unqualified_context_ids): array {
     // Add a context for each language type.
     $language_types = $this->languageManager->getLanguageTypes();
     $info = $this->languageManager->getDefinedLanguageTypesInfo();
 
-    if ($unqualified_context_ids) {
-      foreach ($unqualified_context_ids as $unqualified_context_id) {
-        if (array_search($unqualified_context_id, $language_types) === FALSE) {
-          unset($language_types[$unqualified_context_id]);
-        }
+    foreach ($unqualified_context_ids as $unqualified_context_id) {
+      if (array_search($unqualified_context_id, $language_types) === FALSE) {
+        unset($language_types[$unqualified_context_id]);
       }
     }
 

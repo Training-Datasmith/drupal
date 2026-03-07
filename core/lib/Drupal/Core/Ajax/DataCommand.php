@@ -16,32 +16,6 @@ namespace Drupal\Core\Ajax;
 class DataCommand implements CommandInterface {
 
   /**
-   * A CSS selector string for elements to which data will be attached.
-   *
-   * If the command is a response to a request from an #ajax form element then
-   * this value can be NULL.
-   *
-   * @var string
-   */
-  protected $selector;
-
-  /**
-   * The key of the data attached to elements matched by the selector.
-   *
-   * @var string
-   */
-  protected $name;
-
-  /**
-   * The value of the data to be attached to elements matched by the selector.
-   *
-   * The data is not limited to strings; it can be any format.
-   *
-   * @var mixed
-   */
-  protected $value;
-
-  /**
    * Constructs a DataCommand object.
    *
    * @param string $selector
@@ -51,16 +25,32 @@ class DataCommand implements CommandInterface {
    * @param mixed $value
    *   The value of the data to be attached to elements matched by the selector.
    */
-  public function __construct($selector, $name, $value) {
-    $this->selector = $selector;
-    $this->name = $name;
-    $this->value = $value;
+  public function __construct(
+      /**
+       * A CSS selector string for elements to which data will be attached.
+       *
+       * If the command is a response to a request from an #ajax form element then
+       * this value can be NULL.
+       */
+      protected $selector,
+      /**
+       * The key of the data attached to elements matched by the selector.
+       */
+      protected $name,
+      /**
+       * The value of the data to be attached to elements matched by the selector.
+       *
+       * The data is not limited to strings; it can be any format.
+       */
+      protected $value
+  )
+  {
   }
 
   /**
    * Implements Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
 
     return [
       'command' => 'data',

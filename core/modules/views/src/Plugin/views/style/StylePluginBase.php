@@ -126,7 +126,7 @@ abstract class StylePluginBase extends PluginBase {
    * The style options might come externally as the style can be sourced from at
    * least two locations. If it's not included, look on the display.
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if ($this->usesRowPlugin() && $display->getOption('row')) {
@@ -142,7 +142,7 @@ abstract class StylePluginBase extends PluginBase {
   /**
    * {@inheritdoc}
    */
-  public function destroy() {
+  public function destroy(): void {
     parent::destroy();
 
     if (isset($this->view->rowPlugin)) {
@@ -229,7 +229,7 @@ abstract class StylePluginBase extends PluginBase {
     if ($this->usesRowClass()) {
       $class = $this->options['row_class'];
       if ($this->usesFields() && $this->view->field) {
-        $class = strip_tags($this->tokenizeValue($class, $row_index));
+        $class = strip_tags((string) $this->tokenizeValue($class, $row_index));
       }
 
       $classes = explode(' ', $class);
@@ -244,21 +244,18 @@ abstract class StylePluginBase extends PluginBase {
    * Take a value and apply token replacement logic to it.
    */
   public function tokenizeValue($value, $row_index) {
-    if (str_contains($value, '{{')) {
+    if (str_contains((string) $value, '{{')) {
       // Row tokens might be empty, for example for node row style.
       $tokens = $this->rowTokens[$row_index] ?? [];
       if (!empty($this->view->build_info['substitutions'])) {
         $tokens += $this->view->build_info['substitutions'];
       }
 
-      $value = $this->viewsTokenReplace($value, $tokens);
+      return $this->viewsTokenReplace($value, $tokens);
     }
-    else {
-      // ::viewsTokenReplace() will run Xss::filterAdmin on the
-      // resulting string. We do the same here for consistency.
-      $value = Xss::filterAdmin($value);
-    }
-    return $value;
+    // ::viewsTokenReplace() will run Xss::filterAdmin on the
+    // resulting string. We do the same here for consistency.
+    return Xss::filterAdmin($value);
   }
 
   /**
@@ -286,7 +283,7 @@ abstract class StylePluginBase extends PluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     // Only fields-based views can handle grouping.  Style plugins can also
     // exclude themselves from being groupable by setting their "usesGrouping"
@@ -380,7 +377,7 @@ abstract class StylePluginBase extends PluginBase {
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     // Don't run validation on style plugins without the grouping setting.
     if ($form_state->hasValue(['style_options', 'grouping'])) {
       // Don't save grouping if no field is specified.
@@ -436,7 +433,7 @@ abstract class StylePluginBase extends PluginBase {
    * @param array $result
    *   The full array of results from the query.
    */
-  public function preRender($result) {
+  public function preRender($result): void {
     if (!empty($this->view->rowPlugin)) {
       $this->view->rowPlugin->preRender($result);
     }
@@ -687,7 +684,7 @@ abstract class StylePluginBase extends PluginBase {
           $this->view->row_index = $index;
 
           $data = [
-            '#pre_render' => [[$this, 'elementPreRenderRow']],
+            '#pre_render' => [$this->elementPreRenderRow(...)],
             '#row' => $row,
             '#cache' => [
               'tags' => $cache_plugin->getRowCacheTags($row),
@@ -829,7 +826,7 @@ abstract class StylePluginBase extends PluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     parent::query();
     if (isset($this->view->rowPlugin)) {
       $this->view->rowPlugin->query();

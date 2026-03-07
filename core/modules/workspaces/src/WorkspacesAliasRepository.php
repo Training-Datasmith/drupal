@@ -24,7 +24,7 @@ class WorkspacesAliasRepository extends AliasRepository {
    *
    * @return $this
    */
-  public function setWorkspacesManager(WorkspaceManagerInterface $workspace_manager) {
+  public function setWorkspacesManager(WorkspaceManagerInterface $workspace_manager): static {
     $this->workspaceManager = $workspace_manager;
     return $this;
   }

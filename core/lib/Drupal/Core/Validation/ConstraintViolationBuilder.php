@@ -72,7 +72,7 @@ class ConstraintViolationBuilder implements ConstraintViolationBuilderInterface 
    * {@inheritdoc}
    */
   public function atPath(string $path): static {
-    $this->propertyPath = PropertyPath::append($this->propertyPath, (string) $path);
+    $this->propertyPath = PropertyPath::append($this->propertyPath, $path);
 
     return $this;
   }
@@ -160,7 +160,7 @@ class ConstraintViolationBuilder implements ConstraintViolationBuilderInterface 
           $this->translationDomain#
         );
       }
-      catch (\InvalidArgumentException $e) {
+      catch (\InvalidArgumentException) {
         $translatedMessage = $this->translator->trans(
           $this->message,
           $this->parameters,

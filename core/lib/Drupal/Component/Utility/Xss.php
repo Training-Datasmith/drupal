@@ -135,7 +135,7 @@ class Xss {
    *
    * @ingroup sanitization
    */
-  public static function filter($string, ?array $allowed_html_tags = NULL) {
+  public static function filter($string, ?array $allowed_html_tags = NULL): ?string {
     if (is_null($allowed_html_tags)) {
       $allowed_html_tags = static::$htmlTags;
     }
@@ -155,15 +155,13 @@ class Xss {
     // Decimal numeric entities.
     $string = preg_replace('/&amp;#([0-9]+;)/', '&#\1', $string);
     // Hexadecimal numeric entities.
-    $string = preg_replace('/&amp;#[Xx]0*((?:[0-9A-Fa-f]{2})+;)/', '&#x\1', $string);
+    $string = preg_replace('/&amp;#[Xx]0*((?:[0-9A-Fa-f]{2})+;)/', '&#x\1', (string) $string);
     // Named entities.
-    $string = preg_replace('/&amp;([A-Za-z][A-Za-z0-9]*;)/', '&\1', $string);
+    $string = preg_replace('/&amp;([A-Za-z][A-Za-z0-9]*;)/', '&\1', (string) $string);
     $allowed_html_tags = array_flip($allowed_html_tags);
     // Late static binding does not work inside anonymous functions.
     $class = static::class;
-    $splitter = function ($matches) use ($allowed_html_tags, $class) {
-      return $class::split($matches[1], $allowed_html_tags, $class);
-    };
+    $splitter = (fn($matches) => $class::split($matches[1], $allowed_html_tags, $class));
     // Strip any tags that are not in the list of allowed html tags.
     return preg_replace_callback('%
       (
@@ -174,7 +172,7 @@ class Xss {
       <[^>]*(>|$)       # a string that starts with a <, up until the > or the end of the string
       |                 # or
       >                 # just a >
-      )%x', $splitter, $string);
+      )%x', $splitter, (string) $string);
   }
 
   /**
@@ -219,14 +217,14 @@ class Xss {
    *   If the element isn't allowed, an empty string. Otherwise, the cleaned up
    *   version of the HTML element.
    */
-  protected static function split($string, array $html_tags, $class) {
+  protected static function split($string, array $html_tags, $class): string {
     if (!str_starts_with($string, '<')) {
-      // We matched a lone ">" character.
-      return '&gt;';
+        // We matched a lone ">" character.
+        return '&gt;';
     }
-    elseif (strlen($string) == 1) {
-      // We matched a lone "<" character.
-      return '&lt;';
+    if (strlen($string) == 1) {
+        // We matched a lone "<" character.
+        return '&lt;';
     }
 
     if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9\-]+)\s*([^>]*)>?|(<!--.*?-->)$%', $string, $matches)) {
@@ -264,7 +262,7 @@ class Xss {
     // Clean up attributes.
     $attr2 = implode(' ', $class::attributes($attributes));
     $attr2 = preg_replace('/[<>]/', '', $attr2);
-    $attr2 = strlen($attr2) ? ' ' . $attr2 : '';
+    $attr2 = strlen((string) $attr2) ? ' ' . $attr2 : '';
 
     return "<$elem$attr2$xhtml_slash>";
   }
@@ -278,21 +276,21 @@ class Xss {
    * @return array
    *   Cleaned up version of the HTML attributes.
    */
-  protected static function attributes($attributes) {
+  protected static function attributes($attributes): array {
     $attributes_array = [];
     $mode = 0;
     $attribute_name = '';
     $skip = FALSE;
     $skip_protocol_filtering = FALSE;
 
-    while (strlen($attributes) != 0) {
+    while (strlen((string) $attributes) != 0) {
       // Was the last operation successful?
       $working = 0;
 
       switch ($mode) {
         case 0:
           // Attribute name, href for instance.
-          if (preg_match('/^([-a-zA-Z][-a-zA-Z0-9]*)/', $attributes, $match)) {
+          if (preg_match('/^([-a-zA-Z][-a-zA-Z0-9]*)/', (string) $attributes, $match)) {
             $attribute_name = strtolower($match[1]);
             $skip = (
               in_array($attribute_name, ['style', 'srcdoc']) ||
@@ -321,26 +319,26 @@ class Xss {
             ]);
 
             $working = $mode = 1;
-            $attributes = preg_replace('/^[-a-zA-Z][-a-zA-Z0-9]*/', '', $attributes);
+            $attributes = preg_replace('/^[-a-zA-Z][-a-zA-Z0-9]*/', '', (string) $attributes);
           }
           break;
 
         case 1:
           // Equals sign or valueless ("selected").
-          if (preg_match('/^\s*=\s*/', $attributes)) {
+          if (preg_match('/^\s*=\s*/', (string) $attributes)) {
             $working = 1;
             $mode = 2;
-            $attributes = preg_replace('/^\s*=\s*/', '', $attributes);
+            $attributes = preg_replace('/^\s*=\s*/', '', (string) $attributes);
             break;
           }
 
-          if (preg_match('/^\s+/', $attributes)) {
+          if (preg_match('/^\s+/', (string) $attributes)) {
             $working = 1;
             $mode = 0;
             if (!$skip) {
               $attributes_array[] = $attribute_name;
             }
-            $attributes = preg_replace('/^\s+/', '', $attributes);
+            $attributes = preg_replace('/^\s+/', '', (string) $attributes);
           }
           break;
 
@@ -350,33 +348,33 @@ class Xss {
           $mode = 0;
           $working = 1;
           // Attribute value, a URL after href= for instance.
-          if (preg_match('/^"([^"]*)"(\s+|$)/', $attributes, $match)) {
+          if (preg_match('/^"([^"]*)"(\s+|$)/', (string) $attributes, $match)) {
             $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
 
             if (!$skip) {
               $attributes_array[] = "$attribute_name=\"$value\"";
             }
-            $attributes = preg_replace('/^"[^"]*"(\s+|$)/', '', $attributes);
+            $attributes = preg_replace('/^"[^"]*"(\s+|$)/', '', (string) $attributes);
             break;
           }
 
-          if (preg_match("/^'([^']*)'(\s+|$)/", $attributes, $match)) {
+          if (preg_match("/^'([^']*)'(\s+|$)/", (string) $attributes, $match)) {
             $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
 
             if (!$skip) {
               $attributes_array[] = "$attribute_name='$value'";
             }
-            $attributes = preg_replace("/^'[^']*'(\s+|$)/", '', $attributes);
+            $attributes = preg_replace("/^'[^']*'(\s+|$)/", '', (string) $attributes);
             break;
           }
 
-          if (preg_match("%^([^\s\"']+)(\s+|$)%", $attributes, $match)) {
+          if (preg_match("%^([^\s\"']+)(\s+|$)%", (string) $attributes, $match)) {
             $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
 
             if (!$skip) {
               $attributes_array[] = "$attribute_name=\"$value\"";
             }
-            $attributes = preg_replace("%^[^\s\"']+(\s+|$)%", '', $attributes);
+            $attributes = preg_replace("%^[^\s\"']+(\s+|$)%", '', (string) $attributes);
           }
           break;
       }
@@ -393,7 +391,7 @@ class Xss {
           \S              # - a non-whitespace character
           )*              # any number of the above three
           \s*             # any number of whitespaces
-          /x', '', $attributes);
+          /x', '', (string) $attributes);
         $mode = 0;
       }
     }
@@ -416,7 +414,7 @@ class Xss {
    * @return bool
    *   TRUE if this element needs to be removed.
    */
-  protected static function needsRemoval(array $html_tags, $elem) {
+  protected static function needsRemoval(array $html_tags, $elem): bool {
     return !isset($html_tags[strtolower($elem)]);
   }
 

@@ -33,73 +33,36 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class FileUploadForm extends AddFormBase {
 
   /**
-   * The element info manager.
-   *
-   * @var \Drupal\Core\Render\ElementInfoManagerInterface
-   */
-  protected $elementInfo;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\ElementInfoManagerInterface
-   */
-  protected $renderer;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
-   * The file usage service.
-   *
-   * @var \Drupal\file\FileUsage\FileUsageInterface
-   */
-  protected $fileUsage;
-
-  /**
-   * The file repository service.
-   *
-   * @var \Drupal\file\FileRepositoryInterface
-   */
-  protected $fileRepository;
-
-  /**
    * Constructs a new FileUploadForm.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\media_library\MediaLibraryUiBuilder $library_ui_builder
    *   The media library UI builder.
-   * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
+   * @param \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo
    *   The element info manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
    * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
    *   The opener resolver.
-   * @param \Drupal\file\FileUsage\FileUsageInterface $file_usage
+   * @param \Drupal\file\FileUsage\FileUsageInterface $fileUsage
    *   The file usage service.
-   * @param \Drupal\file\FileRepositoryInterface $file_repository
+   * @param \Drupal\file\FileRepositoryInterface $fileRepository
    *   The file repository service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, ElementInfoManagerInterface $element_info, RendererInterface $renderer, FileSystemInterface $file_system, OpenerResolverInterface $opener_resolver, FileUsageInterface $file_usage, FileRepositoryInterface $file_repository) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, protected \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo, /**
+   * The renderer service.
+   */
+  protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\File\FileSystemInterface $fileSystem, OpenerResolverInterface $opener_resolver, protected \Drupal\file\FileUsage\FileUsageInterface $fileUsage, protected \Drupal\file\FileRepositoryInterface $fileRepository) {
     parent::__construct($entity_type_manager, $library_ui_builder, $opener_resolver);
-    $this->elementInfo = $element_info;
-    $this->renderer = $renderer;
-    $this->fileSystem = $file_system;
-    $this->fileUsage = $file_usage;
-    $this->fileRepository = $file_repository;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('media_library.ui_builder'),
@@ -115,7 +78,7 @@ class FileUploadForm extends AddFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return $this->getBaseFormId() . '_upload';
   }
 
@@ -139,8 +102,9 @@ class FileUploadForm extends AddFormBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  protected function buildInputElement(array $form, FormStateInterface $form_state) {
+  protected function buildInputElement(array $form, FormStateInterface $form_state): array {
     // Create a file item to get the upload validators.
     $media_type = $this->getMediaType($form_state);
     $item = $this->createFileItem($media_type);
@@ -202,7 +166,7 @@ class FileUploadForm extends AddFormBase {
    * @return array
    *   The processed upload element.
    */
-  public function validateUploadElement(array $element, FormStateInterface $form_state) {
+  public function validateUploadElement(array $element, FormStateInterface $form_state): array {
     if ($form_state::hasAnyErrors()) {
       // When an error occurs during uploading files, remove all files so the
       // user can re-upload the files.
@@ -230,7 +194,7 @@ class FileUploadForm extends AddFormBase {
    * @return array
    *   The processed upload element.
    */
-  public function processUploadElement(array $element, FormStateInterface $form_state) {
+  public function processUploadElement(array $element, FormStateInterface $form_state): array {
     $element['upload_button']['#submit'] = ['::uploadButtonSubmit'];
     // Limit the validation errors to make sure
     // FormValidator::handleErrorsWithLimitedValidation doesn't remove the
@@ -282,7 +246,7 @@ class FileUploadForm extends AddFormBase {
    * @return array
    *   The processed form element.
    */
-  public static function hideExtraSourceFieldComponents($element, FormStateInterface $form_state, $form) {
+  public static function hideExtraSourceFieldComponents(array $element, FormStateInterface $form_state, $form): array {
     // Remove original button added by ManagedFile::processManagedFile().
     if (!empty($element['remove_button'])) {
       $element['remove_button']['#access'] = FALSE;
@@ -311,7 +275,7 @@ class FileUploadForm extends AddFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public function uploadButtonSubmit(array $form, FormStateInterface $form_state) {
+  public function uploadButtonSubmit(array $form, FormStateInterface $form_state): void {
     $files = $this->entityTypeManager
       ->getStorage('file')
       ->loadMultiple($form_state->getValue('upload', []));
@@ -349,7 +313,7 @@ class FileUploadForm extends AddFormBase {
    * @return \Drupal\file\Plugin\Field\FieldType\FileItem
    *   A created file item.
    */
-  protected function createFileItem(MediaTypeInterface $media_type) {
+  protected function createFileItem(MediaTypeInterface $media_type): \Drupal\file\Plugin\Field\FieldType\FileItem {
     $field_definition = $media_type->getSource()->getSourceFieldDefinition($media_type);
     $data_definition = FieldItemDataDefinition::create($field_definition);
     return new FileItem($data_definition);
@@ -373,7 +337,7 @@ class FileUploadForm extends AddFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public function removeButtonSubmit(array $form, FormStateInterface $form_state) {
+  public function removeButtonSubmit(array $form, FormStateInterface $form_state): void {
     // Retrieve the delta of the media item from the parents of the remove
     // button.
     $triggering_element = $form_state->getTriggeringElement();

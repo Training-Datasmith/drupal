@@ -22,23 +22,15 @@ class DefaultExceptionSubscriber extends HttpExceptionSubscriberBase {
   protected $serializer;
 
   /**
-   * The available serialization formats.
-   *
-   * @var array
-   */
-  protected $serializerFormats = [];
-
-  /**
    * DefaultExceptionSubscriber constructor.
    *
    * @param \Symfony\Component\Serializer\SerializerInterface $serializer
    *   The serializer service.
-   * @param array $serializer_formats
+   * @param array $serializerFormats
    *   The available serialization formats.
    */
-  public function __construct(SerializerInterface $serializer, array $serializer_formats) {
+  public function __construct(SerializerInterface $serializer, protected array $serializerFormats) {
     $this->serializer = $serializer;
-    $this->serializerFormats = $serializer_formats;
   }
 
   /**
@@ -51,7 +43,7 @@ class DefaultExceptionSubscriber extends HttpExceptionSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  protected static function getPriority() {
+  protected static function getPriority(): int {
     // This will fire after the most common HTML handler, since HTML requests
     // are still more common than HTTP requests. But it has a lower priority
     // than \Drupal\Core\EventSubscriber\ExceptionJsonSubscriber::on4xx(), so
@@ -67,7 +59,7 @@ class DefaultExceptionSubscriber extends HttpExceptionSubscriberBase {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on4xx(ExceptionEvent $event) {
+  public function on4xx(ExceptionEvent $event): void {
     /** @var \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface $exception */
     $exception = $event->getThrowable();
     $request = $event->getRequest();

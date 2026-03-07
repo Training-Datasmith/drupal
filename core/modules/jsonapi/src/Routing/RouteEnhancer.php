@@ -20,7 +20,7 @@ class RouteEnhancer implements EnhancerInterface {
   /**
    * {@inheritdoc}
    */
-  public function enhance(array $defaults, Request $request) {
+  public function enhance(array $defaults, Request $request): array {
     if (!Routes::isJsonApiRequest($defaults)) {
       return $defaults;
     }

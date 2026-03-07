@@ -36,44 +36,19 @@ class ResourceObjectNormalizer extends NormalizerBase {
   use SchematicNormalizerTrait;
 
   /**
-   * The entity normalization cacher.
-   *
-   * @var \Drupal\jsonapi\EventSubscriber\ResourceObjectNormalizationCacher
-   */
-  protected $cacher;
-
-  /**
-   * @var mixed|\Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  private EventDispatcherInterface $eventDispatcher;
-
-  /**
-   * @var mixed|\Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  private EntityFieldManagerInterface $entityFieldManager;
-
-  /**
-   * @var mixed|\Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  private EntityTypeManagerInterface $entityTypeManager;
-
-  /**
    * Constructs a ResourceObjectNormalizer object.
    *
    * @param \Drupal\jsonapi\EventSubscriber\ResourceObjectNormalizationCacher $cacher
    *   The entity normalization cacher.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(ResourceObjectNormalizationCacher $cacher, EventDispatcherInterface $event_dispatcher, EntityFieldManagerInterface $entity_field_manager, EntityTypeManagerInterface $entity_type_manager) {
-    $this->cacher = $cacher;
-    $this->eventDispatcher = $event_dispatcher;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\jsonapi\EventSubscriber\ResourceObjectNormalizationCacher $cacher, private EventDispatcherInterface $eventDispatcher, private EntityFieldManagerInterface $entityFieldManager, private EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -159,7 +134,7 @@ class ResourceObjectNormalizer extends NormalizerBase {
     }
     // Add links if missing.
     $base = &$normalizer_values[ResourceObjectNormalizationCacher::RESOURCE_CACHE_SUBSET_BASE];
-    $base['links'] = $base['links'] ?? $this->serializer->normalize($object->getLinks(), $format, $context)->omitIfEmpty();
+    $base['links'] ??= $this->serializer->normalize($object->getLinks(), $format, $context)->omitIfEmpty();
 
     if (!empty($non_cached_requested_fields)) {
       $this->cacher->saveOnTerminate($object, $normalizer_values);
@@ -179,7 +154,7 @@ class ResourceObjectNormalizer extends NormalizerBase {
    *
    * @see ::getNormalization()
    */
-  protected static function buildEmptyNormalization(ResourceObject $object) {
+  protected static function buildEmptyNormalization(ResourceObject $object): array {
     return [
       ResourceObjectNormalizationCacher::RESOURCE_CACHE_SUBSET_BASE => [
         'type' => CacheableNormalization::permanent($object->getResourceType()->getTypeName()),
@@ -202,7 +177,7 @@ class ResourceObjectNormalizer extends NormalizerBase {
    * @return \Drupal\jsonapi\Normalizer\Value\CacheableNormalization
    *   The normalized value.
    */
-  protected function serializeField($field, array $context, $format) {
+  protected function serializeField(array $field, array $context, $format) {
     // Only content entities contain FieldItemListInterface fields. Since config
     // entities do not have "real" fields and therefore do not have field access
     // restrictions.
@@ -230,18 +205,15 @@ class ResourceObjectNormalizer extends NormalizerBase {
       assert($normalized_field instanceof CacheableNormalization);
       return $normalized_field->withCacheableDependency(CacheableMetadata::createFromObject($field_access_result));
     }
-    else {
-      // @todo Replace this workaround after https://www.drupal.org/node/3043245
-      //   or remove the need for this in https://www.drupal.org/node/2942975.
-      //   See \Drupal\layout_builder\Normalizer\LayoutEntityDisplayNormalizer.
-      if (is_a($context['resource_object']->getResourceType()->getDeserializationTargetClass(), 'Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay', TRUE) && $context['resource_object']->getField('third_party_settings') === $field) {
-        unset($field['layout_builder']['sections']);
-      }
-
-      // Config "fields" in this case are arrays or primitives and do not need
-      // to be normalized.
-      return CacheableNormalization::permanent($field);
+    // @todo Replace this workaround after https://www.drupal.org/node/3043245
+    //   or remove the need for this in https://www.drupal.org/node/2942975.
+    //   See \Drupal\layout_builder\Normalizer\LayoutEntityDisplayNormalizer.
+    if (is_a($context['resource_object']->getResourceType()->getDeserializationTargetClass(), 'Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay', TRUE) && $context['resource_object']->getField('third_party_settings') === $field) {
+      unset($field['layout_builder']['sections']);
     }
+    // Config "fields" in this case are arrays or primitives and do not need
+    // to be normalized.
+    return CacheableNormalization::permanent($field);
   }
 
   /**
@@ -292,7 +264,7 @@ class ResourceObjectNormalizer extends NormalizerBase {
     // This is largely the same as in ResourceObject but without a real entity.
     $fields = $resource_type->getFields();
     // Filter the array based on the field names.
-    $enabled_field_names = array_filter(array_keys($fields), static fn (string $internal_field_name) => $resource_type->isFieldEnabled($internal_field_name));
+    $enabled_field_names = array_filter(array_keys($fields), $resource_type->isFieldEnabled(...));
     // Return a sub-array of $output containing the keys in $enabled_fields.
     $input = array_intersect_key($fields, array_flip($enabled_field_names));
     foreach ($input as $field_name => $field_value) {
@@ -305,7 +277,7 @@ class ResourceObjectNormalizer extends NormalizerBase {
     }
   }
 
-  protected function processContentEntitySchema(ResourceObject $resource_object, array $context, array &$attributes_schema, &$relationships_schema): void {
+  protected function processContentEntitySchema(ResourceObject $resource_object, array $context, array &$attributes_schema, array &$relationships_schema): void {
     // Actual normalization supports sparse fieldsets, however we provide schema
     // for all possible fields that may be retrieved.
     $resource_type = $resource_object->getResourceType();
@@ -324,7 +296,7 @@ class ResourceObjectNormalizer extends NormalizerBase {
     /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $fields */
     $fields = array_reduce(
       $resource_fields,
-      function (array $carry, ResourceTypeField $resource_field) use ($field_definitions) {
+      function (array $carry, ResourceTypeField $resource_field) use ($field_definitions): array {
         if (!$resource_field->isFieldEnabled()) {
           return $carry;
         }

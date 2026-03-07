@@ -25,20 +25,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class AjaxBasePageNegotiator implements ThemeNegotiatorInterface {
 
   /**
-   * The CSRF token generator.
-   *
-   * @var \Drupal\Core\Access\CsrfTokenGenerator
-   */
-  protected $csrfGenerator;
-
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -48,23 +34,21 @@ class AjaxBasePageNegotiator implements ThemeNegotiatorInterface {
   /**
    * Constructs a new AjaxBasePageNegotiator.
    *
-   * @param \Drupal\Core\Access\CsrfTokenGenerator $token_generator
+   * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfGenerator
    *   The CSRF token generator.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack used to retrieve the current request.
    */
-  public function __construct(CsrfTokenGenerator $token_generator, ConfigFactoryInterface $config_factory, RequestStack $request_stack) {
-    $this->csrfGenerator = $token_generator;
-    $this->configFactory = $config_factory;
+  public function __construct(protected \Drupal\Core\Access\CsrfTokenGenerator $csrfGenerator, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, RequestStack $request_stack) {
     $this->requestStack = $request_stack;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match) {
+  public function applies(RouteMatchInterface $route_match): bool {
     $ajax_page_state = $this->requestStack->getCurrentRequest()->attributes->get('ajax_page_state');
     return !empty($ajax_page_state['theme']) && isset($ajax_page_state['theme_token']);
   }

@@ -21,7 +21,7 @@ class TranslationLanguageRenderer extends EntityTranslationRendererBase {
   /**
    * {@inheritdoc}
    */
-  public function query(QueryPluginBase $query, $relationship = NULL) {
+  public function query(QueryPluginBase $query, $relationship = NULL): void {
     // In order to render in the translation language of the entity, we need
     // to add the language code of the entity to the query. Skip if the site
     // is not multilingual or the entity is not translatable.
@@ -115,7 +115,7 @@ class TranslationLanguageRenderer extends EntityTranslationRendererBase {
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return ['languages:' . LanguageInterface::TYPE_CONTENT];
   }
 

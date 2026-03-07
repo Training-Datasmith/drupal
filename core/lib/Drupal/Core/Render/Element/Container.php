@@ -48,7 +48,7 @@ class Container extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#optional' => FALSE,
       '#process' => [
@@ -77,7 +77,7 @@ class Container extends RenderElementBase {
    * @return array
    *   The processed element.
    */
-  public static function processContainer(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processContainer(array &$element, FormStateInterface $form_state, &$complete_form): array {
     // Generate the ID of the element if it's not explicitly given.
     if (!isset($element['#id'])) {
       $element['#id'] = HtmlUtility::getUniqueId(implode('-', $element['#parents']) . '-wrapper');
@@ -95,7 +95,7 @@ class Container extends RenderElementBase {
    * @return array
    *   The modified element.
    */
-  public static function preRenderContainer($element) {
+  public static function preRenderContainer(array $element): array {
     // Do not render optional container elements if there are no children.
     if (empty($element['#printed']) && !empty($element['#optional']) && !Element::getVisibleChildren($element)) {
       $element['#printed'] = TRUE;

@@ -32,7 +32,7 @@ class MenuLinkContentDeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  protected function getDeletionMessage() {
+  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('The menu link %title has been deleted.', ['%title' => $this->entity->label()]);
   }
 

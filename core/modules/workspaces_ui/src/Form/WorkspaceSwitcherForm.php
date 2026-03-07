@@ -18,13 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkspaceSwitcherForm extends FormBase implements WorkspaceSafeFormInterface {
 
   /**
-   * The workspace manager.
-   *
-   * @var \Drupal\workspaces\WorkspaceManagerInterface
-   */
-  protected $workspaceManager;
-
-  /**
    * The workspace entity storage handler.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -39,35 +32,26 @@ class WorkspaceSwitcherForm extends FormBase implements WorkspaceSafeFormInterfa
   protected $messenger;
 
   /**
-   * The entity reference selection plugin manager.
-   *
-   * @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface
-   */
-  protected $selectionManager;
-
-  /**
    * Constructs a new WorkspaceSwitcherForm.
    *
-   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager
    *   The workspace manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
-   * @param \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selection_manager
+   * @param \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selectionManager
    *   The entity reference selection plugin manager.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager, EntityTypeManagerInterface $entity_type_manager, MessengerInterface $messenger, SelectionPluginManagerInterface $selection_manager) {
-    $this->workspaceManager = $workspace_manager;
+  public function __construct(protected \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager, EntityTypeManagerInterface $entity_type_manager, MessengerInterface $messenger, protected \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selectionManager) {
     $this->workspaceStorage = $entity_type_manager->getStorage('workspace');
     $this->messenger = $messenger;
-    $this->selectionManager = $selection_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('workspaces.manager'),
       $container->get('entity_type.manager'),
@@ -79,14 +63,14 @@ class WorkspaceSwitcherForm extends FormBase implements WorkspaceSafeFormInterfa
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'workspace_switcher_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     // Use the workspace selection handler to retrieve only the relevant
     // workspaces.
     $selection_handler = $this->selectionManager->getInstance([
@@ -144,7 +128,7 @@ class WorkspaceSwitcherForm extends FormBase implements WorkspaceSafeFormInterfa
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $id = $form_state->getValue('workspace_id');
 
     /** @var \Drupal\workspaces\WorkspaceInterface $workspace */
@@ -162,7 +146,7 @@ class WorkspaceSwitcherForm extends FormBase implements WorkspaceSafeFormInterfa
   /**
    * Submit handler for switching to the live version of the site.
    */
-  public function submitSwitchToLive(array &$form, FormStateInterface $form_state) {
+  public function submitSwitchToLive(array &$form, FormStateInterface $form_state): void {
     $this->workspaceManager->switchToLive();
     $this->messenger->addMessage($this->t('You are now viewing the live version of the site.'));
   }

@@ -61,25 +61,24 @@ use Drupal\Core\Render\PlaceholderGenerator;
  * }
  * @endcode
  */
-class FilterProcessResult extends BubbleableMetadata {
-
-  /**
-   * The processed text.
-   *
-   * @var string
-   *
-   * @see \Drupal\filter\Plugin\FilterInterface::process()
-   */
-  protected $processedText;
+class FilterProcessResult extends BubbleableMetadata implements \Stringable {
 
   /**
    * Constructs a FilterProcessResult object.
    *
-   * @param string $processed_text
+   * @param string $processedText
    *   The text as processed by a text filter.
    */
-  public function __construct($processed_text = '') {
-    $this->processedText = $processed_text;
+  public function __construct(
+      /**
+       * The processed text.
+       *
+       *
+       * @see \Drupal\filter\Plugin\FilterInterface::process()
+       */
+      protected $processedText = ''
+  )
+  {
   }
 
   /**
@@ -98,7 +97,7 @@ class FilterProcessResult extends BubbleableMetadata {
    * @return string
    *   The processed text.
    */
-  public function __toString() {
+  public function __toString(): string {
     return $this->getProcessedText();
   }
 
@@ -110,7 +109,7 @@ class FilterProcessResult extends BubbleableMetadata {
    *
    * @return $this
    */
-  public function setProcessedText($processed_text) {
+  public function setProcessedText($processed_text): static {
     $this->processedText = $processed_text;
     return $this;
   }
@@ -133,7 +132,7 @@ class FilterProcessResult extends BubbleableMetadata {
    * @return string
    *   The placeholder markup.
    */
-  public function createPlaceholder($callback, array $args) {
+  public function createPlaceholder($callback, array $args): string {
     // Generate placeholder markup.
     $placeholder_markup = PlaceholderGenerator::createPlaceholderTag('drupal-filter-placeholder', [
       'callback' => $callback,

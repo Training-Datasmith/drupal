@@ -19,13 +19,6 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
 class File extends FieldPluginBase {
 
   /**
-   * The file URL generator.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected $fileUrlGenerator;
-
-  /**
    * Constructs a File object.
    *
    * @param array $configuration
@@ -34,18 +27,17 @@ class File extends FieldPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
    *   The file URL generator.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, FileUrlGeneratorInterface $file_url_generator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->fileUrlGenerator = $file_url_generator;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if (!empty($options['link_to_file'])) {
@@ -65,7 +57,7 @@ class File extends FieldPluginBase {
   /**
    * Provide link to file option.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['link_to_file'] = [
       '#title' => $this->t('Link this field to download the file'),
       '#description' => $this->t("Enable to override this field's links."),

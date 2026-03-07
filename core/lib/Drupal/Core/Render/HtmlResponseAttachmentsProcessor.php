@@ -130,7 +130,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
       // Turbolinks to be implemented without altering core.
       // @see https://github.com/rails/turbolinks/
       $ajax_page_state = $this->requestStack->getCurrentRequest()->attributes->get('ajax_page_state');
-      $assets->setAlreadyLoadedLibraries(isset($ajax_page_state) ? explode(',', $ajax_page_state['libraries']) : []);
+      $assets->setAlreadyLoadedLibraries(isset($ajax_page_state) ? explode(',', (string) $ajax_page_state['libraries']) : []);
       $variables = $this->processAssetLibraries($assets, $attachment_placeholders);
       // $variables now contains the markup to load the asset libraries. Update
       // $attached with the final list of libraries and JavaScript settings, so
@@ -205,7 +205,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
    *
    * @see https://www.drupal.org/node/3000051
    */
-  public static function formatHttpHeaderAttributes(array $attributes = []) {
+  public static function formatHttpHeaderAttributes(array $attributes = []): string {
     foreach ($attributes as $attribute => &$data) {
       if (is_array($data)) {
         $data = implode(' ', $data);
@@ -243,7 +243,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
    * @see \Drupal\Core\Render\Renderer::replacePlaceholders()
    * @see \Drupal\Core\Render\Renderer::renderPlaceholder()
    */
-  protected function renderPlaceholders(HtmlResponse $response) {
+  protected function renderPlaceholders(HtmlResponse $response): HtmlResponse {
     $build = [
       '#markup' => Markup::create($response->getContent()),
       '#attached' => $response->getAttachments(),
@@ -278,7 +278,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
    *     - scripts
    *     - scripts_bottom
    */
-  protected function processAssetLibraries(AttachedAssetsInterface $assets, array $placeholders) {
+  protected function processAssetLibraries(AttachedAssetsInterface $assets, array $placeholders): array {
     $variables = [];
 
     $maintenance_mode = defined('MAINTENANCE_MODE') || \Drupal::state()->get('system.maintenance_mode');
@@ -349,7 +349,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
 
       // Drupal treats the HTTP response status code like a header, even though
       // it really is not.
-      if (strtolower($name) === 'status') {
+      if (strtolower((string) $name) === 'status') {
         $response->setStatusCode($value);
       }
       else {
@@ -368,7 +368,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
    *   The ['#attached']['html_head'] portion of a render array with #type of
    *   html_tag added for items without a #type.
    */
-  protected function processHtmlHead(array $html_head) {
+  protected function processHtmlHead(array $html_head): array {
     $head = [];
     foreach ($html_head as $item) {
       [$data, $key] = $item;
@@ -405,7 +405,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
    *   - http_header
    *   - html_head
    */
-  protected function processHtmlHeadLink(array $html_head_link) {
+  protected function processHtmlHeadLink(array $html_head_link): array {
     $attached = [];
 
     foreach ($html_head_link as $item) {
@@ -454,7 +454,7 @@ class HtmlResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
    *   An ['#attached']['html_head_link'] array, suitable for merging with
    *   another 'html_head_link' array.
    */
-  protected function processFeed($attached_feed) {
+  protected function processFeed($attached_feed): array {
     $html_head_link = [];
     foreach ($attached_feed as $item) {
       $feed_link = [

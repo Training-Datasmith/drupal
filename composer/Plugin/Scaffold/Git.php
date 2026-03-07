@@ -33,7 +33,7 @@ class Git {
    * @return bool
    *   Whether the specified file is already ignored or not (TRUE if ignored).
    */
-  public static function checkIgnore(IOInterface $io, $path, $dir = NULL) {
+  public static function checkIgnore(IOInterface $io, $path, $dir = NULL): bool {
     $process = new ProcessExecutor($io);
     $output = '';
     $exitCode = $process->execute('git check-ignore ' . $process->escape($path), $output, $dir);
@@ -53,7 +53,7 @@ class Git {
    * @return bool
    *   Whether the specified file is already tracked or not (TRUE if tracked).
    */
-  public static function checkTracked(IOInterface $io, $path, $dir = NULL) {
+  public static function checkTracked(IOInterface $io, $path, $dir = NULL): bool {
     $process = new ProcessExecutor($io);
     $output = '';
     $exitCode = $process->execute('git ls-files --error-unmatch ' . $process->escape($path), $output, $dir);
@@ -71,7 +71,7 @@ class Git {
    * @return bool
    *   True if this is a repository.
    */
-  public static function isRepository(IOInterface $io, $dir = NULL) {
+  public static function isRepository(IOInterface $io, $dir = NULL): bool {
     $process = new ProcessExecutor($io);
     $output = '';
     $exitCode = $process->execute('git rev-parse --show-toplevel', $output, $dir);

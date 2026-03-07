@@ -68,7 +68,7 @@ class Substr extends ProcessPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): string {
     $start = $this->configuration['start'] ?? 0;
     if (!is_int($start)) {
       throw new MigrateException('The start position configuration value should be an integer. Omit this key to capture from the beginning of the string.');

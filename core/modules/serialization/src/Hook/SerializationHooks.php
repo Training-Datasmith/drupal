@@ -31,8 +31,7 @@ class SerializationHooks {
             'name' => 'rest',
           ])->toString() : '#',
         ]) . '</p>';
-        $output .= '<p>' . $this->t('For more information, see the <a href=":doc_url">online documentation for the Serialization module</a>.', [':doc_url' => 'https://www.drupal.org/documentation/modules/serialization']) . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('For more information, see the <a href=":doc_url">online documentation for the Serialization module</a>.', [':doc_url' => 'https://www.drupal.org/documentation/modules/serialization']) . '</p>');
     }
     return NULL;
   }

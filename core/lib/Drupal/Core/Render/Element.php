@@ -22,7 +22,7 @@ class Element {
    * @return bool
    *   TRUE of the key is a property, FALSE otherwise.
    */
-  public static function property($key) {
+  public static function property($key): bool {
     return is_string($key) && $key[0] == '#';
   }
 
@@ -35,8 +35,8 @@ class Element {
    * @return array
    *   An array of property keys for the element.
    */
-  public static function properties(array $element) {
-    return array_filter(array_keys($element), [static::class, 'property']);
+  public static function properties(array $element): array {
+    return array_filter(array_keys($element), static::property(...));
   }
 
   /**
@@ -48,7 +48,7 @@ class Element {
    * @return bool
    *   TRUE if the element is a child, FALSE otherwise.
    */
-  public static function child($key) {
+  public static function child($key): bool {
     return !isset($key[0]) || $key[0] != '#';
   }
 
@@ -68,7 +68,7 @@ class Element {
    * @return array
    *   The array keys of the element's children.
    */
-  public static function children(array &$elements, $sort = FALSE) {
+  public static function children(array &$elements, $sort = FALSE): array {
     // Do not attempt to sort elements which have already been sorted.
     $sort = isset($elements['#sorted']) ? !$elements['#sorted'] : $sort;
 
@@ -126,7 +126,7 @@ class Element {
    * @return array
    *   The array keys of the element's visible children.
    */
-  public static function getVisibleChildren(array $elements) {
+  public static function getVisibleChildren(array $elements): array {
     $visible_children = [];
 
     foreach (static::children($elements) as $key) {
@@ -152,7 +152,7 @@ class Element {
    * @return bool
    *   TRUE if the element is visible, otherwise FALSE.
    */
-  public static function isVisibleElement($element) {
+  public static function isVisibleElement(array $element): bool {
     return (!isset($element['#type']) || !in_array($element['#type'], ['value', 'hidden', 'token']))
       && (!isset($element['#access'])
       || (($element['#access'] instanceof AccessResultInterface && $element['#access']->isAllowed()) || ($element['#access'] === TRUE)));
@@ -170,7 +170,7 @@ class Element {
    *   identical except for the leading '#', then an attribute name value is
    *   sufficient and no property name needs to be specified.
    */
-  public static function setAttributes(array &$element, array $map) {
+  public static function setAttributes(array &$element, array $map): void {
     foreach ($map as $property => $attribute) {
       // If the key is numeric, the attribute name needs to be taken over.
       if (is_int($property)) {
@@ -195,7 +195,7 @@ class Element {
    * @return bool
    *   Whether the given element is empty.
    */
-  public static function isEmpty(array $elements) {
+  public static function isEmpty(array $elements): bool {
     return \array_diff(\array_keys($elements), ['#cache', '#weight']) === [];
   }
 

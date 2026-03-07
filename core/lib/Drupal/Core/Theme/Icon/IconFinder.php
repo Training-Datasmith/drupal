@@ -239,7 +239,7 @@ class IconFinder implements ContainerInjectionInterface, IconFinderInterface {
     // Wildcard around filename are ignored for extractIconIdFromFilename.
     $filename = str_replace('*', '', $filename);
 
-    return $this->processFoundFiles($finder, $source, $filename, self::determineGroupPosition($path));
+    return $this->processFoundFiles($finder, $filename, self::determineGroupPosition($path));
   }
 
   /**
@@ -282,17 +282,14 @@ class IconFinder implements ContainerInjectionInterface, IconFinderInterface {
    *
    * @param \Symfony\Component\Finder\Finder $finder
    *   The Finder instance with found files.
-   * @param string $source
-   *   The source.
    * @param string $path_info_filename
    *   The filename from path_info().
    * @param int|null $group_position
    *   The position of the group in the path, or null if not applicable.
-   *
    * @return array<string, array<string, string|null>>
    *   List of files with metadata.
    */
-  private function processFoundFiles(Finder $finder, string $source, string $path_info_filename, ?int $group_position): array {
+  private function processFoundFiles(Finder $finder, string $path_info_filename, ?int $group_position): array {
     $result = [];
     $has_icon_pattern = \str_contains($path_info_filename, self::ICON_ID_PATTERN);
 

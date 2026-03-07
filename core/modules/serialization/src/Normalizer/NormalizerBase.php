@@ -31,9 +31,7 @@ abstract class NormalizerBase implements SerializerAwareInterface, CacheableNorm
     }
     $supported = array_keys($this->getSupportedTypes($format));
 
-    return (bool) array_filter($supported, function ($name) use ($data) {
-      return $data instanceof $name;
-    });
+    return (bool) array_filter($supported, fn(int|string $name) => $data instanceof $name);
   }
 
   /**
@@ -51,9 +49,7 @@ abstract class NormalizerBase implements SerializerAwareInterface, CacheableNorm
 
     $supported = array_keys($this->getSupportedTypes($format));
 
-    $subclass_check = function ($name) use ($type) {
-      return (class_exists($name) || interface_exists($name)) && is_subclass_of($type, $name, TRUE);
-    };
+    $subclass_check = (fn($name) => (class_exists($name) || interface_exists($name)) && is_subclass_of($type, $name, TRUE));
 
     return in_array($type, $supported) || array_filter($supported, $subclass_check);
   }

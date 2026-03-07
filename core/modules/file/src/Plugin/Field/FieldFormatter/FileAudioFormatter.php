@@ -21,7 +21,7 @@ class FileAudioFormatter extends FileMediaFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function getMediaType() {
+  public static function getMediaType(): string {
     return 'audio';
   }
 

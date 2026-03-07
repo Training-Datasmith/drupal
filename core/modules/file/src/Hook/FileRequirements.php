@@ -21,9 +21,9 @@ class FileRequirements {
     $server_software = \Drupal::request()->server->get('SERVER_SOFTWARE', '');
 
     // Get the web server identity.
-    $is_nginx = preg_match("/Nginx/i", $server_software);
-    $is_apache = preg_match("/Apache/i", $server_software);
-    $fastcgi = $is_apache && ((str_contains($server_software, 'mod_fastcgi') || str_contains($server_software, 'mod_fcgi')));
+    $is_nginx = preg_match("/Nginx/i", (string) $server_software);
+    $is_apache = preg_match("/Apache/i", (string) $server_software);
+    $fastcgi = $is_apache && ((str_contains((string) $server_software, 'mod_fastcgi') || str_contains((string) $server_software, 'mod_fcgi')));
 
     // Check the uploadprogress extension is loaded.
     if (extension_loaded('uploadprogress')) {

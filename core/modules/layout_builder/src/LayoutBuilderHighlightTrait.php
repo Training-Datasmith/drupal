@@ -18,7 +18,7 @@ trait LayoutBuilderHighlightTrait {
    * @return string
    *   The highlight ID of the block.
    */
-  protected function blockAddHighlightId($delta, $region) {
+  protected function blockAddHighlightId($delta, $region): string {
     return "block-$delta-$region";
   }
 
@@ -44,7 +44,7 @@ trait LayoutBuilderHighlightTrait {
    * @return string
    *   The highlight ID of the section.
    */
-  protected function sectionAddHighlightId($delta) {
+  protected function sectionAddHighlightId($delta): string {
     return "section-$delta";
   }
 
@@ -57,7 +57,7 @@ trait LayoutBuilderHighlightTrait {
    * @return string
    *   The highlight ID of the section.
    */
-  protected function sectionUpdateHighlightId($delta) {
+  protected function sectionUpdateHighlightId($delta): string {
     return "section-update-$delta";
   }
 

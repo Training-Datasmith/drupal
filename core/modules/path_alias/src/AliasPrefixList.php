@@ -13,20 +13,6 @@ use Drupal\Core\State\StateInterface;
 class AliasPrefixList extends CacheCollector implements AliasPrefixListInterface {
 
   /**
-   * The Key/Value Store to use for state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * The path alias repository.
-   *
-   * @var \Drupal\path_alias\AliasRepositoryInterface
-   */
-  protected $pathAliasRepository;
-
-  /**
    * Constructs an AliasPrefixList object.
    *
    * @param string $cid
@@ -37,13 +23,11 @@ class AliasPrefixList extends CacheCollector implements AliasPrefixListInterface
    *   The lock backend.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state keyvalue store.
-   * @param \Drupal\path_alias\AliasRepositoryInterface $alias_repository
+   * @param \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository
    *   The path alias repository.
    */
-  public function __construct($cid, CacheBackendInterface $cache, LockBackendInterface $lock, StateInterface $state, AliasRepositoryInterface $alias_repository) {
+  public function __construct($cid, CacheBackendInterface $cache, LockBackendInterface $lock, protected \Drupal\Core\State\StateInterface $state, protected \Drupal\path_alias\AliasRepositoryInterface $pathAliasRepository) {
     parent::__construct($cid, $cache, $lock);
-    $this->state = $state;
-    $this->pathAliasRepository = $alias_repository;
   }
 
   /**
@@ -72,7 +56,7 @@ class AliasPrefixList extends CacheCollector implements AliasPrefixListInterface
     if ($roots = $this->state->get('router.path_roots')) {
       foreach ($roots as $root) {
         // Paths in Drupal are case-insensitive.
-        $root = mb_strtolower($root);
+        $root = mb_strtolower((string) $root);
         $this->storage[$root] = NULL;
         $this->persist($root);
       }
@@ -112,7 +96,7 @@ class AliasPrefixList extends CacheCollector implements AliasPrefixListInterface
   /**
    * {@inheritdoc}
    */
-  public function set($key, $value) {
+  public function set($key, $value): void {
     // Paths in Drupal are case-insensitive.
     parent::set(mb_strtolower($key), $value);
   }
@@ -134,7 +118,7 @@ class AliasPrefixList extends CacheCollector implements AliasPrefixListInterface
   /**
    * {@inheritdoc}
    */
-  public function clear() {
+  public function clear(): void {
     parent::clear();
     $this->loadMenuPathRoots();
   }

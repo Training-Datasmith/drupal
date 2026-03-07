@@ -23,20 +23,6 @@ class DbLog implements LoggerInterface {
   const DEDICATED_DBLOG_CONNECTION_TARGET = 'dedicated_dblog';
 
   /**
-   * The database connection object.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The message's placeholders parser.
-   *
-   * @var \Drupal\Core\Logger\LogMessageParserInterface
-   */
-  protected $parser;
-
-  /**
    * Constructs a DbLog object.
    *
    * @param \Drupal\Core\Database\Connection $connection
@@ -44,9 +30,8 @@ class DbLog implements LoggerInterface {
    * @param \Drupal\Core\Logger\LogMessageParserInterface $parser
    *   The parser to use when extracting message variables.
    */
-  public function __construct(Connection $connection, LogMessageParserInterface $parser) {
-    $this->connection = $connection;
-    $this->parser = $parser;
+  public function __construct(protected \Drupal\Core\Database\Connection $connection, protected \Drupal\Core\Logger\LogMessageParserInterface $parser)
+  {
   }
 
   /**
@@ -66,14 +51,14 @@ class DbLog implements LoggerInterface {
         ->insert('watchdog')
         ->fields([
           'uid' => $context['uid'],
-          'type' => mb_substr($context['channel'], 0, 64),
+          'type' => mb_substr((string) $context['channel'], 0, 64),
           'message' => $message,
           'variables' => serialize($message_placeholders),
           'severity' => $level,
           'link' => $context['link'],
           'location' => $context['request_uri'],
           'referer' => $context['referer'],
-          'hostname' => mb_substr($context['ip'], 0, 128),
+          'hostname' => mb_substr((string) $context['ip'], 0, 128),
           'timestamp' => $context['timestamp'],
         ])
         ->execute();

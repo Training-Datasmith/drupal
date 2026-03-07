@@ -70,7 +70,7 @@ class EntityReferenceAutocompleteWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $operators = $this->getMatchOperatorOptions();
@@ -92,7 +92,7 @@ class EntityReferenceAutocompleteWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $entity = $items->getEntity();
     $referenced_entities = $items->referencedEntities();
 
@@ -145,7 +145,7 @@ class EntityReferenceAutocompleteWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
     foreach ($values as $key => $value) {
       // The entity_autocomplete form element returns an array when an entity
       // was "autocreated", so we need to move it up a level.
@@ -213,7 +213,7 @@ class EntityReferenceAutocompleteWidget extends WidgetBase {
    * @return array
    *   List of options.
    */
-  protected function getMatchOperatorOptions() {
+  protected function getMatchOperatorOptions(): array {
     return [
       'STARTS_WITH' => $this->t('Starts with'),
       'CONTAINS' => $this->t('Contains'),

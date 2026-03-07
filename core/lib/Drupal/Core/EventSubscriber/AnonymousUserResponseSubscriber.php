@@ -15,20 +15,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class AnonymousUserResponseSubscriber implements EventSubscriberInterface {
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * Constructs an AnonymousUserResponseSubscriber object.
    *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(AccountInterface $current_user) {
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\Session\AccountInterface $currentUser)
+  {
   }
 
   /**
@@ -37,7 +30,7 @@ class AnonymousUserResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespond(ResponseEvent $event) {
+  public function onRespond(ResponseEvent $event): void {
     if (!$event->isMainRequest()) {
       return;
     }

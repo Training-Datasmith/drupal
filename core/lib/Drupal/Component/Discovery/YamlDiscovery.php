@@ -12,20 +12,6 @@ use Drupal\Component\Serialization\Yaml;
 class YamlDiscovery implements DiscoverableInterface {
 
   /**
-   * The base filename to look for in each directory.
-   *
-   * @var string
-   */
-  protected $name;
-
-  /**
-   * An array of directories to scan, keyed by the provider.
-   *
-   * @var array
-   */
-  protected $directories = [];
-
-  /**
    * Constructs a YamlDiscovery object.
    *
    * @param string $name
@@ -34,15 +20,21 @@ class YamlDiscovery implements DiscoverableInterface {
    * @param array $directories
    *   An array of directories to scan, keyed by the provider.
    */
-  public function __construct($name, array $directories) {
-    $this->name = $name;
-    $this->directories = $directories;
+  public function __construct(
+      /**
+       * The base filename to look for in each directory.
+       */
+      protected $name,
+      protected array $directories
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function findAll() {
+  public function findAll(): array {
     $all = [];
 
     $files = $this->findFiles();
@@ -58,13 +50,11 @@ class YamlDiscovery implements DiscoverableInterface {
 
     // If there are files left that were not returned from the cache, load and
     // parse them now. This list was flipped above and is keyed by filename.
-    if ($provider_by_files) {
-      foreach ($provider_by_files as $file => $provider) {
-        // If a file is empty or its contents are commented out, return an empty
-        // array instead of NULL for type consistency.
-        $all[$provider] = $this->decode($file);
-        $file_cache->set($file, $all[$provider]);
-      }
+    foreach ($provider_by_files as $file => $provider) {
+      // If a file is empty or its contents are commented out, return an empty
+      // array instead of NULL for type consistency.
+      $all[$provider] = $this->decode($file);
+      $file_cache->set($file, $all[$provider]);
     }
 
     return $all;
@@ -79,7 +69,7 @@ class YamlDiscovery implements DiscoverableInterface {
    * @return array
    *   The decoded contents of the YAML file.
    */
-  protected function decode($file) {
+  protected function decode(string $file) {
     try {
       return Yaml::decode(file_get_contents($file)) ?: [];
     }
@@ -94,7 +84,7 @@ class YamlDiscovery implements DiscoverableInterface {
    * @return array
    *   An array of file paths.
    */
-  protected function findFiles() {
+  protected function findFiles(): array {
     $files = [];
     foreach ($this->directories as $provider => $directory) {
       $file = $directory . '/' . $provider . '.' . $this->name . '.yml';

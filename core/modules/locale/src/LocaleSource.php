@@ -102,7 +102,7 @@ class LocaleSource {
     if (isset($source->files[LOCALE_TRANSLATION_LOCAL])) {
       $source_file = $source->files[LOCALE_TRANSLATION_LOCAL];
       $directory = $source_file->directory;
-      $filename = '/' . preg_quote($source_file->filename) . '$/';
+      $filename = '/' . preg_quote((string) $source_file->filename) . '$/';
 
       if (is_dir($directory)) {
         if ($files = $this->fileSystem->scanDirectory($directory, $filename, ['key' => 'name', 'recurse' => FALSE])) {
@@ -158,7 +158,7 @@ class LocaleSource {
    *   - "timestamp": Timestamp of the file.
    *   - "keep": TRUE to keep the downloaded file.
    */
-  public function sourceBuild($project, $langcode, $filename = NULL) {
+  public function sourceBuild($project, $langcode, $filename = NULL): object {
     // Follow-up issue: https://www.drupal.org/node/1842380.
     // Convert $source object to a TranslatableProject class and use a typed
     // class for $source-file.

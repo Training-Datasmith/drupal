@@ -29,7 +29,7 @@ class Fieldset extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#process' => [
         [static::class, 'processGroup'],

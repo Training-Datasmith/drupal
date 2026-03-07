@@ -29,10 +29,8 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
 
   /**
    * Information about the entity type.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
    */
-  protected $entityType;
+  protected \Drupal\Core\Entity\EntityTypeInterface $entityType;
 
   /**
    * Allows to grant access to just the labels.
@@ -166,10 +164,8 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
     if ($admin_permission = $this->entityType->getAdminPermission()) {
       return AccessResult::allowedIfHasPermission($account, $admin_permission);
     }
-    else {
-      // No opinion.
-      return AccessResult::neutral();
-    }
+    // No opinion.
+    return AccessResult::neutral();
   }
 
   /**
@@ -224,7 +220,7 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
   /**
    * {@inheritdoc}
    */
-  public function resetCache() {
+  public function resetCache(): void {
     $this->accessCache = [];
   }
 
@@ -290,10 +286,8 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
     if ($admin_permission = $this->entityType->getAdminPermission()) {
       return AccessResult::allowedIfHasPermission($account, $admin_permission);
     }
-    else {
-      // No opinion.
-      return AccessResult::neutral();
-    }
+    // No opinion.
+    return AccessResult::neutral();
   }
 
   /**
@@ -307,7 +301,7 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
    */
   protected function prepareUser(?AccountInterface $account = NULL) {
     if (!$account) {
-      $account = \Drupal::currentUser();
+      return \Drupal::currentUser();
     }
     return $account;
   }
@@ -350,7 +344,7 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
     $grants = [];
     $this->moduleHandler()->invokeAllWith(
       'entity_field_access',
-      function (callable $hook, string $module) use ($operation, $field_definition, $account, $items, &$grants) {
+      function (callable $hook, string $module) use ($operation, $field_definition, $account, $items, &$grants): void {
         $grants[] = [$module => $hook($operation, $field_definition, $account, $items)];
       }
     );
@@ -423,9 +417,7 @@ class EntityAccessControlHandler extends EntityHandlerBase implements EntityAcce
    *   The create access result cache ID, or null if uncacheable.
    */
   protected function buildCreateAccessCid(array $context, ?string $entity_bundle): ?string {
-    $extendedContext = array_filter($context, function ($key) {
-      return !(in_array($key, ['entity_type_id', 'langcode']));
-    }, ARRAY_FILTER_USE_KEY);
+    $extendedContext = array_filter($context, fn($key) => !(in_array($key, ['entity_type_id', 'langcode'])), ARRAY_FILTER_USE_KEY);
     if (empty($extendedContext)) {
       return $entity_bundle ? 'create:' . $entity_bundle : 'create';
     }

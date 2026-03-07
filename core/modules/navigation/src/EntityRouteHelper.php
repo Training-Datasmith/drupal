@@ -22,8 +22,6 @@ class EntityRouteHelper {
 
   /**
    * A list of all the link paths of enabled content entities.
-   *
-   * @var array
    */
   protected array $contentEntityPaths;
 
@@ -121,7 +119,7 @@ class EntityRouteHelper {
    *   Array containing the paths for the given content entity type.
    */
   protected function getContentEntityTypePaths(EntityTypeInterface $entity_type): array {
-    $paths = array_filter($entity_type->getLinkTemplates(), fn ($template) => $template !== 'collection', ARRAY_FILTER_USE_KEY);
+    $paths = array_filter($entity_type->getLinkTemplates(), fn ($template): bool => $template !== 'collection', ARRAY_FILTER_USE_KEY);
     if ($this->isLayoutBuilderEntityType($entity_type)) {
       $paths[] = $entity_type->getLinkTemplate('canonical') . '/layout';
     }

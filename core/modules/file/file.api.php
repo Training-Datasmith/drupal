@@ -77,7 +77,7 @@ use Drupal\file\FileInterface;
  */
 function hook_file_copy(FileInterface $file, FileInterface $source): void {
   // Make sure that the file name starts with the owner's user name.
-  if (!str_starts_with($file->getFilename(), $file->getOwner()->name)) {
+  if (!str_starts_with((string) $file->getFilename(), (string) $file->getOwner()->name)) {
     $file->setFilename($file->getOwner()->name . '_' . $file->getFilename());
     $file->save();
 
@@ -97,7 +97,7 @@ function hook_file_copy(FileInterface $file, FileInterface $source): void {
  */
 function hook_file_move(FileInterface $file, FileInterface $source): void {
   // Make sure that the file name starts with the owner's user name.
-  if (!str_starts_with($file->getFilename(), $file->getOwner()->name)) {
+  if (!str_starts_with((string) $file->getFilename(), (string) $file->getOwner()->name)) {
     $file->setFilename($file->getOwner()->name . '_' . $file->getFilename());
     $file->save();
 

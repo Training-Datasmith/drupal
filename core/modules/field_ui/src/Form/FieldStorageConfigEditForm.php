@@ -41,7 +41,7 @@ class FieldStorageConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static($container->get('typed_data_manager'));
   }
 
@@ -87,7 +87,7 @@ class FieldStorageConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $field_label = $form_state->get('field_config')->label();
@@ -130,7 +130,7 @@ class FieldStorageConfigEditForm extends EntityForm {
    * @return array
    *   The cardinality form render array.
    */
-  protected function getCardinalityForm() {
+  protected function getCardinalityForm(): array {
     $form = [
       // Reset #parents so the additional container does not appear.
       '#parents' => [],
@@ -155,7 +155,7 @@ class FieldStorageConfigEditForm extends EntityForm {
       $form['cardinality'] = ['#markup' => $markup];
     }
     else {
-      $form['#element_validate'][] = [$this, 'validateCardinality'];
+      $form['#element_validate'][] = $this->validateCardinality(...);
       $cardinality = $this->entity->getCardinality();
       $form['cardinality'] = [
         '#type' => 'select',
@@ -191,7 +191,7 @@ class FieldStorageConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     return [];
   }
 
@@ -203,7 +203,7 @@ class FieldStorageConfigEditForm extends EntityForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public function validateCardinality(array &$element, FormStateInterface $form_state) {
+  public function validateCardinality(array &$element, FormStateInterface $form_state): void {
     $field_storage_definitions = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($this->entity->getTargetEntityTypeId());
 
     $cardinality = $form_state->getValue([
@@ -248,7 +248,7 @@ class FieldStorageConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     // Save field cardinality.
     if (!$this->getEnforcedCardinality() && $form_state->getValue('cardinality') === 'number' && $form_state->getValue('cardinality_number')) {
       $form_state->setValue('cardinality', (int) $form_state->getValue('cardinality_number'));
@@ -260,7 +260,7 @@ class FieldStorageConfigEditForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $this->entity->save();
   }
 

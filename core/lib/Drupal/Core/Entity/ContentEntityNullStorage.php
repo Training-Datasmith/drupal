@@ -14,7 +14,7 @@ class ContentEntityNullStorage extends ContentEntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function loadMultiple(?array $ids = NULL) {
+  public function loadMultiple(?array $ids = NULL): array {
     return [];
   }
 
@@ -27,21 +27,21 @@ class ContentEntityNullStorage extends ContentEntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function load($id) {
+  public function load($id): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function loadRevision($revision_id) {
+  public function loadRevision($revision_id): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function loadMultipleRevisions(array $revision_ids) {
+  public function loadMultipleRevisions(array $revision_ids): array {
     return [];
   }
 
@@ -54,7 +54,7 @@ class ContentEntityNullStorage extends ContentEntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function loadByProperties(array $values = []) {
+  public function loadByProperties(array $values = []): array {
     return [];
   }
 
@@ -79,14 +79,14 @@ class ContentEntityNullStorage extends ContentEntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  protected function getQueryServiceName() {
+  protected function getQueryServiceName(): string {
     return 'entity.query.null';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function doLoadMultipleRevisionsFieldItems($revision_ids) {
+  protected function doLoadMultipleRevisionsFieldItems($revision_ids): array {
     return [];
   }
 
@@ -111,7 +111,7 @@ class ContentEntityNullStorage extends ContentEntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  protected function readFieldItemsToPurge(FieldDefinitionInterface $field_definition, $batch_size) {
+  protected function readFieldItemsToPurge(FieldDefinitionInterface $field_definition, $batch_size): array {
     return [];
   }
 
@@ -136,14 +136,14 @@ class ContentEntityNullStorage extends ContentEntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function countFieldData($storage_definition, $as_bool = FALSE) {
+  public function countFieldData($storage_definition, $as_bool = FALSE): false|int {
     return $as_bool ? FALSE : 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasData() {
+  public function hasData(): bool {
     return FALSE;
   }
 

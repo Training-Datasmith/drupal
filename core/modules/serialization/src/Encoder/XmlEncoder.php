@@ -57,7 +57,7 @@ class XmlEncoder implements SerializerAwareInterface, EncoderInterface, DecoderI
    * @param \Symfony\Component\Serializer\Encoder\XmlEncoder $encoder
    *   The XML encoder.
    */
-  public function setBaseEncoder($encoder) {
+  public function setBaseEncoder($encoder): void {
     $this->baseEncoder = $encoder;
   }
 

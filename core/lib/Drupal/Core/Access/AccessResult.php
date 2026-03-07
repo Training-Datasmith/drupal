@@ -111,7 +111,7 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
    *   If the account has the permission, isAllowed() will be TRUE, otherwise
    *   isNeutral() will be TRUE.
    */
-  public static function allowedIfHasPermission(AccountInterface $account, $permission) {
+  public static function allowedIfHasPermission(AccountInterface $account, string $permission) {
     $access_result = static::allowedIf($account->hasPermission($permission))->addCacheContexts(['user.permissions']);
 
     if ($access_result instanceof AccessResultReasonInterface) {
@@ -165,9 +165,7 @@ abstract class AccessResult implements AccessResultInterface, RefinableCacheable
         $access_result->setReason("The '$permission' permission is required.");
       }
       elseif (count($permissions) > 1) {
-        $quote = function ($s) {
-          return "'$s'";
-        };
+        $quote = (fn($s) => "'$s'");
         $access_result->setReason(sprintf("The following permissions are required: %s.", implode(" $conjunction ", array_map($quote, $permissions))));
       }
     }

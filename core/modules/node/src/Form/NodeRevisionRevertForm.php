@@ -26,46 +26,30 @@ class NodeRevisionRevertForm extends ConfirmFormBase {
   protected $revision;
 
   /**
-   * The node storage.
-   *
-   * @var \Drupal\node\NodeStorageInterface
-   */
-  protected $nodeStorage;
-
-  /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
-
-  /**
    * Constructs a new NodeRevisionRevertForm.
    *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $node_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $nodeStorage
    *   The node storage.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(EntityStorageInterface $node_storage, DateFormatterInterface $date_formatter, TimeInterface $time) {
-    $this->nodeStorage = $node_storage;
-    $this->dateFormatter = $date_formatter;
-    $this->time = $time;
+  public function __construct(
+      /**
+       * The node storage.
+       */
+      protected \Drupal\Core\Entity\EntityStorageInterface $nodeStorage,
+      protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter,
+      protected \Drupal\Component\Datetime\TimeInterface $time
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('node'),
       $container->get('date.formatter'),
@@ -76,35 +60,35 @@ class NodeRevisionRevertForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'node_revision_revert_confirm';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to revert to the revision from %revision-date?', ['%revision-date' => $this->dateFormatter->format($this->revision->getRevisionCreationTime())]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('entity.node.version_history', ['node' => $this->revision->id()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Revert');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): string {
     return '';
   }
 
@@ -113,15 +97,14 @@ class NodeRevisionRevertForm extends ConfirmFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?NodeInterface $node_revision = NULL) {
     $this->revision = $node_revision;
-    $form = parent::buildForm($form, $form_state);
 
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // The revision timestamp will be updated when the revision is saved. Keep
     // the original one for the confirmation message.
     $original_revision_timestamp = $this->revision->getRevisionCreationTime();

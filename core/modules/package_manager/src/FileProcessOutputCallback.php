@@ -15,18 +15,18 @@ use PhpTuf\ComposerStager\API\Process\Value\OutputTypeEnum;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class FileProcessOutputCallback implements OutputCallbackInterface {
+final readonly class FileProcessOutputCallback implements OutputCallbackInterface {
 
   /**
    * The file to write to.
    *
    * @var resource
    */
-  private readonly mixed $handle;
+  private mixed $handle;
 
   public function __construct(
     string $path,
-    private readonly ?OutputCallbackInterface $decorated = NULL,
+    private ?OutputCallbackInterface $decorated = NULL,
   ) {
     $this->handle = fopen($path, 'a');
     if (empty($this->handle)) {

@@ -39,71 +39,37 @@ class BlockForm extends EntityForm {
   protected $storage;
 
   /**
-   * The condition plugin manager.
-   *
-   * @var \Drupal\Core\Condition\ConditionManager
-   */
-  protected $manager;
-
-  /**
-   * The language manager service.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $language;
-
-  /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandler
-   */
-  protected $themeHandler;
-
-  /**
-   * The context repository service.
-   *
-   * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface
-   */
-  protected $contextRepository;
-
-  /**
-   * The plugin form manager.
-   *
-   * @var \Drupal\Core\Plugin\PluginFormFactoryInterface
-   */
-  protected $pluginFormFactory;
-
-  /**
    * Constructs a BlockForm object.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\Executable\ExecutableManagerInterface $manager
    *   The ConditionManager for building the visibility UI.
-   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $context_repository
+   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository
    *   The lazy context repository service.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language
    *   The language manager.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
-   * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $plugin_form_manager
+   * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory
    *   The plugin form manager.
    * @param \Drupal\block\BlockRepositoryInterface $blockRepository
    *   The block repository service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ExecutableManagerInterface $manager, ContextRepositoryInterface $context_repository, LanguageManagerInterface $language, ThemeHandlerInterface $theme_handler, PluginFormFactoryInterface $plugin_form_manager, protected BlockRepositoryInterface $blockRepository) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, /**
+   * The condition plugin manager.
+   */
+  protected \Drupal\Core\Executable\ExecutableManagerInterface $manager, protected \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository, protected \Drupal\Core\Language\LanguageManagerInterface $language, /**
+   * The theme handler.
+   */
+  protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler, protected \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory, protected BlockRepositoryInterface $blockRepository) {
     $this->storage = $entity_type_manager->getStorage('block');
-    $this->manager = $manager;
-    $this->contextRepository = $context_repository;
-    $this->language = $language;
-    $this->themeHandler = $theme_handler;
-    $this->pluginFormFactory = $plugin_form_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.condition'),
@@ -118,7 +84,7 @@ class BlockForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $entity = $this->entity;
 
     // Store the gathered contexts in the form state for other objects to use
@@ -201,7 +167,7 @@ class BlockForm extends EntityForm {
   /**
    * Handles switching the available regions based on the selected theme.
    */
-  public function themeSwitch($form, FormStateInterface $form_state) {
+  public function themeSwitch(array $form, FormStateInterface $form_state) {
     return $form['region'];
   }
 
@@ -216,7 +182,7 @@ class BlockForm extends EntityForm {
    * @return array
    *   The form array with the visibility UI added in.
    */
-  protected function buildVisibilityInterface(array $form, FormStateInterface $form_state) {
+  protected function buildVisibilityInterface(array $form, FormStateInterface $form_state): array {
     $form['visibility_tabs'] = [
       '#type' => 'vertical_tabs',
       '#title' => $this->t('Visibility'),
@@ -295,7 +261,7 @@ class BlockForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     $form_state->setValue('weight', (int) $form_state->getValue('weight'));
@@ -325,7 +291,7 @@ class BlockForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     $entity = $this->entity;
@@ -391,7 +357,7 @@ class BlockForm extends EntityForm {
    * @return string
    *   Returns the unique name.
    */
-  public function getUniqueMachineName(BlockInterface $block) {
+  public function getUniqueMachineName(BlockInterface $block): string {
     $suggestion = $block->getPlugin()->getMachineNameSuggestion();
     return $this->blockRepository->getUniqueMachineName($suggestion, $block->getTheme());
   }

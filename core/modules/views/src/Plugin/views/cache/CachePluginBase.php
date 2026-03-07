@@ -106,7 +106,7 @@ abstract class CachePluginBase extends PluginBase {
    * @param string $type
    *   The cache type, either 'query', 'result'.
    */
-  public function cacheSet($type) {
+  public function cacheSet($type): void {
     switch ($type) {
       case 'query':
         // Not supported currently, but this is certainly where we'd put it.
@@ -163,7 +163,7 @@ abstract class CachePluginBase extends PluginBase {
   /**
    * Clear out cached data for a view.
    */
-  public function cacheFlush() {
+  public function cacheFlush(): void {
     Cache::invalidateTags($this->view->storage->getCacheTagsToInvalidate());
   }
 
@@ -252,9 +252,7 @@ abstract class CachePluginBase extends PluginBase {
       }
     }
 
-    $tags = Cache::mergeTags($tags, $this->view->getQuery()->getCacheTags());
-
-    return $tags;
+    return Cache::mergeTags($tags, $this->view->getQuery()->getCacheTags());
   }
 
   /**
@@ -265,8 +263,7 @@ abstract class CachePluginBase extends PluginBase {
    */
   public function getCacheMaxAge() {
     $max_age = $this->getDefaultCacheMaxAge();
-    $max_age = Cache::mergeMaxAges($max_age, $this->view->getQuery()->getCacheMaxAge());
-    return $max_age;
+    return Cache::mergeMaxAges($max_age, $this->view->getQuery()->getCacheMaxAge());
   }
 
   /**
@@ -321,10 +318,8 @@ abstract class CachePluginBase extends PluginBase {
   public function getRowCacheTags(ResultRow $row) {
     $tags = !empty($row->_entity) ? $row->_entity->getCacheTags() : [];
 
-    if (!empty($row->_relationship_entities)) {
-      foreach ($row->_relationship_entities as $entity) {
-        $tags = Cache::mergeTags($tags, $entity->getCacheTags());
-      }
+    foreach ($row->_relationship_entities as $entity) {
+      $tags = Cache::mergeTags($tags, $entity->getCacheTags());
     }
 
     return $tags;

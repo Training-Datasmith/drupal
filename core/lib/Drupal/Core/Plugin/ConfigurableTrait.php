@@ -74,7 +74,7 @@ trait ConfigurableTrait {
    *
    * @see \Drupal\Component\Plugin\ConfigurableInterface::defaultConfiguration()
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [];
   }
 

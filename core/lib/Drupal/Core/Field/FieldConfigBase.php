@@ -264,7 +264,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
     $definition = $field_type_manager->getDefinition($this->getType());
     if ($definition['class']::onDependencyRemoval($this, $dependencies)) {
-      $changed = TRUE;
+      return TRUE;
     }
     return $changed;
   }
@@ -272,7 +272,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
   /**
    * {@inheritdoc}
    */
-  public function postCreate(EntityStorageInterface $storage) {
+  public function postCreate(EntityStorageInterface $storage): void {
     parent::postCreate($storage);
     // If it was not present in the $values passed to create(), (e.g. for
     // programmatic creation), populate the denormalized field_type property
@@ -292,7 +292,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $fields) {
+  public static function postDelete(EntityStorageInterface $storage, array $fields): void {
     // Clear the cache upfront, to refresh the results of getBundles().
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
 
@@ -307,7 +307,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     // Clear the cache.
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
 
@@ -390,9 +390,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
     if (array_key_exists($setting_name, $this->settings)) {
       return $this->settings[$setting_name];
     }
-    else {
-      return $this->getFieldStorageDefinition()->getSetting($setting_name);
-    }
+    return $this->getFieldStorageDefinition()->getSetting($setting_name);
   }
 
   /**
@@ -627,11 +625,7 @@ abstract class FieldConfigBase extends ConfigEntityBase implements FieldConfigIn
    * {@inheritdoc}
    */
   public function isInternal() {
-    // Respect the definition, otherwise default to TRUE for computed fields.
-    if (isset($this->definition['internal'])) {
-      return $this->definition['internal'];
-    }
-    return $this->isComputed();
+    return $this->definition['internal'] ?? $this->isComputed();
   }
 
 }

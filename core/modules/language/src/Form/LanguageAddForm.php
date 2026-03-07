@@ -18,7 +18,7 @@ class LanguageAddForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     // @todo Remove in favor of base method.
     return 'language_admin_add_form';
   }
@@ -26,7 +26,7 @@ class LanguageAddForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form['#title'] = $this->t('Add language');
 
     $predefined_languages = $this->languageManager->getStandardLanguageListWithoutConfigured();
@@ -84,7 +84,7 @@ class LanguageAddForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     parent::save($form, $form_state);
 
     $t_args = ['%language' => $this->entity->label(), '%langcode' => $this->entity->id()];
@@ -102,7 +102,7 @@ class LanguageAddForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function actions(array $form, FormStateInterface $form_state) {
+  public function actions(array $form, FormStateInterface $form_state): array {
     // No actions needed.
     return [];
   }
@@ -110,7 +110,7 @@ class LanguageAddForm extends LanguageFormBase {
   /**
    * Validates the language addition form on custom language button.
    */
-  public function validateCustom(array $form, FormStateInterface $form_state) {
+  public function validateCustom(array $form, FormStateInterface $form_state): void {
     if ($form_state->getValue('predefined_langcode') == 'custom') {
       $langcode = $form_state->getValue('langcode');
       // Reuse the editing form validation routine if we add a custom language.
@@ -131,7 +131,7 @@ class LanguageAddForm extends LanguageFormBase {
   /**
    * Element specific validator for the Add language button.
    */
-  public function validatePredefined($form, FormStateInterface $form_state) {
+  public function validatePredefined($form, FormStateInterface $form_state): void {
     $langcode = $form_state->getValue('predefined_langcode');
     if ($langcode == 'custom') {
       $form_state->setErrorByName('predefined_langcode', $this->t('Fill in the language details and save the language with <em>Add custom language</em>.'));

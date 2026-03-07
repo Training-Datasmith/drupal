@@ -41,7 +41,7 @@ class UserStorage extends SqlContentEntityStorage implements UserStorageInterfac
   /**
    * {@inheritdoc}
    */
-  public function updateLastLoginTimestamp(UserInterface $account) {
+  public function updateLastLoginTimestamp(UserInterface $account): void {
     $this->database->update($this->getDataTable())
       ->fields(['login' => $account->getLastLoginTime()])
       ->condition('uid', $account->id())
@@ -53,7 +53,7 @@ class UserStorage extends SqlContentEntityStorage implements UserStorageInterfac
   /**
    * {@inheritdoc}
    */
-  public function updateLastAccessTimestamp(AccountInterface $account, $timestamp) {
+  public function updateLastAccessTimestamp(AccountInterface $account, $timestamp): void {
     $this->database->update($this->getDataTable())
       ->fields([
         'access' => $timestamp,
@@ -67,7 +67,7 @@ class UserStorage extends SqlContentEntityStorage implements UserStorageInterfac
   /**
    * {@inheritdoc}
    */
-  public function deleteRoleReferences(array $rids) {
+  public function deleteRoleReferences(array $rids): void {
     // Remove the role from all users.
     $this->database->delete('user__roles')
       ->condition('roles_target_id', $rids, 'IN')

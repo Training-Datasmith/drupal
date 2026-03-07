@@ -24,52 +24,20 @@ class EntityTypeBundleInfo implements EntityTypeBundleInfoInterface {
   protected $bundleInfo;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The typed data manager.
-   *
-   * @var \Drupal\Core\TypedData\TypedDataManagerInterface
-   */
-  protected $typedDataManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new EntityTypeBundleInfo.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typed_data_manager
+   * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typedDataManager
    *   The typed data manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, TypedDataManagerInterface $typed_data_manager, CacheBackendInterface $cache_backend) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->languageManager = $language_manager;
-    $this->moduleHandler = $module_handler;
-    $this->typedDataManager = $typed_data_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\TypedData\TypedDataManagerInterface $typedDataManager, CacheBackendInterface $cache_backend) {
     $this->cacheBackend = $cache_backend;
   }
 
@@ -128,7 +96,7 @@ class EntityTypeBundleInfo implements EntityTypeBundleInfoInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearCachedBundles() {
+  public function clearCachedBundles(): void {
     $this->bundleInfo = [];
     Cache::invalidateTags(['entity_bundles']);
     // Entity bundles are exposed as data types, clear that cache too.

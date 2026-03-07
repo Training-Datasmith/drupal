@@ -81,10 +81,10 @@ class Connection extends BaseMySqlConnection {
     }
     catch (\mysqli_sql_exception $e) {
       if ($e->getCode() === static::DATABASE_NOT_FOUND) {
-        throw new DatabaseNotFoundException($e->getMessage(), $e->getCode(), $e);
+          throw new DatabaseNotFoundException($e->getMessage(), $e->getCode(), $e);
       }
-      elseif ($e->getCode() === static::ACCESS_DENIED) {
-        throw new DatabaseAccessDeniedException($e->getMessage(), $e->getCode(), $e);
+      if ($e->getCode() === static::ACCESS_DENIED) {
+          throw new DatabaseAccessDeniedException($e->getMessage(), $e->getCode(), $e);
       }
 
       throw new ConnectionNotDefinedException('Invalid database connection: ' . $e->getMessage(), $e->getCode(), $e);
@@ -117,7 +117,7 @@ class Connection extends BaseMySqlConnection {
     ];
     if (!empty($connection_options['isolation_level'])) {
       $connection_options['init_commands'] += [
-        'isolation_level' => 'SET SESSION TRANSACTION ISOLATION LEVEL ' . strtoupper($connection_options['isolation_level']),
+        'isolation_level' => 'SET SESSION TRANSACTION ISOLATION LEVEL ' . strtoupper((string) $connection_options['isolation_level']),
       ];
     }
 
@@ -132,14 +132,14 @@ class Connection extends BaseMySqlConnection {
   /**
    * {@inheritdoc}
    */
-  public function driver() {
+  public function driver(): string {
     return 'mysqli';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clientVersion() {
+  public function clientVersion(): string {
     return \mysqli_get_client_info();
   }
 
@@ -163,7 +163,7 @@ class Connection extends BaseMySqlConnection {
   /**
    * {@inheritdoc}
    */
-  public function quote($string, $parameter_type = \PDO::PARAM_STR) {
+  public function quote($string, $parameter_type = \PDO::PARAM_STR): string {
     return "'" . $this->connection->escape_string((string) $string) . "'";
   }
 
@@ -177,7 +177,7 @@ class Connection extends BaseMySqlConnection {
   /**
    * {@inheritdoc}
    */
-  public function exceptionHandler() {
+  public function exceptionHandler(): \Drupal\mysqli\Driver\Database\mysqli\ExceptionHandler {
     return new ExceptionHandler();
   }
 

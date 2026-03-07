@@ -23,8 +23,8 @@ use Drupal\workflows\WorkflowInterface;
   id: 'content_moderation',
   label: new TranslatableMarkup('Content moderation'),
   forms: [
-    'configure' => '\Drupal\content_moderation\Form\ContentModerationConfigureForm',
-    'state' => '\Drupal\content_moderation\Form\ContentModerationStateForm',
+    'configure' => \Drupal\content_moderation\Form\ContentModerationConfigureForm::class,
+    'state' => \Drupal\content_moderation\Form\ContentModerationStateForm::class,
   ],
   required_states: [
     'draft',
@@ -36,27 +36,6 @@ class ContentModeration extends WorkflowTypeBase implements ContentModerationInt
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity type bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The moderation information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInfo;
-
-  /**
    * Constructs a ContentModeration object.
    *
    * @param array $configuration
@@ -65,38 +44,32 @@ class ContentModeration extends WorkflowTypeBase implements ContentModerationInt
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info.
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderation_info
+   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
    *   Moderation information service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ModerationInformationInterface $moderation_info) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
-    $this->moderationInfo = $moderation_info;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getState($state_id) {
+  public function getState($state_id): \Drupal\content_moderation\ContentModerationState {
     $state = parent::getState($state_id);
     if (isset($this->configuration['states'][$state->id()]['published']) && isset($this->configuration['states'][$state->id()]['default_revision'])) {
-      $state = new ContentModerationState($state, $this->configuration['states'][$state->id()]['published'], $this->configuration['states'][$state->id()]['default_revision']);
+      return new ContentModerationState($state, $this->configuration['states'][$state->id()]['published'], $this->configuration['states'][$state->id()]['default_revision']);
     }
-    else {
-      $state = new ContentModerationState($state);
-    }
-    return $state;
+    return new ContentModerationState($state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function workflowHasData(WorkflowInterface $workflow) {
+  public function workflowHasData(WorkflowInterface $workflow): bool {
     return (bool) $this->entityTypeManager
       ->getStorage('content_moderation_state')
       ->getQuery()
@@ -110,7 +83,7 @@ class ContentModeration extends WorkflowTypeBase implements ContentModerationInt
   /**
    * {@inheritdoc}
    */
-  public function workflowStateHasData(WorkflowInterface $workflow, StateInterface $state) {
+  public function workflowStateHasData(WorkflowInterface $workflow, StateInterface $state): bool {
     return (bool) $this->entityTypeManager
       ->getStorage('content_moderation_state')
       ->getQuery()
@@ -125,7 +98,7 @@ class ContentModeration extends WorkflowTypeBase implements ContentModerationInt
   /**
    * {@inheritdoc}
    */
-  public function getEntityTypes() {
+  public function getEntityTypes(): array {
     return array_keys($this->configuration['entity_types']);
   }
 
@@ -139,14 +112,14 @@ class ContentModeration extends WorkflowTypeBase implements ContentModerationInt
   /**
    * {@inheritdoc}
    */
-  public function appliesToEntityTypeAndBundle($entity_type_id, $bundle_id) {
+  public function appliesToEntityTypeAndBundle($entity_type_id, $bundle_id): bool {
     return in_array($bundle_id, $this->getBundlesForEntityType($entity_type_id), TRUE);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function removeEntityTypeAndBundle($entity_type_id, $bundle_id) {
+  public function removeEntityTypeAndBundle($entity_type_id, $bundle_id): void {
     if (!isset($this->configuration['entity_types'][$entity_type_id])) {
       return;
     }
@@ -165,7 +138,7 @@ class ContentModeration extends WorkflowTypeBase implements ContentModerationInt
   /**
    * {@inheritdoc}
    */
-  public function addEntityTypeAndBundle($entity_type_id, $bundle_id) {
+  public function addEntityTypeAndBundle($entity_type_id, $bundle_id): void {
     if (!$this->appliesToEntityTypeAndBundle($entity_type_id, $bundle_id)) {
       $this->configuration['entity_types'][$entity_type_id][] = $bundle_id;
       sort($this->configuration['entity_types'][$entity_type_id]);
@@ -176,7 +149,7 @@ class ContentModeration extends WorkflowTypeBase implements ContentModerationInt
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'states' => [
         'draft' => [

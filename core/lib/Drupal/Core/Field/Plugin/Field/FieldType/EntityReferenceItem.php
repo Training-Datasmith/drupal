@@ -151,14 +151,14 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName() {
+  public static function mainPropertyName(): string {
     return 'target_id';
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     $target_type = $field_definition->getSetting('target_type');
     try {
       $target_type_info = \Drupal::entityTypeManager()->getDefinition($target_type);
@@ -192,14 +192,12 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
       ];
     }
 
-    $schema = [
+    return [
       'columns' => $columns,
       'indexes' => [
         'target_id' => ['target_id'],
       ],
     ];
-
-    return $schema;
   }
 
   /**
@@ -220,7 +218,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     if (isset($values) && !is_array($values)) {
       // If either a scalar or an object was passed as the value for the item,
       // assign it to the 'entity' property since that works for both cases.
@@ -278,7 +276,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public function onChange($property_name, $notify = TRUE) {
+  public function onChange($property_name, $notify = TRUE): void {
     // Make sure that the target ID and the target property stay in sync.
     if ($property_name == 'entity') {
       $property = $this->get('entity');
@@ -294,7 +292,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     // Avoid loading the entity by first checking the 'target_id'.
     if ($this->target_id !== NULL) {
       return FALSE;
@@ -308,7 +306,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     if ($this->hasNewEntity()) {
       // Save the entity if it has not already been saved by some other code.
       if ($this->entity->isNew()) {
@@ -407,7 +405,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
     $element['target_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Type of item to reference'),
@@ -420,10 +418,8 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
     // Only allow the field to target entity types that have an ID key. This
     // is enforced in ::propertyDefinitions().
     $entity_type_manager = \Drupal::entityTypeManager();
-    $filter = function (string $entity_type_id) use ($entity_type_manager): bool {
-      return $entity_type_manager->getDefinition($entity_type_id)
-        ->hasKey('id');
-    };
+    $filter = (fn(string $entity_type_id): bool => $entity_type_manager->getDefinition($entity_type_id)
+      ->hasKey('id'));
     $options = \Drupal::service('entity_type.repository')->getEntityTypeLabels(TRUE);
     foreach ($options as $group_name => $group) {
       $element['target_type']['#options'][$group_name] = array_filter($group, $filter, ARRAY_FILTER_USE_KEY);
@@ -434,7 +430,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
     $field = $form_state->getFormObject()->getEntity();
 
     // Get all selection plugins for this entity type.
@@ -509,7 +505,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state of the (entire) configuration form.
    */
-  public static function fieldSettingsFormValidate(array $form, FormStateInterface $form_state) {
+  public static function fieldSettingsFormValidate(array $form, FormStateInterface $form_state): void {
     $field = $form_state->getFormObject()->getEntity();
     $handler = \Drupal::service('plugin.manager.entity_reference_selection')->getSelectionHandler($field);
     $handler->validateConfigurationForm($form, $form_state);
@@ -525,7 +521,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
    * @return bool
    *   TRUE if the item holds an unsaved entity.
    */
-  public function hasNewEntity() {
+  public function hasNewEntity(): bool {
     return !$this->isEmpty() && $this->target_id === NULL && $this->entity->isNew();
   }
 
@@ -582,7 +578,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public static function onDependencyRemoval(FieldDefinitionInterface $field_definition, array $dependencies) {
+  public static function onDependencyRemoval(FieldDefinitionInterface $field_definition, array $dependencies): int {
     $changed = parent::onDependencyRemoval($field_definition, $dependencies);
     $entity_type_manager = \Drupal::entityTypeManager();
     $target_entity_type = $entity_type_manager->getDefinition($field_definition->getFieldStorageDefinition()->getSetting('target_type'));
@@ -633,9 +629,8 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
     if ($bundles_changed) {
       $field_definition->setSetting('handler_settings', $handler_settings);
     }
-    $changed |= $bundles_changed;
 
-    return $changed;
+    return $changed | $bundles_changed;
   }
 
   /**
@@ -655,7 +650,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
   /**
    * {@inheritdoc}
    */
-  public function getSettableValues(?AccountInterface $account = NULL) {
+  public function getSettableValues(?AccountInterface $account = NULL): array {
     // Flatten options first, because "settable options" may contain group
     // arrays.
     $flatten_options = OptGroup::flattenOptions($this->getSettableOptions($account));
@@ -701,7 +696,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
    *
    * @see static::fieldSettingsAjaxProcess()
    */
-  public static function fieldSettingsAjaxProcessElement(&$element, $main_form) {
+  public static function fieldSettingsAjaxProcessElement(array &$element, array $main_form): void {
     // Elements are marked as TRUE ('#ajax' => TRUE,), so not empty.
     if (!empty($element['#ajax'])) {
       $element['#ajax'] = [
@@ -724,7 +719,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
    *
    * @see _entity_reference_field_settings_process()
    */
-  public static function formProcessMergeParent($element) {
+  public static function formProcessMergeParent(array $element): array {
     $parents = $element['#parents'];
     array_pop($parents);
     $element['#parents'] = $parents;
@@ -736,7 +731,7 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
    *
    * @see static::fieldSettingsForm()
    */
-  public static function settingsAjaxSubmit($form, FormStateInterface $form_state) {
+  public static function settingsAjaxSubmit($form, FormStateInterface $form_state): void {
     $form_storage = &$form_state->getStorage();
     unset($form_storage['default_value_widget']);
     $form_state->setRebuild();
@@ -744,16 +739,15 @@ class EntityReferenceItem extends EntityReferenceItemBase implements OptionsProv
 
   /**
    * {@inheritdoc}
+   * @return array{label: mixed, description: Drupal\Core\StringTranslation\TranslatableMarkup, field_storage_config: array{settings: array{target_type: mixed}}}[]
    */
-  public static function getPreconfiguredOptions() {
+  public static function getPreconfiguredOptions(): array {
     $options = [];
 
     // Add all the commonly referenced entity types as distinct pre-configured
     // options.
     $entity_types = \Drupal::entityTypeManager()->getDefinitions();
-    $common_references = array_filter($entity_types, function (EntityTypeInterface $entity_type) {
-      return $entity_type->isCommonReferenceTarget();
-    });
+    $common_references = array_filter($entity_types, fn(EntityTypeInterface $entity_type) => $entity_type->isCommonReferenceTarget());
 
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type */
     foreach ($common_references as $entity_type) {

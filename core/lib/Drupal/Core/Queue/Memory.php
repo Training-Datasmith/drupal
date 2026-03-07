@@ -15,33 +15,27 @@ class Memory implements QueueInterface {
 
   /**
    * The queue data.
-   *
-   * @var array
    */
-  protected $queue;
+  protected array $queue;
 
   /**
    * Counter for item ids.
-   *
-   * @var int
    */
-  protected $idSequence;
+  protected int $idSequence;
 
   /**
    * Constructs a Memory object.
-   *
-   * @param string $name
-   *   An arbitrary string. The name of the queue to work with.
    */
-  public function __construct($name) {
-    $this->queue = [];
-    $this->idSequence = 0;
+  public function __construct()
+  {
+      $this->queue = [];
+      $this->idSequence = 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createItem($data) {
+  public function createItem($data): int|float {
     $item = new \stdClass();
     $item->item_id = $this->idSequence++;
     $item->data = $data;
@@ -54,7 +48,7 @@ class Memory implements QueueInterface {
   /**
    * {@inheritdoc}
    */
-  public function numberOfItems() {
+  public function numberOfItems(): int {
     return count($this->queue);
   }
 
@@ -75,14 +69,14 @@ class Memory implements QueueInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteItem($item) {
+  public function deleteItem($item): void {
     unset($this->queue[$item->item_id]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function releaseItem($item) {
+  public function releaseItem($item): bool {
     if (isset($this->queue[$item->item_id]) && $this->queue[$item->item_id]->expire != 0) {
       $this->queue[$item->item_id]->expire = 0;
       return TRUE;
@@ -93,14 +87,14 @@ class Memory implements QueueInterface {
   /**
    * {@inheritdoc}
    */
-  public function createQueue() {
+  public function createQueue(): void {
     // Nothing needed here.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteQueue() {
+  public function deleteQueue(): void {
     $this->queue = [];
     $this->idSequence = 0;
   }

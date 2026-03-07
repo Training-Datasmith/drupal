@@ -16,20 +16,6 @@ use Symfony\Component\Routing\RouteCollection;
 class RouteSubscriber extends RouteSubscriberBase {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * The route collection for adding routes.
    *
    * @var \Symfony\Component\Routing\RouteCollection
@@ -60,14 +46,13 @@ class RouteSubscriber extends RouteSubscriberBase {
   /**
    * Constructs a RouteSubscriber object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
@@ -133,13 +118,13 @@ class RouteSubscriber extends RouteSubscriberBase {
     }
 
     $new_path = $route->getPath();
-    if (!str_starts_with($new_path, $this->basePath)) {
+    if (!str_starts_with((string) $new_path, $this->basePath)) {
       return;
     }
 
     $bc_route = clone $route;
     // Set the path to what it was in earlier versions of Drupal.
-    $bc_route->setPath($this->basePathBc . substr($new_path, strlen($this->basePath)));
+    $bc_route->setPath($this->basePathBc . substr((string) $new_path, strlen($this->basePath)));
     if ($bc_route->getPath() === $route->getPath()) {
       return;
     }
@@ -208,7 +193,7 @@ class RouteSubscriber extends RouteSubscriberBase {
     }
 
     if ($entity_id = $entity_type->id()) {
-      $route_names = array_merge($route_names, [
+      return array_merge($route_names, [
         // @see \Drupal\config_translation\Routing\RouteSubscriber::alterRoutes()
         "entity.field_config.config_translation_overview.{$entity_id}",
         "config_translation.item.add.entity.field_config.{$entity_id}_field_edit_form",

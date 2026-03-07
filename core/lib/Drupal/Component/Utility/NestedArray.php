@@ -144,7 +144,7 @@ class NestedArray {
    * @see NestedArray::unsetValue()
    * @see NestedArray::getValue()
    */
-  public static function setValue(array &$array, array $parents, $value, $force = FALSE) {
+  public static function setValue(array &$array, array $parents, $value, $force = FALSE): void {
     $ref = &$array;
     foreach ($parents as $parent) {
       // PHP auto-creates container arrays and NULL entries without error if
@@ -219,7 +219,7 @@ class NestedArray {
    * @see NestedArray::setValue()
    * @see NestedArray::getValue()
    */
-  public static function unsetValue(array &$array, array $parents, &$key_existed = NULL) {
+  public static function unsetValue(array &$array, array $parents, &$key_existed = NULL): void {
     $unset_key = array_pop($parents);
     $ref = &self::getValue($array, $parents, $key_existed);
     if ($key_existed && is_array($ref) && \array_key_exists($unset_key, $ref)) {
@@ -259,7 +259,7 @@ class NestedArray {
    *
    * @see NestedArray::getValue()
    */
-  public static function keyExists(array $array, array $parents) {
+  public static function keyExists(array $array, array $parents): ?bool {
     // Although this function is similar to PHP's array_key_exists(), its
     // arguments should be consistent with getValue().
     $key_exists = NULL;
@@ -324,7 +324,7 @@ class NestedArray {
    *
    * @see NestedArray::mergeDeep()
    */
-  public static function mergeDeepArray(array $arrays, $preserve_integer_keys = FALSE) {
+  public static function mergeDeepArray(array $arrays, $preserve_integer_keys = FALSE): array {
     $result = [];
     foreach ($arrays as $array) {
       foreach ($array as $key => $value) {
@@ -358,7 +358,7 @@ class NestedArray {
    * @return array
    *   The filtered array.
    */
-  public static function filter(array $array, ?callable $callable = NULL) {
+  public static function filter(array $array, ?callable $callable = NULL): array {
     $array = is_callable($callable) ? array_filter($array, $callable) : array_filter($array);
     foreach ($array as &$element) {
       if (is_array($element)) {

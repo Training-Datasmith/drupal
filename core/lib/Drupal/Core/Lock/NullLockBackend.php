@@ -22,14 +22,14 @@ class NullLockBackend implements LockBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function acquire($name, $timeout = 30.0) {
+  public function acquire($name, $timeout = 30.0): bool {
     return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function lockMayBeAvailable($name) {
+  public function lockMayBeAvailable($name): bool {
     return TRUE;
   }
 

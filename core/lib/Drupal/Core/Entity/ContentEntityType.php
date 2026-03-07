@@ -22,8 +22,8 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
     parent::__construct($definition);
 
     $this->handlers += [
-      'storage' => 'Drupal\Core\Entity\Sql\SqlContentEntityStorage',
-      'view_builder' => 'Drupal\Core\Entity\EntityViewBuilder',
+      'storage' => \Drupal\Core\Entity\Sql\SqlContentEntityStorage::class,
+      'view_builder' => \Drupal\Core\Entity\EntityViewBuilder::class,
     ];
 
     $this->revision_metadata_keys += [
@@ -34,7 +34,7 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
   /**
    * {@inheritdoc}
    */
-  public function getConfigDependencyKey() {
+  public function getConfigDependencyKey(): string {
     return 'content';
   }
 
@@ -72,7 +72,7 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
   /**
    * {@inheritdoc}
    */
-  public function hasRevisionMetadataKey($key) {
+  public function hasRevisionMetadataKey($key): bool {
     $keys = $this->getRevisionMetadataKeys();
     return isset($keys[$key]);
   }
@@ -80,7 +80,7 @@ class ContentEntityType extends EntityType implements ContentEntityTypeInterface
   /**
    * {@inheritdoc}
    */
-  public function setRevisionMetadataKey($key, $field_name) {
+  public function setRevisionMetadataKey($key, $field_name): static {
     if ($field_name !== NULL) {
       $this->revision_metadata_keys[$key] = $field_name;
     }

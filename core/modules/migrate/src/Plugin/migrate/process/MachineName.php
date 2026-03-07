@@ -63,13 +63,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 class MachineName extends ProcessPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The transliteration service.
-   *
-   * @var \Drupal\Component\Transliteration\TransliterationInterface
-   */
-  protected $transliteration;
-
-  /**
    * The regular expression pattern.
    *
    * @var string
@@ -93,10 +86,9 @@ class MachineName extends ProcessPluginBase implements ContainerFactoryPluginInt
     $plugin_id,
     $plugin_definition,
     #[Autowire(service: 'transliteration')]
-    TransliterationInterface $transliteration,
+    protected \Drupal\Component\Transliteration\TransliterationInterface $transliteration,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->transliteration = $transliteration;
 
     $this->replacePattern = $this->configuration['replace_pattern'] ?? '/[^a-z0-9_]+/';
     if (!is_string($this->replacePattern)) {
@@ -107,11 +99,11 @@ class MachineName extends ProcessPluginBase implements ContainerFactoryPluginInt
   /**
    * {@inheritdoc}
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): ?string {
     $new_value = $this->transliteration->transliterate($value, LanguageInterface::LANGCODE_DEFAULT, '_');
     $new_value = strtolower($new_value);
     $new_value = preg_replace($this->replacePattern, '_', $new_value);
-    return preg_replace('/_+/', '_', $new_value);
+    return preg_replace('/_+/', '_', (string) $new_value);
   }
 
 }

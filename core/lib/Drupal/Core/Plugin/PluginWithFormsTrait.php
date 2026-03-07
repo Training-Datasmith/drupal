@@ -12,10 +12,10 @@ trait PluginWithFormsTrait {
    */
   public function getFormClass($operation) {
     if (isset($this->getPluginDefinition()['forms'][$operation])) {
-      return $this->getPluginDefinition()['forms'][$operation];
+        return $this->getPluginDefinition()['forms'][$operation];
     }
-    elseif ($operation === 'configure' && $this instanceof PluginFormInterface) {
-      return static::class;
+    if ($operation === 'configure' && $this instanceof PluginFormInterface) {
+        return static::class;
     }
     return NULL;
   }
@@ -23,7 +23,7 @@ trait PluginWithFormsTrait {
   /**
    * Implements \Drupal\Core\Plugin\PluginWithFormsInterface::hasFormClass().
    */
-  public function hasFormClass($operation) {
+  public function hasFormClass($operation): bool {
     return !empty($this->getFormClass($operation));
   }
 

@@ -12,20 +12,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class UserRouteAlterSubscriber implements EventSubscriberInterface {
 
   /**
-   * The available serialization formats.
-   *
-   * @var array
-   */
-  protected $serializerFormats = [];
-
-  /**
    * UserRouteAlterSubscriber constructor.
    *
-   * @param array $serializer_formats
+   * @param array $serializerFormats
    *   The available serializer formats.
    */
-  public function __construct(array $serializer_formats) {
-    $this->serializerFormats = $serializer_formats;
+  public function __construct(protected array $serializerFormats)
+  {
   }
 
   /**
@@ -42,7 +35,7 @@ class UserRouteAlterSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The event to process.
    */
-  public function onRoutingAlterAddFormats(RouteBuildEvent $event) {
+  public function onRoutingAlterAddFormats(RouteBuildEvent $event): void {
     $route_names = [
       'user.login_status.http',
       'user.login.http',
@@ -52,7 +45,7 @@ class UserRouteAlterSubscriber implements EventSubscriberInterface {
     $routes = $event->getRouteCollection();
     foreach ($route_names as $route_name) {
       if (($route = $routes->get($route_name)) && $route->hasRequirement('_format')) {
-        $formats = explode('|', $route->getRequirement('_format'));
+        $formats = explode('|', (string) $route->getRequirement('_format'));
         $formats = array_unique(array_merge($formats, $this->serializerFormats));
         $route->setRequirement('_format', implode('|', $formats));
       }

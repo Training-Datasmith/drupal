@@ -19,13 +19,6 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 class EntityBundle extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The entity type bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
    * Creates a new EntityBundle instance.
    *
    * @param array $configuration
@@ -37,12 +30,11 @@ class EntityBundle extends ConditionPluginBase implements ContainerFactoryPlugin
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
   }
 
   /**
@@ -61,7 +53,7 @@ class EntityBundle extends ConditionPluginBase implements ContainerFactoryPlugin
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['bundles'] = array_filter($form_state->getValue('bundles'));
     parent::submitConfigurationForm($form, $form_state);
   }
@@ -95,13 +87,11 @@ class EntityBundle extends ConditionPluginBase implements ContainerFactoryPlugin
           '@last' => $last,
         ]);
       }
-      else {
-        return $this->t('@bundle_type is not @bundles or @last', [
-          '@bundle_type' => $this->pluginDefinition['label'],
-          '@bundles' => $bundles,
-          '@last' => $last,
-        ]);
-      }
+      return $this->t('@bundle_type is not @bundles or @last', [
+        '@bundle_type' => $this->pluginDefinition['label'],
+        '@bundles' => $bundles,
+        '@last' => $last,
+      ]);
     }
     $bundle = reset($this->configuration['bundles']);
 
@@ -111,12 +101,10 @@ class EntityBundle extends ConditionPluginBase implements ContainerFactoryPlugin
         '@bundle' => $bundle,
       ]);
     }
-    else {
-      return $this->t('@bundle_type is not @bundle', [
-        '@bundle_type' => $this->pluginDefinition['label'],
-        '@bundle' => $bundle,
-      ]);
-    }
+    return $this->t('@bundle_type is not @bundle', [
+      '@bundle_type' => $this->pluginDefinition['label'],
+      '@bundle' => $bundle,
+    ]);
   }
 
   /**

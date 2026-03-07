@@ -39,11 +39,11 @@ class UrlHelper {
    *
    * @ingroup php_wrappers
    */
-  public static function buildQuery(array $query, $parent = '') {
+  public static function buildQuery(array $query, ?string $parent = ''): string {
     $params = [];
 
     foreach ($query as $key => $value) {
-      $key = ($parent ? $parent . rawurlencode('[' . $key . ']') : rawurlencode($key));
+      $key = ($parent ? $parent . rawurlencode('[' . $key . ']') : rawurlencode((string) $key));
 
       // Recurse into children.
       if (is_array($value)) {
@@ -55,7 +55,7 @@ class UrlHelper {
       }
       else {
         // For better readability of paths in query strings, we decode slashes.
-        $params[] = $key . '=' . str_replace('%2F', '/', rawurlencode($value));
+        $params[] = $key . '=' . str_replace('%2F', '/', rawurlencode((string) $value));
       }
     }
 
@@ -126,13 +126,14 @@ class UrlHelper {
    * @return array
    *   An array containing query parameters.
    */
-  public static function filterQueryParameters(array $query, array $exclude = [], $parent = '') {
+  public static function filterQueryParameters(array $query, array $exclude = [], ?string $parent = ''): array {
     // If $exclude is empty, there is nothing to filter.
     if (empty($exclude)) {
-      return $query;
+        return $query;
     }
-    elseif (!$parent) {
-      $exclude = array_flip($exclude);
+    // If $exclude is empty, there is nothing to filter.
+    if (!$parent) {
+        $exclude = array_flip($exclude);
     }
 
     $params = [];
@@ -179,7 +180,7 @@ class UrlHelper {
    *
    * @ingroup php_wrappers
    */
-  public static function parse($url) {
+  public static function parse(string $url): array {
     $options = [
       'path' => NULL,
       'query' => [],
@@ -242,7 +243,7 @@ class UrlHelper {
    * @return string
    *   The encoded path.
    */
-  public static function encodePath($path) {
+  public static function encodePath($path): string {
     return str_replace('%2F', '/', rawurlencode($path));
   }
 
@@ -260,7 +261,7 @@ class UrlHelper {
    * @return bool
    *   TRUE or FALSE, where TRUE indicates an external path.
    */
-  public static function isExternal($path) {
+  public static function isExternal($path): bool {
     $colon_position = strpos($path, ':');
     // Some browsers treat \ as / so normalize to forward slashes.
     $path = str_replace('\\', '/', $path);
@@ -316,12 +317,10 @@ class UrlHelper {
       return (!isset($base_parts['path']) || $base_parts['path'] == '/')
         && ($url_parts['host'] == $base_parts['host']);
     }
-    else {
-      // When comparing base paths, we need a trailing slash to make sure a
-      // partial URL match isn't occurring. Since base_path() always returns
-      // with a trailing slash, we don't need to add the trailing slash here.
-      return ($url_parts['host'] == $base_parts['host'] && stripos($url_parts['path'], $base_parts['path']) === 0);
-    }
+    // When comparing base paths, we need a trailing slash to make sure a
+    // partial URL match isn't occurring. Since base_path() always returns
+    // with a trailing slash, we don't need to add the trailing slash here.
+    return ($url_parts['host'] == $base_parts['host'] && stripos($url_parts['path'], $base_parts['path']) === 0);
   }
 
   /**
@@ -333,7 +332,7 @@ class UrlHelper {
    * @return string
    *   Cleaned up and HTML-escaped version of $string.
    */
-  public static function filterBadProtocol($string) {
+  public static function filterBadProtocol($string): string {
     // Get the plain text representation of the attribute value (i.e. its
     // meaning).
     $string = Html::decodeEntities($string);
@@ -356,7 +355,7 @@ class UrlHelper {
    * @param array $protocols
    *   An array of protocols, for example http, https and irc.
    */
-  public static function setAllowedProtocols(array $protocols = []) {
+  public static function setAllowedProtocols(array $protocols = []): void {
     static::$allowedProtocols = $protocols;
   }
 
@@ -441,7 +440,7 @@ class UrlHelper {
    * @return bool
    *   TRUE if the URL is in a valid format, FALSE otherwise.
    */
-  public static function isValid($url, $absolute = FALSE) {
+  public static function isValid($url, $absolute = FALSE): bool {
     if ($absolute) {
       return (bool) preg_match("
         /^                                                      # Start at the beginning of the text
@@ -460,9 +459,7 @@ class UrlHelper {
         *)?
       $/xi", $url);
     }
-    else {
-      return (bool) preg_match("/^(?:[\w#!:\.\?\+=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})+$/i", $url);
-    }
+    return (bool) preg_match("/^(?:[\w#!:\.\?\+=&@$'~*,;\/\(\)\[\]\-]|%[0-9a-f]{2})+$/i", $url);
   }
 
 }

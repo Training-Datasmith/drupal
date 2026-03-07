@@ -44,7 +44,7 @@ class Email extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#size' => 60,
@@ -72,8 +72,8 @@ class Email extends FormElementBase {
    * Note that #maxlength and #required is validated by _form_validate()
    * already.
    */
-  public static function validateEmail(&$element, FormStateInterface $form_state, &$complete_form) {
-    $value = trim($element['#value']);
+  public static function validateEmail(array &$element, FormStateInterface $form_state, &$complete_form): void {
+    $value = trim((string) $element['#value']);
     $form_state->setValueForElement($element, $value);
 
     if ($value !== '' && !\Drupal::service('email.validator')->isValid($value)) {
@@ -92,7 +92,7 @@ class Email extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderEmail($element) {
+  public static function preRenderEmail(array $element): array {
     $element['#attributes']['type'] = 'email';
     Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
     static::setAttributes($element, ['form-email']);

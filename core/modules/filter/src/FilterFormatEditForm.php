@@ -15,7 +15,7 @@ class FilterFormatEditForm extends FilterFormatFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     if (!$this->entity->status()) {
       throw new NotFoundHttpException();
     }
@@ -29,7 +29,7 @@ class FilterFormatEditForm extends FilterFormatFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
     $this->messenger()->addStatus($this->t('The text format %format has been updated.', ['%format' => $this->entity->label()]));
     return $this->entity;

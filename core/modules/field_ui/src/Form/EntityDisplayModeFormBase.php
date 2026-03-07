@@ -27,17 +27,13 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
 
   /**
    * The display context. Either 'view' or 'form'.
-   *
-   * @var string
    */
   protected string $displayContext;
 
   /**
    * The entity type for which the display mode is being created or edited.
-   *
-   * @var string|null
    */
-  protected ?string $targetEntityTypeId;
+  protected ?string $targetEntityTypeId = null;
 
   /**
    * {@inheritdoc}
@@ -82,7 +78,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Name'),
@@ -107,7 +103,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
       '#default_value' => $this->entity->id(),
       '#field_prefix' => $this->entity->isNew() ? $this->entity->getTargetType() . '.' : '',
       '#machine_name' => [
-        'exists' => [$this, 'exists'],
+        'exists' => $this->exists(...),
         'replace_pattern' => '[^a-z0-9_.]+',
       ],
     ];
@@ -121,7 +117,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
       $bundles_by_entity[$bundle] = $bundles[$definition->id()][$bundle]['label'];
       // Determine default display modes.
       if (!$this->entity->isNew()) {
-        [, $display_mode_name] = explode('.', $this->entity->id());
+        [, $display_mode_name] = explode('.', (string) $this->entity->id());
         if ($this->getDisplayByContext($bundle, $display_mode_name)) {
           $defaults[$bundle] = $bundle;
         }
@@ -172,7 +168,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $this->messenger()
       ->addStatus($this->t('Saved the %label @entity-type.', [
         '%label' => $this->entity->label(),
@@ -182,7 +178,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
 
-    [, $display_mode_name] = explode('.', $form_state->getValue('id'));
+    [, $display_mode_name] = explode('.', (string) $form_state->getValue('id'));
     $target_entity_id = $this->targetEntityTypeId;
 
     foreach ($form_state->getValue('bundles_by_entity') as $bundle => $value) {
@@ -235,7 +231,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
    * @return \Drupal\Core\Entity\Display\EntityDisplayInterface
    *   An entity display.
    */
-  private function getEntityDisplay($entity_type_id, $bundle, $mode) {
+  private function getEntityDisplay(?string $entity_type_id, $bundle, string $mode) {
     return match($this->displayContext) {
       'view' => $this->entityDisplayRepository->getViewDisplay($entity_type_id, $bundle, $mode),
       'form' => $this->entityDisplayRepository->getFormDisplay($entity_type_id, $bundle, $mode),
@@ -253,7 +249,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
    * @return \Drupal\Core\Url
    *   A Url object for the overview route.
    */
-  private function getOverviewUrl($mode, $bundle): Url {
+  private function getOverviewUrl(string $mode, $bundle): Url {
     $entity_type = $this->entityTypeManager->getDefinition($this->targetEntityTypeId);
     return match($this->displayContext) {
       'view' => Url::fromRoute('entity.entity_view_display.' . $this->targetEntityTypeId . '.view_mode', [
@@ -321,7 +317,7 @@ abstract class EntityDisplayModeFormBase extends EntityForm {
   protected function copyFormValuesToEntity(EntityInterface $entity, array $form, FormStateInterface $form_state): void {
     // Config schema dictates that the description value
     // cannot be empty string. So, if it is empty, make it NULL.
-    if ($form_state->hasValue('description') && trim($form_state->getValue('description')) === '') {
+    if ($form_state->hasValue('description') && trim((string) $form_state->getValue('description')) === '') {
       $form_state->setValue('description', NULL);
     }
     parent::copyFormValuesToEntity($entity, $form, $form_state);

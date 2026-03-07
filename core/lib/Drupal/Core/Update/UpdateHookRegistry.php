@@ -25,7 +25,7 @@ class UpdateHookRegistry {
    *
    * @var string[]
    */
-  protected $enabledModules;
+  protected array $enabledModules;
 
   /**
    * The system.schema key value storage.
@@ -45,7 +45,6 @@ class UpdateHookRegistry {
    *     equivalent.
    *   - 'future_version_string': The version that provides the future update.
    *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
    * @see module.api.php
    */
   protected KeyValueStoreInterface $equivalentUpdates;
@@ -116,14 +115,14 @@ class UpdateHookRegistry {
       foreach (preg_grep('/_\d+$/', $functions['user']) as $function) {
         // If this function is a module update function, add it to the list of
         // module updates.
-        if (preg_match(self::FUNC_NAME_REGEXP, $function, $matches)) {
+        if (preg_match(self::FUNC_NAME_REGEXP, (string) $function, $matches)) {
           $this->allAvailableSchemaVersions[$matches['module']][] = (int) $matches['version'];
         }
       }
       // Ensure that updates are applied in numerical order.
       array_walk(
         $this->allAvailableSchemaVersions,
-        static function (&$module_updates) {
+        static function (&$module_updates): void {
           sort($module_updates, SORT_NUMERIC);
         }
       );

@@ -83,7 +83,7 @@ final class PageActions extends TopBarItemBase implements ContainerFactoryPlugin
 
     // Filter actions to exclude featured ones from the main array.
     $page_actions['page_actions'] = array_filter($page_actions['page_actions'],
-      static fn ($action_route) =>!array_key_exists($action_route, $featured_page_actions),
+      static fn ($action_route): bool =>!array_key_exists($action_route, $featured_page_actions),
     ARRAY_FILTER_USE_KEY);
 
     $build += [
@@ -104,14 +104,14 @@ final class PageActions extends TopBarItemBase implements ContainerFactoryPlugin
    * @param array $page_actions
    *   The array of local tasks for the current page.
    *
-   * @return array|null
+   * @return mixed[]
    *   The featured local task definition if available. NULL otherwise.
    */
-  protected function getFeaturedPageActions(array $page_actions): ?array {
+  protected function getFeaturedPageActions(array $page_actions): array {
     $featured_page_actions = [];
     $current_route_name = $this->routeMatch->getRouteName();
     $canonical_pattern = '/^entity\.(.+?)\.(canonical|latest_version)$/';
-    if (preg_match($canonical_pattern, $current_route_name, $matches)) {
+    if (preg_match($canonical_pattern, (string) $current_route_name, $matches)) {
       $entity_type = $matches[1];
       $edit_route = "entity.$entity_type.edit_form";
       // For core entities, the local task name matches the route name. If

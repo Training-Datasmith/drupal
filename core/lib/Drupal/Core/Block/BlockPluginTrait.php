@@ -76,7 +76,7 @@ trait BlockPluginTrait {
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration(array $configuration) {
+  public function setConfiguration(array $configuration): void {
     $this->configuration = NestedArray::mergeDeep(
       $this->baseConfigurationDefaults(),
       $this->defaultConfiguration(),
@@ -90,7 +90,7 @@ trait BlockPluginTrait {
    * @return array
    *   An associative array with the default configuration.
    */
-  protected function baseConfigurationDefaults() {
+  protected function baseConfigurationDefaults(): array {
     return [
       'id' => $this->getPluginId(),
       'label' => '',
@@ -102,21 +102,21 @@ trait BlockPluginTrait {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setConfigurationValue($key, $value) {
+  public function setConfigurationValue($key, $value): void {
     $this->configuration[$key] = $value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     return [];
   }
 
@@ -158,7 +158,7 @@ trait BlockPluginTrait {
    *
    * @see \Drupal\Core\Block\BlockBase::blockForm()
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $definition = $this->getPluginDefinition();
     $form['provider'] = [
       '#type' => 'value',
@@ -192,7 +192,7 @@ trait BlockPluginTrait {
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     return [];
   }
 
@@ -204,7 +204,7 @@ trait BlockPluginTrait {
    *
    * @see \Drupal\Core\Block\BlockBase::blockValidate()
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Remove the admin_label form item element value so it will not persist.
     $form_state->unsetValue('admin_label');
 
@@ -225,7 +225,7 @@ trait BlockPluginTrait {
    *
    * @see \Drupal\Core\Block\BlockBase::blockSubmit()
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Process the block's submission handling if no errors occurred only.
     if (!$form_state->getErrors()) {
       $this->configuration['label'] = $form_state->getValue('label');
@@ -244,17 +244,17 @@ trait BlockPluginTrait {
   /**
    * {@inheritdoc}
    */
-  public function getMachineNameSuggestion() {
+  public function getMachineNameSuggestion(): string|array|null {
     $definition = $this->getPluginDefinition();
     $admin_label = $definition['admin_label'];
 
     $transliterated = $this->transliteration()->transliterate($admin_label, LanguageInterface::LANGCODE_DEFAULT, '_');
-    $transliterated = mb_strtolower($transliterated);
+    $transliterated = mb_strtolower((string) $transliterated);
 
     $transliterated = preg_replace('@[^a-z0-9_.]+@', '', $transliterated);
     // Furthermore remove any characters that are not alphanumerical from the
     // beginning and end of the transliterated string.
-    $transliterated = preg_replace('@^([^a-z0-9]+)|([^a-z0-9]+)$@', '', $transliterated);
+    $transliterated = preg_replace('@^([^a-z0-9]+)|([^a-z0-9]+)$@', '', (string) $transliterated);
 
     return $transliterated;
   }
@@ -285,7 +285,7 @@ trait BlockPluginTrait {
    * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
    *   The transliteration service.
    */
-  public function setTransliteration(TransliterationInterface $transliteration) {
+  public function setTransliteration(TransliterationInterface $transliteration): void {
     $this->transliteration = $transliteration;
   }
 

@@ -46,34 +46,6 @@ class EntityRow extends RowPluginBase {
   protected $entityType;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository service.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new EntityRow object.
    *
    * @param array $configuration
@@ -82,28 +54,23 @@ class EntityRow extends RowPluginBase {
    *   The plugin ID for the plugin instance.
    * @param array $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager, ?EntityRepositoryInterface $entity_repository = NULL, ?EntityDisplayRepositoryInterface $entity_display_repository = NULL) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected ?\Drupal\Core\Entity\EntityRepositoryInterface $entityRepository = NULL, protected ?\Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->languageManager = $language_manager;
-    $this->entityRepository = $entity_repository;
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->entityTypeId = $this->definition['entity_type'];
@@ -159,7 +126,7 @@ class EntityRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['view_mode'] = [
@@ -175,18 +142,13 @@ class EntityRow extends RowPluginBase {
    */
   public function summaryTitle() {
     $options = $this->entityDisplayRepository->getViewModeOptions($this->entityTypeId);
-    if (isset($options[$this->options['view_mode']])) {
-      return $options[$this->options['view_mode']];
-    }
-    else {
-      return $this->t('No view mode selected');
-    }
+    return $options[$this->options['view_mode']] ?? $this->t('No view mode selected');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     parent::query();
     $relationship_table = NULL;
     if (isset($this->options['relationship'], $this->view->relationship[$this->options['relationship']])) {
@@ -198,7 +160,7 @@ class EntityRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender($result) {
+  public function preRender($result): void {
     parent::preRender($result);
     if ($result) {
       $this->getEntityTranslationRenderer()->preRenderByRelationship($result, $this->options['relationship'] ?? 'none');

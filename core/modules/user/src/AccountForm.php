@@ -26,33 +26,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class AccountForm extends ContentEntityForm implements TrustedCallbackInterface {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new AccountForm object.
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle service.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, ?TimeInterface $time = NULL) {
+  public function __construct(EntityRepositoryInterface $entity_repository, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL, ?TimeInterface $time = NULL) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
-    $this->languageManager = $language_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity.repository'),
       $container->get('language_manager'),
@@ -64,7 +56,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     /** @var \Drupal\user\UserInterface $account */
     $account = $this->entity;
     $user = $this->currentUser();
@@ -206,7 +198,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
 
     $roles = Role::loadMultiple();
     unset($roles[RoleInterface::ANONYMOUS_ID]);
-    $roles = array_map(fn(RoleInterface $role) => Html::escape($role->label()), $roles);
+    $roles = array_map(fn(RoleInterface $role): string => Html::escape($role->label()), $roles);
 
     $form['account']['roles'] = [
       '#type' => 'checkboxes',
@@ -256,7 +248,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
       // This is used to explain that user preferred language and entity
       // language are synchronized. It can be removed if a different behavior is
       // desired.
-      '#pre_render' => ['user_langcode' => [$this, 'alterPreferredLangcodeDescription']],
+      '#pre_render' => ['user_langcode' => $this->alterPreferredLangcodeDescription(...)],
     ];
 
     // Only show the account setting for Administration pages language to users
@@ -353,14 +345,14 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function syncUserLangcode($entity_type_id, UserInterface $user, array &$form, FormStateInterface &$form_state) {
+  public function syncUserLangcode($entity_type_id, UserInterface $user, array &$form, FormStateInterface &$form_state): void {
     $user->getUntranslated()->langcode = $user->preferred_langcode;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     // Change the roles array to a list of enabled roles.
     // @todo Alter the form state as the form values are directly extracted and
     //   set on the field, which throws an exception as the list requires
@@ -382,7 +374,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
     }
 
     // Set existing password if set in the form state.
-    $current_pass = trim($form_state->getValue('current_pass', ''));
+    $current_pass = trim((string) $form_state->getValue('current_pass', ''));
     if (strlen($current_pass) > 0) {
       $account->setExistingPassword($current_pass);
     }
@@ -397,7 +389,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
   /**
    * {@inheritdoc}
    */
-  protected function getEditedFieldNames(FormStateInterface $form_state) {
+  protected function getEditedFieldNames(FormStateInterface $form_state): array {
     return array_merge([
       'name',
       'pass',
@@ -428,7 +420,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
       'preferred_admin_langcode',
     ];
     foreach ($violations->getByFields($field_names) as $violation) {
-      [$field_name] = explode('.', $violation->getPropertyPath(), 2);
+      [$field_name] = explode('.', (string) $violation->getPropertyPath(), 2);
       $form_state->setErrorByName($field_name, $violation->getMessage());
     }
     parent::flagViolations($violations, $form, $form_state);
@@ -437,7 +429,7 @@ abstract class AccountForm extends ContentEntityForm implements TrustedCallbackI
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     $user = $this->getEntity();

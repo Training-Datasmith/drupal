@@ -35,20 +35,6 @@ class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInte
   const PRIORITY_POLITE = 'polite';
 
   /**
-   * The text to be announced.
-   *
-   * @var string
-   */
-  protected $text;
-
-  /**
-   * The priority that will be used for the announcement.
-   *
-   * @var string
-   */
-  protected $priority;
-
-  /**
    * Constructs an AnnounceCommand object.
    *
    * @param string $text
@@ -59,15 +45,23 @@ class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInte
    *   client and therefore the JavaScript Drupal.announce() default of 'polite'
    *   will be used for the message.
    */
-  public function __construct($text, $priority = NULL) {
-    $this->text = $text;
-    $this->priority = $priority;
+  public function __construct(
+      /**
+       * The text to be announced.
+       */
+      protected $text,
+      /**
+       * The priority that will be used for the announcement.
+       */
+      protected $priority = NULL
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $render = [
       'command' => 'announce',
       'text' => $this->text,
@@ -81,7 +75,7 @@ class AnnounceCommand implements CommandInterface, CommandWithAttachedAssetsInte
   /**
    * {@inheritdoc}
    */
-  public function getAttachedAssets() {
+  public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets {
     $assets = new AttachedAssets();
     $assets->setLibraries(['core/drupal.announce']);
     return $assets;

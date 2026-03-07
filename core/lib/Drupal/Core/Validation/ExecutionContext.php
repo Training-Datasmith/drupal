@@ -50,12 +50,12 @@ class ExecutionContext implements ExecutionContextInterface {
   /**
    * The currently validated group.
    */
-  protected ?string $group;
+  protected ?string $group = null;
 
   /**
    * The currently validated constraint.
    */
-  protected ?Constraint $constraint;
+  protected ?Constraint $constraint = null;
 
   /**
    * Stores which objects have been validated in which group.
@@ -182,7 +182,7 @@ class ExecutionContext implements ExecutionContextInterface {
    * {@inheritdoc}
    */
   public function getClassName(): ?string {
-    return get_class($this->object);
+    return $this->object !== null ? $this->object::class : self::class;
   }
 
   /**

@@ -16,20 +16,13 @@ use Symfony\Component\Routing\RouteCollection;
 class RouteSubscriber extends RouteSubscriberBase {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a RouteSubscriber object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -58,7 +51,7 @@ class RouteSubscriber extends RouteSubscriberBase {
         ];
         // If the entity type has no bundles and it doesn't use {bundle} in its
         // admin path, use the entity type.
-        if (!str_contains($path, '{bundle}')) {
+        if (!str_contains((string) $path, '{bundle}')) {
           $defaults['bundle'] = !$entity_type->hasKey('bundle') ? $entity_type_id : '';
         }
 
@@ -120,7 +113,7 @@ class RouteSubscriber extends RouteSubscriberBase {
         $route = new Route(
           "$path/fields/add-field/{selected_field_type}/{display_as_group}",
           [
-            '_form' => '\Drupal\field_ui\Form\FieldStorageAddForm',
+            '_form' => \Drupal\field_ui\Form\FieldStorageAddForm::class,
             '_title' => 'Add Sub-field',
           ] + $defaults,
           ['_permission' => 'administer ' . $entity_type_id . ' fields'],
@@ -142,7 +135,7 @@ class RouteSubscriber extends RouteSubscriberBase {
         $route = new Route(
           "$path/fields/reuse",
           [
-            '_form' => '\Drupal\field_ui\Form\FieldStorageReuseForm',
+            '_form' => \Drupal\field_ui\Form\FieldStorageReuseForm::class,
             '_title' => 'Re-use an existing field',
           ] + $defaults,
           ['_field_ui_field_reuse_access' => 'administer ' . $entity_type_id . ' fields'],

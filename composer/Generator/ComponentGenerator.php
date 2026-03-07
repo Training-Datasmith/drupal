@@ -25,10 +25,8 @@ class ComponentGenerator {
 
   /**
    * Full path to the component directory.
-   *
-   * @var string
    */
-  protected $componentBaseDir;
+  protected string $componentBaseDir;
 
   /**
    * Data from drupal/drupal's composer.json file.
@@ -162,7 +160,7 @@ class ComponentGenerator {
       }
       // The package wasn't in the lock file, which means we need to tell the
       // user. But there are some packages we want to exclude from this list.
-      elseif ($package_name !== 'php' && !str_contains($package_name, 'drupal/core-')) {
+      elseif ($package_name !== 'php' && !str_contains((string) $package_name, 'drupal/core-')) {
         $not_in_core[$package_name] = $package_name;
       }
 
@@ -174,7 +172,7 @@ class ComponentGenerator {
 
       // Reconcile dependencies on other Drupal components, so we can set the
       // constraint to our current version.
-      if (str_contains($package_name, 'drupal/core-')) {
+      if (str_contains((string) $package_name, 'drupal/core-')) {
         if ($stability === 'stable') {
           // Set the constraint to ^maj.min.
           $package_data['require'][$package_name] = SemanticVersion::majorMinorConstraint(\Drupal::VERSION);

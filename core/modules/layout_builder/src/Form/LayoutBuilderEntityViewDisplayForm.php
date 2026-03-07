@@ -43,7 +43,7 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     // Remove the Layout Builder field from the list.
@@ -199,7 +199,7 @@ class LayoutBuilderEntityViewDisplayForm extends EntityViewDisplayEditForm {
   /**
    * Entity builder for layout options on the entity view display form.
    */
-  public function entityFormEntityBuild($entity_type_id, LayoutEntityDisplayInterface $display, &$form, FormStateInterface &$form_state) {
+  public function entityFormEntityBuild($entity_type_id, LayoutEntityDisplayInterface $display, &$form, FormStateInterface &$form_state): void {
     $set_enabled = (bool) $form_state->getValue(['layout', 'enabled'], FALSE);
     $already_enabled = $display->isLayoutBuilderEnabled();
 

@@ -17,25 +17,11 @@ use Symfony\Component\Routing\RouteCollection;
 class ResourceRoutes implements EventSubscriberInterface {
 
   /**
-   * The plugin manager for REST plugins.
-   *
-   * @var \Drupal\rest\Plugin\Type\ResourcePluginManager
-   */
-  protected $manager;
-
-  /**
    * The REST resource config storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
    */
   protected $resourceConfigStorage;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
 
   /**
    * Constructs a RouteSubscriber object.
@@ -47,10 +33,8 @@ class ResourceRoutes implements EventSubscriberInterface {
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(ResourcePluginManager $manager, EntityTypeManagerInterface $entity_type_manager, LoggerInterface $logger) {
-    $this->manager = $manager;
+  public function __construct(protected \Drupal\rest\Plugin\Type\ResourcePluginManager $manager, EntityTypeManagerInterface $entity_type_manager, protected \Psr\Log\LoggerInterface $logger) {
     $this->resourceConfigStorage = $entity_type_manager->getStorage('rest_resource_config');
-    $this->logger = $logger;
   }
 
   /**
@@ -59,7 +43,7 @@ class ResourceRoutes implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The route build event.
    */
-  public function onDynamicRouteEvent(RouteBuildEvent $event) {
+  public function onDynamicRouteEvent(RouteBuildEvent $event): void {
     // Iterate over all enabled REST resource config entities.
     /** @var \Drupal\rest\RestResourceConfigInterface[] $resource_configs */
     $resource_configs = $this->resourceConfigStorage->loadMultiple();
@@ -83,7 +67,7 @@ class ResourceRoutes implements EventSubscriberInterface {
    * @return \Symfony\Component\Routing\RouteCollection
    *   The route collection.
    */
-  protected function getRoutesForResourceConfig(RestResourceConfigInterface $rest_resource_config) {
+  protected function getRoutesForResourceConfig(RestResourceConfigInterface $rest_resource_config): \Symfony\Component\Routing\RouteCollection {
     $plugin = $rest_resource_config->getResourcePlugin();
     $collection = new RouteCollection();
 

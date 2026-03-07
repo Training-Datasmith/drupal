@@ -62,7 +62,7 @@ class LoggerChannelFactory implements LoggerChannelFactoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function addLogger(LoggerInterface $logger, $priority = 0) {
+  public function addLogger(LoggerInterface $logger, $priority = 0): void {
     // Store it so we can pass it to potential new logger instances.
     $this->loggers[$priority][] = $logger;
     // Add the logger to already instantiated channels.

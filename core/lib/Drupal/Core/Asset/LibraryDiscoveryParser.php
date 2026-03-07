@@ -25,58 +25,7 @@ use Drupal\Core\Plugin\Component;
 class LibraryDiscoveryParser {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
-   * The app root.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
-   * The stream wrapper manager.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
-
-  /**
-   * The libraries directory file finder.
-   *
-   * @var \Drupal\Core\Asset\LibrariesDirectoryFileFinder
-   */
-  protected $librariesDirectoryFileFinder;
-
-  /**
-   * The component plugin manager.
-   *
-   * @var \Drupal\Core\Theme\ComponentPluginManager
-   */
-  protected $componentPluginManager;
-
-  /**
-   * The extension path resolver.
-   *
-   * @var \Drupal\Core\Extension\ExtensionPathResolver
-   */
-  protected $extensionPathResolver;
-
-  /**
    * The file cache.
-   *
-   * @var \Drupal\Component\FileCache\FileCacheInterface
    */
   protected FileCacheInterface $fileCache;
 
@@ -85,28 +34,24 @@ class LibraryDiscoveryParser {
    *
    * @param string $root
    *   The app root.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager
+   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
    *   The stream wrapper manager.
-   * @param \Drupal\Core\Asset\LibrariesDirectoryFileFinder $libraries_directory_file_finder
+   * @param \Drupal\Core\Asset\LibrariesDirectoryFileFinder $librariesDirectoryFileFinder
    *   The libraries directory file finder.
-   * @param \Drupal\Core\Extension\ExtensionPathResolver $extension_path_resolver
+   * @param \Drupal\Core\Extension\ExtensionPathResolver $extensionPathResolver
    *   The extension path resolver.
-   * @param \Drupal\Core\Theme\ComponentPluginManager $component_plugin_manager
+   * @param \Drupal\Core\Theme\ComponentPluginManager $componentPluginManager
    *   The component plugin manager.
    */
-  public function __construct($root, ModuleHandlerInterface $module_handler, ThemeManagerInterface $theme_manager, StreamWrapperManagerInterface $stream_wrapper_manager, LibrariesDirectoryFileFinder $libraries_directory_file_finder, ExtensionPathResolver $extension_path_resolver, ComponentPluginManager $component_plugin_manager) {
-    $this->root = $root;
-    $this->moduleHandler = $module_handler;
-    $this->themeManager = $theme_manager;
-    $this->streamWrapperManager = $stream_wrapper_manager;
-    $this->librariesDirectoryFileFinder = $libraries_directory_file_finder;
-    $this->extensionPathResolver = $extension_path_resolver;
+  public function __construct(/**
+   * The app root.
+   */
+  protected $root, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager, protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager, protected \Drupal\Core\Asset\LibrariesDirectoryFileFinder $librariesDirectoryFileFinder, protected \Drupal\Core\Extension\ExtensionPathResolver $extensionPathResolver, protected \Drupal\Core\Theme\ComponentPluginManager $componentPluginManager) {
     $this->fileCache = FileCacheFactory::get('library_parser');
-    $this->componentPluginManager = $component_plugin_manager;
   }
 
   /**
@@ -197,7 +142,7 @@ class LibraryDiscoveryParser {
           assert(static::validateCssLibrary($library[$type]) < 2, 'CSS files should be specified as key/value pairs, where the values are configuration options. See https://www.drupal.org/node/2274843.');
           assert(static::validateCssLibrary($library[$type]) === 0, 'CSS must be nested under a category. See https://www.drupal.org/node/2274843.');
           foreach ($library[$type] as $category => $files) {
-            $category_weight = 'CSS_' . strtoupper($category);
+            $category_weight = 'CSS_' . strtoupper((string) $category);
             assert(defined($category_weight), 'Invalid CSS category: ' . $category . '. See https://www.drupal.org/node/2274843.');
             foreach ($files as $source => $options) {
               if (!isset($options['weight'])) {
@@ -230,7 +175,7 @@ class LibraryDiscoveryParser {
             // Component stylesheets should be added in the "theme" aggregate
             // group to load them alongside the theme.
             // @see \Drupal\Core\Plugin\Component::getLibraryName
-            $options['group'] = ($extension_type == 'theme' || str_starts_with($id, 'components.')) ? CSS_AGGREGATE_THEME : CSS_AGGREGATE_DEFAULT;
+            $options['group'] = ($extension_type == 'theme' || str_starts_with((string) $id, 'components.')) ? CSS_AGGREGATE_THEME : CSS_AGGREGATE_DEFAULT;
           }
           // By default, all library assets are files.
           if (!isset($options['type'])) {
@@ -244,7 +189,7 @@ class LibraryDiscoveryParser {
             if ($source[0] === '/') {
               // An absolute path maps to DRUPAL_ROOT / base_path().
               if ($source[1] !== '/') {
-                $source = substr($source, 1);
+                $source = substr((string) $source, 1);
                 // Non core provided libraries can be in multiple locations.
                 if (str_starts_with($source, 'libraries/')) {
                   $path_to_source = $this->librariesDirectoryFileFinder->find(substr($source, 10));
@@ -287,7 +232,7 @@ class LibraryDiscoveryParser {
 
           // Set the 'minified' flag on JS file assets, default to FALSE.
           if ($type == 'js' && $options['type'] == 'file') {
-            $options['minified'] = $options['minified'] ?? FALSE;
+            $options['minified'] ??= FALSE;
           }
 
           $library[$type][] = $options;
@@ -382,7 +327,7 @@ class LibraryDiscoveryParser {
    * @throws \Drupal\Core\Asset\Exception\InvalidLibraryFileException
    *   Thrown when a parser exception got thrown.
    */
-  protected function parseLibraryInfo($extension, $path) {
+  protected function parseLibraryInfo(string $extension, string $path) {
     $libraries = [];
 
     $library_file = $path . '/' . $extension . '.libraries.yml';
@@ -487,7 +432,7 @@ class LibraryDiscoveryParser {
     $components = $this->componentPluginManager->getAllComponents();
     $libraries = array_reduce(
       $components,
-      static function (array $libraries, Component $component) {
+      static function (array $libraries, Component $component): array {
         $library = $component->library;
         if (empty($library)) {
           return $libraries;
@@ -500,7 +445,7 @@ class LibraryDiscoveryParser {
     );
     $libraries['components.all'] = [
       'dependencies' => array_map(
-        static fn(Component $component) => $component->getLibraryName(),
+        static fn(Component $component): string => $component->getLibraryName(),
         $components
       ),
     ];
@@ -518,7 +463,7 @@ class LibraryDiscoveryParser {
    * @return array
    *   The modified libraries definitions.
    */
-  protected function applyLibrariesOverride($libraries, $extension) {
+  protected function applyLibrariesOverride(array $libraries, $extension): array {
     $active_theme = $this->themeManager->getActiveTheme();
     // ActiveTheme::getLibrariesOverride() returns libraries-overrides for the
     // current theme as well as all its base themes.
@@ -558,14 +503,14 @@ class LibraryDiscoveryParser {
                 throw new InvalidLibrariesOverrideSpecificationException(sprintf('Library asset %s is not correctly specified. It should be in the form "extension/library_name/sub_key/path/to/asset.js".', "$extension/$library_name/$sub_key"));
               }
               if ($sub_key === 'drupalSettings') {
-                // drupalSettings may not be overridden.
-                throw new InvalidLibrariesOverrideSpecificationException(sprintf('drupalSettings may not be overridden in libraries-override. Trying to override %s. Use hook_library_info_alter() instead.', "$extension/$library_name/$sub_key"));
+                  // drupalSettings may not be overridden.
+                  throw new InvalidLibrariesOverrideSpecificationException(sprintf('drupalSettings may not be overridden in libraries-override. Trying to override %s. Use hook_library_info_alter() instead.', "$extension/$library_name/$sub_key"));
               }
-              elseif ($sub_key === 'css') {
-                // SMACSS category should be incorporated into the asset name.
-                foreach ($value as $category => $overrides) {
-                  $this->setOverrideValue($libraries[$library_name], [$sub_key, $category], $overrides, $theme_path);
-                }
+              if ($sub_key === 'css') {
+                  // SMACSS category should be incorporated into the asset name.
+                  foreach ($value as $category => $overrides) {
+                    $this->setOverrideValue($libraries[$library_name], [$sub_key, $category], $overrides, $theme_path);
+                  }
               }
               else {
                 $this->setOverrideValue($libraries[$library_name], [$sub_key], $value, $theme_path);
@@ -582,8 +527,8 @@ class LibraryDiscoveryParser {
   /**
    * Determines if the supplied string is a valid URI.
    */
-  protected function isValidUri($string) {
-    return count(explode('://', $string)) === 2;
+  protected function isValidUri($string): bool {
+    return count(explode('://', (string) $string)) === 2;
   }
 
   /**
@@ -634,7 +579,7 @@ class LibraryDiscoveryParser {
    * @return string
    *   A fully resolved theme asset path relative to the Drupal directory.
    */
-  protected function resolveThemeAssetPath($theme_path, $overriding_asset) {
+  protected function resolveThemeAssetPath(string $theme_path, string $overriding_asset): string {
     if ($overriding_asset[0] !== '/' && !$this->isValidUri($overriding_asset)) {
       // The destination is not an absolute path and it's not a URI (e.g.
       // public://generated_js/example.js or https://example.com/js/my_js.js),
@@ -656,7 +601,7 @@ class LibraryDiscoveryParser {
    *     - 1 if the library definition has improper nesting
    *     - 2 if the library definition specifies files as an array
    */
-  public static function validateCssLibrary($library) {
+  public static function validateCssLibrary($library): int {
     $categories = [];
     // Verify options first and return early if invalid.
     foreach ($library as $category => $files) {

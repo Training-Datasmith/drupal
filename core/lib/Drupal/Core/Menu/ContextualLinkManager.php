@@ -39,7 +39,7 @@ class ContextualLinkManager extends DefaultPluginManager implements ContextualLi
     // The weight of the link.
     'weight' => NULL,
     // Default class for contextual link implementations.
-    'class' => '\Drupal\Core\Menu\ContextualLinkDefault',
+    'class' => \Drupal\Core\Menu\ContextualLinkDefault::class,
     // The plugin id. Set by the plugin system based on the top-level YAML key.
     'id' => '',
   ];
@@ -52,32 +52,11 @@ class ContextualLinkManager extends DefaultPluginManager implements ContextualLi
   protected $controllerResolver;
 
   /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected LanguageManagerInterface $languageManager;
 
   /**
    * A static cache of all the contextual link plugins by group name.
@@ -95,25 +74,25 @@ class ContextualLinkManager extends DefaultPluginManager implements ContextualLi
    *   The module handler.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    */
-  public function __construct(ControllerResolverInterface $controller_resolver, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend, LanguageManagerInterface $language_manager, AccessManagerInterface $access_manager, AccountInterface $account, RequestStack $request_stack) {
-    $this->factory = new ContainerFactory($this, '\Drupal\Core\Menu\ContextualLinkInterface');
+  public function __construct(ControllerResolverInterface $controller_resolver, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend, /**
+   * The language manager.
+   */
+  protected LanguageManagerInterface $languageManager, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $account, RequestStack $request_stack) {
+    $this->factory = new ContainerFactory($this, \Drupal\Core\Menu\ContextualLinkInterface::class);
     $this->controllerResolver = $controller_resolver;
-    $this->accessManager = $access_manager;
-    $this->account = $account;
     $this->moduleHandler = $module_handler;
     $this->requestStack = $request_stack;
-    $this->languageManager = $language_manager;
     $this->alterInfo('contextual_links_plugins');
-    $this->setCacheBackend($cache_backend, 'contextual_links_plugins:' . $language_manager->getCurrentLanguage()->getId());
+    $this->setCacheBackend($cache_backend, 'contextual_links_plugins:' . $this->languageManager->getCurrentLanguage()->getId());
   }
 
   /**
@@ -131,7 +110,7 @@ class ContextualLinkManager extends DefaultPluginManager implements ContextualLi
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     parent::processDefinition($definition, $plugin_id);
 
     // If there is no route name, this is a broken definition.
@@ -202,7 +181,7 @@ class ContextualLinkManager extends DefaultPluginManager implements ContextualLi
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     $cids = [];
     foreach ($this->languageManager->getLanguages() as $language) {
       $cids[] = 'contextual_links_plugins:' . $language->getId();

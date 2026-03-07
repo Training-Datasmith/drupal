@@ -30,12 +30,7 @@ class ViewsConfigUpdater {
    * ViewsConfigUpdater constructor.
    */
   public function __construct(
-    private readonly EntityTypeManagerInterface $entityTypeManager,
-    private readonly EntityFieldManagerInterface $entityFieldManager,
-    private readonly TypedConfigManagerInterface $typedConfigManager,
     private readonly ViewsData $viewsData,
-    #[Autowire(service: 'plugin.manager.field.formatter')]
-    private readonly PluginManagerInterface $formatterPluginManager,
     protected EntityDisplayRepositoryInterface $entityDisplayRepository,
   ) {
   }
@@ -67,24 +62,23 @@ class ViewsConfigUpdater {
    *   Whether the view was updated.
    */
   public function updateAll(ViewEntityInterface $view) {
-    return $this->processDisplayHandlers($view, FALSE, function (&$handler, $handler_type, $key, $display_id) use ($view) {
-      $changed = FALSE;
+    return $this->processDisplayHandlers($view, FALSE, function (&$handler, $handler_type, $key, $display_id) use ($view): bool {
       if ($this->processEntityArgumentUpdate($view)) {
-        $changed = TRUE;
+        return TRUE;
       }
       if ($this->processRememberRolesUpdate($handler, $handler_type)) {
-        $changed = TRUE;
+        return TRUE;
       }
       if ($this->processTableCssClassUpdate($view)) {
-        $changed = TRUE;
+        return TRUE;
       }
       if ($this->processBlockContentListingEmptyUpdate($view)) {
-        $changed = TRUE;
+        return TRUE;
       }
       if ($this->processRssViewModeUpdate($view)) {
-        $changed = TRUE;
+        return TRUE;
       }
-      return $changed;
+      return FALSE;
     });
   }
 
@@ -159,9 +153,7 @@ class ViewsConfigUpdater {
    *   that need to be converted from 'numeric' to 'entity_target_id'.
    */
   public function needsEntityArgumentUpdate(ViewEntityInterface $view): bool {
-    return $this->processDisplayHandlers($view, TRUE, function (&$handler, $handler_type) use ($view) {
-      return $this->processEntityArgumentUpdate($view);
-    });
+    return $this->processDisplayHandlers($view, TRUE, fn(&$handler, $handler_type) => $this->processEntityArgumentUpdate($view));
   }
 
   /**
@@ -224,9 +216,7 @@ class ViewsConfigUpdater {
    *   TRUE if view has fields with the format plural option.
    */
   public function needsFormatPluralUpdate(ViewEntityInterface $view): bool {
-    return $this->processDisplayHandlers($view, FALSE, function (&$handler, $handler_type) {
-      return $this->processFieldHandlerWithFormatPlural($handler, $handler_type);
-    });
+    return $this->processDisplayHandlers($view, FALSE, fn(&$handler, $handler_type) => $this->processFieldHandlerWithFormatPlural($handler, $handler_type));
   }
 
   /**
@@ -263,9 +253,7 @@ class ViewsConfigUpdater {
    *   TRUE if the view has any disabled roles.
    */
   public function needsRememberRolesUpdate(ViewEntityInterface $view): bool {
-    return $this->processDisplayHandlers($view, TRUE, function (&$handler, $handler_type) {
-      return $this->processRememberRolesUpdate($handler, $handler_type);
-    });
+    return $this->processDisplayHandlers($view, TRUE, fn(&$handler, $handler_type) => $this->processRememberRolesUpdate($handler, $handler_type));
   }
 
   /**
@@ -302,9 +290,7 @@ class ViewsConfigUpdater {
    *   a default table CSS class added.
    */
   public function needsTableCssClassUpdate(ViewEntityInterface $view): bool {
-    return $this->processDisplayHandlers($view, TRUE, function (&$handler, $handler_type) use ($view) {
-      return $this->processTableCssClassUpdate($view);
-    });
+    return $this->processDisplayHandlers($view, TRUE, fn(&$handler, $handler_type) => $this->processTableCssClassUpdate($view));
   }
 
   /**
@@ -355,9 +341,7 @@ class ViewsConfigUpdater {
    *   TRUE if the view has the plugin.
    */
   public function needsBlockContentListingEmptyUpdate(ViewEntityInterface $view): bool {
-    return $this->processDisplayHandlers($view, TRUE, function (&$handler, $handler_type) use ($view) {
-      return $this->processBlockContentListingEmptyUpdate($view);
-    });
+    return $this->processDisplayHandlers($view, TRUE, fn(&$handler, $handler_type) => $this->processBlockContentListingEmptyUpdate($view));
   }
 
   /**

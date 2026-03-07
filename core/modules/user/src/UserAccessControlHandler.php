@@ -111,7 +111,7 @@ class UserAccessControlHandler extends EntityAccessControlHandler {
     }
 
     // Flag to indicate if this user entity is the own user account.
-    $is_own_account = $items ? $items->getEntity()->id() == $account->id() : FALSE;
+    $is_own_account = $items && $items->getEntity()->id() == $account->id();
     switch ($field_definition->getName()) {
       case 'name':
         // Allow view access to anyone with access to the entity.
@@ -124,9 +124,7 @@ class UserAccessControlHandler extends EntityAccessControlHandler {
         if ($is_own_account && $account->hasPermission('change own username')) {
           return AccessResult::allowed()->cachePerPermissions()->cachePerUser();
         }
-        else {
-          return AccessResult::neutral();
-        }
+        return AccessResult::neutral();
 
       case 'mail':
         // Only check for the 'view user email addresses' permission and a view

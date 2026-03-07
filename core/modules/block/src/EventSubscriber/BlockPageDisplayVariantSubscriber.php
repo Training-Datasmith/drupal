@@ -19,7 +19,7 @@ class BlockPageDisplayVariantSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Render\PageDisplayVariantSelectionEvent $event
    *   The event to process.
    */
-  public function onSelectPageDisplayVariant(PageDisplayVariantSelectionEvent $event) {
+  public function onSelectPageDisplayVariant(PageDisplayVariantSelectionEvent $event): void {
     $event->setPluginId('block_page');
   }
 

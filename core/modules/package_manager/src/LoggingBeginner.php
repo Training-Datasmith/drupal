@@ -21,12 +21,12 @@ use PhpTuf\ComposerStager\API\Process\Value\OutputTypeEnum;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class LoggingBeginner implements BeginnerInterface {
+final readonly class LoggingBeginner implements BeginnerInterface {
 
   public function __construct(
-    private readonly BeginnerInterface $decorated,
-    private readonly ConfigFactoryInterface $configFactory,
-    private readonly TimeInterface $time,
+    private BeginnerInterface $decorated,
+    private ConfigFactoryInterface $configFactory,
+    private TimeInterface $time,
   ) {}
 
   /**

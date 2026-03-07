@@ -89,7 +89,7 @@ class BlockContentType extends ConfigEntityBundleBase implements BlockContentTyp
    *
    * @var string|null
    */
-  protected $description = NULL;
+  protected $description;
 
   /**
    * {@inheritdoc}

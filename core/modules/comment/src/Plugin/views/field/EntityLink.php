@@ -34,7 +34,7 @@ class EntityLink extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['teaser'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Show teaser-style link'),
@@ -53,7 +53,7 @@ class EntityLink extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender(&$values) {
+  public function preRender(&$values): void {
     // Render all nodes, so you can grep the comment links.
     $entities = [];
     foreach ($values as $row) {

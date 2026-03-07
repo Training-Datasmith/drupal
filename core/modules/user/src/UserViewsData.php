@@ -12,7 +12,7 @@ class UserViewsData extends EntityViewsData {
   /**
    * {@inheritdoc}
    */
-  public function getViewsData() {
+  public function getViewsData(): array {
     $data = parent::getViewsData();
 
     $data['users_field_data']['table']['base']['help'] = $this->t('Users who have created accounts on your site.');

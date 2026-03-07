@@ -66,7 +66,7 @@ final class LayoutForm extends FormBase {
    * @return array
    *   An associative array containing the structure of the form.
    */
-  public function enableEditMode($form, FormStateInterface $form_state): array {
+  public function enableEditMode(array $form, FormStateInterface $form_state): array {
     if ($form_state::hasAnyErrors()) {
       return $form;
     }
@@ -78,7 +78,7 @@ final class LayoutForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL): array {
     $form['#prefix'] = '<div id="js-config-form-wrapper">';
     $form['#suffix'] = '</div>';
     $form['#attributes']['class'][] = 'layout-builder-form';

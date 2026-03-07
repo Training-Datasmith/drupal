@@ -34,9 +34,7 @@ class Mapping extends ArrayElement {
         if (!$parent) {
           throw new \LogicException(sprintf("The mapping definition at `%s` is invalid: its `%s` key contains a %s. It must be an array.", $name, $key, gettype($key_definition)));
         }
-        else {
-          throw new \LogicException(sprintf("The mapping definition at `%s:%s` is invalid: its `%s` key contains a %s. It must be an array.", $parent->getPropertyPath(), $name, $key, gettype($key_definition)));
-        }
+        throw new \LogicException(sprintf("The mapping definition at `%s:%s` is invalid: its `%s` key contains a %s. It must be an array.", $parent->getPropertyPath(), $name, $key, gettype($key_definition)));
       }
     }
     $this->processRequiredKeyFlags($definition);
@@ -138,15 +136,14 @@ class Mapping extends ArrayElement {
       $parent_data_def instanceof SequenceDataDefinition => $parent_data_def->toArray()['sequence']['type'],
       default => throw new \LogicException('Invalid config schema detected.'),
     };
+    // If this mapping's type isn't dynamic, there's nothing to do.
+    if (!str_contains((string) $original_mapping_type, ']')) {
+        return [];
+    }
 
     // If this mapping's type isn't dynamic, there's nothing to do.
-    if (!str_contains($original_mapping_type, ']')) {
-      return [];
-    }
-    // Only third-party settings, which are optional by definition, start with
-    // a dynamic placeholder.
-    elseif (str_starts_with($original_mapping_type, '[')) {
-      return [];
+    if (str_starts_with((string) $original_mapping_type, '[')) {
+        return [];
     }
 
     // Expand the dynamic placeholders to find all mapping types derived from
@@ -189,7 +186,7 @@ class Mapping extends ArrayElement {
       // every per-type array of valid keys.
       unset($valid_keys_per_type[$fallback_type]);
       $valid_keys_per_type = array_map(
-        fn (array $keys) => array_values(array_filter($keys, fn (string $key) => !in_array($key, $statically_required_keys, TRUE))),
+        fn (array $keys): array => array_values(array_filter($keys, fn (string $key): bool => !in_array($key, $statically_required_keys, TRUE))),
         $valid_keys_per_type
       );
     }
@@ -278,7 +275,7 @@ class Mapping extends ArrayElement {
     // 1. `module.something.foo_foo`, `module.something.foo_bar`, etc.
     $possible_types = array_filter(
       array_keys($this->getTypedDataManager()->getDefinitions()),
-      fn (string $type) => preg_match("/^$regex$/", $type) === 1
+      fn (string $type): bool => preg_match("/^$regex$/", $type) === 1
     );
     // 2. The fallback: `module.something.*` — if no concrete definition for it
     // exists.

@@ -145,7 +145,7 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function alterQuery($query, array $tables, $operation, AccountInterface $account, $base_table) {
+  public function alterQuery($query, array $tables, $operation, AccountInterface $account, $base_table): void {
     if (!$langcode = $query->getMetaData('langcode')) {
       $langcode = FALSE;
     }
@@ -211,7 +211,7 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function write(NodeInterface $node, array $grants, $realm = NULL, $delete = TRUE) {
+  public function write(NodeInterface $node, array $grants, $realm = NULL, $delete = TRUE): void {
     if ($delete) {
       $query = $this->database->delete('node_access')->condition('nid', $node->id());
       if ($realm) {
@@ -258,7 +258,7 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     $this->database->truncate('node_access')->execute();
     $this->memoryCache->deleteAll();
   }
@@ -266,7 +266,7 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function writeDefault() {
+  public function writeDefault(): void {
     $this->database->insert('node_access')
       ->fields([
         'nid' => 0,
@@ -289,7 +289,7 @@ class NodeGrantDatabaseStorage implements NodeGrantDatabaseStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteNodeRecords(array $nids) {
+  public function deleteNodeRecords(array $nids): void {
     $this->database->delete('node_access')
       ->condition('nid', $nids, 'IN')
       ->execute();

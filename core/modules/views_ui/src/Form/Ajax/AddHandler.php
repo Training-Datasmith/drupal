@@ -24,7 +24,7 @@ class AddHandler extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'add-handler';
   }
 
@@ -39,14 +39,15 @@ class AddHandler extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_add_handler_form';
   }
 
   /**
    * {@inheritdoc}
+   * @return array<'#attributes'|'#markup'|'#theme_wrappers'|'#type'|'controls'|'markup'|'name'|'submit', array<int|'#attributes'|'#header'|'#id'|'#js_select'|'#markup'|'#prefix'|'#submit'|'#suffix'|'#theme_wrappers'|'#type'|'class'|'data-drupal-views-offset'|'data-drupal-views-scroll'|'group'|'options_search', mixed[]|bool|non-falsy-string>|\Drupal\Core\StringTranslation\TranslatableMarkup|non-falsy-string>[]|\Drupal\Core\StringTranslation\TranslatableMarkup[]|non-falsy-string[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $type = $form_state->get('type');
@@ -116,7 +117,7 @@ class AddHandler extends ViewsFormBase {
 
       $grouped_options = [];
       foreach ($options as $key => $option) {
-        $group = preg_replace('/[^a-z0-9]/', '-', strtolower($option['group']));
+        $group = preg_replace('/[^a-z0-9]/', '-', strtolower((string) $option['group']));
         $groups[$group] = $option['group'];
         $grouped_options[$group][$key] = $option;
         if (!empty($option['aliases']) && is_array($option['aliases'])) {
@@ -129,7 +130,7 @@ class AddHandler extends ViewsFormBase {
                 $copy['help'] = $alias['help'];
               }
 
-              $group = preg_replace('/[^a-z0-9]/', '-', strtolower($copy['group']));
+              $group = preg_replace('/[^a-z0-9]/', '-', strtolower((string) $copy['group']));
               $groups[$group] = $copy['group'];
               $grouped_options[$group][$key . '$' . $id] = $copy;
             }
@@ -179,9 +180,7 @@ class AddHandler extends ViewsFormBase {
     $view->getStandardButtons($form, $form_state, 'views_ui_add_handler_form', $this->t('Add and configure @types', ['@types' => $ltitle]));
 
     // Remove the default submit function.
-    $form['actions']['submit']['#submit'] = array_filter($form['actions']['submit']['#submit'], function ($var) {
-      return !(is_array($var) && isset($var[1]) && $var[1] == 'standardSubmit');
-    });
+    $form['actions']['submit']['#submit'] = array_filter($form['actions']['submit']['#submit'], fn($var) => !(is_array($var) && isset($var[1]) && $var[1] == 'standardSubmit'));
     $form['actions']['submit']['#submit'][] = [$view, 'submitItemAdd'];
 
     return $form;

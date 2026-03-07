@@ -25,27 +25,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class MainContentViewSubscriber implements EventSubscriberInterface {
 
   /**
-   * The class resolver service.
-   *
-   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
-   */
-  protected $classResolver;
-
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
-   * The available main content renderer services, keyed per format.
-   *
-   * @var array
-   */
-  protected $mainContentRenderers;
-
-  /**
    * URL query attribute to indicate the wrapper used to render a request.
    *
    * The wrapper format determines how the HTML is wrapped, for example in a
@@ -56,17 +35,15 @@ class MainContentViewSubscriber implements EventSubscriberInterface {
   /**
    * Constructs a new MainContentViewSubscriber object.
    *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
    *   The class resolver service.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
-   * @param array $main_content_renderers
+   * @param array $mainContentRenderers
    *   The available main content renderer service IDs, keyed by format.
    */
-  public function __construct(ClassResolverInterface $class_resolver, RouteMatchInterface $route_match, array $main_content_renderers) {
-    $this->classResolver = $class_resolver;
-    $this->routeMatch = $route_match;
-    $this->mainContentRenderers = $main_content_renderers;
+  public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch, protected array $mainContentRenderers)
+  {
   }
 
   /**
@@ -75,7 +52,7 @@ class MainContentViewSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
    *   The event to process.
    */
-  public function onViewRenderArray(ViewEvent $event) {
+  public function onViewRenderArray(ViewEvent $event): void {
     $request = $event->getRequest();
     $result = $event->getControllerResult();
 

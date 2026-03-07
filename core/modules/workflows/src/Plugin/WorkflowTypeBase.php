@@ -67,7 +67,7 @@ abstract class WorkflowTypeBase extends ConfigurablePluginBase implements Workfl
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'states' => [],
       'transitions' => [],
@@ -129,7 +129,7 @@ abstract class WorkflowTypeBase extends ConfigurablePluginBase implements Workfl
       $state_ids = array_keys($this->configuration['states']);
     }
     /** @var \Drupal\workflows\StateInterface[] $states */
-    $states = array_combine($state_ids, array_map([$this, 'getState'], $state_ids));
+    $states = array_combine($state_ids, array_map($this->getState(...), $state_ids));
     return static::labelWeightMultisort($states);
   }
 
@@ -249,7 +249,7 @@ abstract class WorkflowTypeBase extends ConfigurablePluginBase implements Workfl
       $transition_ids = array_keys($this->configuration['transitions']);
     }
     /** @var \Drupal\workflows\TransitionInterface[] $transitions */
-    $transitions = array_combine($transition_ids, array_map([$this, 'getTransition'], $transition_ids));
+    $transitions = array_combine($transition_ids, array_map($this->getTransition(...), $transition_ids));
     return static::labelWeightMultisort($transitions);
   }
 
@@ -320,9 +320,7 @@ abstract class WorkflowTypeBase extends ConfigurablePluginBase implements Workfl
    * {@inheritdoc}
    */
   public function getTransitionsForState($state_id, $direction = TransitionInterface::DIRECTION_FROM) {
-    $transition_ids = array_keys(array_filter($this->configuration['transitions'], function ($transition) use ($state_id, $direction) {
-      return in_array($state_id, (array) $transition[$direction], TRUE);
-    }));
+    $transition_ids = array_keys(array_filter($this->configuration['transitions'], fn(array $transition) => in_array($state_id, (array) $transition[$direction], TRUE)));
     return $this->getTransitions($transition_ids);
   }
 
@@ -442,9 +440,7 @@ abstract class WorkflowTypeBase extends ConfigurablePluginBase implements Workfl
    *   The weight for a new item in the array so that it has the highest weight.
    */
   protected function getNextWeight(array $items) {
-    return array_reduce($items, function ($carry, $item) {
-      return max($carry, $item['weight'] + 1);
-    }, 0);
+    return array_reduce($items, fn($carry, $item) => max($carry, $item['weight'] + 1), 0);
   }
 
 }

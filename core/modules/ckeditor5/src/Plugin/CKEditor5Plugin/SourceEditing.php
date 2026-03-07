@@ -25,7 +25,7 @@ class SourceEditing extends CKEditor5PluginDefault implements CKEditor5PluginCon
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['allowed_tags'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Manually editable HTML tags'),
@@ -39,7 +39,7 @@ class SourceEditing extends CKEditor5PluginDefault implements CKEditor5PluginCon
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Match the config schema structure at
     // ckeditor5.plugin.ckeditor5_sourceEditing.
     $form_value = $form_state->getValue('allowed_tags');
@@ -51,14 +51,14 @@ class SourceEditing extends CKEditor5PluginDefault implements CKEditor5PluginCon
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['allowed_tags'] = $form_state->getValue('allowed_tags');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'allowed_tags' => [],
     ];

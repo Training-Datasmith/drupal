@@ -18,14 +18,14 @@ class UpdateSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'update_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['update.settings'];
   }
 
@@ -39,7 +39,7 @@ class UpdateSettingsForm extends ConfigFormBase {
       '#config_target' => new ConfigTarget(
         'update.settings',
         'check.interval_days',
-        toConfig: fn($value) => intval($value)),
+        toConfig: fn($value): int => intval($value)),
       '#options' => [
         1 => $this->t('Daily'),
         7 => $this->t('Weekly'),
@@ -105,7 +105,7 @@ class UpdateSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $config = $this->config('update.settings');
     // See if the update_check_disabled setting is being changed, and if so,
     // invalidate all update status data.
@@ -126,7 +126,7 @@ class UpdateSettingsForm extends ConfigFormBase {
    *   The value to be stored in config.
    */
   public static function multiLineStringToArray(string $value): array {
-    return trim($value) ? array_map('trim', explode("\n", $value)) : [];
+    return trim($value) ? array_map(trim(...), explode("\n", $value)) : [];
   }
 
   /**

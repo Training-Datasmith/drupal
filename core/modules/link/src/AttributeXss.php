@@ -29,14 +29,14 @@ final class AttributeXss {
     $skip = FALSE;
     $skip_protocol_filtering = FALSE;
 
-    while (strlen($attributes) != 0) {
+    while (strlen((string) $attributes) != 0) {
       // Was the last operation successful?
       $working = 0;
 
       switch ($mode) {
         case 0:
           // Attribute name, href for instance.
-          if (preg_match('/^([-a-zA-Z][-a-zA-Z0-9]*)/', $attributes, $match)) {
+          if (preg_match('/^([-a-zA-Z][-a-zA-Z0-9]*)/', (string) $attributes, $match)) {
             $attribute_name = strtolower($match[1]);
             $skip = (
               $attribute_name == 'style' ||
@@ -65,26 +65,26 @@ final class AttributeXss {
             ]);
 
             $working = $mode = 1;
-            $attributes = preg_replace('/^[-a-zA-Z][-a-zA-Z0-9]*/', '', $attributes);
+            $attributes = preg_replace('/^[-a-zA-Z][-a-zA-Z0-9]*/', '', (string) $attributes);
           }
           break;
 
         case 1:
           // Equals sign or valueless ("selected").
-          if (preg_match('/^\s*=\s*/', $attributes)) {
+          if (preg_match('/^\s*=\s*/', (string) $attributes)) {
             $working = 1;
             $mode = 2;
-            $attributes = preg_replace('/^\s*=\s*/', '', $attributes);
+            $attributes = preg_replace('/^\s*=\s*/', '', (string) $attributes);
             break;
           }
 
-          if (preg_match('/^\s+/', $attributes)) {
+          if (preg_match('/^\s+/', (string) $attributes)) {
             $working = 1;
             $mode = 0;
             if (!$skip) {
               $attributes_array[$attribute_name] = $attribute_name;
             }
-            $attributes = preg_replace('/^\s+/', '', $attributes);
+            $attributes = preg_replace('/^\s+/', '', (string) $attributes);
           }
           break;
 
@@ -94,33 +94,33 @@ final class AttributeXss {
           $mode = 0;
           $working = 1;
           // Attribute value, a URL after href= for instance.
-          if (preg_match('/^"([^"]*)"(\s+|$)/', $attributes, $match)) {
+          if (preg_match('/^"([^"]*)"(\s+|$)/', (string) $attributes, $match)) {
             $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
 
             if (!$skip) {
               $attributes_array[$attribute_name] = $value;
             }
-            $attributes = preg_replace('/^"[^"]*"(\s+|$)/', '', $attributes);
+            $attributes = preg_replace('/^"[^"]*"(\s+|$)/', '', (string) $attributes);
             break;
           }
 
-          if (preg_match("/^'([^']*)'(\s+|$)/", $attributes, $match)) {
+          if (preg_match("/^'([^']*)'(\s+|$)/", (string) $attributes, $match)) {
             $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
 
             if (!$skip) {
               $attributes_array[$attribute_name] = $value;
             }
-            $attributes = preg_replace("/^'[^']*'(\s+|$)/", '', $attributes);
+            $attributes = preg_replace("/^'[^']*'(\s+|$)/", '', (string) $attributes);
             break;
           }
 
-          if (preg_match("%^([^\s\"']+)(\s+|$)%", $attributes, $match)) {
+          if (preg_match("%^([^\s\"']+)(\s+|$)%", (string) $attributes, $match)) {
             $value = $skip_protocol_filtering ? $match[1] : UrlHelper::filterBadProtocol($match[1]);
 
             if (!$skip) {
               $attributes_array[$attribute_name] = $value;
             }
-            $attributes = preg_replace("%^[^\s\"']+(\s+|$)%", '', $attributes);
+            $attributes = preg_replace("%^[^\s\"']+(\s+|$)%", '', (string) $attributes);
           }
           break;
       }
@@ -137,7 +137,7 @@ final class AttributeXss {
           \S              # - a non-whitespace character
           )*              # any number of the above three
           \s*             # any number of whitespaces
-          /x', '', $attributes);
+          /x', '', (string) $attributes);
         $mode = 0;
       }
     }
@@ -170,7 +170,7 @@ final class AttributeXss {
       // http://example.com we split this into two separate attributes, with the
       // value assigned to the last attribute name.
       // Explode the attribute name if a space exists.
-      $names = \array_filter(\explode(' ', $name));
+      $names = \array_filter(\explode(' ', (string) $name));
       if (\count($names) === 0) {
         // Empty attribute names.
         continue;
@@ -186,7 +186,7 @@ final class AttributeXss {
       $attribute_object = new Attribute($with_values);
       // Filter the attributes.
       $safe = AttributeXss::attributes((string) $attribute_object);
-      $safe = \array_map([Html::class, 'decodeEntities'], $safe);
+      $safe = \array_map(Html::decodeEntities(...), $safe);
       if (\array_key_exists('class', $safe)) {
         // The class attribute is expected to be an array.
         $safe['class'] = \explode(' ', $safe['class']);

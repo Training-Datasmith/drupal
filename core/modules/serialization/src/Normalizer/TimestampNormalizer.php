@@ -29,7 +29,7 @@ class TimestampNormalizer extends DateTimeNormalizer {
   /**
    * {@inheritdoc}
    */
-  protected function getNormalizationTimezone() {
+  protected function getNormalizationTimezone(): \DateTimeZone {
     return new \DateTimeZone('UTC');
   }
 

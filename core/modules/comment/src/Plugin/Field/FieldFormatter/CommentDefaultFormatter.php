@@ -46,37 +46,11 @@ class CommentDefaultFormatter extends FormatterBase {
   protected $storage;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * The comment render controller.
    *
    * @var \Drupal\Core\Entity\EntityViewBuilderInterface
    */
   protected $viewBuilder;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The entity form builder.
-   *
-   * @var \Drupal\Core\Entity\EntityFormBuilderInterface
-   */
-  protected $entityFormBuilder;
-
-  /**
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
 
   /**
    * Constructs a new CommentDefaultFormatter.
@@ -95,31 +69,28 @@ class CommentDefaultFormatter extends FormatterBase {
    *   The view mode.
    * @param array $third_party_settings
    *   Third party settings.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityFormBuilderInterface $entity_form_builder
+   * @param \Drupal\Core\Entity\EntityFormBuilderInterface $entityFormBuilder
    *   The entity form builder.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match object.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, EntityFormBuilderInterface $entity_form_builder, RouteMatchInterface $route_match, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, protected \Drupal\Core\Session\AccountInterface $currentUser, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Entity\EntityFormBuilderInterface $entityFormBuilder, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->viewBuilder = $entity_type_manager->getViewBuilder('comment');
     $this->storage = $entity_type_manager->getStorage('comment');
-    $this->currentUser = $current_user;
-    $this->entityFormBuilder = $entity_form_builder;
-    $this->routeMatch = $route_match;
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
    * {@inheritdoc}
+   * @return array{'#comment_type': mixed, '#comment_display_mode': mixed, comments: array, comment_form: (array{} | array{'#lazy_builder': array{'comment.lazy_builders:renderForm', array{mixed, mixed, mixed, mixed}}, '#create_placeholder': true})}[]|array{contexts: array{0: 'user.permissions', 1?: 'user.roles'}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
     $output = [];
 
@@ -199,7 +170,7 @@ class CommentDefaultFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $element = [];
     $view_modes = $this->getViewModes();
     $element['view_mode'] = [
@@ -224,7 +195,7 @@ class CommentDefaultFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $view_mode = $this->getSetting('view_mode');
     $view_modes = $this->getViewModes();
     $view_mode_label = $view_modes[$view_mode] ?? 'default';

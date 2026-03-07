@@ -125,7 +125,7 @@ abstract class NumericItemBase extends FieldItemBase {
    *   Decimal number truncated.
    */
   protected static function truncateDecimal($decimal, $num) {
-    return floor($decimal * pow(10, $num)) / pow(10, $num);
+    return floor($decimal * 10 ** $num) / 10 ** $num;
   }
 
   /**

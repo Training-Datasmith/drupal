@@ -22,13 +22,6 @@ class MigrateExecutable implements MigrateExecutableInterface {
   use StringTranslationTrait;
 
   /**
-   * The configuration of the migration to do.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
-
-  /**
    * Status of one row.
    *
    * The value is a MigrateIdMapInterface::STATUS_* constant, for example:
@@ -85,8 +78,7 @@ class MigrateExecutable implements MigrateExecutableInterface {
    * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   (optional) The event dispatcher.
    */
-  public function __construct(MigrationInterface $migration, ?MigrateMessageInterface $message = NULL, ?EventDispatcherInterface $event_dispatcher = NULL) {
-    $this->migration = $migration;
+  public function __construct(protected \Drupal\migrate\Plugin\MigrationInterface $migration, ?MigrateMessageInterface $message = NULL, ?EventDispatcherInterface $event_dispatcher = NULL) {
     $this->message = $message ?: new MigrateMessage();
     $this->getIdMap()->setMessage($this->message);
     $this->eventDispatcher = $event_dispatcher;
@@ -123,7 +115,7 @@ class MigrateExecutable implements MigrateExecutableInterface {
   /**
    * {@inheritdoc}
    */
-  public function import() {
+  public function import(): int {
     // Only begin the import operation if the migration is currently idle.
     if ($this->migration->getStatus() !== MigrationInterface::STATUS_IDLE) {
       $this->message->display($this->t('Migration @id is busy with another operation: @status',
@@ -285,7 +277,7 @@ class MigrateExecutable implements MigrateExecutableInterface {
   /**
    * {@inheritdoc}
    */
-  public function rollback() {
+  public function rollback(): int {
     // Only begin the rollback operation if the migration is currently idle.
     if ($this->migration->getStatus() !== MigrationInterface::STATUS_IDLE) {
       // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
@@ -356,7 +348,7 @@ class MigrateExecutable implements MigrateExecutableInterface {
   /**
    * {@inheritdoc}
    */
-  public function processRow(Row $row, ?array $process = NULL, $value = NULL) {
+  public function processRow(Row $row, ?array $process = NULL, $value = NULL): void {
     foreach ($this->migration->getProcessPlugins($process) as $destination => $plugins) {
       $this->processPipeline($row, $destination, $plugins, $value);
     }
@@ -398,7 +390,7 @@ class MigrateExecutable implements MigrateExecutableInterface {
           try {
             $new_value[] = $plugin->transform($scalar_value, $this, $row, $destination);
           }
-          catch (MigrateSkipProcessException $e) {
+          catch (MigrateSkipProcessException) {
             $new_value[] = NULL;
             $break = TRUE;
           }
@@ -460,7 +452,7 @@ class MigrateExecutable implements MigrateExecutableInterface {
   /**
    * {@inheritdoc}
    */
-  public function saveMessage($message, $level = MigrationInterface::MESSAGE_ERROR) {
+  public function saveMessage($message, $level = MigrationInterface::MESSAGE_ERROR): void {
     $this->getIdMap()->saveMessage($this->sourceIdValues, $message, $level);
   }
 

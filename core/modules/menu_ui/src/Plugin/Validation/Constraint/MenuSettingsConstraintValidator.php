@@ -24,8 +24,8 @@ class MenuSettingsConstraintValidator extends ConstraintValidator {
         return;
       }
 
-      if (trim($values['title']) && !empty($values['menu_parent'])) {
-        [$menu_name, $parent] = explode(':', $values['menu_parent'], 2);
+      if (trim((string) $values['title']) && !empty($values['menu_parent'])) {
+        [$menu_name, $parent] = explode(':', (string) $values['menu_parent'], 2);
         $values['menu_name'] = $menu_name;
         $values['parent'] = $parent;
       }

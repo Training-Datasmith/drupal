@@ -41,7 +41,7 @@ class MenuLinkTree implements MenuLinkTreeInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCurrentRouteMenuTreeParameters($menu_name) {
+  public function getCurrentRouteMenuTreeParameters($menu_name): \Drupal\Core\Menu\MenuTreeParameters {
     $active_trail = $this->menuActiveTrail->getActiveTrailIds($menu_name);
 
     $parameters = new MenuTreeParameters();
@@ -80,7 +80,7 @@ class MenuLinkTree implements MenuLinkTreeInterface {
    * @return \Drupal\Core\Menu\MenuLinkTreeElement[]
    *   An array containing the elements of a menu tree.
    */
-  protected function createInstances(array $data_tree) {
+  protected function createInstances(array $data_tree): array {
     $tree = [];
     foreach ($data_tree as $key => $element) {
       $subtree = $this->createInstances($element['subtree']);
@@ -119,8 +119,9 @@ class MenuLinkTree implements MenuLinkTreeInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function build(array $tree) {
+  public function build(array $tree): array {
     $tree_access_cacheability = new CacheableMetadata();
     $tree_link_cacheability = new CacheableMetadata();
     $items = $this->buildItems($tree, $tree_access_cacheability, $tree_link_cacheability);
@@ -175,7 +176,7 @@ class MenuLinkTree implements MenuLinkTreeInterface {
    *
    * @throws \DomainException
    */
-  protected function buildItems(array $tree, CacheableMetadata &$tree_access_cacheability, CacheableMetadata &$tree_link_cacheability) {
+  protected function buildItems(array $tree, CacheableMetadata &$tree_access_cacheability, CacheableMetadata &$tree_link_cacheability): array {
     $items = [];
 
     foreach ($tree as $data) {

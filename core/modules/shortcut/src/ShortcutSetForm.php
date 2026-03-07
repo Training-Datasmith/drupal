@@ -15,7 +15,7 @@ class ShortcutSetForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $entity = $this->entity;
@@ -48,7 +48,7 @@ class ShortcutSetForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $entity = $this->entity;
     $is_new = !$entity->getOriginalId();
     $entity->save();

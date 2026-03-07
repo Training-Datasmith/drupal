@@ -68,7 +68,7 @@ class DefaultMenuLinkTreeManipulators {
    * @return \Drupal\Core\Menu\MenuLinkTreeElement[]
    *   The manipulated menu link tree.
    */
-  public function checkAccess(array $tree) {
+  public function checkAccess(array $tree): array {
     foreach ($tree as $key => $element) {
       // Other menu tree manipulators may already have calculated access, do not
       // overwrite the existing value in that case.
@@ -113,7 +113,7 @@ class DefaultMenuLinkTreeManipulators {
    * @return \Drupal\Core\Menu\MenuLinkTreeElement[]
    *   The manipulated menu link tree.
    */
-  public function checkNodeAccess(array $tree) {
+  public function checkNodeAccess(array $tree): array {
     $node_links = [];
     $this->collectNodeLinks($tree, $node_links);
     if ($node_links) {
@@ -200,7 +200,7 @@ class DefaultMenuLinkTreeManipulators {
    * @return \Drupal\Core\Menu\MenuLinkTreeElement[]
    *   The manipulated menu link tree.
    */
-  public function generateIndexAndSort(array $tree) {
+  public function generateIndexAndSort(array $tree): array {
     $new_tree = [];
     foreach ($tree as $key => $v) {
       if ($tree[$key]->subtree) {
@@ -226,7 +226,7 @@ class DefaultMenuLinkTreeManipulators {
    * @return \Drupal\Core\Menu\MenuLinkTreeElement[]
    *   The manipulated menu link tree.
    */
-  public function flatten(array $tree) {
+  public function flatten(array $tree): array {
     foreach ($tree as $key => $element) {
       if ($tree[$key]->subtree) {
         $tree += $this->flatten($tree[$key]->subtree);

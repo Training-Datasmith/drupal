@@ -31,24 +31,8 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
 
   /**
    * Information about the entity type.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
    */
-  protected $entityType;
-
-  /**
-   * The entity repository service.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
+  protected \Drupal\Core\Entity\EntityTypeInterface $entityType;
 
   /**
    * The cache bin used to store the render cache.
@@ -56,20 +40,6 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
    * @var string
    */
   protected $cacheBin = 'render';
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The theme registry.
-   *
-   * @var \Drupal\Core\Theme\Registry
-   */
-  protected $themeRegistry;
 
   /**
    * The EntityViewDisplay objects created for individual field rendering.
@@ -92,28 +62,24 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Theme\Registry $theme_registry
+   * @param \Drupal\Core\Theme\Registry $themeRegistry
    *   The theme registry.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager, Registry $theme_registry, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Theme\Registry $themeRegistry, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
-    $this->entityRepository = $entity_repository;
-    $this->languageManager = $language_manager;
-    $this->themeRegistry = $theme_registry;
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity.repository'),
@@ -134,7 +100,7 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
     // assign an alternative #pre_render callback that applies the necessary
     // transformations and then still calls ::buildMultiple().
     $build = $build_list[0];
-    $build['#pre_render'][] = [$this, 'build'];
+    $build['#pre_render'][] = $this->build(...);
 
     return $build;
   }
@@ -142,7 +108,7 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return [
       'build',
       'buildMultiple',
@@ -153,11 +119,12 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function viewMultiple(array $entities = [], $view_mode = 'full', $langcode = NULL) {
+  public function viewMultiple(array $entities = [], $view_mode = 'full', $langcode = NULL): array {
     $build_list = [
       '#sorted' => TRUE,
-      '#pre_render' => [[$this, 'buildMultiple']],
+      '#pre_render' => [$this->buildMultiple(...)],
     ];
     $weight = 0;
     foreach ($entities as $key => $entity) {
@@ -187,7 +154,7 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
    * @return array
    *   A build array with entity specific defaults added.
    */
-  protected function getBuildDefaults(EntityInterface $entity, $view_mode) {
+  protected function getBuildDefaults(EntityInterface $entity, $view_mode): array {
     // Allow modules to change the view mode.
     $entityType = $this->entityTypeId;
     $this->moduleHandler()->alter([$entityType . '_view_mode', 'entity_view_mode'], $view_mode, $entity);
@@ -203,8 +170,8 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
       ],
     ];
     // Add callbacks to protect from recursive rendering.
-    $build['#pre_render'] = [[$this, 'setRecursiveRenderProtection']];
-    $build['#post_render'] = [[$this, 'unsetRecursiveRenderProtection']];
+    $build['#pre_render'] = [$this->setRecursiveRenderProtection(...)];
+    $build['#post_render'] = [$this->unsetRecursiveRenderProtection(...)];
 
     // Add the default #theme key if a template exists for it.
     if ($this->themeRegistry->getRuntime()->has($this->entityTypeId)) {
@@ -274,7 +241,7 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
    *
    * @see \Drupal\Core\Render\RendererInterface::render()
    */
-  public function buildMultiple(array $build_list) {
+  public function buildMultiple(array $build_list): array {
     // Build the view modes and display objects.
     $view_modes = [];
     $entity_type_key = "#{$this->entityTypeId}";
@@ -328,7 +295,7 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
   /**
    * {@inheritdoc}
    */
-  public function buildComponents(array &$build, array $entities, array $displays, $view_mode) {
+  public function buildComponents(array &$build, array $entities, array $displays, $view_mode): void {
     $entities_by_bundle = [];
     foreach ($entities as $id => $entity) {
       // Initialize the field item attributes for the fields being displayed.
@@ -408,14 +375,14 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return [$this->entityTypeId . '_view'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function resetCache(?array $entities = NULL) {
+  public function resetCache(?array $entities = NULL): void {
     // If no set of specific entities is provided, invalidate the entity view
     // builder's cache tag. This will invalidate all entities rendered by this
     // view builder.
@@ -475,11 +442,8 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
 
     $output = [];
     $build = $display->build($entity);
-    if (isset($build[$field_name])) {
-      $output = $build[$field_name];
-    }
 
-    return $output;
+    return $build[$field_name] ?? $output;
   }
 
   /**
@@ -519,7 +483,7 @@ class EntityViewBuilder extends EntityHandlerBase implements EntityHandlerInterf
    * @return \Drupal\Core\Entity\Display\EntityViewDisplayInterface
    *   The EntityViewDisplay objects created for individual field rendering.
    */
-  protected function getSingleFieldDisplay($entity, $field_name, $display_options) {
+  protected function getSingleFieldDisplay(\Drupal\Core\Entity\FieldableEntityInterface $entity, string $field_name, $display_options) {
     if (is_string($display_options)) {
       // View mode: use the Display configured for the view mode.
       $view_mode = $display_options;

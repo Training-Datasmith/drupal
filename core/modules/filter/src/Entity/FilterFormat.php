@@ -163,7 +163,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return ['filters' => $this->filters()];
   }
 
@@ -171,7 +171,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Sets configuration for a filter plugin'))]
-  public function setFilterConfig($instance_id, array $configuration) {
+  public function setFilterConfig($instance_id, array $configuration): static {
     $this->filters[$instance_id] = $configuration;
     if (isset($this->filterCollection)) {
       $this->filterCollection->setInstanceConfiguration($instance_id, $configuration);
@@ -193,7 +193,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
   /**
    * {@inheritdoc}
    */
-  public function disable() {
+  public function disable(): static {
     if ($this->isFallbackFormat()) {
       throw new \LogicException("The fallback text format '{$this->id()}' cannot be disabled.");
     }
@@ -212,7 +212,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     if (!$this->isSyncing() && $this->hasTrustedData()) {
       // Filters are sorted by keys to ensure config export diffs are easy to
@@ -233,7 +233,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     // Clear the static caches of filter_formats() and others.
@@ -264,7 +264,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
    * @return bool
    *   TRUE if this format is the fallback format, FALSE otherwise.
    */
-  public function isFallbackFormat() {
+  public function isFallbackFormat(): bool {
     $fallback_format = \Drupal::config('filter.settings')->get('fallback_format');
     return $this->id() == $fallback_format;
   }
@@ -279,7 +279,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
   /**
    * {@inheritdoc}
    */
-  public function getFilterTypes() {
+  public function getFilterTypes(): array {
     $filter_types = [];
 
     $filters = $this->filters();
@@ -297,7 +297,7 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
    */
   public function getHtmlRestrictions() {
     // Ignore filters that are disabled or don't have HTML restrictions.
-    $filters = array_filter($this->filters()->getAll(), function ($filter) {
+    $filters = array_filter($this->filters()->getAll(), function ($filter): bool {
       if (!$filter->status) {
         return FALSE;
       }
@@ -310,98 +310,88 @@ class FilterFormat extends ConfigEntityBase implements FilterFormatInterface, En
     if (empty($filters)) {
       return FALSE;
     }
-    else {
-      // From the set of remaining filters (they were filtered by array_filter()
-      // above), collect the list of tags and attributes that are allowed by all
-      // filters, i.e. the intersection of all allowed tags and attributes.
-      $restrictions = array_reduce($filters, function ($restrictions, $filter) {
-        $new_restrictions = $filter->getHTMLRestrictions();
+    // From the set of remaining filters (they were filtered by array_filter()
+    // above), collect the list of tags and attributes that are allowed by all
+    // filters, i.e. the intersection of all allowed tags and attributes.
+    $restrictions = array_reduce($filters, function (array $restrictions, $filter) {
+      $new_restrictions = $filter->getHTMLRestrictions();
 
-        // The first filter with HTML restrictions provides the initial set.
-        if (!isset($restrictions)) {
-          return $new_restrictions;
-        }
-        // Subsequent filters with an "allowed html" setting must be intersected
-        // with the existing set, to ensure we only end up with the tags that
-        // are allowed by *all* filters with an "allowed html" setting.
-        else {
-          // Track the intersection of allowed tags.
-          if (isset($restrictions['allowed'])) {
-            $intersection = $restrictions['allowed'];
-            foreach ($intersection as $tag => $attributes) {
-              // If the current tag is not allowed by the new filter, then it's
-              // outside of the intersection.
-              if (!array_key_exists($tag, $new_restrictions['allowed'])) {
-                // The exception is the asterisk (which applies to all tags): it
-                // does not need to be allowed by every filter in order to be
-                // used; not every filter needs attribute restrictions on all
-                // tags.
-                if ($tag === '*') {
-                  continue;
-                }
-                unset($intersection[$tag]);
-              }
-              // The tag is in the intersection, but now we must calculate the
-              // intersection of the allowed attributes.
-              else {
-                $current_attributes = $intersection[$tag];
-                $new_attributes = $new_restrictions['allowed'][$tag];
-                // The current intersection does not allow any attributes, never
-                // allow.
-                if (!is_array($current_attributes) && $current_attributes == FALSE) {
-                  continue;
-                }
-                // The new filter allows less attributes (all -> list or none).
-                elseif (!is_array($current_attributes) && $current_attributes == TRUE && ($new_attributes == FALSE || is_array($new_attributes))) {
-                  $intersection[$tag] = $new_attributes;
-                }
-                // The new filter allows less attributes (list -> none).
-                elseif (is_array($current_attributes) && $new_attributes == FALSE) {
-                  $intersection[$tag] = $new_attributes;
-                }
-                // The new filter allows more attributes; retain current.
-                elseif (is_array($current_attributes) && $new_attributes == TRUE) {
-                  continue;
-                }
-                // The new filter allows the same attributes; retain current.
-                elseif ($current_attributes == $new_attributes) {
-                  continue;
-                }
-                // Both list an array of attribute values; do an intersection,
-                // where we take into account that a value of:
-                // - TRUE means the attribute value is allowed;
-                // - FALSE means the attribute value is forbidden;
-                // hence we keep the ANDed result.
-                else {
-                  $intersection[$tag] = array_intersect_key($intersection[$tag], $new_attributes);
-                  foreach (array_keys($intersection[$tag]) as $attribute_value) {
-                    $intersection[$tag][$attribute_value] = $intersection[$tag][$attribute_value] && $new_attributes[$attribute_value];
-                  }
-                }
+      // The first filter with HTML restrictions provides the initial set.
+      if (!isset($restrictions)) {
+        return $new_restrictions;
+      }
+      // Track the intersection of allowed tags.
+      if (isset($restrictions['allowed'])) {
+        $intersection = $restrictions['allowed'];
+        foreach ($intersection as $tag => $attributes) {
+          // If the current tag is not allowed by the new filter, then it's
+          // outside of the intersection.
+          if (!array_key_exists($tag, $new_restrictions['allowed'])) {
+            // The exception is the asterisk (which applies to all tags): it
+            // does not need to be allowed by every filter in order to be
+            // used; not every filter needs attribute restrictions on all
+            // tags.
+            if ($tag === '*') {
+              continue;
+            }
+            unset($intersection[$tag]);
+          }
+          // The tag is in the intersection, but now we must calculate the
+          // intersection of the allowed attributes.
+          else {
+            $current_attributes = $intersection[$tag];
+            $new_attributes = $new_restrictions['allowed'][$tag];
+            // The current intersection does not allow any attributes, never
+            // allow.
+            if (!is_array($current_attributes) && $current_attributes == FALSE) {
+                continue;
+            }
+            // The new filter allows less attributes (all -> list or none).
+            if (!is_array($current_attributes) && $current_attributes == TRUE && ($new_attributes == FALSE || is_array($new_attributes))) {
+              $intersection[$tag] = $new_attributes;
+            }
+            // The new filter allows less attributes (list -> none).
+            elseif (is_array($current_attributes) && $new_attributes == FALSE) {
+              $intersection[$tag] = $new_attributes;
+            }
+            // The new filter allows more attributes; retain current.
+            elseif (is_array($current_attributes) && $new_attributes == TRUE) {
+              continue;
+            }
+            // The new filter allows the same attributes; retain current.
+            elseif ($current_attributes == $new_attributes) {
+              continue;
+            }
+            // Both list an array of attribute values; do an intersection,
+            // where we take into account that a value of:
+            // - TRUE means the attribute value is allowed;
+            // - FALSE means the attribute value is forbidden;
+            // hence we keep the ANDed result.
+            else {
+              $intersection[$tag] = array_intersect_key($intersection[$tag], $new_attributes);
+              foreach (array_keys($intersection[$tag]) as $attribute_value) {
+                $intersection[$tag][$attribute_value] = $intersection[$tag][$attribute_value] && $new_attributes[$attribute_value];
               }
             }
-            $restrictions['allowed'] = $intersection;
           }
-
-          // Simplification: if the only remaining allowed tag is the asterisk
-          // (which contains attribute restrictions that apply to all tags),
-          // then effectively nothing is allowed.
-          if (count($restrictions['allowed']) === 1 && array_key_exists('*', $restrictions['allowed'])) {
-            $restrictions['allowed'] = [];
-          }
-
-          return $restrictions;
         }
-      }, NULL);
-
+        $restrictions['allowed'] = $intersection;
+      }
+      // Simplification: if the only remaining allowed tag is the asterisk
+      // (which contains attribute restrictions that apply to all tags),
+      // then effectively nothing is allowed.
+      if (count($restrictions['allowed']) === 1 && array_key_exists('*', $restrictions['allowed'])) {
+        $restrictions['allowed'] = [];
+      }
       return $restrictions;
-    }
+    });
+    return $restrictions;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function removeFilter($instance_id) {
+  public function removeFilter($instance_id): void {
     unset($this->filters[$instance_id]);
     $this->filterCollection->removeInstanceId($instance_id);
   }

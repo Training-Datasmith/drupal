@@ -20,7 +20,7 @@ class DemoteNode extends FieldUpdateActionBase {
   /**
    * {@inheritdoc}
    */
-  protected function getFieldsToUpdate() {
+  protected function getFieldsToUpdate(): array {
     return ['promote' => NodeInterface::NOT_PROMOTED];
   }
 

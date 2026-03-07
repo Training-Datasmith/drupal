@@ -46,7 +46,7 @@ class PathElement extends Textfield {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state): null {
     return NULL;
   }
 
@@ -57,7 +57,7 @@ class PathElement extends Textfield {
    *
    * This checks that the submitted value matches an active route.
    */
-  public static function validateMatchedPath(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateMatchedPath(array &$element, FormStateInterface $form_state, &$complete_form): void {
     if (!empty($element['#value']) && ($element['#validate_path'] || $element['#convert_path'] != self::CONVERT_NONE)) {
       /** @var \Drupal\Core\Url $url */
       if ($url = \Drupal::service('path.validator')->getUrlIfValid($element['#value'])) {
@@ -72,15 +72,15 @@ class PathElement extends Textfield {
         // We do the value conversion here whilst the Url object is in scope
         // after validation has occurred.
         if ($element['#convert_path'] == self::CONVERT_ROUTE) {
-          $form_state->setValueForElement($element, [
-            'route_name' => $url->getRouteName(),
-            'route_parameters' => $url->getRouteParameters(),
-          ]);
-          return;
+            $form_state->setValueForElement($element, [
+              'route_name' => $url->getRouteName(),
+              'route_parameters' => $url->getRouteParameters(),
+            ]);
+            return;
         }
-        elseif ($element['#convert_path'] == self::CONVERT_URL) {
-          $form_state->setValueForElement($element, $url);
-          return;
+        if ($element['#convert_path'] == self::CONVERT_URL) {
+            $form_state->setValueForElement($element, $url);
+            return;
         }
       }
       $form_state->setError($element, t('This path does not exist or you do not have permission to link to %path.', [

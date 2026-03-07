@@ -18,7 +18,7 @@ class LinkReply extends LinkBase {
   /**
    * {@inheritdoc}
    */
-  protected function getUrlInfo(ResultRow $row) {
+  protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url {
     /** @var \Drupal\comment\CommentInterface $comment */
     $comment = $this->getEntity($row);
     if (!$comment) {
@@ -35,7 +35,7 @@ class LinkReply extends LinkBase {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultLabel() {
+  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Reply');
   }
 

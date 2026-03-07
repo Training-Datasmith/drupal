@@ -26,7 +26,7 @@ class ExtraFieldBlockCacheTagInvalidator implements CacheTagsInvalidatorInterfac
   /**
    * {@inheritdoc}
    */
-  public function invalidateTags(array $tags) {
+  public function invalidateTags(array $tags): void {
     if (in_array('entity_field_info', $tags, TRUE)) {
       if ($this->blockManager instanceof CachedDiscoveryInterface) {
         $this->blockManager->clearCachedDefinitions();

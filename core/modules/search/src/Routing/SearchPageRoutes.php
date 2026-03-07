@@ -13,26 +13,19 @@ use Symfony\Component\Routing\Route;
 class SearchPageRoutes implements ContainerInjectionInterface {
 
   /**
-   * The search page repository.
-   *
-   * @var \Drupal\search\SearchPageRepositoryInterface
-   */
-  protected $searchPageRepository;
-
-  /**
    * Constructs a new search route subscriber.
    *
-   * @param \Drupal\search\SearchPageRepositoryInterface $search_page_repository
+   * @param \Drupal\search\SearchPageRepositoryInterface $searchPageRepository
    *   The search page repository.
    */
-  public function __construct(SearchPageRepositoryInterface $search_page_repository) {
-    $this->searchPageRepository = $search_page_repository;
+  public function __construct(protected \Drupal\search\SearchPageRepositoryInterface $searchPageRepository)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('search.search_page_repository')
     );
@@ -44,7 +37,7 @@ class SearchPageRoutes implements ContainerInjectionInterface {
    * @return \Symfony\Component\Routing\Route[]
    *   An array of route objects.
    */
-  public function routes() {
+  public function routes(): array {
     $routes = [];
     // @todo Decide if /search should continue to redirect to /search/$default,
     //   or just perform the appropriate search.

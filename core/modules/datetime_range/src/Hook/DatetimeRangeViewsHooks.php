@@ -22,8 +22,7 @@ class DatetimeRangeViewsHooks {
   public function fieldViewsData(FieldStorageConfigInterface $field_storage): array {
     // Get datetime field data for value and end_value.
     $data = $this->dateTimeViewsHelper->buildViewsData($field_storage, [], 'value');
-    $data = $this->dateTimeViewsHelper->buildViewsData($field_storage, $data, 'end_value');
-    return $data;
+    return $this->dateTimeViewsHelper->buildViewsData($field_storage, $data, 'end_value');
   }
 
 }

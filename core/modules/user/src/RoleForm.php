@@ -16,7 +16,7 @@ class RoleForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $entity = $this->entity;
     $form['label'] = [
       '#type' => 'textfield',
@@ -35,7 +35,7 @@ class RoleForm extends EntityForm {
       '#size' => 30,
       '#maxlength' => ConfigEntityStorage::MAX_ID_LENGTH,
       '#machine_name' => [
-        'exists' => ['\Drupal\user\Entity\Role', 'load'],
+        'exists' => [\Drupal\user\Entity\Role::class, 'load'],
       ],
     ];
     $form['weight'] = [
@@ -49,7 +49,7 @@ class RoleForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $entity = $this->entity;
 
     // Prevent leading and trailing spaces in role names.

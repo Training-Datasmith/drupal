@@ -39,7 +39,7 @@ class NodeRevisionDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $entity_type_manager = $container->get('entity_type.manager');
     return new static(
       $entity_type_manager->getStorage('node'),
@@ -52,14 +52,14 @@ class NodeRevisionDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'node_revision_delete_confirm';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to delete the revision from %revision-date?', [
       '%revision-date' => $this->dateFormatter->format($this->revision->getRevisionCreationTime()),
     ]);
@@ -68,14 +68,14 @@ class NodeRevisionDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('entity.node.version_history', ['node' => $this->revision->id()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Delete');
   }
 
@@ -84,15 +84,14 @@ class NodeRevisionDeleteForm extends ConfirmFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?NodeInterface $node_revision = NULL) {
     $this->revision = $node_revision;
-    $form = parent::buildForm($form, $form_state);
 
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = $this->nodeStorage;
     $storage->deleteRevision($this->revision->getRevisionId());

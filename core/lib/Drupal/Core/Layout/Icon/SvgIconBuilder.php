@@ -75,7 +75,7 @@ class SvgIconBuilder implements IconBuilderInterface {
    * @return array
    *   A render array representing a SVG icon.
    */
-  protected function buildRenderArray(array $regions, $width, $height, $stroke_width) {
+  protected function buildRenderArray(array $regions, $width, $height, $stroke_width): array {
     $build = [
       '#type' => 'html_tag',
       '#tag' => 'svg',
@@ -156,7 +156,7 @@ class SvgIconBuilder implements IconBuilderInterface {
    *   An array keyed by region name, with each element containing the 'height',
    *   'width', and 'x' and 'y' offsets of each region.
    */
-  protected function calculateSvgValues(array $rows, $width, $height, $stroke_width, $padding) {
+  protected function calculateSvgValues(array $rows, $width, $height, $stroke_width, $padding): array {
     $region_rects = [];
 
     $row_height = $this->getLength(count($rows), $height, $stroke_width, $padding);
@@ -202,7 +202,7 @@ class SvgIconBuilder implements IconBuilderInterface {
    * @return int
    *   The offset for this region.
    */
-  protected function getOffset($delta, $length, $stroke_width, $padding) {
+  protected function getOffset($delta, $length, $stroke_width, $padding): int|float {
     // Half of the stroke width is drawn outside the dimensions.
     $stroke_width /= 2;
     // For every region in front of this add two strokes, as well as one
@@ -226,7 +226,7 @@ class SvgIconBuilder implements IconBuilderInterface {
    * @return float|int
    *   The height or width of a region.
    */
-  protected function getLength($number_of_regions, $length, $stroke_width, $padding) {
+  protected function getLength($number_of_regions, $length, $stroke_width, $padding): int|float {
     if ($number_of_regions === 0) {
       return 0;
     }
@@ -242,7 +242,7 @@ class SvgIconBuilder implements IconBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setId($id) {
+  public function setId($id): static {
     $this->id = $id;
     return $this;
   }
@@ -250,7 +250,7 @@ class SvgIconBuilder implements IconBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLabel($label) {
+  public function setLabel($label): static {
     $this->label = $label;
     return $this;
   }
@@ -258,7 +258,7 @@ class SvgIconBuilder implements IconBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setWidth($width) {
+  public function setWidth($width): static {
     $this->width = $width;
     return $this;
   }
@@ -266,7 +266,7 @@ class SvgIconBuilder implements IconBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setHeight($height) {
+  public function setHeight($height): static {
     $this->height = $height;
     return $this;
   }
@@ -274,7 +274,7 @@ class SvgIconBuilder implements IconBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPadding($padding) {
+  public function setPadding($padding): static {
     $this->padding = $padding;
     return $this;
   }
@@ -282,7 +282,7 @@ class SvgIconBuilder implements IconBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setStrokeWidth($stroke_width) {
+  public function setStrokeWidth($stroke_width): static {
     $this->strokeWidth = $stroke_width;
     return $this;
   }

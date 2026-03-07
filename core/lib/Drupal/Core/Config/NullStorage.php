@@ -19,62 +19,60 @@ namespace Drupal\Core\Config;
 class NullStorage implements StorageInterface {
 
   /**
-   * The storage collection.
-   *
-   * @var string
-   */
-  protected $collection;
-
-  /**
    * Constructs a new NullStorage.
    *
    * @param string $collection
    *   (optional) The collection to store configuration in. Defaults to the
    *   default collection.
    */
-  public function __construct($collection = StorageInterface::DEFAULT_COLLECTION) {
-    $this->collection = $collection;
+  public function __construct(
+      /**
+       * The storage collection.
+       */
+      protected $collection = StorageInterface::DEFAULT_COLLECTION
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function read($name) {
+  public function read($name): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function readMultiple(array $names) {
+  public function readMultiple(array $names): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function write($name, array $data) {
+  public function write($name, array $data): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete($name) {
+  public function delete($name): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function rename($name, $new_name) {
+  public function rename($name, $new_name): bool {
     return FALSE;
   }
 
@@ -95,28 +93,28 @@ class NullStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function listAll($prefix = '') {
+  public function listAll($prefix = ''): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteAll($prefix = '') {
+  public function deleteAll($prefix = ''): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createCollection($collection) {
+  public function createCollection($collection): static {
     return new static($collection);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAllCollectionNames() {
+  public function getAllCollectionNames(): array {
     // Returns only non empty collections.
     return [];
   }

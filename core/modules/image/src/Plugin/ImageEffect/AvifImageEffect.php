@@ -23,8 +23,6 @@ class AvifImageEffect extends ConvertImageEffect {
 
   /**
    * The image toolkit manager.
-   *
-   * @var \Drupal\Core\ImageToolkit\ImageToolkitManager
    */
   protected ImageToolkitManager $imageToolkitManager;
 
@@ -40,7 +38,7 @@ class AvifImageEffect extends ConvertImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
+  public function applyEffect(ImageInterface $image): bool {
     // If avif is not supported fallback to the parent.
     if (!$this->isAvifSupported()) {
       return parent::applyEffect($image);
@@ -68,7 +66,7 @@ class AvifImageEffect extends ConvertImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildConfigurationForm($form, $form_state);
     unset($form['extension']['#options']['avif']);
     $form['extension']['#title'] = $this->t('Fallback format');

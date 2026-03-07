@@ -13,20 +13,13 @@ use Drupal\Core\Routing\RouteMatchInterface;
 class RouteCacheContext implements CacheContextInterface {
 
   /**
-   * The route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructs a new RouteCacheContext class.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
    */
-  public function __construct(RouteMatchInterface $route_match) {
-    $this->routeMatch = $route_match;
+  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+  {
   }
 
   /**
@@ -39,14 +32,14 @@ class RouteCacheContext implements CacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getContext() {
+  public function getContext(): string {
     return $this->routeMatch->getRouteName() . hash('sha256', serialize($this->routeMatch->getRawParameters()->all()));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

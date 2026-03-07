@@ -18,7 +18,7 @@ class RenderArrayNonHtmlSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
    *   The event to process.
    */
-  public function onRespond(ViewEvent $event) {
+  public function onRespond(ViewEvent $event): void {
     $request = $event->getRequest();
     $result = $event->getControllerResult();
 

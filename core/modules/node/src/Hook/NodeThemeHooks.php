@@ -84,7 +84,7 @@ class NodeThemeHooks {
    * Implements hook_preprocess_HOOK() for node field templates.
    */
   #[Hook('preprocess_field__node')]
-  public function preprocessFieldNode(&$variables): void {
+  public function preprocessFieldNode(array &$variables): void {
     // Set a variable 'is_inline' in cases where inline markup is required,
     // without any block elements such as <div>.
     if ($variables['element']['#is_page_title'] ?? FALSE) {
@@ -131,7 +131,7 @@ class NodeThemeHooks {
    * @see hook_entity_type_build()
    * @see \Drupal\Core\Field\BaseFieldDefinition::setDisplayConfigurable()
    */
-  public function preprocessNode(&$variables): void {
+  public function preprocessNode(array &$variables): void {
     $variables['view_mode'] = $variables['elements']['#view_mode'];
 
     $variables['node'] = $variables['elements']['#node'];
@@ -213,7 +213,7 @@ class NodeThemeHooks {
    *
    * @see \Drupal\node\Controller\NodeController::addPage()
    */
-  public function preprocessNodeAddList(&$variables): void {
+  public function preprocessNodeAddList(array &$variables): void {
     $variables['types'] = [];
     if (!empty($variables['content'])) {
       foreach ($variables['content'] as $type) {
@@ -232,7 +232,7 @@ class NodeThemeHooks {
    * Implements hook_preprocess_HOOK() for HTML document templates.
    */
   #[Hook('preprocess_html')]
-  public function preprocessHtml(&$variables): void {
+  public function preprocessHtml(array &$variables): void {
     // If on an individual node page or node preview page, add the node type to
     // the body classes.
     if (($node = $this->routeMatch->getParameter('node')) || ($node = $this->routeMatch->getParameter('node_preview'))) {

@@ -26,13 +26,6 @@ class BlockManager extends DefaultPluginManager implements BlockManagerInterface
   use FilteredPluginManagerTrait;
 
   /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a new \Drupal\Core\Block\BlockManager object.
    *
    * @param \Traversable $namespaces
@@ -45,25 +38,24 @@ class BlockManager extends DefaultPluginManager implements BlockManagerInterface
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, LoggerInterface $logger) {
-    parent::__construct('Plugin/Block', $namespaces, $module_handler, BlockPluginInterface::class, Block::class, 'Drupal\Core\Block\Annotation\Block');
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Psr\Log\LoggerInterface $logger) {
+    parent::__construct('Plugin/Block', $namespaces, $module_handler, BlockPluginInterface::class, Block::class, \Drupal\Core\Block\Annotation\Block::class);
 
     $this->alterInfo($this->getType());
     $this->setCacheBackend($cache_backend, 'block_plugins');
-    $this->logger = $logger;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getType() {
+  protected function getType(): string {
     return 'block';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     parent::processDefinition($definition, $plugin_id);
     $this->processDefinitionCategory($definition);
   }
@@ -82,7 +74,7 @@ class BlockManager extends DefaultPluginManager implements BlockManagerInterface
   /**
    * {@inheritdoc}
    */
-  public function getFallbackPluginId($plugin_id, array $configuration = []) {
+  public function getFallbackPluginId($plugin_id, array $configuration = []): string {
     return 'broken';
   }
 

@@ -62,7 +62,7 @@ class FileCacheFactory {
 
     // Ensure that all properties are set.
     $fallback_configuration = [
-      'class' => '\Drupal\Component\FileCache\FileCache',
+      'class' => \Drupal\Component\FileCache\FileCache::class,
       'collection' => $collection,
       'cache_backend_class' => NULL,
       'cache_backend_configuration' => [],
@@ -90,7 +90,7 @@ class FileCacheFactory {
    * @param array $configuration
    *   The configuration to use.
    */
-  public static function setConfiguration($configuration) {
+  public static function setConfiguration($configuration): void {
     static::$configuration = $configuration;
   }
 
@@ -113,7 +113,7 @@ class FileCacheFactory {
    * @param string $prefix
    *   The cache prefix.
    */
-  public static function setPrefix($prefix) {
+  public static function setPrefix($prefix): void {
     static::$prefix = $prefix;
   }
 

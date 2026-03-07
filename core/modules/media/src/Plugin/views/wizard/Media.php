@@ -26,7 +26,7 @@ class Media extends WizardPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getAvailableSorts() {
+  public function getAvailableSorts(): array {
     return [
       'media_field_data-name:DESC' => $this->t('Media name'),
     ];

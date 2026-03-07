@@ -16,7 +16,7 @@ class BlockContentTypeListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = parent::getDefaultOperations($entity, $cacheability);
@@ -49,7 +49,7 @@ class BlockContentTypeListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getTitle() {
+  protected function getTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Block types');
   }
 

@@ -38,7 +38,7 @@ class BaseFieldOverrideStorage extends FieldConfigStorageBase {
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('config.factory'),

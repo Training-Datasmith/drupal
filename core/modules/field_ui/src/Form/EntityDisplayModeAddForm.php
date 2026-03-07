@@ -31,7 +31,7 @@ class EntityDisplayModeAddForm extends EntityDisplayModeFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     $form_state->setValueForElement($form['id'], $this->targetEntityTypeId . '.' . $form_state->getValue('id'));

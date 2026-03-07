@@ -39,7 +39,7 @@ class PluginDefinition implements PluginDefinitionInterface {
   /**
    * {@inheritdoc}
    */
-  public function setClass($class) {
+  public function setClass($class): static {
     $this->class = $class;
     return $this;
   }

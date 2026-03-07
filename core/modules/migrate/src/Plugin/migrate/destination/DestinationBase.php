@@ -43,13 +43,6 @@ abstract class DestinationBase extends PluginBase implements MigrateDestinationI
   protected $rollbackAction = MigrateIdMapInterface::ROLLBACK_DELETE;
 
   /**
-   * The migration.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
-
-  /**
    * Constructs an entity destination plugin.
    *
    * @param array $configuration
@@ -61,9 +54,8 @@ abstract class DestinationBase extends PluginBase implements MigrateDestinationI
    * @param \Drupal\migrate\Plugin\MigrationInterface $migration
    *   The migration.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\migrate\Plugin\MigrationInterface $migration) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->migration = $migration;
   }
 
   /**
@@ -76,7 +68,7 @@ abstract class DestinationBase extends PluginBase implements MigrateDestinationI
   /**
    * {@inheritdoc}
    */
-  public function checkRequirements() {
+  public function checkRequirements(): void {
     if (empty($this->pluginDefinition['requirements_met'])) {
       throw new RequirementsException(sprintf("Destination plugin '%s' did not meet the requirements", $this->pluginId));
     }
@@ -85,7 +77,7 @@ abstract class DestinationBase extends PluginBase implements MigrateDestinationI
   /**
    * {@inheritdoc}
    */
-  public function rollback(array $destination_identifier) {
+  public function rollback(array $destination_identifier): void {
     // By default we do nothing.
   }
 
@@ -130,9 +122,7 @@ abstract class DestinationBase extends PluginBase implements MigrateDestinationI
     if (is_string($this->migration->provider)) {
       return $this->migration->provider;
     }
-    else {
-      return reset($this->migration->provider);
-    }
+    return reset($this->migration->provider);
   }
 
 }

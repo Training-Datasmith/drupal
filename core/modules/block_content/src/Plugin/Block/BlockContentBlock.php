@@ -56,7 +56,7 @@ class BlockContentBlock extends BlockBase implements ContainerFactoryPluginInter
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'view_mode' => 'full',
     ];
@@ -65,7 +65,7 @@ class BlockContentBlock extends BlockBase implements ContainerFactoryPluginInter
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     $block = $this->getEntity();
     if (!$block) {
       return $form;
@@ -86,7 +86,7 @@ class BlockContentBlock extends BlockBase implements ContainerFactoryPluginInter
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     // Invalidate the block cache to update content block-based derivatives.
     $this->configuration['view_mode'] = $form_state->getValue('view_mode');
     $this->blockManager->clearCachedDefinitions();
@@ -109,15 +109,13 @@ class BlockContentBlock extends BlockBase implements ContainerFactoryPluginInter
     if ($block = $this->getEntity()) {
       return $this->entityTypeManager->getViewBuilder($block->getEntityTypeId())->view($block, $this->configuration['view_mode']);
     }
-    else {
-      return [
-        '#markup' => $this->t('Block with uuid %uuid does not exist. <a href=":url">Add content block</a>.', [
-          '%uuid' => $this->getDerivativeId(),
-          ':url' => $this->urlGenerator->generate('block_content.add_page'),
-        ]),
-        '#access' => $this->account->hasPermission('administer blocks'),
-      ];
-    }
+    return [
+      '#markup' => $this->t('Block with uuid %uuid does not exist. <a href=":url">Add content block</a>.', [
+        '%uuid' => $this->getDerivativeId(),
+        ':url' => $this->urlGenerator->generate('block_content.add_page'),
+      ]),
+      '#access' => $this->account->hasPermission('administer blocks'),
+    ];
   }
 
   /**

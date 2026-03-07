@@ -14,7 +14,7 @@ class StatusReport extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#theme' => 'status_report_grouped',
       '#priorities' => [
@@ -34,7 +34,7 @@ class StatusReport extends RenderElementBase {
    *
    * This function is assigned as a #pre_render callback.
    */
-  public static function preRenderGroupRequirements($element) {
+  public static function preRenderGroupRequirements(array $element): array {
     $grouped_requirements = [];
     /** @var array{title: \Drupal\Core\StringTranslation\TranslatableMarkup, value: mixed, description: \Drupal\Core\StringTranslation\TranslatableMarkup, severity: \Drupal\Core\Extension\Requirement\RequirementSeverity} $requirement */
     foreach ($element['#requirements'] as $key => $requirement) {
@@ -53,9 +53,7 @@ class StatusReport extends RenderElementBase {
 
     // Order the grouped requirements by a set order.
     $order = array_flip($element['#priorities']);
-    uksort($grouped_requirements, function ($a, $b) use ($order) {
-      return $order[$a] <=> $order[$b];
-    });
+    uksort($grouped_requirements, fn($a, $b) => $order[$a] <=> $order[$b]);
 
     $element['#grouped_requirements'] = $grouped_requirements;
 

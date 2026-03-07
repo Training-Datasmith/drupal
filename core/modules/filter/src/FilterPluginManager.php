@@ -32,7 +32,7 @@ class FilterPluginManager extends DefaultPluginManager implements FallbackPlugin
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/Filter', $namespaces, $module_handler, FilterInterface::class, Filter::class, 'Drupal\filter\Annotation\Filter');
+    parent::__construct('Plugin/Filter', $namespaces, $module_handler, FilterInterface::class, Filter::class, \Drupal\filter\Annotation\Filter::class);
     $this->alterInfo('filter_info');
     $this->setCacheBackend($cache_backend, 'filter_plugins');
   }
@@ -40,7 +40,7 @@ class FilterPluginManager extends DefaultPluginManager implements FallbackPlugin
   /**
    * {@inheritdoc}
    */
-  public function getFallbackPluginId($plugin_id, array $configuration = []) {
+  public function getFallbackPluginId($plugin_id, array $configuration = []): string {
     return 'filter_null';
   }
 

@@ -13,7 +13,7 @@ class TwoColumnLayout extends MultiWidthLayoutBase {
   /**
    * {@inheritdoc}
    */
-  protected function getWidthOptions() {
+  protected function getWidthOptions(): array {
     return [
       '50-50' => '50%/50%',
       '33-67' => '33%/67%',
@@ -26,7 +26,7 @@ class TwoColumnLayout extends MultiWidthLayoutBase {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultWidth() {
+  protected function getDefaultWidth(): string {
     return '50-50';
   }
 

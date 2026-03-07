@@ -20,7 +20,7 @@ class LanguageSelect extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#default_value' => LanguageInterface::LANGCODE_NOT_SPECIFIED,

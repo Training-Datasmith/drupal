@@ -17,11 +17,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class GitExcluder implements EventSubscriberInterface {
+final readonly class GitExcluder implements EventSubscriberInterface {
 
   public function __construct(
-    private readonly PathLocator $pathLocator,
-    private readonly ComposerInspector $composerInspector,
+    private PathLocator $pathLocator,
+    private ComposerInspector $composerInspector,
   ) {}
 
   /**

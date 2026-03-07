@@ -22,14 +22,14 @@ class StaticDiscovery implements DiscoveryInterface {
   /**
    * Sets a plugin definition.
    */
-  public function setDefinition($plugin, $definition) {
+  public function setDefinition($plugin, $definition): void {
     $this->definitions[$plugin] = $definition;
   }
 
   /**
    * Deletes a plugin definition.
    */
-  public function deleteDefinition($plugin) {
+  public function deleteDefinition($plugin): void {
     unset($this->definitions[$plugin]);
   }
 

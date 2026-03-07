@@ -26,23 +26,9 @@ class ImportForm extends FormBase {
   protected $file;
 
   /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The configurable language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('language_manager')
@@ -52,27 +38,26 @@ class ImportForm extends FormBase {
   /**
    * Constructs a form for language import.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $language_manager
+   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
    *   The configurable language manager.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ConfigurableLanguageManagerInterface $language_manager) {
-    $this->moduleHandler = $module_handler;
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'locale_translate_import_form';
   }
 
   /**
    * Form constructor for the translation import screen.
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $languages = $this->languageManager->getLanguages();
 
     // Initialize a language list to the ones available, including English if we
@@ -160,7 +145,7 @@ class ImportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $this->file = _file_save_upload_from_form($form['file'], $form_state, 0);
 
     // Ensure we have the file uploaded.
@@ -172,7 +157,7 @@ class ImportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Add language, if not yet supported.
     $language = $this->languageManager->getLanguage($form_state->getValue('langcode'));
     if (empty($language)) {

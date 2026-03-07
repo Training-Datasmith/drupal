@@ -40,39 +40,9 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
   const LOGGED_OUT = '0';
 
   /**
-   * The user flood control service.
-   *
-   * @var \Drupal\user\UserFloodControl
-   */
-  protected $userFloodControl;
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $userStorage;
-
-  /**
-   * The CSRF token generator.
-   *
-   * @var \Drupal\Core\Access\CsrfTokenGenerator
-   */
-  protected $csrfToken;
-
-  /**
    * The user authentication.
-   *
-   * @var \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface
    */
-  protected $userAuth;
-
-  /**
-   * The route provider.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
+  protected \Drupal\user\UserAuthenticationInterface|\Drupal\user\UserAuthInterface $userAuth;
 
   /**
    * The serializer.
@@ -82,57 +52,40 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
   protected $serializer;
 
   /**
-   * The available serialization formats.
-   *
-   * @var array
-   */
-  protected $serializerFormats = [];
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a new UserAuthenticationController object.
    *
-   * @param \Drupal\user\UserFloodControlInterface $user_flood_control
+   * @param \Drupal\user\UserFloodControlInterface $userFloodControl
    *   The user flood control service.
-   * @param \Drupal\user\UserStorageInterface $user_storage
+   * @param \Drupal\user\UserStorageInterface $userStorage
    *   The user storage.
-   * @param \Drupal\Core\Access\CsrfTokenGenerator $csrf_token
+   * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfToken
    *   The CSRF token generator.
    * @param \Drupal\user\UserAuthenticationInterface|\Drupal\user\UserAuthInterface $user_auth
    *   The user authentication.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider.
    * @param \Symfony\Component\Serializer\Serializer $serializer
    *   The serializer.
-   * @param array $serializer_formats
+   * @param array $serializerFormats
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(UserFloodControlInterface $user_flood_control, UserStorageInterface $user_storage, CsrfTokenGenerator $csrf_token, UserAuthenticationInterface|UserAuthInterface $user_auth, RouteProviderInterface $route_provider, Serializer $serializer, array $serializer_formats, LoggerInterface $logger) {
-    $this->userFloodControl = $user_flood_control;
-    $this->userStorage = $user_storage;
-    $this->csrfToken = $csrf_token;
+  public function __construct(/**
+   * The user flood control service.
+   */
+  protected \Drupal\user\UserFloodControlInterface $userFloodControl, protected \Drupal\user\UserStorageInterface $userStorage, protected \Drupal\Core\Access\CsrfTokenGenerator $csrfToken, UserAuthenticationInterface|UserAuthInterface $user_auth, protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, Serializer $serializer, protected array $serializerFormats, protected \Psr\Log\LoggerInterface $logger) {
     if (!$user_auth instanceof UserAuthenticationInterface) {
       @trigger_error('The $user_auth parameter implementing UserAuthInterface is deprecated in drupal:10.3.0 and will be removed in drupal:12.0.0. Implement UserAuthenticationInterface instead. See https://www.drupal.org/node/3411040');
     }
     $this->userAuth = $user_auth;
     $this->serializer = $serializer;
-    $this->serializerFormats = $serializer_formats;
-    $this->routeProvider = $route_provider;
-    $this->logger = $logger;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     if ($container->hasParameter('serializer.formats') && $container->has('serializer')) {
       $serializer = $container->get('serializer');
       $formats = $container->getParameter('serializer.formats');
@@ -223,7 +176,7 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
 
         $logout_route = $this->routeProvider->getRouteByName('user.logout.http');
         // Trim '/' off path to match \Drupal\Core\Access\CsrfAccessCheck.
-        $logout_path = ltrim($logout_route->getPath(), '/');
+        $logout_path = ltrim((string) $logout_route->getPath(), '/');
         $response_data['logout_token'] = $this->csrfToken->get($logout_path);
 
         $encoded_response_data = $this->serializer->encode($response_data, $format);
@@ -286,13 +239,11 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
       if (empty($mail)) {
         throw new BadRequestHttpException('Unable to send email. Contact the site administrator if the problem persists.');
       }
-      else {
-        $this->logger->info('Password reset instructions mailed to %name at %email.', [
-          '%name' => $account->getAccountName(),
-          '%email' => $account->getEmail(),
-        ]);
-        return new Response();
-      }
+      $this->logger->info('Password reset instructions mailed to %name at %email.', [
+        '%name' => $account->getAccountName(),
+        '%email' => $account->getEmail(),
+      ]);
+      return new Response();
     }
 
     // Error if no users found with provided name or mail.
@@ -429,15 +380,12 @@ class UserAuthenticationController extends ControllerBase implements ContainerIn
       if ($flood_config->get('uid_only')) {
         // Register flood events based on the uid only, so they apply for any
         // IP address. This is the most secure option.
-        $identifier = $account->id();
+        return $account->id();
       }
-      else {
-        // The default identifier is a combination of uid and IP address. This
-        // is less secure but more resistant to denial-of-service attacks that
-        // could lock out all users with public user names.
-        $identifier = $account->id() . '-' . $request->getClientIp();
-      }
-      return $identifier;
+      // The default identifier is a combination of uid and IP address. This
+      // is less secure but more resistant to denial-of-service attacks that
+      // could lock out all users with public user names.
+      return $account->id() . '-' . $request->getClientIp();
     }
     return '';
   }

@@ -17,7 +17,7 @@ class ContextualLinks extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderLinks'],
@@ -72,7 +72,7 @@ class ContextualLinks extends RenderElementBase {
       $items += $contextual_links_manager->getContextualLinksArrayByGroup($group, $args['route_parameters'], $args['metadata']);
     }
 
-    uasort($items, [SortArray::class, 'sortByWeightElement']);
+    uasort($items, SortArray::sortByWeightElement(...));
 
     // Transform contextual links into parameters suitable for links.html.twig.
     $links = [];
@@ -110,7 +110,7 @@ class ContextualLinks extends RenderElementBase {
    * @return \Drupal\Core\Menu\ContextualLinkManager
    *   The contextual link manager service.
    */
-  protected static function contextualLinkManager() {
+  protected static function contextualLinkManager(): object {
     return \Drupal::service('plugin.manager.menu.contextual_link');
   }
 

@@ -26,7 +26,7 @@ class PathCacheContext extends RequestStackCacheContextBase implements CacheCont
   /**
    * {@inheritdoc}
    */
-  public function getContext() {
+  public function getContext(): string {
     $request = $this->requestStack->getCurrentRequest();
     return $request->getBasePath() . $request->getPathInfo();
   }
@@ -34,7 +34,7 @@ class PathCacheContext extends RequestStackCacheContextBase implements CacheCont
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

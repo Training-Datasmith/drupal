@@ -23,11 +23,11 @@ trait BundlePermissionHandlerTrait {
    *
    * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
-  protected function generatePermissions(array $bundles, callable $permission_builder) {
+  protected function generatePermissions(array $bundles, callable $permission_builder): array {
     $permissions = [];
     foreach ($bundles as $bundle) {
       $permissions += array_map(
-        function (array $perm) use ($bundle) {
+        function (array $perm) use ($bundle): array {
           // This permission is generated on behalf of a bundle, therefore
           // add the bundle as a config dependency.
           $perm['dependencies'][$bundle->getConfigDependencyKey()][] = $bundle->getConfigDependencyName();

@@ -23,13 +23,6 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface, ContainerFactoryPluginInterface {
 
   /**
-   * The field definition.
-   *
-   * @var \Drupal\Core\Field\FieldDefinitionInterface
-   */
-  protected $fieldDefinition;
-
-  /**
    * The widget settings.
    *
    * @var array
@@ -43,16 +36,15 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
    *   The plugin ID for the widget.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+   * @param \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition
    *   The definition of the field to which the widget is associated.
    * @param array $settings
    *   The widget settings.
    * @param array $third_party_settings
    *   Any third party settings.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings) {
+  public function __construct($plugin_id, $plugin_definition, protected \Drupal\Core\Field\FieldDefinitionInterface $fieldDefinition, array $settings, array $third_party_settings) {
     parent::__construct([], $plugin_id, $plugin_definition);
-    $this->fieldDefinition = $field_definition;
     $this->settings = $settings;
     $this->thirdPartySettings = $third_party_settings;
   }
@@ -328,7 +320,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
   /**
    * Submission handler for the "Add another item" button.
    */
-  public static function addMoreSubmit(array $form, FormStateInterface $form_state) {
+  public static function addMoreSubmit(array $form, FormStateInterface $form_state): void {
     $button = $form_state->getTriggeringElement();
 
     // Go one level up in the form, to the widgets container.
@@ -388,7 +380,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public static function deleteSubmit(&$form, FormStateInterface $form_state) {
+  public static function deleteSubmit(array &$form, FormStateInterface $form_state): void {
     $button = $form_state->getTriggeringElement();
     $delta = (int) $button['#delta'];
     $array_parents = array_slice($button['#array_parents'], 0, -4);
@@ -491,7 +483,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
   /**
    * {@inheritdoc}
    */
-  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
+  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state): void {
     $field_name = $this->fieldDefinition->getName();
 
     // Extract the values from $form_state->getValues().
@@ -511,9 +503,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
           $value['_original_delta'] = $delta;
         }
 
-        usort($values, function ($a, $b) {
-          return SortArray::sortByKeyInt($a, $b, '_weight');
-        });
+        usort($values, fn($a, $b) => SortArray::sortByKeyInt($a, $b, '_weight'));
       }
 
       // Let the widget massage the submitted values.
@@ -536,7 +526,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
   /**
    * {@inheritdoc}
    */
-  public function flagErrors(FieldItemListInterface $items, ConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state) {
+  public function flagErrors(FieldItemListInterface $items, ConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state): void {
     $field_name = $this->fieldDefinition->getName();
 
     $field_state = static::getWidgetState($form['#parents'], $field_name, $form_state);
@@ -552,7 +542,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
       $element_path = implode('][', $element['#parents']);
       if ($reported_errors = $form_state->getErrors()) {
         foreach (array_keys($reported_errors) as $error_path) {
-          if (str_starts_with($error_path, $element_path)) {
+          if (str_starts_with((string) $error_path, $element_path)) {
             return;
           }
         }
@@ -565,7 +555,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
         $violations_by_delta = $item_list_violations = [];
         foreach ($violations as $violation) {
           // Separate violations by delta.
-          $property_path = explode('.', $violation->getPropertyPath());
+          $property_path = explode('.', (string) $violation->getPropertyPath());
           $delta = array_shift($property_path);
           if (is_numeric($delta)) {
             $violations_by_delta[$delta][] = $violation;
@@ -616,7 +606,7 @@ abstract class WidgetBase extends PluginSettingsBase implements WidgetInterface,
   /**
    * {@inheritdoc}
    */
-  public static function setWidgetState(array $parents, $field_name, FormStateInterface $form_state, array $field_state) {
+  public static function setWidgetState(array $parents, $field_name, FormStateInterface $form_state, array $field_state): void {
     NestedArray::setValue($form_state->getStorage(), static::getWidgetStateParents($parents, $field_name), $field_state);
   }
 

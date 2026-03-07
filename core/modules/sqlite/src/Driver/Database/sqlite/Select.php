@@ -12,7 +12,7 @@ class Select extends QuerySelect {
   /**
    * {@inheritdoc}
    */
-  public function forUpdate($set = TRUE) {
+  public function forUpdate($set = TRUE): static {
     // SQLite does not support FOR UPDATE so nothing to do.
     return $this;
   }

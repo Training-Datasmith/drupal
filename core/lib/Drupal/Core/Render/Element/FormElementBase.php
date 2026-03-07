@@ -119,7 +119,7 @@ abstract class FormElementBase extends RenderElementBase implements FormElementI
    * @return array
    *   The processed element.
    */
-  public static function processPattern(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processPattern(array &$element, FormStateInterface $form_state, &$complete_form) {
     if (isset($element['#pattern']) && !isset($element['#attributes']['pattern'])) {
       $element['#attributes']['pattern'] = $element['#pattern'];
       $element['#element_validate'][] = [static::class, 'validatePattern'];
@@ -141,7 +141,7 @@ abstract class FormElementBase extends RenderElementBase implements FormElementI
    * @param array $complete_form
    *   The complete form structure.
    */
-  public static function validatePattern(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validatePattern(array &$element, FormStateInterface $form_state, &$complete_form): void {
     if ($element['#value'] !== '') {
       // The pattern must match the entire string and should have the same
       // behavior as the RegExp object in ECMA 262.
@@ -151,7 +151,7 @@ abstract class FormElementBase extends RenderElementBase implements FormElementI
       //   prepended and appended.
       $pattern = '{^(?:' . $element['#pattern'] . ')$}';
 
-      if (!preg_match($pattern, $element['#value'])) {
+      if (!preg_match($pattern, (string) $element['#value'])) {
         $form_state->setError($element, t('%name field is not in the right format.', ['%name' => $element['#title']]));
       }
     }
@@ -191,7 +191,7 @@ abstract class FormElementBase extends RenderElementBase implements FormElementI
    * @return array
    *   The form element.
    */
-  public static function processAutocomplete(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processAutocomplete(array &$element, FormStateInterface $form_state, &$complete_form) {
     $url = NULL;
     $access = FALSE;
 

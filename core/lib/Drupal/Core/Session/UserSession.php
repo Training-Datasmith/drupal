@@ -94,7 +94,7 @@ class UserSession implements AccountInterface {
     $roles = $this->roles;
 
     if ($exclude_locked_roles) {
-      $roles = array_values(array_diff($roles, [AccountInterface::ANONYMOUS_ROLE, AccountInterface::AUTHENTICATED_ROLE]));
+      return array_values(array_diff($roles, [AccountInterface::ANONYMOUS_ROLE, AccountInterface::AUTHENTICATED_ROLE]));
     }
 
     return $roles;
@@ -123,14 +123,14 @@ class UserSession implements AccountInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAuthenticated() {
+  public function isAuthenticated(): bool {
     return $this->uid > 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isAnonymous() {
+  public function isAnonymous(): bool {
     return $this->uid == 0;
   }
 
@@ -142,9 +142,7 @@ class UserSession implements AccountInterface {
     if (!empty($this->preferred_langcode) && isset($language_list[$this->preferred_langcode])) {
       return $language_list[$this->preferred_langcode]->getId();
     }
-    else {
-      return $fallback_to_default ? \Drupal::languageManager()->getDefaultLanguage()->getId() : '';
-    }
+    return $fallback_to_default ? \Drupal::languageManager()->getDefaultLanguage()->getId() : '';
   }
 
   /**
@@ -155,9 +153,7 @@ class UserSession implements AccountInterface {
     if (!empty($this->preferred_admin_langcode) && isset($language_list[$this->preferred_admin_langcode])) {
       return $language_list[$this->preferred_admin_langcode]->getId();
     }
-    else {
-      return $fallback_to_default ? \Drupal::languageManager()->getDefaultLanguage()->getId() : '';
-    }
+    return $fallback_to_default ? \Drupal::languageManager()->getDefaultLanguage()->getId() : '';
   }
 
   /**

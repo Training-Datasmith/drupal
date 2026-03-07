@@ -14,40 +14,17 @@ use Drupal\Core\TypedData\TranslatableInterface as TranslatableDataInterface;
 class EntityRepository implements EntityRepositoryInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The context repository service.
-   *
-   * @var \Drupal\Core\Plugin\Context\ContextRepositoryInterface
-   */
-  protected $contextRepository;
-
-  /**
    * Constructs a new EntityRepository.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $context_repository
+   * @param \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository
    *   The context repository service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager, ContextRepositoryInterface $context_repository) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->languageManager = $language_manager;
-    $this->contextRepository = $context_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Plugin\Context\ContextRepositoryInterface $contextRepository)
+  {
   }
 
   /**
@@ -76,15 +53,10 @@ class EntityRepository implements EntityRepositoryInterface {
     //   target identifier key rather than hard-coding this check. Issue:
     //   https://www.drupal.org/node/2412983.
     if ($entity_type instanceof ConfigEntityTypeInterface) {
-      $entity = $this->entityTypeManager->getStorage($entity_type_id)->load($target);
+      return $this->entityTypeManager->getStorage($entity_type_id)->load($target);
     }
 
-    // For content entities, the config target is given by the UUID.
-    else {
-      $entity = $this->loadEntityByUuid($entity_type_id, $target);
-    }
-
-    return $entity;
+    return $this->loadEntityByUuid($entity_type_id, $target);
   }
 
   /**
@@ -132,8 +104,9 @@ class EntityRepository implements EntityRepositoryInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getActiveMultiple($entity_type_id, array $entity_ids, ?array $contexts = NULL) {
+  public function getActiveMultiple($entity_type_id, array $entity_ids, ?array $contexts = NULL): array {
     $active = [];
 
     if (!isset($contexts)) {
@@ -214,11 +187,7 @@ class EntityRepository implements EntityRepositoryInterface {
    */
   protected function getContentLanguageFromContexts(array $contexts) {
 
-    if (isset($contexts['langcode'])) {
-      return $contexts['langcode'];
-    }
-
-    return $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
+    return $contexts['langcode'] ?? $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
   }
 
   /**

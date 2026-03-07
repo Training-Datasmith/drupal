@@ -82,13 +82,6 @@ use Symfony\Component\Mime\MimeTypes;
 class OEmbed extends MediaSourceBase implements OEmbedInterface {
 
   /**
-   * The logger channel for media.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * The messenger service.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -101,41 +94,6 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
    * @var \GuzzleHttp\Client
    */
   protected $httpClient;
-
-  /**
-   * The oEmbed resource fetcher service.
-   *
-   * @var \Drupal\media\OEmbed\ResourceFetcherInterface
-   */
-  protected $resourceFetcher;
-
-  /**
-   * The OEmbed manager service.
-   *
-   * @var \Drupal\media\OEmbed\UrlResolverInterface
-   */
-  protected $urlResolver;
-
-  /**
-   * The iFrame URL helper service.
-   *
-   * @var \Drupal\media\IFrameUrlHelper
-   */
-  protected $iFrameUrlHelper;
-
-  /**
-   * The file system.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
-   * The token replacement service.
-   *
-   * @var \Drupal\Core\Utility\Token
-   */
-  protected $token;
 
   /**
    * Constructs a new OEmbed instance.
@@ -160,33 +118,27 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
    *   The messenger service.
    * @param \GuzzleHttp\ClientInterface $http_client
    *   The HTTP client.
-   * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resource_fetcher
+   * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher
    *   The oEmbed resource fetcher service.
-   * @param \Drupal\media\OEmbed\UrlResolverInterface $url_resolver
+   * @param \Drupal\media\OEmbed\UrlResolverInterface $urlResolver
    *   The oEmbed URL resolver service.
-   * @param \Drupal\media\IFrameUrlHelper $iframe_url_helper
+   * @param \Drupal\media\IFrameUrlHelper $iFrameUrlHelper
    *   The iFrame URL helper service.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system.
    * @param \Drupal\Core\Utility\Token $token
    *   The token replacement service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, ConfigFactoryInterface $config_factory, FieldTypePluginManagerInterface $field_type_manager, LoggerInterface $logger, MessengerInterface $messenger, ClientInterface $http_client, ResourceFetcherInterface $resource_fetcher, UrlResolverInterface $url_resolver, IFrameUrlHelper $iframe_url_helper, FileSystemInterface $file_system, Token $token) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, ConfigFactoryInterface $config_factory, FieldTypePluginManagerInterface $field_type_manager, protected \Psr\Log\LoggerInterface $logger, MessengerInterface $messenger, ClientInterface $http_client, protected \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher, protected \Drupal\media\OEmbed\UrlResolverInterface $urlResolver, protected \Drupal\media\IFrameUrlHelper $iFrameUrlHelper, protected \Drupal\Core\File\FileSystemInterface $fileSystem, protected \Drupal\Core\Utility\Token $token) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $entity_field_manager, $field_type_manager, $config_factory);
-    $this->logger = $logger;
     $this->messenger = $messenger;
     $this->httpClient = $http_client;
-    $this->resourceFetcher = $resource_fetcher;
-    $this->urlResolver = $url_resolver;
-    $this->iFrameUrlHelper = $iframe_url_helper;
-    $this->fileSystem = $file_system;
-    $this->token = $token;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -209,7 +161,7 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
   /**
    * {@inheritdoc}
    */
-  public function getMetadataAttributes() {
+  public function getMetadataAttributes(): array {
     return [
       'type' => $this->t('Resource type'),
       'title' => $this->t('Resource title'),
@@ -252,10 +204,10 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
     switch ($name) {
       case 'default_name':
         if ($title = $this->getMetadata($media, 'title')) {
-          return $title;
+            return $title;
         }
-        elseif ($url = $this->getMetadata($media, 'url')) {
-          return $url;
+        if ($url = $this->getMetadata($media, 'url')) {
+            return $url;
         }
         return parent::getMetadata($media, 'default_name');
 
@@ -357,7 +309,7 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
     $configuration = $this->getConfiguration();
     $configuration['providers'] = array_filter(array_values($configuration['providers']));
@@ -367,7 +319,7 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $thumbnails_directory = $form_state->getValue('thumbnails_directory');
 
     /** @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager */
@@ -513,7 +465,7 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSourceFieldConstraints() {
+  public function getSourceFieldConstraints(): array {
     return [
       'oembed_resource' => [],
     ];
@@ -522,7 +474,7 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
   /**
    * {@inheritdoc}
    */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display) {
+  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void {
     $display->setComponent($this->getSourceFieldDefinition($type)->getName(), [
       'type' => 'oembed',
       'label' => 'visually_hidden',
@@ -532,7 +484,7 @@ class OEmbed extends MediaSourceBase implements OEmbedInterface {
   /**
    * {@inheritdoc}
    */
-  public function prepareFormDisplay(MediaTypeInterface $type, EntityFormDisplayInterface $display) {
+  public function prepareFormDisplay(MediaTypeInterface $type, EntityFormDisplayInterface $display): void {
     parent::prepareFormDisplay($type, $display);
     $source_field = $this->getSourceFieldDefinition($type)->getName();
 

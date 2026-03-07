@@ -101,7 +101,7 @@ final class NavigationMenuBlock extends SystemMenuBlock implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     return [
       'module' => [
         'system',
@@ -114,7 +114,7 @@ final class NavigationMenuBlock extends SystemMenuBlock implements ContainerFact
    */
   public function getCacheContexts(): array {
     // We don't use menu active trails here.
-    return array_filter(parent::getCacheContexts(), static fn (string $tag) => !str_starts_with($tag, 'route.menu_active_trails'));
+    return array_filter(parent::getCacheContexts(), static fn (string $tag): bool => !str_starts_with($tag, 'route.menu_active_trails'));
   }
 
 }

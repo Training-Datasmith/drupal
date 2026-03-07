@@ -41,7 +41,7 @@ class WorkspaceSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'sort' => [
         'field' => 'label',
@@ -68,7 +68,7 @@ class WorkspaceSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0) {
+  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0): array {
     // Get all the workspace entities and sort them in tree order.
     $storage = $this->entityTypeManager->getStorage('workspace');
     $workspace_tree = $this->workspaceRepository->loadTree();

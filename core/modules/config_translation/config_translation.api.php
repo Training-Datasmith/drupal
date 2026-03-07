@@ -31,7 +31,7 @@
  * @see \Drupal\config_translation\ConfigMapperManagerInterface
  * @see \Drupal\config_translation\Routing\RouteSubscriber::routes()
  */
-function hook_config_translation_info(&$info): void {
+function hook_config_translation_info(array &$info): void {
   $entity_type_manager = \Drupal::entityTypeManager();
   $route_provider = \Drupal::service('router.route_provider');
 
@@ -54,7 +54,7 @@ function hook_config_translation_info(&$info): void {
           'base_route_name' => 'entity.field_config.' . $entity_type_id . '_field_edit_form',
           'entity_type' => 'field_config',
           'title' => t('Title'),
-          'class' => '\Drupal\config_translation\ConfigFieldMapper',
+          'class' => \Drupal\config_translation\ConfigFieldMapper::class,
           'base_entity_type' => $entity_type_id,
           'weight' => 10,
         ];
@@ -80,7 +80,7 @@ function hook_config_translation_info(&$info): void {
  * @see hook_translation_info()
  * @see \Drupal\config_translation\ConfigMapperManagerInterface
  */
-function hook_config_translation_info_alter(&$info) {
+function hook_config_translation_info_alter(array &$info): void {
   // Add additional site settings to the site information screen, so it shows
   // up on the translation screen. (Form alter in the elements whose values are
   // stored in this config file using regular form altering on the original

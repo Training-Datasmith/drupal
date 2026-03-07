@@ -87,12 +87,12 @@ class NodeRequirements {
         foreach (['node_grants', 'node_grants_alter'] as $hook) {
           $this->moduleHandler->invokeAllWith(
             $hook,
-            static function (callable $hook, string $module) use (&$node_access_implementations, $module_data) {
+            static function (callable $hook, string $module) use (&$node_access_implementations, $module_data): void {
               $node_access_implementations[$module] = $module_data[$module]['name'];
             }
           );
         }
-        uasort($node_access_implementations, 'strnatcasecmp');
+        uasort($node_access_implementations, strnatcasecmp(...));
         $views_ui_enabled = $this->moduleHandler->moduleExists('views_ui');
         $node_status_filter_problematic_views_list = [];
         foreach ($node_status_filter_problematic_views as $view_id => $displays) {

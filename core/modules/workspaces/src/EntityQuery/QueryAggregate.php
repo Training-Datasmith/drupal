@@ -16,7 +16,7 @@ class QueryAggregate extends BaseQueryAggregate {
   /**
    * {@inheritdoc}
    */
-  public function prepare() {
+  public function prepare(): static {
     // Aggregate entity queries do not return an array of entity IDs keyed by
     // revision IDs, they only return the values of the aggregated fields, so we
     // don't need to add any expressions like we do in

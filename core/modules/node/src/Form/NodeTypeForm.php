@@ -18,26 +18,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class NodeTypeForm extends BundleEntityFormBase {
 
   /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
    * Constructs the NodeTypeForm object.
    *
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
    */
-  public function __construct(EntityFieldManagerInterface $entity_field_manager) {
-    $this->entityFieldManager = $entity_field_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_field.manager')
     );
@@ -46,7 +39,7 @@ class NodeTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $type = $this->entity;
@@ -81,7 +74,7 @@ class NodeTypeForm extends BundleEntityFormBase {
       '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#disabled' => $type->isLocked(),
       '#machine_name' => [
-        'exists' => ['Drupal\node\Entity\NodeType', 'load'],
+        'exists' => [\Drupal\node\Entity\NodeType::class, 'load'],
         'source' => ['name'],
       ],
       '#description' => $this->t('Unique machine-readable name: lowercase letters, numbers, and underscores only.', [
@@ -188,10 +181,10 @@ class NodeTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
-    $id = trim($form_state->getValue('type'));
+    $id = trim((string) $form_state->getValue('type'));
     // '0' is invalid, since elsewhere we check it using empty().
     if ($id == '0') {
       $form_state->setErrorByName('type', $this->t("Invalid machine-readable name. Enter a name other than %invalid.", ['%invalid' => $id]));
@@ -201,15 +194,15 @@ class NodeTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     /** @var \Drupal\node\NodeTypeInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
 
     // The description and help text cannot be empty strings.
-    if (trim($form_state->getValue('description')) === '') {
+    if (trim((string) $form_state->getValue('description')) === '') {
       $entity->set('description', NULL);
     }
-    if (trim($form_state->getValue('help')) === '') {
+    if (trim((string) $form_state->getValue('help')) === '') {
       $entity->set('help', NULL);
     }
     return $entity;
@@ -218,10 +211,10 @@ class NodeTypeForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $type = $this->entity;
     $type->setNewRevision($form_state->getValue(['options', 'revision']));
-    $type->set('type', trim($type->id()));
+    $type->set('type', trim((string) $type->id()));
     $type->set('name', trim($type->label()));
 
     $status = $type->save();

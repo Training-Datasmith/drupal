@@ -17,13 +17,13 @@ class DateRangeWidgetBase extends DateTimeWidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
 
     // Wrap all of the select elements with a fieldset.
     $element['#theme_wrappers'][] = 'fieldset';
 
-    $element['#element_validate'][] = [$this, 'validateStartEnd'];
+    $element['#element_validate'][] = $this->validateStartEnd(...);
     $element['value']['#title'] = $this->t('Start date');
 
     $element['end_value'] = [
@@ -48,7 +48,7 @@ class DateRangeWidgetBase extends DateTimeWidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
     // The widget form element type has transformed the value to a
     // DrupalDateTime object at this point. We need to convert it back to the
     // storage timezone and format.
@@ -66,7 +66,6 @@ class DateRangeWidgetBase extends DateTimeWidgetBase {
 
     foreach ($values as &$item) {
       if (!empty($item['value']) && $item['value'] instanceof DrupalDateTime) {
-        /** @var \Drupal\Core\Datetime\DrupalDateTime $start_date */
         $start_date = $item['value'];
 
         if ($datetime_type === DateRangeItem::DATETIME_TYPE_ALLDAY) {
@@ -82,7 +81,6 @@ class DateRangeWidgetBase extends DateTimeWidgetBase {
       }
 
       if (!empty($item['end_value']) && $item['end_value'] instanceof DrupalDateTime) {
-        /** @var \Drupal\Core\Datetime\DrupalDateTime $end_date */
         $end_date = $item['end_value'];
 
         if ($datetime_type === DateRangeItem::DATETIME_TYPE_ALLDAY) {
@@ -114,7 +112,7 @@ class DateRangeWidgetBase extends DateTimeWidgetBase {
    * @param array $complete_form
    *   The complete form structure.
    */
-  public function validateStartEnd(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  public function validateStartEnd(array &$element, FormStateInterface $form_state, array &$complete_form): void {
     $start_date = $element['value']['#value']['object'];
     $end_date = $element['end_value']['#value']['object'];
 

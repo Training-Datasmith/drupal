@@ -16,7 +16,7 @@ class UpdateServiceProvider implements ServiceProviderInterface, ServiceModifier
   /**
    * {@inheritdoc}
    */
-  public function register(ContainerBuilder $container) {
+  public function register(ContainerBuilder $container): void {
     // Decorate the cache factory in order to use
     // \Drupal\Core\Update\UpdateBackend while running updates.
     $container
@@ -30,7 +30,7 @@ class UpdateServiceProvider implements ServiceProviderInterface, ServiceModifier
   /**
    * {@inheritdoc}
    */
-  public function alter(ContainerBuilder $container) {
+  public function alter(ContainerBuilder $container): void {
     // The alias-based processor requires the path_alias entity schema to be
     // installed, so we prevent it from being registered to the path processor
     // manager. We do this by removing the tags that the compiler pass looks

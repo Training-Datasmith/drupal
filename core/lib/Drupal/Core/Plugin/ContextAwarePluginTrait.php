@@ -56,7 +56,7 @@ trait ContextAwarePluginTrait {
   /**
    * {@inheritdoc}
    */
-  public function setContext($name, ComponentContextInterface $context) {
+  public function setContext($name, ComponentContextInterface $context): void {
     // Check that the context passed is an instance of our extended interface.
     if (!$context instanceof ContextInterface) {
       throw new ContextException("Passed $name context must be an instance of \\Drupal\\Core\\Plugin\\Context\\ContextInterface");
@@ -66,8 +66,9 @@ trait ContextAwarePluginTrait {
 
   /**
    * {@inheritdoc}
+   * @return null[]
    */
-  public function getContextValues() {
+  public function getContextValues(): array {
     $values = [];
     foreach ($this->getContextDefinitions() as $name => $definition) {
       $values[$name] = isset($this->context[$name]) ? $this->context[$name]->getContextValue() : NULL;
@@ -155,7 +156,7 @@ trait ContextAwarePluginTrait {
   /**
    * {@inheritdoc}
    */
-  public function validateContexts() {
+  public function validateContexts(): \Symfony\Component\Validator\ConstraintViolationList {
     $violations = new ConstraintViolationList();
 
     // @todo Implement the Symfony Validator component to let the validator
@@ -169,8 +170,9 @@ trait ContextAwarePluginTrait {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     $cache_contexts = [];
     // Applied contexts can affect the cache contexts when this plugin is
     // involved in caching, collect and return them.
@@ -185,8 +187,9 @@ trait ContextAwarePluginTrait {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     $tags = [];
     // Applied contexts can affect the cache tags when this plugin is
     // involved in caching, collect and return them.

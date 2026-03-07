@@ -16,20 +16,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class LayoutBuilderRoutes implements EventSubscriberInterface {
 
   /**
-   * The section storage manager.
-   *
-   * @var \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface
-   */
-  protected $sectionStorageManager;
-
-  /**
    * Constructs a new LayoutBuilderRoutes.
    *
-   * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_storage_manager
+   * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $sectionStorageManager
    *   The section storage manager.
    */
-  public function __construct(SectionStorageManagerInterface $section_storage_manager) {
-    $this->sectionStorageManager = $section_storage_manager;
+  public function __construct(protected \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $sectionStorageManager)
+  {
   }
 
   /**
@@ -38,7 +31,7 @@ class LayoutBuilderRoutes implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The route build event.
    */
-  public function onAlterRoutes(RouteBuildEvent $event) {
+  public function onAlterRoutes(RouteBuildEvent $event): void {
     $collection = $event->getRouteCollection();
     foreach ($this->sectionStorageManager->getDefinitions() as $plugin_id => $definition) {
       $this->sectionStorageManager->loadEmpty($plugin_id)->buildRoutes($collection);

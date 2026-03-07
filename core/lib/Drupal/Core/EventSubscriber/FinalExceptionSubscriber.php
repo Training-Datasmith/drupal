@@ -45,20 +45,13 @@ class FinalExceptionSubscriber implements EventSubscriberInterface {
   protected $errorLevel;
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * Constructs a new FinalExceptionSubscriber.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
    */
-  public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory)
+  {
   }
 
   /**
@@ -80,7 +73,7 @@ class FinalExceptionSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     $error = Error::decodeException($exception);
 
@@ -151,7 +144,7 @@ class FinalExceptionSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on4xx(ExceptionEvent $event) {
+  public function on4xx(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     if ($exception && $exception instanceof HttpExceptionInterface && str_starts_with((string) $exception->getStatusCode(), '4')) {
       $message = PlainTextOutput::renderFromHtml($exception->getMessage());
@@ -186,7 +179,7 @@ class FinalExceptionSubscriber implements EventSubscriberInterface {
    * @return bool
    *   TRUE when verbose reporting is enabled, FALSE otherwise.
    */
-  protected function isErrorLevelVerbose() {
+  protected function isErrorLevelVerbose(): bool {
     return $this->getErrorLevel() === ERROR_REPORTING_DISPLAY_VERBOSE;
   }
 
@@ -217,12 +210,12 @@ class FinalExceptionSubscriber implements EventSubscriberInterface {
    * @return array
    *   The updated $error.
    */
-  protected function simplifyFileInError($error) {
+  protected function simplifyFileInError(array $error): array {
     // Attempt to reduce verbosity by removing DRUPAL_ROOT from the file path
     // in the message. This does not happen for (false) security.
     $root_length = strlen(DRUPAL_ROOT);
-    if (substr($error['%file'], 0, $root_length) == DRUPAL_ROOT) {
-      $error['%file'] = substr($error['%file'], $root_length + 1);
+    if (substr((string) $error['%file'], 0, $root_length) == DRUPAL_ROOT) {
+      $error['%file'] = substr((string) $error['%file'], $root_length + 1);
     }
     return $error;
   }

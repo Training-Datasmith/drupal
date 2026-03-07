@@ -19,15 +19,13 @@ class FieldStorageConfigAccessControlHandler extends EntityAccessControlHandler 
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
     /** @var \Drupal\field\FieldStorageConfigInterface $entity */
-    if ($operation === 'delete') {
-      if ($entity->isLocked()) {
-        return AccessResult::forbidden()->addCacheableDependency($entity);
-      }
-      else {
-        return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields')->addCacheableDependency($entity);
-      }
+    if ($operation !== 'delete') {
+      return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields');
     }
-    return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields');
+    if ($entity->isLocked()) {
+      return AccessResult::forbidden()->addCacheableDependency($entity);
+    }
+    return AccessResult::allowedIfHasPermission($account, 'administer ' . $entity->getTargetEntityTypeId() . ' fields')->addCacheableDependency($entity);
   }
 
 }

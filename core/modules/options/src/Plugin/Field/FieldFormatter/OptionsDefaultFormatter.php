@@ -25,8 +25,9 @@ class OptionsDefaultFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#markup': mixed, '#allowed_tags': array}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     // Only collect allowed options if there are actually items to display.

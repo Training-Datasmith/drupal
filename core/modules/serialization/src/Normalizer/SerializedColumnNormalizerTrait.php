@@ -48,7 +48,7 @@ trait SerializedColumnNormalizerTrait {
    * @return bool
    *   TRUE if there is a string value for serialize column, otherwise FALSE.
    */
-  protected function dataHasStringForSerializeColumn(FieldItemInterface $field_item, array $data) {
+  protected function dataHasStringForSerializeColumn(FieldItemInterface $field_item, array $data): bool {
     foreach ($this->getSerializedPropertyNames($field_item) as $property_name) {
       if (isset($data[$property_name]) && is_string($data[$property_name])) {
         return TRUE;
@@ -78,9 +78,7 @@ trait SerializedColumnNormalizerTrait {
     if (!isset($field_storage_schema['columns'])) {
       return [];
     }
-    $serialized_columns = array_filter($field_storage_schema['columns'], function ($column_schema) {
-      return isset($column_schema['serialize']) && $column_schema['serialize'] === TRUE;
-    });
+    $serialized_columns = array_filter($field_storage_schema['columns'], fn(array $column_schema) => isset($column_schema['serialize']) && $column_schema['serialize'] === TRUE);
     return array_keys($serialized_columns);
   }
 
@@ -98,7 +96,7 @@ trait SerializedColumnNormalizerTrait {
    * @return string[]
    *   The property names for serialized properties.
    */
-  protected function getCustomSerializedPropertyNames(FieldItemInterface $field_item) {
+  protected function getCustomSerializedPropertyNames(FieldItemInterface $field_item): array {
     if ($field_item instanceof PluginInspectionInterface) {
       $definition = $field_item->getPluginDefinition();
       $serialized_fields = $field_item->getEntity()->getEntityType()->get('serialized_field_property_names');

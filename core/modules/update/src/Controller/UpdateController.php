@@ -14,30 +14,15 @@ use Drupal\update\UpdateManagerInterface;
 class UpdateController extends ControllerBase {
 
   /**
-   * Update manager service.
-   *
-   * @var \Drupal\update\UpdateManagerInterface
-   */
-  protected $updateManager;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs update status data.
    *
-   * @param \Drupal\update\UpdateManagerInterface $update_manager
+   * @param \Drupal\update\UpdateManagerInterface $updateManager
    *   Update Manager Service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
    */
-  public function __construct(UpdateManagerInterface $update_manager, RendererInterface $renderer) {
-    $this->updateManager = $update_manager;
-    $this->renderer = $renderer;
+  public function __construct(protected \Drupal\update\UpdateManagerInterface $updateManager, protected \Drupal\Core\Render\RendererInterface $renderer)
+  {
   }
 
   /**
@@ -46,7 +31,7 @@ class UpdateController extends ControllerBase {
    * @return array
    *   A build array with the update status of projects.
    */
-  public function updateStatus() {
+  public function updateStatus(): array {
     $build = [
       '#theme' => 'update_report',
     ];
@@ -78,7 +63,7 @@ class UpdateController extends ControllerBase {
     $this->updateManager->refreshUpdateData();
     $batch_builder = (new BatchBuilder())
       ->setTitle($this->t('Checking available update data'))
-      ->addOperation([$this->updateManager, 'fetchDataBatch'], [])
+      ->addOperation($this->updateManager->fetchDataBatch(...), [])
       ->setProgressMessage($this->t('Trying to check available update data ...'))
       ->setErrorMessage($this->t('Error checking available update data.'))
       ->setFinishCallback('update_fetch_data_finished');

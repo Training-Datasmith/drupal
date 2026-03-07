@@ -20,7 +20,7 @@ class NodeViewBuilder extends EntityViewBuilder implements TrustedCallbackInterf
   /**
    * {@inheritdoc}
    */
-  public function buildComponents(array &$build, array $entities, array $displays, $view_mode) {
+  public function buildComponents(array &$build, array $entities, array $displays, $view_mode): void {
     /** @var \Drupal\node\NodeInterface[] $entities */
     if (empty($entities)) {
       return;
@@ -62,7 +62,7 @@ class NodeViewBuilder extends EntityViewBuilder implements TrustedCallbackInterf
   /**
    * {@inheritdoc}
    */
-  protected function getBuildDefaults(EntityInterface $entity, $view_mode) {
+  protected function getBuildDefaults(EntityInterface $entity, $view_mode): array {
     $defaults = parent::getBuildDefaults($entity, $view_mode);
 
     // Don't cache nodes that are in 'preview' mode.
@@ -130,7 +130,7 @@ class NodeViewBuilder extends EntityViewBuilder implements TrustedCallbackInterf
    *
    * @see \Drupal\Core\Render\Element\Link::preRenderLinks()
    */
-  protected static function buildLinks(NodeInterface $entity, $view_mode) {
+  protected static function buildLinks(NodeInterface $entity, $view_mode): array {
     $links = [];
 
     // Always display a read more link on teasers because we have no way
@@ -160,7 +160,7 @@ class NodeViewBuilder extends EntityViewBuilder implements TrustedCallbackInterf
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     $callbacks = parent::trustedCallbacks();
     $callbacks[] = 'renderLinks';
     return $callbacks;

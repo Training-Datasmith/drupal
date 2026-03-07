@@ -25,7 +25,7 @@ abstract class ReadOnlyStream implements StreamWrapperInterface {
    *
    * @var resource
    */
-  public $handle = NULL;
+  public $handle;
 
   /**
    * Instance URI (stream).
@@ -39,7 +39,7 @@ abstract class ReadOnlyStream implements StreamWrapperInterface {
   /**
    * {@inheritdoc}
    */
-  public function setUri($uri) {
+  public function setUri($uri): void {
     $this->uri = $uri;
   }
 
@@ -117,7 +117,7 @@ abstract class ReadOnlyStream implements StreamWrapperInterface {
    *   abstract method.
    */
   protected function getLocalPath($uri = NULL) {
-    throw new \BadMethodCallException(get_class($this) . '::getLocalPath() not implemented.');
+    throw new \BadMethodCallException(static::class . '::getLocalPath() not implemented.');
   }
 
   /**

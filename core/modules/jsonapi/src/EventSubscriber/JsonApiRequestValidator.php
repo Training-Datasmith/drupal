@@ -29,7 +29,7 @@ class JsonApiRequestValidator implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The event to process.
    */
-  public function onRequest(RequestEvent $event) {
+  public function onRequest(RequestEvent $event): void {
     $request = $event->getRequest();
     if ($request->getRequestFormat() !== 'api_json') {
       return;
@@ -44,7 +44,7 @@ class JsonApiRequestValidator implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onResponse(ResponseEvent $event) {
+  public function onResponse(ResponseEvent $event): void {
     $request = $event->getRequest();
     if ($request->getRequestFormat() !== 'api_json') {
       return;
@@ -71,7 +71,7 @@ class JsonApiRequestValidator implements EventSubscriberInterface {
    *
    * @see https://jsonapi.org/format/#query-parameters
    */
-  protected function validateQueryParams(Request $request) {
+  protected function validateQueryParams(Request $request): null {
     $invalid_query_params = [];
     foreach (array_keys($request->query->all()) as $query_parameter_name) {
       // Ignore reserved (official) query parameters.

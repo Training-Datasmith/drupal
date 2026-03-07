@@ -15,20 +15,6 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInterface, ContainerFactoryPluginInterface {
 
   /**
-   * The pager manager.
-   *
-   * @var \Drupal\Core\Pager\PagerManagerInterface
-   */
-  protected $pagerManager;
-
-  /**
-   * The pager parameters.
-   *
-   * @var \Drupal\Core\Pager\PagerParametersInterface
-   */
-  protected $pagerParameters;
-
-  /**
    * Constructs a SqlBase object.
    *
    * @param array $configuration
@@ -37,15 +23,13 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Pager\PagerManagerInterface $pager_manager
+   * @param \Drupal\Core\Pager\PagerManagerInterface $pagerManager
    *   The pager manager.
-   * @param \Drupal\Core\Pager\PagerParametersInterface $pager_parameters
+   * @param \Drupal\Core\Pager\PagerParametersInterface $pagerParameters
    *   The pager parameters.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, PagerManagerInterface $pager_manager, PagerParametersInterface $pager_parameters) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Pager\PagerManagerInterface $pagerManager, protected \Drupal\Core\Pager\PagerParametersInterface $pagerParameters) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->pagerManager = $pager_manager;
-    $this->pagerParameters = $pager_parameters;
   }
 
   /**
@@ -82,7 +66,7 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
   /**
    * Provide the default form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $pager_text = $this->displayHandler->getPagerText();
     $form['pagination_heading_level'] = [
@@ -224,7 +208,7 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     // Only accept integer values.
     $error = FALSE;
     $exposed_options = $form_state->getValue(['pager_options', 'expose', 'items_per_page_options']);
@@ -261,7 +245,7 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if ($this->itemsPerPageExposed()) {
       $query = $this->view->getRequest()->query;
       $items_per_page = $query->get('items_per_page');
@@ -300,7 +284,7 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
    *   If provided, the page number will be set to this. If NOT provided,
    *   the page number will be set from the pager manager service.
    */
-  public function setCurrentPage($number = NULL) {
+  public function setCurrentPage($number = NULL): void {
     if (isset($number)) {
       $this->current_page = max(0, $number);
       return;
@@ -316,9 +300,7 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
     if ($items_per_page = intval($this->getItemsPerPage())) {
       return ceil($this->total_items / $items_per_page);
     }
-    else {
-      return 1;
-    }
+    return 1;
   }
 
   /**
@@ -328,7 +310,7 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
    * items available and to update the current page if the requested
    * page is out of range.
    */
-  public function updatePageInfo() {
+  public function updatePageInfo(): void {
     if (!empty($this->options['total_pages'])) {
       if (($this->options['total_pages'] * $this->options['items_per_page']) < $this->total_items) {
         $this->total_items = $this->options['total_pages'] * $this->options['items_per_page'];
@@ -349,8 +331,12 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
   /**
    * {@inheritdoc}
    */
-  public function usesExposed() {
-    return $this->itemsPerPageExposed() || $this->isOffsetExposed();
+  public function usesExposed()
+  {
+      if ($this->itemsPerPageExposed()) {
+          return true;
+      }
+      return (bool) $this->isOffsetExposed();
   }
 
   /**
@@ -370,9 +356,9 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
   /**
    * {@inheritdoc}
    */
-  public function exposedFormAlter(&$form, FormStateInterface $form_state) {
+  public function exposedFormAlter(&$form, FormStateInterface $form_state): void {
     if ($this->itemsPerPageExposed()) {
-      $options = explode(',', $this->options['expose']['items_per_page_options']);
+      $options = explode(',', (string) $this->options['expose']['items_per_page_options']);
       $sanitized_options = [];
       if (is_array($options)) {
         foreach ($options as $option) {
@@ -404,8 +390,8 @@ abstract class SqlBase extends PagerPluginBase implements CacheableDependencyInt
   /**
    * {@inheritdoc}
    */
-  public function exposedFormValidate(&$form, FormStateInterface $form_state) {
-    if (!$form_state->isValueEmpty('offset') && trim($form_state->getValue('offset'))) {
+  public function exposedFormValidate(&$form, FormStateInterface $form_state): void {
+    if (!$form_state->isValueEmpty('offset') && trim((string) $form_state->getValue('offset'))) {
       if (!is_numeric($form_state->getValue('offset')) || $form_state->getValue('offset') < 0) {
         $form_state->setErrorByName('offset', $this->t('Offset must be a number greater than or equal to 0.'));
       }

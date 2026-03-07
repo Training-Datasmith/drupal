@@ -55,8 +55,9 @@ class TextTrimmedFormatter extends FormatterBase implements TrustedCallbackInter
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
     $summary[] = $this->t('Trimmed limit: @trim_length characters', ['@trim_length' => $this->getSetting('trim_length')]);
     return $summary;
@@ -64,11 +65,12 @@ class TextTrimmedFormatter extends FormatterBase implements TrustedCallbackInter
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
-    $render_as_summary = function (&$element) {
+    $render_as_summary = function (&$element): void {
       // Make sure any default #pre_render callbacks are set on the element,
       // because text_pre_render_summary() must run last.
       $element += \Drupal::service('element_info')->getInfo($element['#type']);
@@ -118,7 +120,7 @@ class TextTrimmedFormatter extends FormatterBase implements TrustedCallbackInter
    * @see filter_pre_render_text()
    * @see text_summary()
    */
-  public static function preRenderSummary(array $element) {
+  public static function preRenderSummary(array $element): array {
     $element['#markup'] = text_summary($element['#markup'], $element['#format'], $element['#text_summary_trim_length']);
     return $element;
   }
@@ -126,7 +128,7 @@ class TextTrimmedFormatter extends FormatterBase implements TrustedCallbackInter
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['preRenderSummary'];
   }
 

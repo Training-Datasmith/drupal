@@ -20,7 +20,7 @@ class QueryParameterWorkspaceNegotiator extends SessionWorkspaceNegotiator {
   /**
    * {@inheritdoc}
    */
-  public function applies(Request $request) {
+  public function applies(Request $request): bool {
     return is_string($request->query->get('workspace'))
       && is_string($request->query->get('token'))
       && parent::applies($request);
@@ -46,7 +46,7 @@ class QueryParameterWorkspaceNegotiator extends SessionWorkspaceNegotiator {
   /**
    * {@inheritdoc}
    */
-  public function setActiveWorkspace(WorkspaceInterface $workspace) {
+  public function setActiveWorkspace(WorkspaceInterface $workspace): void {
     if ($this->persist) {
       parent::setActiveWorkspace($workspace);
     }
@@ -55,7 +55,7 @@ class QueryParameterWorkspaceNegotiator extends SessionWorkspaceNegotiator {
   /**
    * {@inheritdoc}
    */
-  public function unsetActiveWorkspace() {
+  public function unsetActiveWorkspace(): void {
     if ($this->persist) {
       parent::unsetActiveWorkspace();
     }

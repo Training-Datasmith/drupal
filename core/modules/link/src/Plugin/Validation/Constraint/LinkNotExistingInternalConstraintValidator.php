@@ -40,15 +40,7 @@ class LinkNotExistingInternalConstraintValidator extends ConstraintValidator {
       try {
         $url->toString(TRUE);
       }
-      // The following exceptions are all possible during URL generation, and
-      // should be considered as disallowed URLs.
-      catch (RouteNotFoundException) {
-        $allowed = FALSE;
-      }
-      catch (InvalidParameterException) {
-        $allowed = FALSE;
-      }
-      catch (MissingMandatoryParametersException) {
+      catch (RouteNotFoundException|InvalidParameterException|MissingMandatoryParametersException) {
         $allowed = FALSE;
       }
       if (!$allowed) {

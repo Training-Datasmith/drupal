@@ -16,36 +16,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MenuDeleteForm extends EntityDeleteForm {
 
   /**
-   * The menu link manager.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkManagerInterface
-   */
-  protected $menuLinkManager;
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a new MenuDeleteForm.
    *
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
+   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
    *   The menu link manager.
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
    */
-  public function __construct(MenuLinkManagerInterface $menu_link_manager, Connection $connection) {
-    $this->menuLinkManager = $menu_link_manager;
-    $this->connection = $connection;
+  public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager, protected \Drupal\Core\Database\Connection $connection)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.menu.link'),
       $container->get('database')
@@ -55,14 +40,13 @@ class MenuDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): string {
     $caption = '';
     $num_links = $this->menuLinkManager->countMenuLinks($this->entity->id());
     if ($num_links) {
       $caption .= '<p>' . $this->formatPlural($num_links, '<strong>Warning:</strong> There is currently 1 menu link in %title. It will be deleted (system-defined links will be reset).', '<strong>Warning:</strong> There are currently @count menu links in %title. They will be deleted (system-defined links will be reset).', ['%title' => $this->entity->label()]) . '</p>';
     }
-    $caption .= '<p>' . $this->t('This action cannot be undone.') . '</p>';
-    return $caption;
+    return $caption . ('<p>' . $this->t('This action cannot be undone.') . '</p>');
   }
 
   /**
@@ -75,7 +59,7 @@ class MenuDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Locked menus may not be deleted.
     if ($this->entity->isLocked()) {
       return;

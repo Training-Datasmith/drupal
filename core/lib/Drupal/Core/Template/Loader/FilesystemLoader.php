@@ -79,7 +79,7 @@ class FilesystemLoader extends TwigFilesystemLoader {
    * {@inheritdoc}
    */
   protected function findTemplate($name, $throw = TRUE) {
-    $extension = pathinfo($name, PATHINFO_EXTENSION);
+    $extension = pathinfo((string) $name, PATHINFO_EXTENSION);
     if (!in_array($extension, $this->allowedFileExtensions, TRUE)) {
       if (!$throw) {
         return NULL;
@@ -102,7 +102,7 @@ class FilesystemLoader extends TwigFilesystemLoader {
     // compatibility, we are adding path directory as a namespace, and therefore
     // we can remove the directory traversal from the name.
     // @todo deprecate this functionality for removal in Drupal 11.
-    if (preg_match('/(^\@[^\/]+\/)\.\.\/(.*)/', $name, $matches)) {
+    if (preg_match('/(^\@[^\/]+\/)\.\.\/(.*)/', (string) $name, $matches)) {
       $name = $matches[1] . $matches[2];
     }
 

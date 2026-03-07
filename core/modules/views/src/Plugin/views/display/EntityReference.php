@@ -43,13 +43,6 @@ class EntityReference extends DisplayPluginBase {
   protected $usesAttachments = FALSE;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * The id field alias.
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
@@ -67,9 +60,8 @@ class EntityReference extends DisplayPluginBase {
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $connection) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Database\Connection $connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->connection = $connection;
   }
 
   /**
@@ -95,7 +87,7 @@ class EntityReference extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     parent::optionsSummary($categories, $options);
     // Disable 'title' so it won't be changed from the default set in
     // \Drupal\views\Plugin\views\display\EntityReference::defineOptions.
@@ -105,7 +97,7 @@ class EntityReference extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getType() {
+  public function getType(): string {
     return 'entity_reference';
   }
 
@@ -124,7 +116,7 @@ class EntityReference extends DisplayPluginBase {
    */
   public function render() {
     if (!empty($this->view->result) && $this->view->style_plugin->evenEmpty()) {
-      return $this->view->style_plugin->render($this->view->result);
+      return $this->view->style_plugin->render();
     }
     return [];
   }
@@ -132,14 +124,14 @@ class EntityReference extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usesExposed() {
+  public function usesExposed(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if (!empty($this->view->live_preview)) {
       return;
     }

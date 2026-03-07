@@ -21,7 +21,7 @@ class ConvertImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
+  public function applyEffect(ImageInterface $image): bool {
     if (!$image->convert($this->configuration['extension'])) {
       $this->logger->error('Image convert failed using the %toolkit toolkit on %path (%mimetype)', [
         '%toolkit' => $image->getToolkitId(),
@@ -45,17 +45,16 @@ class ConvertImageEffect extends ConfigurableImageEffectBase {
    */
   public function getSummary() {
     $summary = [
-      '#markup' => mb_strtoupper($this->configuration['extension']),
+      '#markup' => mb_strtoupper((string) $this->configuration['extension']),
     ];
-    $summary += parent::getSummary();
 
-    return $summary;
+    return $summary + parent::getSummary();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'extension' => NULL,
     ];
@@ -64,11 +63,11 @@ class ConvertImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $extensions = \Drupal::service('image.toolkit.manager')->getDefaultToolkit()->getSupportedExtensions();
     $options = array_combine(
       $extensions,
-      array_map('mb_strtoupper', $extensions)
+      array_map(mb_strtoupper(...), $extensions)
     );
     $form['extension'] = [
       '#type' => 'select',
@@ -83,7 +82,7 @@ class ConvertImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
     $this->configuration['extension'] = $form_state->getValue('extension');
   }

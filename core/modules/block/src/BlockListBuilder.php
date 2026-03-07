@@ -40,20 +40,6 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
   protected $request;
 
   /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
-   * The form builder.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-
-  /**
    * The messenger.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -67,18 +53,15 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    *   The form builder.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, ThemeManagerInterface $theme_manager, FormBuilderInterface $form_builder, MessengerInterface $messenger) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, MessengerInterface $messenger) {
     parent::__construct($entity_type, $storage);
-
-    $this->themeManager = $theme_manager;
-    $this->formBuilder = $form_builder;
     $this->messenger = $messenger;
     $this->limit = FALSE;
   }
@@ -86,7 +69,7 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -108,7 +91,7 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
    * @return array
    *   The block list as a renderable array.
    */
-  public function render($theme = NULL, ?Request $request = NULL) {
+  public function render($theme = NULL, ?Request $request = NULL): array {
     $this->request = $request;
     $this->theme = $theme;
 
@@ -118,14 +101,14 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'block_admin_display_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form['#attached']['library'][] = 'core/drupal.tableheader';
     $form['#attached']['library'][] = 'block/drupal.block';
     $form['#attached']['library'][] = 'block/drupal.block.admin';
@@ -153,7 +136,7 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
    * @return array
    *   An array representing the blocks form structure.
    */
-  protected function buildBlocksForm() {
+  protected function buildBlocksForm(): array {
     // Build blocks first for each region.
     $blocks = [];
     $entities = $this->load();
@@ -357,7 +340,7 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = parent::getDefaultOperations($entity, $cacheability);
@@ -375,7 +358,7 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     if (empty($form_state->getValue('blocks'))) {
       $form_state->setErrorByName('blocks', $this->t('No blocks settings to update.'));
     }
@@ -385,7 +368,7 @@ class BlockListBuilder extends ConfigEntityListBuilder implements FormInterface 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $blocks = $form_state->getValue('blocks');
     $entities = $this->storage->loadMultipleOverrideFree(array_keys($blocks));
     /** @var \Drupal\block\BlockInterface[] $entities */

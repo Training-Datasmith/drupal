@@ -38,10 +38,8 @@ class PermissionAccessCheck implements AccessInterface {
     if (count($split) > 1) {
       return AccessResult::allowedIfHasPermissions($account, $split, 'AND');
     }
-    else {
-      $split = explode('+', $permission);
-      return AccessResult::allowedIfHasPermissions($account, $split, 'OR');
-    }
+    $split = explode('+', $permission);
+    return AccessResult::allowedIfHasPermissions($account, $split, 'OR');
   }
 
 }

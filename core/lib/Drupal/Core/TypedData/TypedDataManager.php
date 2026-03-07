@@ -44,13 +44,6 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
   protected $prototypes = [];
 
   /**
-   * The class resolver.
-   *
-   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
-   */
-  protected $classResolver;
-
-  /**
    * Constructs a new TypedDataManager.
    *
    * @param \Traversable $namespaces
@@ -60,13 +53,12 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
    *   The class resolver.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ClassResolverInterface $class_resolver) {
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver) {
     $this->alterInfo('data_type_info');
     $this->setCacheBackend($cache_backend, 'typed_data_types_plugins');
-    $this->classResolver = $class_resolver;
 
     parent::__construct(
       'Plugin/DataType',
@@ -74,7 +66,7 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
       $module_handler,
       NULL,
       DataType::class,
-      'Drupal\Core\TypedData\Annotation\DataType',
+      \Drupal\Core\TypedData\Annotation\DataType::class,
     );
   }
 
@@ -156,7 +148,7 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
   /**
    * {@inheritdoc}
    */
-  public function getPropertyInstance(TypedDataInterface $object, $property_name, $value = NULL) {
+  public function getPropertyInstance(TypedDataInterface $object, $property_name, $value = NULL): object {
     // For performance, try to reuse existing prototypes instead of
     // constructing new objects when possible. A prototype is reused when
     // creating a data object:
@@ -224,7 +216,7 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
    * @param \Symfony\Component\Validator\Validator\ValidatorInterface $validator
    *   The validator object to set.
    */
-  public function setValidator(ValidatorInterface $validator) {
+  public function setValidator(ValidatorInterface $validator): void {
     $this->validator = $validator;
   }
 
@@ -245,7 +237,7 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
   /**
    * {@inheritdoc}
    */
-  public function setValidationConstraintManager(ConstraintManager $constraintManager) {
+  public function setValidationConstraintManager(ConstraintManager $constraintManager): void {
     $this->constraintManager = $constraintManager;
   }
 
@@ -258,13 +250,14 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getDefaultConstraints(DataDefinitionInterface $definition) {
+  public function getDefaultConstraints(DataDefinitionInterface $definition): array {
     $constraints = [];
     $type_definition = $this->getDefinition($definition->getDataType());
     // Auto-generate a constraint for data types implementing a primitive
     // interface.
-    if (is_subclass_of($type_definition['class'], '\Drupal\Core\TypedData\PrimitiveInterface')) {
+    if (is_subclass_of($type_definition['class'], \Drupal\Core\TypedData\PrimitiveInterface::class)) {
       $constraints['PrimitiveType'] = [];
     }
     // Add in constraints specified by the data type.
@@ -276,7 +269,7 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
       $constraints['NotNull'] = [];
     }
     // Check if the class provides allowed values.
-    if (is_subclass_of($definition->getClass(), 'Drupal\Core\TypedData\OptionsProviderInterface')) {
+    if (is_subclass_of($definition->getClass(), \Drupal\Core\TypedData\OptionsProviderInterface::class)) {
       $constraints['AllowedValues'] = [];
     }
     return $constraints;
@@ -285,7 +278,7 @@ class TypedDataManager extends DefaultPluginManager implements TypedDataManagerI
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     parent::clearCachedDefinitions();
     $this->prototypes = [];
   }

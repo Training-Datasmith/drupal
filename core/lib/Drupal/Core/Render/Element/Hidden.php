@@ -29,7 +29,7 @@ class Hidden extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#process' => [
@@ -52,7 +52,7 @@ class Hidden extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderHidden($element) {
+  public static function preRenderHidden(array $element): array {
     $element['#attributes']['type'] = 'hidden';
     Element::setAttributes($element, ['name', 'value']);
 

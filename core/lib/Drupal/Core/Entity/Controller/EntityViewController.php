@@ -16,36 +16,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityViewController implements ContainerInjectionInterface, TrustedCallbackInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Creates an EntityViewController object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->renderer = $renderer;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Render\RendererInterface $renderer)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('renderer')
@@ -74,7 +59,7 @@ class EntityViewController implements ContainerInjectionInterface, TrustedCallba
    * @return array
    *   The changed page render array.
    */
-  public function buildTitle(array $page) {
+  public function buildTitle(array $page): array {
     $entity_type = $page['#entity_type'];
     $entity = $page['#' . $entity_type];
 
@@ -133,7 +118,7 @@ class EntityViewController implements ContainerInjectionInterface, TrustedCallba
       ->getViewBuilder($_entity->getEntityTypeId())
       ->view($_entity, $view_mode);
 
-    $page['#pre_render'][] = [$this, 'buildTitle'];
+    $page['#pre_render'][] = $this->buildTitle(...);
     $page['#entity_type'] = $_entity->getEntityTypeId();
     $page['#' . $page['#entity_type']] = $_entity;
 
@@ -167,7 +152,7 @@ class EntityViewController implements ContainerInjectionInterface, TrustedCallba
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['buildTitle'];
   }
 

@@ -80,10 +80,8 @@ trait EntityDeleteFormTrait {
       // If available, return the collection URL.
       return $entity->toUrl('collection');
     }
-    else {
-      // Otherwise fall back to the default link template.
-      return $entity->toUrl();
-    }
+    // Otherwise fall back to the default link template.
+    return $entity->toUrl();
   }
 
   /**
@@ -98,10 +96,8 @@ trait EntityDeleteFormTrait {
       // If available, return the collection URL.
       return $entity->toUrl('collection');
     }
-    else {
-      // Otherwise fall back to the front page.
-      return Url::fromRoute('<front>');
-    }
+    // Otherwise fall back to the front page.
+    return Url::fromRoute('<front>');
   }
 
   /**
@@ -118,7 +114,7 @@ trait EntityDeleteFormTrait {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->getEntity()->delete();
     $this->messenger()->addStatus($this->getDeletionMessage());
     $form_state->setRedirectUrl($this->getCancelUrl());

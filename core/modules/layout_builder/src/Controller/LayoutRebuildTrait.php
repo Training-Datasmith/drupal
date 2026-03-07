@@ -38,7 +38,7 @@ trait LayoutRebuildTrait {
    *   An AJAX response to either rebuild the layout and close the dialog, or
    *   reload the page.
    */
-  protected function rebuildLayout(SectionStorageInterface $section_storage) {
+  protected function rebuildLayout(SectionStorageInterface $section_storage): \Drupal\Core\Ajax\AjaxResponse {
     $response = new AjaxResponse();
     $layout = [
       '#type' => 'layout_builder',

@@ -56,20 +56,6 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
   protected $entityType;
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The link relation type manager used to create HTTP header links.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $linkRelationTypeManager;
-
-  /**
    * Constructs a Drupal\rest\Plugin\rest\resource\EntityResource object.
    *
    * @param array $configuration
@@ -84,22 +70,20 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $link_relation_type_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $linkRelationTypeManager
    *   The link relation type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, $serializer_formats, LoggerInterface $logger, ConfigFactoryInterface $config_factory, PluginManagerInterface $link_relation_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, array $serializer_formats, LoggerInterface $logger, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Component\Plugin\PluginManagerInterface $linkRelationTypeManager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->entityType = $entity_type_manager->getDefinition($plugin_definition['entity_type']);
-    $this->configFactory = $config_factory;
-    $this->linkRelationTypeManager = $link_relation_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -125,7 +109,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function get(EntityInterface $entity, Request $request) {
+  public function get(EntityInterface $entity, Request $request): \Drupal\rest\ResourceResponse {
     $response = new ResourceResponse($entity, 200);
     // @todo Either remove the line below or remove this todo in https://www.drupal.org/project/drupal/issues/2973356
     $response->addCacheableDependency($request->attributes->get(AccessAwareRouterInterface::ACCESS_RESULT));
@@ -159,7 +143,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function post(?EntityInterface $entity = NULL) {
+  public function post(?EntityInterface $entity = NULL): \Drupal\rest\ModifiedResourceResponse {
     if ($entity == NULL) {
       throw new BadRequestHttpException('No entity content received.');
     }
@@ -219,7 +203,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function patch(EntityInterface $original_entity, ?EntityInterface $entity = NULL) {
+  public function patch(EntityInterface $original_entity, ?EntityInterface $entity = NULL): \Drupal\rest\ModifiedResourceResponse {
     if ($entity == NULL) {
       throw new BadRequestHttpException('No entity content received.');
     }
@@ -285,7 +269,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    *
    * @internal
    */
-  protected function checkPatchFieldAccess(FieldItemListInterface $original_field, FieldItemListInterface $received_field) {
+  protected function checkPatchFieldAccess(FieldItemListInterface $original_field, FieldItemListInterface $received_field): bool {
     // The user might not have access to edit the field, but still needs to
     // submit the current field value as part of the PATCH request. For
     // example, the entity keys required by denormalizers. Therefore, if the
@@ -329,7 +313,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    */
-  public function delete(EntityInterface $entity) {
+  public function delete(EntityInterface $entity): \Drupal\rest\ModifiedResourceResponse {
     try {
       $entity->delete();
       $this->logger->notice('Deleted entity %type with ID %id.', [
@@ -356,7 +340,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    * @return string
    *   The proper message to display in the AccessDeniedHttpException.
    */
-  protected function generateFallbackAccessDeniedMessage(EntityInterface $entity, $operation) {
+  protected function generateFallbackAccessDeniedMessage(EntityInterface $entity, $operation): string {
     $message = "You are not authorized to {$operation} this {$entity->getEntityTypeId()} entity";
 
     if ($entity->bundle() !== $entity->getEntityTypeId()) {
@@ -368,7 +352,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function permissions() {
+  public function permissions(): array {
     return [];
   }
 
@@ -426,7 +410,7 @@ class EntityResource extends ResourceBase implements DependentPluginInterface {
    * @return bool
    *   TRUE if the entity is a Config Entity, FALSE otherwise.
    */
-  protected function isConfigEntityResource() {
+  protected function isConfigEntityResource(): bool {
     return $this->entityType instanceof ConfigEntityType;
   }
 

@@ -20,27 +20,6 @@ abstract class TypedData implements TypedDataInterface, PluginInspectionInterfac
   use TypedDataTrait;
 
   /**
-   * The data definition.
-   *
-   * @var \Drupal\Core\TypedData\DataDefinitionInterface
-   */
-  protected $definition;
-
-  /**
-   * The property name.
-   *
-   * @var string
-   */
-  protected $name;
-
-  /**
-   * The parent typed data object.
-   *
-   * @var \Drupal\Core\TypedData\TraversableTypedDataInterface|null
-   */
-  protected $parent;
-
-  /**
    * {@inheritdoc}
    */
   public static function createInstance($definition, $name = NULL, ?TraversableTypedDataInterface $parent = NULL) {
@@ -61,10 +40,18 @@ abstract class TypedData implements TypedDataInterface, PluginInspectionInterfac
    *
    * @see \Drupal\Core\TypedData\TypedDataManager::create()
    */
-  public function __construct(DataDefinitionInterface $definition, $name = NULL, ?TypedDataInterface $parent = NULL) {
-    $this->definition = $definition;
-    $this->parent = $parent;
-    $this->name = $name;
+  public function __construct(
+      protected \Drupal\Core\TypedData\DataDefinitionInterface $definition,
+      /**
+       * The property name.
+       */
+      protected $name = NULL,
+      /**
+       * The parent typed data object.
+       */
+      protected ?\Drupal\Core\TypedData\TypedDataInterface $parent = NULL
+  )
+  {
   }
 
   /**
@@ -98,7 +85,7 @@ abstract class TypedData implements TypedDataInterface, PluginInspectionInterfac
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     $this->value = $value;
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {
@@ -144,7 +131,7 @@ abstract class TypedData implements TypedDataInterface, PluginInspectionInterfac
   /**
    * {@inheritdoc}
    */
-  public function setContext($name = NULL, ?TraversableTypedDataInterface $parent = NULL) {
+  public function setContext($name = NULL, ?TraversableTypedDataInterface $parent = NULL): void {
     $this->parent = $parent;
     $this->name = $name;
   }
@@ -172,21 +159,16 @@ abstract class TypedData implements TypedDataInterface, PluginInspectionInterfac
    */
   public function getPropertyPath() {
     if (isset($this->parent)) {
-      // The property path of this data object is the parent's path appended
-      // by this object's name.
-      $prefix = $this->parent->getPropertyPath();
-      // Variables in double quotes used to leverage fast string concatenation.
-      // In PHP 7+ concatenation with variable inside string is the fastest.
-      // @see https://blog.blackfire.io/php-7-performance-improvements-encapsed-strings-optimization.html
-      // This is being done because the code can run in the critical path.
-      return $prefix !== '' ? "{$prefix}.{$this->name}" : $this->name;
+        // The property path of this data object is the parent's path appended
+        // by this object's name.
+        $prefix = $this->parent->getPropertyPath();
+        // Variables in double quotes used to leverage fast string concatenation.
+        // In PHP 7+ concatenation with variable inside string is the fastest.
+        // @see https://blog.blackfire.io/php-7-performance-improvements-encapsed-strings-optimization.html
+        // This is being done because the code can run in the critical path.
+        return $prefix !== '' ? "{$prefix}.{$this->name}" : $this->name;
     }
-    // If no parent is set, this is the root of the data tree. Thus the property
-    // path equals the name of this data object.
-    elseif (isset($this->name)) {
-      return $this->name;
-    }
-    return '';
+    return $this->name ?? '';
   }
 
   /**

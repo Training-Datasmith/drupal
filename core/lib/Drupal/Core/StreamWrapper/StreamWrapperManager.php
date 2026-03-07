@@ -56,27 +56,26 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
    */
   public function getWrappers($filter = StreamWrapperInterface::ALL) {
     if (isset($this->wrappers[$filter])) {
-      return $this->wrappers[$filter];
+        return $this->wrappers[$filter];
     }
-    elseif (isset($this->wrappers[StreamWrapperInterface::ALL])) {
-      $this->wrappers[$filter] = [];
-      foreach ($this->wrappers[StreamWrapperInterface::ALL] as $scheme => $info) {
-        // Bit-wise filter.
-        if (($info['type'] & $filter) == $filter) {
-          $this->wrappers[$filter][$scheme] = $info;
+    if (isset($this->wrappers[StreamWrapperInterface::ALL])) {
+        $this->wrappers[$filter] = [];
+        foreach ($this->wrappers[StreamWrapperInterface::ALL] as $scheme => $info) {
+          // Bit-wise filter.
+          if (($info['type'] & $filter) == $filter) {
+            $this->wrappers[$filter][$scheme] = $info;
+          }
         }
-      }
-      return $this->wrappers[$filter];
+        return $this->wrappers[$filter];
     }
-    else {
-      return [];
-    }
+    return [];
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getNames($filter = StreamWrapperInterface::ALL) {
+  public function getNames($filter = StreamWrapperInterface::ALL): array {
     $names = [];
     foreach (array_keys($this->getWrappers($filter)) as $scheme) {
       $names[$scheme] = $this->getViaScheme($scheme)->getName();
@@ -87,8 +86,9 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getDescriptions($filter = StreamWrapperInterface::ALL) {
+  public function getDescriptions($filter = StreamWrapperInterface::ALL): array {
     $descriptions = [];
     foreach (array_keys($this->getWrappers($filter)) as $scheme) {
       $descriptions[$scheme] = $this->getViaScheme($scheme)->getDescription();
@@ -156,7 +156,7 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
    * @param string $scheme
    *   The scheme for which the wrapper should be registered.
    */
-  public function addStreamWrapper($service_id, $class, $scheme) {
+  public function addStreamWrapper($service_id, $class, $scheme): void {
     $this->info[$scheme] = [
       'class' => $class,
       'type' => $class::getType(),
@@ -169,7 +169,7 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
    *
    * Internal use only.
    */
-  public function register() {
+  public function register(): void {
     foreach ($this->info as $scheme => $info) {
       $this->registerWrapper($scheme, $info['class'], $info['type']);
     }
@@ -180,7 +180,7 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
    *
    * Internal use only.
    */
-  public function unregister() {
+  public function unregister(): void {
     // Normally, there are definitely wrappers set for the ALL filter. However,
     // in some cases involving many container rebuilds (e.g. BrowserTestBase),
     // $this->wrappers may be empty although wrappers are still registered
@@ -195,7 +195,7 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function registerWrapper($scheme, $class, $type) {
+  public function registerWrapper($scheme, $class, $type): void {
     if (in_array($scheme, stream_get_wrappers(), TRUE)) {
       stream_wrapper_unregister($scheme);
     }
@@ -219,10 +219,10 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getTarget($uri) {
+  public static function getTarget($uri): string|false {
     // Remove the scheme from the URI and remove erroneous leading or trailing,
     // forward-slashes and backslashes.
-    $target = trim(preg_replace('/^[\w\-]+:\/\/|^data:/', '', $uri), '\/');
+    $target = trim((string) preg_replace('/^[\w\-]+:\/\/|^data:/', '', $uri), '\/');
 
     // If nothing was replaced, the URI doesn't have a valid scheme.
     return $target !== $uri ? $target : FALSE;
@@ -244,10 +244,10 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
    *   The normalized URI.
    */
   public function normalizeUri($uri) {
-    $scheme = $this->getScheme($uri);
+    $scheme = static::getScheme($uri);
 
     if ($this->isValidScheme($scheme)) {
-      $target = $this->getTarget($uri);
+      $target = static::getTarget($uri);
 
       if ($target !== FALSE) {
 
@@ -262,14 +262,16 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
           $normalized_parts = [];
           while ($parts) {
             $part = array_shift($parts);
-            if ($part === '' || $part === '.') {
-              continue;
+            if ($part === '') {
+                continue;
             }
-            elseif ($part === '..' && $is_local && $normalized_parts === []) {
-              $normalized_parts[] = $part;
-              break;
+            if ($part === '.') {
+                continue;
             }
-            elseif ($part === '..') {
+            if ($part === '..' && $is_local && $normalized_parts === []) {
+                $normalized_parts[] = $part;
+                break;
+            } elseif ($part === '..') {
               array_pop($normalized_parts);
             }
             else {
@@ -290,7 +292,7 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getScheme($uri) {
+  public static function getScheme($uri): string|false {
     if (preg_match('/^([\w\-]+):\/\/|^(data):/', $uri, $matches)) {
       // The scheme will always be the last element in the matches array.
       return array_pop($matches);
@@ -314,7 +316,7 @@ class StreamWrapperManager implements StreamWrapperManagerInterface {
    */
   public function isValidUri($uri) {
     // Assert that the URI has an allowed scheme. Bare paths are not allowed.
-    return $this->isValidScheme($this->getScheme($uri));
+    return $this->isValidScheme(static::getScheme($uri));
   }
 
 }

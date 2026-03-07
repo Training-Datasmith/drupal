@@ -22,7 +22,7 @@ class Display extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'display';
   }
 
@@ -49,14 +49,14 @@ class Display extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_edit_display_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
 
@@ -92,7 +92,7 @@ class Display extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $view->getExecutable()->displayHandlers->get($display_id)->validateOptionsForm($form['options'], $form_state);
@@ -108,7 +108,7 @@ class Display extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $view->getExecutable()->displayHandlers->get($display_id)->submitOptionsForm($form['options'], $form_state);

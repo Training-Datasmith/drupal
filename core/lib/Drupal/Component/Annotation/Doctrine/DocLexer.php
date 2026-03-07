@@ -93,7 +93,7 @@ final class DocLexer extends AbstractLexer
     {
         return $this->token === null
             || ($this->lookahead !== null
-                && ($this->lookahead->position - $this->token->position) === strlen($this->token->value));
+                && ($this->lookahead->position - $this->token->position) === strlen((string) $this->token->value));
     }
 
     /**
@@ -124,7 +124,7 @@ final class DocLexer extends AbstractLexer
         $type = self::T_NONE;
 
         if ($value[0] === '"') {
-            $value = str_replace('""', '"', substr($value, 1, strlen($value) - 2));
+            $value = str_replace('""', '"', substr((string) $value, 1, strlen((string) $value) - 2));
 
             return self::T_STRING;
         }
@@ -133,11 +133,11 @@ final class DocLexer extends AbstractLexer
             return $this->noCase[$value];
         }
 
-        if ($value[0] === '_' || $value[0] === '\\' || ctype_alpha($value[0])) {
+        if ($value[0] === '_' || $value[0] === '\\' || ctype_alpha((string) $value[0])) {
             return self::T_IDENTIFIER;
         }
 
-        $lowerValue = strtolower($value);
+        $lowerValue = strtolower((string) $value);
 
         if (isset($this->withCase[$lowerValue])) {
             return $this->withCase[$lowerValue];
@@ -145,7 +145,7 @@ final class DocLexer extends AbstractLexer
 
         // Checking numeric value
         if (is_numeric($value)) {
-            return strpos($value, '.') !== false || stripos($value, 'e') !== false
+            return str_contains($value, '.') || stripos($value, 'e') !== false
                 ? self::T_FLOAT : self::T_INTEGER;
         }
 

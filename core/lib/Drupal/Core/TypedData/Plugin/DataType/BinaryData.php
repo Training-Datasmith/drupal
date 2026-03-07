@@ -32,7 +32,7 @@ class BinaryData extends PrimitiveBase implements BinaryInterface {
    *
    * @var resource
    */
-  public $handle = NULL;
+  public $handle;
 
   /**
    * {@inheritdoc}
@@ -51,7 +51,7 @@ class BinaryData extends PrimitiveBase implements BinaryInterface {
    *
    * Supports a PHP file resource or an (absolute) stream resource URI as value.
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     if (!isset($value)) {
       $this->handle = NULL;
       $this->uri = NULL;
@@ -74,7 +74,7 @@ class BinaryData extends PrimitiveBase implements BinaryInterface {
   /**
    * {@inheritdoc}
    */
-  public function getString() {
+  public function getString(): string {
     // Return the file content.
     $contents = '';
     while (!feof($this->getValue())) {

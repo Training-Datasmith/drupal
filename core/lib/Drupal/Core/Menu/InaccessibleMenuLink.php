@@ -12,20 +12,12 @@ use Drupal\Component\Plugin\Exception\PluginException;
 class InaccessibleMenuLink extends MenuLinkBase {
 
   /**
-   * The wrapped menu link.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkInterface
-   */
-  protected $wrappedLink;
-
-  /**
    * Constructs a new InaccessibleMenuLink.
    *
-   * @param \Drupal\Core\Menu\MenuLinkInterface $wrapped_link
+   * @param \Drupal\Core\Menu\MenuLinkInterface $wrappedLink
    *   The menu link to wrap.
    */
-  public function __construct(MenuLinkInterface $wrapped_link) {
-    $this->wrappedLink = $wrapped_link;
+  public function __construct(protected \Drupal\Core\Menu\MenuLinkInterface $wrappedLink) {
     $plugin_definition = [
       'route_name' => '<front>',
       'route_parameters' => [],
@@ -44,7 +36,7 @@ class InaccessibleMenuLink extends MenuLinkBase {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): string {
     return '';
   }
 
@@ -72,7 +64,7 @@ class InaccessibleMenuLink extends MenuLinkBase {
   /**
    * {@inheritdoc}
    */
-  public function updateLink(array $new_definition_values, $persist) {
+  public function updateLink(array $new_definition_values, $persist): never {
     throw new PluginException('Inaccessible menu link plugins do not support updating');
   }
 

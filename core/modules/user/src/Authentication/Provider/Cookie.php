@@ -26,40 +26,17 @@ class Cookie implements AuthenticationProviderInterface, EventSubscriberInterfac
   use StringTranslationTrait;
 
   /**
-   * The session configuration.
-   *
-   * @var \Drupal\Core\Session\SessionConfigurationInterface
-   */
-  protected $sessionConfiguration;
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The messenger.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
    * Constructs a new cookie authentication provider.
    *
-   * @param \Drupal\Core\Session\SessionConfigurationInterface $session_configuration
+   * @param \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration
    *   The session configuration.
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
    */
-  public function __construct(SessionConfigurationInterface $session_configuration, Connection $connection, MessengerInterface $messenger) {
-    $this->sessionConfiguration = $session_configuration;
-    $this->connection = $connection;
-    $this->messenger = $messenger;
+  public function __construct(protected \Drupal\Core\Session\SessionConfigurationInterface $sessionConfiguration, protected \Drupal\Core\Database\Connection $connection, protected \Drupal\Core\Messenger\MessengerInterface $messenger)
+  {
   }
 
   /**
@@ -91,7 +68,7 @@ class Cookie implements AuthenticationProviderInterface, EventSubscriberInterfac
    *   The UserSession object for the current user, or NULL if this is an
    *   anonymous session.
    */
-  protected function getUserFromSession(SessionInterface $session) {
+  protected function getUserFromSession(SessionInterface $session): ?\Drupal\Core\Session\UserSession {
     if ($uid = $session->get('uid')) {
       // @todo Load the User entity in SessionHandler so we don't need queries.
       // @see https://www.drupal.org/node/2345611
@@ -121,7 +98,7 @@ class Cookie implements AuthenticationProviderInterface, EventSubscriberInterfac
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The Event to process.
    */
-  public function addCheckToUrl(ResponseEvent $event) {
+  public function addCheckToUrl(ResponseEvent $event): void {
     $response = $event->getResponse();
     if ($response instanceof RedirectResponse) {
       if ($event->getRequest()->getSession()->has('check_logged_in')) {

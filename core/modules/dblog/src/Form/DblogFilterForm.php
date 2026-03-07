@@ -23,14 +23,14 @@ class DblogFilterForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'dblog_filter_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $filters = $this->dbLogFilters->filters();
 
     $form['filters'] = [
@@ -75,7 +75,7 @@ class DblogFilterForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     if ($form_state->isValueEmpty('type') && $form_state->isValueEmpty('severity')) {
       $form_state->setErrorByName('type', $this->t('You must select something to filter by.'));
     }
@@ -84,7 +84,7 @@ class DblogFilterForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $filters = $this->dbLogFilters->filters();
     $session_filters = $this->getRequest()->getSession()->get('dblog_overview_filter', []);
     foreach ($filters as $name => $filter) {
@@ -103,7 +103,7 @@ class DblogFilterForm extends FormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function resetForm(array &$form, FormStateInterface $form_state) {
+  public function resetForm(array &$form, FormStateInterface $form_state): void {
     $this->getRequest()->getSession()->remove('dblog_overview_filter');
   }
 

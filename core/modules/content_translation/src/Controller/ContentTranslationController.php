@@ -46,7 +46,7 @@ class ContentTranslationController extends ControllerBase {
    * @param \Drupal\Core\Language\LanguageInterface $target
    *   The language to be used as target.
    */
-  public function prepareTranslation(ContentEntityInterface $entity, LanguageInterface $source, LanguageInterface $target) {
+  public function prepareTranslation(ContentEntityInterface $entity, LanguageInterface $source, LanguageInterface $target): void {
     $source_langcode = $source->getId();
     /** @var \Drupal\Core\Entity\ContentEntityStorageInterface $storage */
     $storage = $this->entityTypeManager()->getStorage($entity->getEntityTypeId());
@@ -61,8 +61,11 @@ class ContentTranslationController extends ControllerBase {
     $languages = $this->languageManager()->getLanguages();
     foreach ($languages as $language) {
       $langcode = $language->getId();
-      if ($entity->hasTranslation($langcode) || $target->getId() === $langcode) {
-        continue;
+      if ($entity->hasTranslation($langcode)) {
+          continue;
+      }
+      if ($target->getId() === $langcode) {
+          continue;
       }
       $latest_revision_id = $storage->getLatestTranslationAffectedRevisionId($entity->id(), $langcode);
       if ($latest_revision_id) {
@@ -141,7 +144,7 @@ class ContentTranslationController extends ControllerBase {
       }
 
       // Show source-language column if there are non-original source langcodes.
-      $additional_source_langcodes = array_filter(array_keys($translations), function ($langcode) use ($entity, $original, $manager) {
+      $additional_source_langcodes = array_filter(array_keys($translations), function (int|string $langcode) use ($entity, $original, $manager): bool {
         $source = $manager->getTranslationMetadata($entity->getTranslation($langcode))->getSource();
         return $source != $original && $source != LanguageInterface::LANGCODE_NOT_SPECIFIED;
       });

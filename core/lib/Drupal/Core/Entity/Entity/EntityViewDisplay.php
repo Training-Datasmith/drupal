@@ -86,7 +86,7 @@ class EntityViewDisplay extends EntityDisplayBase implements EntityViewDisplayIn
    * @see \Drupal\Core\Entity\EntityDisplayRepositoryInterface::getViewDisplay()
    * @see hook_entity_view_display_alter()
    */
-  public static function collectRenderDisplays($entities, $view_mode) {
+  public static function collectRenderDisplays($entities, $view_mode): array {
     if (empty($entities)) {
       return [];
     }
@@ -193,7 +193,7 @@ class EntityViewDisplay extends EntityDisplayBase implements EntityViewDisplayIn
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     // Reset the render cache for the target entity type.
     parent::postSave($storage, $update);
     if (\Drupal::entityTypeManager()->hasHandler($this->targetEntityType, 'view_builder')) {
@@ -238,8 +238,9 @@ class EntityViewDisplay extends EntityDisplayBase implements EntityViewDisplayIn
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function buildMultiple(array $entities) {
+  public function buildMultiple(array $entities): array {
     $build_list = [];
     foreach ($entities as $key => $entity) {
       $build_list[$key] = [];
@@ -304,7 +305,7 @@ class EntityViewDisplay extends EntityDisplayBase implements EntityViewDisplayIn
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     $configurations = [];
     foreach ($this->getComponents() as $field_name => $configuration) {
       if (!empty($configuration['type']) && ($field_definition = $this->getFieldDefinition($field_name))) {

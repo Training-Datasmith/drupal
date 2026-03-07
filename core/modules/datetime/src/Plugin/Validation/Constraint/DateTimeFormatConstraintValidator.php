@@ -44,7 +44,7 @@ class DateTimeFormatConstraintValidator extends ConstraintValidator {
           ]);
           return;
         }
-        if ($date === NULL || $date->hasErrors()) {
+        if ($date->hasErrors()) {
           $this->context->addViolation($constraint->badFormat, [
             '@value' => $value,
             '@format' => $format,

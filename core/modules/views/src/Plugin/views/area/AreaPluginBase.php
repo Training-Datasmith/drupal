@@ -38,7 +38,7 @@ abstract class AreaPluginBase extends HandlerBase {
    * Make sure that no result area handlers are set to be shown when the result
    * is empty.
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if ($this->areaType == 'empty') {
@@ -77,7 +77,7 @@ abstract class AreaPluginBase extends HandlerBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     if ($form_state->get('type') != 'empty') {

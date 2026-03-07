@@ -96,7 +96,7 @@ class InfoParserDynamic implements InfoParserInterface {
    * @return array
    *   An array of required keys.
    */
-  protected function getRequiredKeys() {
+  protected function getRequiredKeys(): array {
     return ['type', 'name'];
   }
 

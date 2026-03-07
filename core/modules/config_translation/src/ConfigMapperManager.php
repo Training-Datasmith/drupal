@@ -23,34 +23,13 @@ use Symfony\Component\Routing\RouteCollection;
 class ConfigMapperManager extends DefaultPluginManager implements ConfigMapperManagerInterface {
 
   /**
-   * The typed config manager.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected $typedConfigManager;
-
-  /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected LanguageManagerInterface $languageManager;
-
-  /**
    * {@inheritdoc}
    */
   protected $defaults = [
     'title' => '',
     'names' => [],
     'weight' => 20,
-    'class' => '\Drupal\config_translation\ConfigNamesMapper',
+    'class' => \Drupal\config_translation\ConfigNamesMapper::class,
   ];
 
   /**
@@ -58,28 +37,27 @@ class ConfigMapperManager extends DefaultPluginManager implements ConfigMapperMa
    *
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    */
-  public function __construct(CacheBackendInterface $cache_backend, LanguageManagerInterface $language_manager, ModuleHandlerInterface $module_handler, TypedConfigManagerInterface $typed_config_manager, ThemeHandlerInterface $theme_handler) {
-    $this->typedConfigManager = $typed_config_manager;
-    $this->languageManager = $language_manager;
-
-    $this->factory = new ContainerFactory($this, '\Drupal\config_translation\ConfigMapperInterface');
+  public function __construct(CacheBackendInterface $cache_backend, /**
+   * The language manager.
+   */
+  protected LanguageManagerInterface $languageManager, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler) {
+    $this->factory = new ContainerFactory($this, \Drupal\config_translation\ConfigMapperInterface::class);
 
     // Let others alter definitions with hook_config_translation_info_alter().
     $this->moduleHandler = $module_handler;
-    $this->themeHandler = $theme_handler;
 
     $this->alterInfo('config_translation_info');
     // Config translation only uses an info hook discovery, cache by language.
-    $cache_key = 'config_translation_info_plugins:' . $language_manager->getCurrentLanguage()->getId();
+    $cache_key = 'config_translation_info_plugins:' . $this->languageManager->getCurrentLanguage()->getId();
     $this->setCacheBackend($cache_backend, $cache_key);
   }
 
@@ -117,8 +95,9 @@ class ConfigMapperManager extends DefaultPluginManager implements ConfigMapperMa
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMappers(?RouteCollection $collection = NULL) {
+  public function getMappers(?RouteCollection $collection = NULL): array {
     $mappers = [];
     foreach ($this->getDefinitions() as $id => $definition) {
       $mappers[$id] = $this->createInstance($id);
@@ -133,7 +112,7 @@ class ConfigMapperManager extends DefaultPluginManager implements ConfigMapperMa
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     parent::processDefinition($definition, $plugin_id);
 
     if (!isset($definition['base_route_name'])) {
@@ -198,16 +177,14 @@ class ConfigMapperManager extends DefaultPluginManager implements ConfigMapperMa
       // If none of the child elements are translatable, return FALSE.
       return FALSE;
     }
-    else {
-      $definition = $element->getDataDefinition();
-      return isset($definition['translatable']) && $definition['translatable'];
-    }
+    $definition = $element->getDataDefinition();
+    return isset($definition['translatable']) && $definition['translatable'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     $cids = [];
     foreach ($this->languageManager->getLanguages() as $language) {
       $cids[] = 'config_translation_info_plugins:' . $language->getId();

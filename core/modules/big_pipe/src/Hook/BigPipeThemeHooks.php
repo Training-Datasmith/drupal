@@ -20,7 +20,7 @@ class BigPipeThemeHooks {
     $suggestions = [];
     $suggestion = 'big_pipe_interface_preview';
     if ($variables['callback']) {
-      $callback = preg_replace('/[^a-zA-Z0-9]/', '_', $variables['callback']);
+      $callback = preg_replace('/[^a-zA-Z0-9]/', '_', (string) $variables['callback']);
       if (is_array($callback)) {
         $callback = implode('__', $callback);
       }

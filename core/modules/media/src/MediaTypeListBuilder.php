@@ -38,7 +38,7 @@ class MediaTypeListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = parent::render();
     $build['table']['#empty'] = $this->t('No media types available. <a href=":url">Add media type</a>.', [
       ':url' => Url::fromRoute('entity.media_type.add_form')->toString(),

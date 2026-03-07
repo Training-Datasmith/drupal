@@ -144,13 +144,13 @@ class DiffFormatter {
     ob_start();
   }
 
-  protected function _end_diff() {
+  protected function _end_diff(): string|false {
     $val = ob_get_contents();
     ob_end_clean();
     return $val;
   }
 
-  protected function _block_header($xbeg, $xlen, $ybeg, $ylen) {
+  protected function _block_header(string $xbeg, $xlen, string $ybeg, $ylen): string {
     if ($xlen > 1) {
       $xbeg .= "," . ($xbeg + $xlen - 1);
     }
@@ -161,7 +161,7 @@ class DiffFormatter {
     return $xbeg . ($xlen ? ($ylen ? 'c' : 'd') : 'a') . $ybeg;
   }
 
-  protected function _start_block($header) {
+  protected function _start_block(string $header) {
     if ($this->show_header) {
       echo $header . "\n";
     }

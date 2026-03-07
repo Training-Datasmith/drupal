@@ -212,7 +212,7 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
   /**
    * {@inheritdoc}
    */
-  public function setUninstalling($uninstalling) {
+  public function setUninstalling($uninstalling): void {
     $this->isUninstalling = $uninstalling;
   }
 
@@ -294,7 +294,7 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
     parent::preSave($storage);
 
@@ -334,7 +334,7 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
       // configuration will be sorted by StorableConfigBase.
       if ($this->trustedData) {
         $mapping = ['config' => 0, 'content' => 1, 'module' => 2, 'theme' => 3, 'enforced' => 4];
-        $dependency_sort = function ($dependencies) use ($mapping) {
+        $dependency_sort = function ($dependencies) use ($mapping): array {
           // Only sort the keys that exist.
           $mapping_to_replace = array_intersect_key($mapping, $dependencies);
           return array_replace($mapping_to_replace, $dependencies);
@@ -362,16 +362,14 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
         $this->set($plugin_config_key, $plugin_collection->getConfiguration());
         // If the plugin collections are stored as properties on the entity,
         // mark them to be unset.
-        $keys_to_unset += array_filter($vars, function ($value) use ($plugin_collection) {
-          return $plugin_collection === $value;
-        });
+        $keys_to_unset += array_filter($vars, fn($value) => $plugin_collection === $value);
       }
     }
 
     $vars = parent::__sleep();
 
     if (!empty($keys_to_unset)) {
-      $vars = array_diff($vars, array_keys($keys_to_unset));
+      return array_diff($vars, array_keys($keys_to_unset));
     }
     return $vars;
   }
@@ -392,12 +390,10 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
         }
       }
     }
-    if ($this instanceof ThirdPartySettingsInterface) {
-      // Configuration entities need to depend on the providers of any third
-      // parties that they store the configuration for.
-      foreach ($this->getThirdPartyProviders() as $provider) {
-        $this->addDependency('module', $provider);
-      }
+    // Configuration entities need to depend on the providers of any third
+    // parties that they store the configuration for.
+    foreach ($this->getThirdPartyProviders() as $provider) {
+      $this->addDependency('module', $provider);
     }
     return $this;
   }
@@ -537,12 +533,7 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
    * {@inheritdoc}
    */
   public function getThirdPartySetting($module, $key, $default = NULL) {
-    if (isset($this->third_party_settings[$module][$key])) {
-      return $this->third_party_settings[$module][$key];
-    }
-    else {
-      return $default;
-    }
+    return $this->third_party_settings[$module][$key] ?? $default;
   }
 
   /**
@@ -575,7 +566,7 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     foreach ($entities as $entity) {

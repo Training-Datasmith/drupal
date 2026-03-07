@@ -17,26 +17,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class VocabularyForm extends BundleEntityFormBase {
 
   /**
-   * The vocabulary storage.
-   *
-   * @var \Drupal\taxonomy\VocabularyStorageInterface
-   */
-  protected $vocabularyStorage;
-
-  /**
    * Constructs a new vocabulary form.
    *
-   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabulary_storage
+   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage
    *   The vocabulary storage.
    */
-  public function __construct(VocabularyStorageInterface $vocabulary_storage) {
-    $this->vocabularyStorage = $vocabulary_storage;
+  public function __construct(protected \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('taxonomy_vocabulary')
     );
@@ -45,12 +38,12 @@ class VocabularyForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     /** @var \Drupal\taxonomy\VocabularyInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
 
     // The description cannot be an empty string.
-    if (trim($form_state->getValue('description')) === '') {
+    if (trim((string) $form_state->getValue('description')) === '') {
       $entity->set('description', NULL);
     }
 
@@ -60,7 +53,7 @@ class VocabularyForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $vocabulary = $this->entity;
     if ($vocabulary->isNew()) {
       $form['#title'] = $this->t('Add vocabulary');
@@ -81,7 +74,7 @@ class VocabularyForm extends BundleEntityFormBase {
       '#default_value' => $vocabulary->id(),
       '#maxlength' => EntityTypeInterface::BUNDLE_MAX_LENGTH,
       '#machine_name' => [
-        'exists' => [$this, 'exists'],
+        'exists' => $this->exists(...),
         'source' => ['name'],
       ],
     ];
@@ -137,7 +130,7 @@ class VocabularyForm extends BundleEntityFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $vocabulary = $this->entity;
     $vocabulary->setNewRevision($form_state->getValue(['revision']));
 
@@ -173,7 +166,7 @@ class VocabularyForm extends BundleEntityFormBase {
    * @return bool
    *   TRUE if the vocabulary exists, FALSE otherwise.
    */
-  public function exists($vid) {
+  public function exists($vid): bool {
     $action = $this->vocabularyStorage->load($vid);
     return !empty($action);
   }

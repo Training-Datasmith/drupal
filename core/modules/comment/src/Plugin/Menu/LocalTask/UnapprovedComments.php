@@ -16,13 +16,6 @@ class UnapprovedComments extends LocalTaskDefault implements ContainerFactoryPlu
   use StringTranslationTrait;
 
   /**
-   * The comment storage service.
-   *
-   * @var \Drupal\comment\CommentStorageInterface
-   */
-  protected $commentStorage;
-
-  /**
    * Construct the UnapprovedComments object.
    *
    * @param array $configuration
@@ -31,18 +24,17 @@ class UnapprovedComments extends LocalTaskDefault implements ContainerFactoryPlu
    *   The plugin ID for the plugin instance.
    * @param array $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\comment\CommentStorageInterface $comment_storage
+   * @param \Drupal\comment\CommentStorageInterface $commentStorage
    *   The comment storage service.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, CommentStorageInterface $comment_storage) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\comment\CommentStorageInterface $commentStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->commentStorage = $comment_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -54,7 +46,7 @@ class UnapprovedComments extends LocalTaskDefault implements ContainerFactoryPlu
   /**
    * {@inheritdoc}
    */
-  public function getTitle(?Request $request = NULL) {
+  public function getTitle(?Request $request = NULL): string {
     return $this->t('Unapproved comments (@count)', ['@count' => $this->commentStorage->getUnapprovedCount()]);
   }
 

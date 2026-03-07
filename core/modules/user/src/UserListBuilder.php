@@ -20,13 +20,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UserListBuilder extends EntityListBuilder {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * The redirect destination service.
    *
    * @var \Drupal\Core\Routing\RedirectDestinationInterface
@@ -40,21 +33,20 @@ class UserListBuilder extends EntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
    * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
    *   The redirect destination service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, RedirectDestinationInterface $redirect_destination) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, RedirectDestinationInterface $redirect_destination) {
     parent::__construct($entity_type, $storage);
-    $this->dateFormatter = $date_formatter;
     $this->redirectDestination = $redirect_destination;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -166,7 +158,7 @@ class UserListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = parent::render();
     $build['table']['#empty'] = $this->t('No people available.');
     return $build;

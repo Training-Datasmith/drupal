@@ -14,26 +14,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RoleSettingsForm extends FormBase {
 
   /**
-   * The role storage used when changing the admin role.
-   *
-   * @var \Drupal\user\RoleStorageInterface
-   */
-  protected $roleStorage;
-
-  /**
    * Constructs a \Drupal\user\Form\RoleSettingsForm object.
    *
-   * @param \Drupal\user\RoleStorageInterface $role_storage
+   * @param \Drupal\user\RoleStorageInterface $roleStorage
    *   The role storage.
    */
-  public function __construct(RoleStorageInterface $role_storage) {
-    $this->roleStorage = $role_storage;
+  public function __construct(protected \Drupal\user\RoleStorageInterface $roleStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('user_role')
     );
@@ -42,14 +35,14 @@ class RoleSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'role_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     // Administrative role option.
     $form['admin_role'] = [
       '#type' => 'details',
@@ -90,7 +83,7 @@ class RoleSettingsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     if ($form_state->hasValue('user_admin_role')) {
       $admin_roles = $this->roleStorage->getQuery()
         ->condition('is_admin', TRUE)

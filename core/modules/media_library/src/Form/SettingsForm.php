@@ -16,14 +16,14 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getEditableConfigNames() {
+  public function getEditableConfigNames(): array {
     return ['media_library.settings'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'media_library_settings_form';
   }
 
@@ -43,7 +43,7 @@ class SettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config('media_library.settings')
       ->set('advanced_ui', (bool) $form_state->getValue('advanced_ui'))
       ->save();

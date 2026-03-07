@@ -93,7 +93,7 @@ class SecurityFileUploadEventSubscriber implements EventSubscriberInterface {
 
     // If there are any insecure extensions in the filename munge all the
     // internal extensions.
-    $munge_everything = !empty(array_intersect(array_map('strtolower', $filename_parts), FileSystemInterface::INSECURE_EXTENSIONS));
+    $munge_everything = !empty(array_intersect(array_map(strtolower(...), $filename_parts), FileSystemInterface::INSECURE_EXTENSIONS));
 
     // Munge the filename to protect against possible malicious extension hiding
     // within an unknown file type (i.e. filename.html.foo). This was introduced

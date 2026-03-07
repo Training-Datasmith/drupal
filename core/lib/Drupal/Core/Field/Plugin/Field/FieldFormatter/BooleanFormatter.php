@@ -23,7 +23,7 @@ class BooleanFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function defaultSettings() {
+  public static function defaultSettings(): array {
     $settings = [];
 
     // Fall back to field settings by default.
@@ -43,8 +43,8 @@ class BooleanFormatter extends FormatterBase {
    *   boolean TRUE, the second is for boolean FALSE. The value can be also an
    *   array, but this is just the case for the custom format.
    */
-  protected function getOutputFormats() {
-    $formats = [
+  protected function getOutputFormats(): array {
+    return [
       'default' => [$this->getFieldSetting('on_label'), $this->getFieldSetting('off_label')],
       'yes-no' => [$this->t('Yes'), $this->t('No')],
       'true-false' => [$this->t('True'), $this->t('False')],
@@ -54,8 +54,6 @@ class BooleanFormatter extends FormatterBase {
       'unicode-yes-no' => ['✔', '✖'],
       'custom' => $this->t('Custom'),
     ];
-
-    return $formats;
   }
 
   /**
@@ -118,8 +116,9 @@ class BooleanFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return list
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
     $setting = $this->getSetting('format');
 
@@ -142,8 +141,9 @@ class BooleanFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#markup': mixed}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     $formats = $this->getOutputFormats();

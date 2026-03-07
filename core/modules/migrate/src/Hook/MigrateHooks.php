@@ -23,8 +23,7 @@ class MigrateHooks {
         $output = '<h2>' . $this->t('About') . '</h2>';
         $output .= '<p>';
         $output .= $this->t('The Migrate module provides a framework for migrating data, usually from an external source into your site. It does not provide a user interface. For more information, see the <a href=":migrate">online documentation for the Migrate module</a>.', [':migrate' => 'https://www.drupal.org/documentation/modules/migrate']);
-        $output .= '</p>';
-        return $output;
+        return $output . '</p>';
     }
     return NULL;
   }

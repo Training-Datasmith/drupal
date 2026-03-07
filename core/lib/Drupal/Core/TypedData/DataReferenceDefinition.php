@@ -57,7 +57,7 @@ class DataReferenceDefinition extends DataDefinition implements DataReferenceDef
    *
    * @return $this
    */
-  public function setTargetDefinition(DataDefinitionInterface $definition) {
+  public function setTargetDefinition(DataDefinitionInterface $definition): static {
     $this->targetDefinition = $definition;
     return $this;
   }

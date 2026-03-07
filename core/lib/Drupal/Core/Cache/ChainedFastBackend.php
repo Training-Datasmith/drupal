@@ -54,24 +54,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
    */
   const LAST_WRITE_TIMESTAMP_PREFIX = 'last_write_timestamp_';
 
-  /**
-   * @var string
-   */
-  protected $bin;
-
-  /**
-   * The consistent cache backend.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $consistentBackend;
-
-  /**
-   * The fast cache backend.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $fastBackend;
+  protected string $bin;
 
   /**
    * The time at which the last write to this cache bin happened.
@@ -83,16 +66,14 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * Constructs a ChainedFastBackend object.
    *
-   * @param \Drupal\Core\Cache\CacheBackendInterface $consistent_backend
+   * @param \Drupal\Core\Cache\CacheBackendInterface $consistentBackend
    *   The consistent cache backend.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $fast_backend
+   * @param \Drupal\Core\Cache\CacheBackendInterface $fastBackend
    *   The fast cache backend.
    * @param string $bin
    *   The cache bin for which the object is created.
    */
-  public function __construct(CacheBackendInterface $consistent_backend, CacheBackendInterface $fast_backend, $bin) {
-    $this->consistentBackend = $consistent_backend;
-    $this->fastBackend = $fast_backend;
+  public function __construct(protected \Drupal\Core\Cache\CacheBackendInterface $consistentBackend, protected \Drupal\Core\Cache\CacheBackendInterface $fastBackend, string $bin) {
     $this->bin = 'cache_' . $bin;
     $this->lastWriteTimestamp = NULL;
   }
@@ -100,7 +81,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function get($cid, $allow_invalid = FALSE) {
+  public function get($cid, $allow_invalid = FALSE): mixed {
     $cids = [$cid];
     $cache = $this->getMultiple($cids, $allow_invalid);
     return reset($cache);
@@ -108,8 +89,9 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
     $cids_copy = $cids;
     $cache = [];
 
@@ -193,7 +175,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
     // Setting a cache item on the consistent backend requires invalidating the
     // fast backend. In a cold cache situation, there can be thousands of cache
     // sets. However, because each cache set invalidates every previous set,
@@ -210,7 +192,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $items) {
+  public function setMultiple(array $items): void {
     $this->consistentBackend->setMultiple($items);
     $this->markAsOutdated();
   }
@@ -218,7 +200,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     $this->consistentBackend->deleteMultiple([$cid]);
     $this->markAsOutdated();
   }
@@ -226,7 +208,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $cids) {
+  public function deleteMultiple(array $cids): void {
     $this->consistentBackend->deleteMultiple($cids);
     $this->markAsOutdated();
   }
@@ -234,7 +216,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     $this->consistentBackend->deleteAll();
     $this->markAsOutdated();
   }
@@ -242,14 +224,14 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function invalidate($cid) {
+  public function invalidate($cid): void {
     $this->invalidateMultiple([$cid]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invalidateMultiple(array $cids) {
+  public function invalidateMultiple(array $cids): void {
     $this->consistentBackend->invalidateMultiple($cids);
     $this->markAsOutdated();
   }
@@ -257,7 +239,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function invalidateTags(array $tags) {
+  public function invalidateTags(array $tags): void {
     if ($this->consistentBackend instanceof CacheTagsInvalidatorInterface) {
       $this->consistentBackend->invalidateTags($tags);
     }
@@ -269,7 +251,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     $this->consistentBackend->garbageCollection();
     $this->fastBackend->garbageCollection();
   }
@@ -277,7 +259,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * {@inheritdoc}
    */
-  public function removeBin() {
+  public function removeBin(): void {
     $this->consistentBackend->removeBin();
     $this->fastBackend->removeBin();
   }
@@ -285,7 +267,7 @@ class ChainedFastBackend implements CacheBackendInterface, CacheTagsInvalidatorI
   /**
    * @todo Document in https://www.drupal.org/node/2311945.
    */
-  public function reset() {
+  public function reset(): void {
     $this->lastWriteTimestamp = NULL;
   }
 

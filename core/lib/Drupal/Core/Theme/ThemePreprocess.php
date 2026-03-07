@@ -289,7 +289,7 @@ class ThemePreprocess {
     if (!empty($variables['page']['#title'])) {
       $head_title = [
         // Marking the title as safe since it has had the tags stripped.
-        'title' => Markup::create(trim(strip_tags($variables['page']['#title']))),
+        'title' => Markup::create(trim(strip_tags((string) $variables['page']['#title']))),
         'name' => $site_config->get('name'),
       ];
     }
@@ -304,7 +304,7 @@ class ThemePreprocess {
     else {
       $head_title = ['name' => $site_config->get('name')];
       if ($site_config->get('slogan')) {
-        $head_title['slogan'] = strip_tags($site_config->get('slogan'));
+        $head_title['slogan'] = strip_tags((string) $site_config->get('slogan'));
       }
     }
 

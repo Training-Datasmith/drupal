@@ -85,7 +85,7 @@ class DrupalDateTime extends DateTimePlus {
    *   - debug: (optional) Boolean choice to leave debug values in the
    *     date object for debugging purposes. Defaults to FALSE.
    */
-  public function __construct($time = 'now', $timezone = NULL, $settings = []) {
+  public function __construct($time = 'now', $timezone = NULL, array $settings = []) {
     if (!isset($settings['langcode'])) {
       $settings['langcode'] = \Drupal::languageManager()->getCurrentLanguage()->getId();
     }
@@ -124,7 +124,7 @@ class DrupalDateTime extends DateTimePlus {
    *   The formatted value of the date. Since the format may contain user input,
    *   this value should be escaped when output.
    */
-  public function format($format, $settings = []) {
+  public function format($format, array $settings = []): string|array|null {
     $langcode = !empty($settings['langcode']) ? $settings['langcode'] : $this->langcode;
     $value = '';
     // Format the date and catch errors.

@@ -11,26 +11,19 @@ use Drupal\Core\Entity\EntityInterface;
 class InlineBlockUsage implements InlineBlockUsageInterface {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * Creates an InlineBlockUsage object.
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(Connection $database) {
-    $this->database = $database;
+  public function __construct(protected \Drupal\Core\Database\Connection $database)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addUsage($block_content_id, EntityInterface $entity) {
+  public function addUsage($block_content_id, EntityInterface $entity): void {
     $this->database->merge('inline_block_usage')
       ->keys([
         'block_content_id' => $block_content_id,
@@ -53,7 +46,7 @@ class InlineBlockUsage implements InlineBlockUsageInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeByLayoutEntity(EntityInterface $entity) {
+  public function removeByLayoutEntity(EntityInterface $entity): void {
     $query = $this->database->update('inline_block_usage')
       ->fields([
         'layout_entity_type' => NULL,
@@ -67,7 +60,7 @@ class InlineBlockUsage implements InlineBlockUsageInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteUsage(array $block_content_ids) {
+  public function deleteUsage(array $block_content_ids): void {
     if (!empty($block_content_ids)) {
       $query = $this->database->delete('inline_block_usage')->condition('block_content_id', $block_content_ids, 'IN');
       $query->execute();

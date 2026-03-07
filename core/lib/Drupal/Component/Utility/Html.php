@@ -105,7 +105,7 @@ class Html {
       '[' => '-',
       ']' => '',
     ],
-  ) {
+  ): string|array|null {
     // We could also use strtr() here but its much slower than str_replace(). In
     // order to keep '__' to stay '__' we first replace it with a different
     // placeholder after checking that it is not defined as a filter.
@@ -144,7 +144,7 @@ class Html {
    * @param bool $is_ajax
    *   TRUE if this request is an Ajax request, FALSE otherwise.
    */
-  public static function setIsAjax($is_ajax) {
+  public static function setIsAjax($is_ajax): void {
     static::$isAjax = $is_ajax;
   }
 
@@ -223,7 +223,7 @@ class Html {
    *
    * @see self::getUniqueId()
    */
-  public static function getId($id) {
+  public static function getId($id): string|array|null {
     $id = str_replace([' ', '_', '[', ']'], ['-', '-', '-', ''], mb_strtolower($id));
 
     // As defined in https://www.w3.org/TR/html4/types.html#type-name, HTML IDs
@@ -235,14 +235,14 @@ class Html {
     $id = preg_replace('/[^A-Za-z0-9\-_]/', '', $id);
 
     // Removing multiple consecutive hyphens.
-    $id = preg_replace('/\-+/', '-', $id);
+    $id = preg_replace('/\-+/', '-', (string) $id);
     return $id;
   }
 
   /**
    * Resets the list of seen IDs.
    */
-  public static function resetSeenIds() {
+  public static function resetSeenIds(): void {
     static::$seenIds = NULL;
   }
 
@@ -303,7 +303,7 @@ class Html {
    * @return string
    *   A valid HTML snippet, as a string.
    */
-  public static function serialize(\DOMDocument $document) {
+  public static function serialize(\DOMDocument $document): string|array {
     $body_node = $document->getElementsByTagName('body')->item(0);
     $html = '';
 
@@ -353,7 +353,7 @@ class Html {
    *   (optional) A string to use as a comment end marker to escape the CDATA
    *   declaration. Defaults to an empty string.
    */
-  public static function escapeCdataElement(\DOMNode $node, $comment_start = '//', $comment_end = '') {
+  public static function escapeCdataElement(\DOMNode $node, $comment_start = '//', $comment_end = ''): void {
     foreach ($node->childNodes as $child_node) {
       if ($child_node instanceof \DOMCdataSection) {
         $data = $child_node->data;
@@ -461,7 +461,7 @@ class Html {
    * @return string
    *   The updated HTML snippet.
    */
-  public static function transformRootRelativeUrlsToAbsolute($html, $scheme_and_host) {
+  public static function transformRootRelativeUrlsToAbsolute($html, string $scheme_and_host) {
     assert(empty(array_diff(array_keys(parse_url($scheme_and_host)), ["scheme", "host", "port"])), '$scheme_and_host contains scheme, host and port at most.');
     assert(isset(parse_url($scheme_and_host)["scheme"]), '$scheme_and_host is absolute and hence has a scheme.');
     assert(isset(parse_url($scheme_and_host)["host"]), '$base_url is absolute and hence has a host.');
@@ -480,8 +480,8 @@ class Html {
     foreach ($xpath->query("//*[@srcset]") as $node) {
       // @see https://html.spec.whatwg.org/multipage/embedded-content.html#attr-img-srcset
       // @see https://html.spec.whatwg.org/multipage/embedded-content.html#image-candidate-string
-      $image_candidate_strings = explode(',', $node->getAttribute('srcset'));
-      $image_candidate_strings = array_filter(array_map('trim', $image_candidate_strings));
+      $image_candidate_strings = explode(',', (string) $node->getAttribute('srcset'));
+      $image_candidate_strings = array_filter(array_map(trim(...), $image_candidate_strings));
       foreach ($image_candidate_strings as $key => $image_candidate_string) {
         if ($image_candidate_string[0] === '/' && $image_candidate_string[1] !== '/') {
           $image_candidate_strings[$key] = $scheme_and_host . $image_candidate_string;

@@ -10,46 +10,16 @@ use Drupal\Component\EventDispatcher\Event;
 class UserFloodEvent extends Event {
 
   /**
-   * Flood event name.
-   *
-   * @var string
-   */
-  protected $name;
-
-  /**
-   * Flood event threshold.
-   *
-   * @var int
-   */
-  protected $threshold;
-
-  /**
-   * Flood event window.
-   *
-   * @var int
-   */
-  protected $window;
-
-  /**
-   * Flood event identifier.
-   *
-   * @var string
-   */
-  protected $identifier;
-
-  /**
    * Flood event uid.
    *
    * @var int
    */
-  protected $uid = NULL;
+  protected $uid;
 
   /**
    * Flood event IP.
-   *
-   * @var string
    */
-  protected $ip = NULL;
+  protected string $ip;
 
   /**
    * Constructs a user flood event object.
@@ -63,23 +33,31 @@ class UserFloodEvent extends Event {
    * @param string $identifier
    *   The identifier of the flood event.
    */
-  public function __construct($name, $threshold, $window, $identifier) {
-    $this->name = $name;
-    $this->threshold = $threshold;
-    $this->window = $window;
-    $this->identifier = $identifier;
+  public function __construct(/**
+   * Flood event name.
+   */
+  protected $name, /**
+   * Flood event threshold.
+   */
+  protected $threshold, /**
+   * Flood event window.
+   */
+  protected $window, /**
+   * Flood event identifier.
+   */
+  protected $identifier) {
     // The identifier could be a uid or an IP, or a composite of both.
-    if (is_numeric($identifier)) {
-      $this->uid = $identifier;
+    if (is_numeric($this->identifier)) {
+      $this->uid = $this->identifier;
       return;
     }
-    if (str_contains($identifier, '-')) {
-      [$uid, $ip] = explode('-', $identifier);
+    if (str_contains($this->identifier, '-')) {
+      [$uid, $ip] = explode('-', $this->identifier);
       $this->uid = $uid;
       $this->ip = $ip;
       return;
     }
-    $this->ip = $identifier;
+    $this->ip = $this->identifier;
   }
 
   /**
@@ -148,7 +126,7 @@ class UserFloodEvent extends Event {
    * @return bool
    *   Whether the event has an IP.
    */
-  public function hasIp() {
+  public function hasIp(): bool {
     return !empty($this->ip);
   }
 
@@ -158,7 +136,7 @@ class UserFloodEvent extends Event {
    * @return bool
    *   Whether the event has a uid.
    */
-  public function hasUid() {
+  public function hasUid(): bool {
     return !empty($this->uid);
   }
 

@@ -16,14 +16,14 @@ class RemoveSectionForm extends LayoutRebuildConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'layout_builder_remove_section';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $configuration = $this->sectionStorage->getSection($this->delta)->getLayoutSettings();
     // Layouts may choose to use a class that might not have a label
     // configuration.
@@ -36,7 +36,7 @@ class RemoveSectionForm extends LayoutRebuildConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Remove');
   }
 

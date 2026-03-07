@@ -12,29 +12,21 @@ class Component extends PluginBase {
 
   /**
    * The component's metadata.
-   *
-   * @var \Drupal\Core\Theme\Component\ComponentMetadata
    */
   public readonly ComponentMetadata $metadata;
 
   /**
    * The component machine name.
-   *
-   * @var string
    */
   public readonly string $machineName;
 
   /**
    * The Twig template for the component.
-   *
-   * @var string
    */
   public readonly string $template;
 
   /**
    * The library definition to be attached with the component.
-   *
-   * @var array
    */
   public readonly array $library;
 
@@ -45,7 +37,7 @@ class Component extends PluginBase {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    if (str_contains($plugin_id, '/')) {
+    if (str_contains((string) $plugin_id, '/')) {
       $message = sprintf('Component ID cannot contain slashes: %s', $plugin_id);
       throw new InvalidComponentException($message);
     }

@@ -13,7 +13,7 @@ class Form extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#method' => 'post',
       '#theme_wrappers' => ['form'],

@@ -46,7 +46,7 @@ class Fields extends RowPluginBase {
   /**
    * Provide a form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $options = $this->displayHandler->getFieldLabels();
 
@@ -101,7 +101,7 @@ class Fields extends RowPluginBase {
    *
    * There is no need for this function to actually store the data.
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     $inline = $form_state->getValue(['row_options', 'inline']);
     $form_state->setValue(['row_options', 'inline'], array_filter($inline));
   }

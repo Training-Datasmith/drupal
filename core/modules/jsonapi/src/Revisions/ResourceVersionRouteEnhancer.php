@@ -63,20 +63,18 @@ final class ResourceVersionRouteEnhancer implements EnhancerInterface {
   const VERSION_IDENTIFIER_VALIDATOR = '/^[a-z]+[a-z_]*[a-z]+:[a-zA-Z0-9\-]+(:[a-zA-Z0-9\-]+)*$/';
 
   /**
-   * The revision ID negotiator.
-   *
-   * @var \Drupal\jsonapi\Revisions\VersionNegotiator
-   */
-  protected $versionNegotiator;
-
-  /**
    * ResourceVersionRouteEnhancer constructor.
    *
-   * @param \Drupal\jsonapi\Revisions\VersionNegotiator $version_negotiator_manager
+   * @param \Drupal\jsonapi\Revisions\VersionNegotiator $versionNegotiator
    *   The version negotiator.
    */
-  public function __construct(VersionNegotiator $version_negotiator_manager) {
-    $this->versionNegotiator = $version_negotiator_manager;
+  public function __construct(
+      /**
+       * The revision ID negotiator.
+       */
+      protected VersionNegotiator $versionNegotiator
+  )
+  {
   }
 
   /**
@@ -162,7 +160,6 @@ final class ResourceVersionRouteEnhancer implements EnhancerInterface {
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $defaults['entity'];
 
-    /** @var \Drupal\jsonapi\Revisions\VersionNegotiatorInterface $negotiator */
     $resolved_revision = $this->versionNegotiator->getRevision($entity, $resource_version_identifier);
     // Ensure none of the original entity cacheability is lost, especially the
     // query argument's cache context.
@@ -179,7 +176,7 @@ final class ResourceVersionRouteEnhancer implements EnhancerInterface {
    * @return bool
    *   TRUE if the received resource version value is valid, FALSE otherwise.
    */
-  protected static function isValidVersionIdentifier($resource_version) {
+  protected static function isValidVersionIdentifier($resource_version): bool {
     return preg_match(static::VERSION_IDENTIFIER_VALIDATOR, $resource_version) === 1;
   }
 

@@ -34,7 +34,7 @@ class BlockEntitySettingTrayForm extends BlockForm {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   The title.
    */
-  public function title(BlockInterface $block) {
+  public function title(BlockInterface $block): \Drupal\Core\StringTranslation\TranslatableMarkup {
     // @todo Wrap "Configure " in <span class="visually-hidden"></span> once
     //   https://www.drupal.org/node/2359901 is fixed.
     return $this->t('Configure @block', ['@block' => $block->getPlugin()->getPluginDefinition()['admin_label']]);
@@ -43,7 +43,7 @@ class BlockEntitySettingTrayForm extends BlockForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     // Create link to full block form.
@@ -89,7 +89,7 @@ class BlockEntitySettingTrayForm extends BlockForm {
   /**
    * {@inheritdoc}
    */
-  protected function buildVisibilityInterface(array $form, FormStateInterface $form_state) {
+  protected function buildVisibilityInterface(array $form, FormStateInterface $form_state): array {
     // Do not display the visibility.
     return [];
   }

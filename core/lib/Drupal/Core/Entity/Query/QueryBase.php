@@ -19,10 +19,8 @@ abstract class QueryBase implements QueryInterface {
 
   /**
    * Information about the entity type.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
    */
-  protected $entityType;
+  protected \Drupal\Core\Entity\EntityTypeInterface $entityType;
 
   /**
    * The list of sorts.
@@ -125,18 +123,6 @@ abstract class QueryBase implements QueryInterface {
   protected $pager = [];
 
   /**
-   * List of potential namespaces of the classes belonging to this query.
-   *
-   * @var array
-   */
-  protected $namespaces = [];
-
-  /**
-   * Defines how the conditions on the query need to match.
-   */
-  protected string $conjunction;
-
-  /**
    * Constructs this object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -147,14 +133,12 @@ abstract class QueryBase implements QueryInterface {
    * @param array $namespaces
    *   List of potential namespaces of the classes belonging to this query.
    */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, array $namespaces) {
+  public function __construct(EntityTypeInterface $entity_type, protected string $conjunction, protected array $namespaces) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
-    $this->conjunction = $conjunction;
-    $this->namespaces = $namespaces;
-    $this->condition = $this->conditionGroupFactory($conjunction);
+    $this->condition = $this->conditionGroupFactory($this->conjunction);
     if ($this instanceof QueryAggregateInterface) {
-      $this->conditionAggregate = $this->conditionAggregateGroupFactory($conjunction);
+      $this->conditionAggregate = $this->conditionAggregateGroupFactory($this->conjunction);
     }
   }
 
@@ -461,7 +445,7 @@ abstract class QueryBase implements QueryInterface {
    * @return string
    *   The alias for the field.
    */
-  protected function getAggregationAlias($field, $function) {
+  protected function getAggregationAlias(string $field, string $function) {
     return strtolower($field . '_' . $function);
   }
 
@@ -482,7 +466,7 @@ abstract class QueryBase implements QueryInterface {
    */
   public static function getNamespaces($object) {
     $namespaces = [];
-    for ($class = get_class($object); $class; $class = get_parent_class($class)) {
+    for ($class = $object::class; $class; $class = get_parent_class($class)) {
       $namespaces[] = substr($class, 0, strrpos($class, '\\'));
     }
     return $namespaces;
@@ -501,7 +485,7 @@ abstract class QueryBase implements QueryInterface {
    * @return string|null
    *   The fully qualified name of the class.
    */
-  public static function getClass(array $namespaces, $short_class_name) {
+  public static function getClass(array $namespaces, string $short_class_name) {
     foreach ($namespaces as $namespace) {
       $class = $namespace . '\\' . $short_class_name;
       if (class_exists($class)) {

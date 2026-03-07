@@ -23,7 +23,7 @@ class ViewsFormMainForm implements FormInterface, TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return '';
   }
 
@@ -38,7 +38,7 @@ class ViewsFormMainForm implements FormInterface, TrustedCallbackInterface {
    *   The $element with prepared variables ready for #theme 'form'
    *   in views_form_views_form.
    */
-  public static function preRenderViewsForm(array $element) {
+  public static function preRenderViewsForm(array $element): array {
     // Placeholders and their substitutions (usually rendered form elements).
     $search = [];
     $replace = [];
@@ -72,18 +72,18 @@ class ViewsFormMainForm implements FormInterface, TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['preRenderViewsForm'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?ViewExecutable $view = NULL, $output = []) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?ViewExecutable $view = NULL, $output = []): array {
     $form['#prefix'] = '<div class="views-form">';
     $form['#suffix'] = '</div>';
 
-    $form['#pre_render'][] = [static::class, 'preRenderViewsForm'];
+    $form['#pre_render'][] = static::preRenderViewsForm(...);
 
     // Add the output markup to the form array so that it's included when the
     // form array is passed to the theme function.
@@ -164,7 +164,7 @@ class ViewsFormMainForm implements FormInterface, TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->getBuildInfo()['args'][0];
 
     // Call the validation method on every field handler that has it.
@@ -187,7 +187,7 @@ class ViewsFormMainForm implements FormInterface, TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->getBuildInfo()['args'][0];
 
     // Call the submit method on every field handler that has it.

@@ -154,14 +154,14 @@ class Drupal {
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   A new container instance to replace the current.
    */
-  public static function setContainer(ContainerInterface $container) {
+  public static function setContainer(ContainerInterface $container): void {
     static::$container = $container;
   }
 
   /**
    * Unsets the global container.
    */
-  public static function unsetContainer() {
+  public static function unsetContainer(): void {
     static::$container = NULL;
   }
 
@@ -186,7 +186,7 @@ class Drupal {
    * @return bool
    *   TRUE if the container is initialized, FALSE otherwise.
    */
-  public static function hasContainer() {
+  public static function hasContainer(): bool {
     return static::$container !== NULL;
   }
 
@@ -214,7 +214,7 @@ class Drupal {
    * @return bool
    *   TRUE if the specified service exists, FALSE otherwise.
    */
-  public static function hasService($id) {
+  public static function hasService($id): bool {
     // Check hasContainer() first in order to always return a Boolean.
     return static::hasContainer() && static::getContainer()->has($id);
   }
@@ -247,7 +247,7 @@ class Drupal {
    * @return bool
    *   TRUE if there is a currently active request object, FALSE otherwise.
    */
-  public static function hasRequest() {
+  public static function hasRequest(): bool {
     // Check hasContainer() first in order to always return a Boolean.
     return static::hasContainer() && static::getContainer()->has('request_stack') && static::getContainer()->get('request_stack')->getCurrentRequest() !== NULL;
   }
@@ -347,7 +347,7 @@ class Drupal {
    *
    * @ingroup cache
    */
-  public static function cache($bin = 'default') {
+  public static function cache(string $bin = 'default') {
     return static::getContainer()->get('cache.' . $bin);
   }
 

@@ -24,32 +24,11 @@ class EntityOperations extends FieldPluginBase {
   use RedirectDestinationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository service.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * The entity display repository.
    *
    * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
    */
   protected $entityDisplayRepository;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
 
   /**
    * Constructs a new EntityOperations object.
@@ -60,25 +39,21 @@ class EntityOperations extends FieldPluginBase {
    *   The plugin ID for the plugin instance.
    * @param array $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager, EntityRepositoryInterface $entity_repository) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->languageManager = $language_manager;
-    $this->entityRepository = $entity_repository;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function usesGroupBy() {
+  public function usesGroupBy(): bool {
     return FALSE;
   }
 
@@ -98,7 +73,7 @@ class EntityOperations extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['destination'] = [
@@ -112,7 +87,7 @@ class EntityOperations extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render(ResultRow $values) {
+  public function render(ResultRow $values): string|array {
     $entity = $this->getEntity($values);
     // Allow for the case where there is no entity, if we are on a non-required
     // relationship.
@@ -146,7 +121,7 @@ class EntityOperations extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // We purposefully do not call parent::query() because we do not want the
     // default query behavior for Views fields. Instead, let the entity
     // translation renderer provide the correct query behavior.
@@ -193,7 +168,7 @@ class EntityOperations extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function clickSortable() {
+  public function clickSortable(): bool {
     return FALSE;
   }
 

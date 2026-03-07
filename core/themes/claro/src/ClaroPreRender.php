@@ -15,7 +15,7 @@ class ClaroPreRender implements TrustedCallbackInterface {
   /**
    * Prerender callback for managed_file.
    */
-  public static function managedFile($element) {
+  public static function managedFile(array $element): array {
     if (!empty($element['remove_button']) && is_array($element['remove_button'])) {
       $element['remove_button']['#attributes']['class'][] = 'button--extrasmall';
       $element['remove_button']['#attributes']['class'][] = 'remove-button';
@@ -64,7 +64,7 @@ class ClaroPreRender implements TrustedCallbackInterface {
   /**
    * Prerender callback for Vertical Tabs element.
    */
-  public static function verticalTabs($element) {
+  public static function verticalTabs(array $element): array {
     $group_type_is_details = isset($element['group']['#type']) && $element['group']['#type'] === 'details';
     $groups_are_present = isset($element['group']['#groups']) && is_array($element['group']['#groups']);
 
@@ -115,7 +115,7 @@ class ClaroPreRender implements TrustedCallbackInterface {
   /**
    * Prerender callback for the Operations element.
    */
-  public static function operations($element) {
+  public static function operations(array $element): array {
     if (empty($element['#dropbutton_type'])) {
       $element['#dropbutton_type'] = 'extrasmall';
     }
@@ -131,7 +131,7 @@ class ClaroPreRender implements TrustedCallbackInterface {
    * @return array
    *   The processed container element.
    */
-  public static function container(array $element) {
+  public static function container(array $element): array {
     if (!empty($element['#accordion'])) {
       // The container must work as an accordion list wrapper.
       $element['#attributes']['class'][] = 'accordion';
@@ -153,7 +153,7 @@ class ClaroPreRender implements TrustedCallbackInterface {
   /**
    * Prerender callback for text_format elements.
    */
-  public static function textFormat($element) {
+  public static function textFormat(array $element): array {
     // Add clearfix for filter wrapper.
     $element['format']['#attributes']['class'][] = 'clearfix';
     // Hide format select label visually.
@@ -182,7 +182,7 @@ class ClaroPreRender implements TrustedCallbackInterface {
    * @return array
    *   The updated renderable array containing the placeholder.
    */
-  public static function messagePlaceholder(array $element) {
+  public static function messagePlaceholder(array $element): array {
     if (isset($element['fallback']['#markup'])) {
       $element['fallback']['#markup'] = '<div data-drupal-messages-fallback class="hidden messages-list"></div>';
     }
@@ -192,7 +192,7 @@ class ClaroPreRender implements TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return [
       'managedFile',
       'verticalTabs',

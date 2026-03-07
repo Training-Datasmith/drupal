@@ -18,13 +18,6 @@ class LanguageConfigOverride extends StorableConfigBase {
   use LanguageConfigCollectionNameTrait;
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * Constructs a language override object.
    *
    * @param string $name
@@ -34,20 +27,19 @@ class LanguageConfigOverride extends StorableConfigBase {
    *   configuration override.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config
    *   The typed configuration manager service.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
    */
-  public function __construct($name, StorageInterface $storage, TypedConfigManagerInterface $typed_config, EventDispatcherInterface $event_dispatcher) {
+  public function __construct($name, StorageInterface $storage, TypedConfigManagerInterface $typed_config, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher) {
     $this->name = $name;
     $this->storage = $storage;
     $this->typedConfigManager = $typed_config;
-    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function save($has_trusted_data = FALSE) {
+  public function save($has_trusted_data = FALSE): static {
     if (!$has_trusted_data) {
       // @todo Use configuration schema to validate.
       //   https://www.drupal.org/node/2270399
@@ -77,7 +69,7 @@ class LanguageConfigOverride extends StorableConfigBase {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): static {
     $this->data = [];
     $this->storage->delete($this->name);
     Cache::invalidateTags($this->getCacheTags());

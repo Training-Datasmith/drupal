@@ -36,32 +36,11 @@ class PathBasedBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   use StringTranslationTrait;
 
   /**
-   * The router request context.
-   *
-   * @var \Drupal\Core\Routing\RequestContext
-   */
-  protected $context;
-
-  /**
-   * The access check service.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
    * The dynamic router service.
    *
    * @var \Symfony\Component\Routing\Matcher\RequestMatcherInterface
    */
   protected $router;
-
-  /**
-   * The inbound path processor.
-   *
-   * @var \Drupal\Core\PathProcessor\InboundPathProcessorInterface
-   */
-  protected $pathProcessor;
 
   /**
    * Site config object.
@@ -71,71 +50,44 @@ class PathBasedBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   protected $config;
 
   /**
-   * The title resolver.
-   *
-   * @var \Drupal\Core\Controller\TitleResolverInterface
-   */
-  protected $titleResolver;
-
-  /**
-   * The current user object.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The current path service.
-   *
-   * @var \Drupal\Core\Path\CurrentPathStack
-   */
-  protected $currentPath;
-
-  /**
    * The patch matcher service.
    *
    * @var \Drupal\Core\Path\PathMatcherInterface
    */
-  protected $pathMatcher;
+  protected object $pathMatcher;
 
   /**
    * Constructs the PathBasedBreadcrumbBuilder.
    *
    * @param \Drupal\Core\Routing\RequestContext $context
    *   The router request context.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access check service.
    * @param \Symfony\Component\Routing\Matcher\RequestMatcherInterface $router
    *   The dynamic router service.
-   * @param \Drupal\Core\PathProcessor\InboundPathProcessorInterface $path_processor
+   * @param \Drupal\Core\PathProcessor\InboundPathProcessorInterface $pathProcessor
    *   The inbound path processor.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
-   * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver
+   * @param \Drupal\Core\Controller\TitleResolverInterface $titleResolver
    *   The title resolver service.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user object.
-   * @param \Drupal\Core\Path\CurrentPathStack $current_path
+   * @param \Drupal\Core\Path\CurrentPathStack $currentPath
    *   The current path.
    * @param \Drupal\Core\Path\PathMatcherInterface $path_matcher
    *   The path matcher service.
    */
-  public function __construct(RequestContext $context, AccessManagerInterface $access_manager, RequestMatcherInterface $router, InboundPathProcessorInterface $path_processor, ConfigFactoryInterface $config_factory, TitleResolverInterface $title_resolver, AccountInterface $current_user, CurrentPathStack $current_path, ?PathMatcherInterface $path_matcher = NULL) {
-    $this->context = $context;
-    $this->accessManager = $access_manager;
+  public function __construct(protected \Drupal\Core\Routing\RequestContext $context, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, RequestMatcherInterface $router, protected \Drupal\Core\PathProcessor\InboundPathProcessorInterface $pathProcessor, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Controller\TitleResolverInterface $titleResolver, protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\Core\Path\CurrentPathStack $currentPath, ?PathMatcherInterface $path_matcher = NULL) {
     $this->router = $router;
-    $this->pathProcessor = $path_processor;
     $this->config = $config_factory->get('system.site');
-    $this->titleResolver = $title_resolver;
-    $this->currentUser = $current_user;
-    $this->currentPath = $current_path;
     $this->pathMatcher = $path_matcher ?: \Drupal::service('path.matcher');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata) {
+  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool {
     return TRUE;
   }
 
@@ -158,7 +110,7 @@ class PathBasedBreadcrumbBuilder implements BreadcrumbBuilderInterface {
     // General path-based breadcrumbs. Use the actual request path, prior to
     // resolving path aliases, so the breadcrumb can be defined by simply
     // creating a hierarchy of path aliases.
-    $path = trim($this->context->getPathInfo(), '/');
+    $path = trim((string) $this->context->getPathInfo(), '/');
     $path_elements = explode('/', $path);
     $exclude = [];
     // Don't show a link to the front-page path.

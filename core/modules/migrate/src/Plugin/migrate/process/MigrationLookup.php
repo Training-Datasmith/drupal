@@ -126,27 +126,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The migration to be executed.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
-
-  /**
-   * The migrate lookup service.
-   *
-   * @var \Drupal\migrate\MigrateLookupInterface
-   */
-  protected $migrateLookup;
-
-  /**
-   * The migrate stub service.
-   *
-   * @var \Drupal\migrate\MigrateStubInterface
-   */
-  protected $migrateStub;
-
-  /**
    * Constructs a MigrationLookup object.
    *
    * @param array $configuration
@@ -157,22 +136,19 @@ class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPlugi
    *   The plugin implementation definition.
    * @param \Drupal\migrate\Plugin\MigrationInterface $migration
    *   The Migration the plugin is being used in.
-   * @param \Drupal\migrate\MigrateLookupInterface $migrate_lookup
+   * @param \Drupal\migrate\MigrateLookupInterface $migrateLookup
    *   The migrate lookup service.
-   * @param \Drupal\migrate\MigrateStubInterface $migrate_stub
+   * @param \Drupal\migrate\MigrateStubInterface $migrateStub
    *   The migrate stub service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, MigrateLookupInterface $migrate_lookup, MigrateStubInterface $migrate_stub) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\migrate\Plugin\MigrationInterface $migration, protected \Drupal\migrate\MigrateLookupInterface $migrateLookup, protected \Drupal\migrate\MigrateStubInterface $migrateStub) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->migration = $migration;
-    $this->migrateLookup = $migrate_lookup;
-    $this->migrateStub = $migrate_stub;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -213,7 +189,7 @@ class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPlugi
       try {
         $destination_id_array = $this->migrateLookup->lookup($lookup_migration_id, $lookup_value);
       }
-      catch (PluginNotFoundException $e) {
+      catch (PluginNotFoundException) {
         $destination_id_array = [];
       }
       catch (MigrateException $e) {
@@ -281,16 +257,14 @@ class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPlugi
         throw new MigrateSkipRowException($new_message, 0);
       }
       catch (\Exception $e) {
-        throw new MigrateException(sprintf('%s was thrown while attempting to stub: %s', get_class($e), $e->getMessage()), $e->getCode(), $e);
+        throw new MigrateException(sprintf('%s was thrown while attempting to stub: %s', $e::class, $e->getMessage()), $e->getCode(), $e);
       }
     }
     if ($destination_ids) {
       if (count($destination_ids) == 1) {
         return reset($destination_ids);
       }
-      else {
-        return $destination_ids;
-      }
+      return $destination_ids;
     }
   }
 
@@ -301,7 +275,7 @@ class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPlugi
    *   The incoming value to check.
    */
   protected function skipInvalid(array $value) {
-    if (!array_filter($value, [$this, 'isValid'])) {
+    if (!array_filter($value, $this->isValid(...))) {
       $this->stopPipeline();
     }
   }
@@ -317,7 +291,7 @@ class MigrationLookup extends ProcessPluginBase implements ContainerFactoryPlugi
    * @return bool
    *   Return true if the value is valid.
    */
-  protected function isValid($value) {
+  protected function isValid($value): bool {
     return !in_array($value, [NULL, FALSE, [], ""], TRUE);
   }
 

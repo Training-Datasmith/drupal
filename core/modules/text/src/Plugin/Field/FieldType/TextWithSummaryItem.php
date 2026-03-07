@@ -50,7 +50,7 @@ class TextWithSummaryItem extends TextItemBase {
       ->setLabel(new TranslatableMarkup('Processed summary'))
       ->setDescription(new TranslatableMarkup('The summary text with the text format applied.'))
       ->setComputed(TRUE)
-      ->setClass('\Drupal\text\TextProcessed')
+      ->setClass(\Drupal\text\TextProcessed::class)
       ->setSetting('text source', 'summary');
 
     return $properties;
@@ -59,7 +59,7 @@ class TextWithSummaryItem extends TextItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -84,7 +84,7 @@ class TextWithSummaryItem extends TextItemBase {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('summary')->getValue();
     return parent::isEmpty() && ($value === NULL || $value === '');
   }

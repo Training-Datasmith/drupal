@@ -21,20 +21,6 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   const TABLE_NAME = 'queue';
 
   /**
-   * The name of the queue this instance is working with.
-   *
-   * @var string
-   */
-  protected $name;
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a \Drupal\Core\Queue\DatabaseQueue object.
    *
    * @param string $name
@@ -42,9 +28,14 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
    * @param \Drupal\Core\Database\Connection $connection
    *   The Connection object containing the key-value tables.
    */
-  public function __construct($name, Connection $connection) {
-    $this->name = $name;
-    $this->connection = $connection;
+  public function __construct(
+      /**
+       * The name of the queue this instance is working with.
+       */
+      protected $name,
+      protected \Drupal\Core\Database\Connection $connection
+  )
+  {
   }
 
   /**
@@ -65,7 +56,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
     }
     // Now that the table has been created, try again if necessary.
     if ($try_again) {
-      $id = $this->doCreateItem($data);
+      return $this->doCreateItem($data);
     }
     return $id;
   }
@@ -99,7 +90,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * {@inheritdoc}
    */
-  public function numberOfItems() {
+  public function numberOfItems(): int {
     try {
       return (int) $this->connection->query('SELECT COUNT([item_id]) FROM {' . static::TABLE_NAME . '} WHERE [name] = :name', [':name' => $this->name])
         ->fetchField();
@@ -156,7 +147,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * {@inheritdoc}
    */
-  public function releaseItem($item) {
+  public function releaseItem($item): bool {
     try {
       $update = $this->connection->update(static::TABLE_NAME)
         ->fields([
@@ -175,7 +166,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * {@inheritdoc}
    */
-  public function delayItem($item, int $delay) {
+  public function delayItem($item, int $delay): bool {
     // Only allow a positive delay interval.
     if ($delay < 0) {
       throw new \InvalidArgumentException('$delay must be non-negative');
@@ -202,7 +193,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * {@inheritdoc}
    */
-  public function deleteItem($item) {
+  public function deleteItem($item): void {
     try {
       $this->connection->delete(static::TABLE_NAME)
         ->condition('item_id', $item->item_id)
@@ -216,7 +207,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * {@inheritdoc}
    */
-  public function createQueue() {
+  public function createQueue(): void {
     // All tasks are stored in a single database table (which is created on
     // demand) so there is nothing we need to do to create a new queue.
   }
@@ -224,7 +215,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * {@inheritdoc}
    */
-  public function deleteQueue() {
+  public function deleteQueue(): void {
     try {
       $this->connection->delete(static::TABLE_NAME)
         ->condition('name', $this->name)
@@ -238,7 +229,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     try {
       // Clean up the queue for failed batches.
       $this->connection->delete(static::TABLE_NAME)
@@ -264,7 +255,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
   /**
    * Check if the table exists and create it if not.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $database_schema = $this->connection->schema();
       $schema_definition = $this->schemaDefinition();
@@ -305,7 +296,7 @@ class DatabaseQueue implements ReliableQueueInterface, QueueGarbageCollectionInt
    *
    * @internal
    */
-  public function schemaDefinition() {
+  public function schemaDefinition(): array {
     return [
       'description' => 'Stores items in queues.',
       'fields' => [

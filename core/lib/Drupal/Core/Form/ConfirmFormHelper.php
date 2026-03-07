@@ -22,7 +22,7 @@ class ConfirmFormHelper {
    * @return array
    *   The link render array for the cancel form.
    */
-  public static function buildCancelLink(ConfirmFormInterface $form, Request $request) {
+  public static function buildCancelLink(ConfirmFormInterface $form, Request $request): array {
     // Prepare cancel link.
     $query = $request->query;
     $url = NULL;
@@ -31,7 +31,7 @@ class ConfirmFormHelper {
       $options = UrlHelper::parse($query->get('destination'));
       // @todo Revisit this in https://www.drupal.org/node/2418219.
       try {
-        $url = Url::fromUserInput('/' . ltrim($options['path'], '/'), $options);
+        $url = Url::fromUserInput('/' . ltrim((string) $options['path'], '/'), $options);
       }
       catch (\InvalidArgumentException) {
         // Suppress the exception and fall back to the form's cancel URL.

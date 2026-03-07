@@ -17,7 +17,7 @@ class Select extends QuerySelect {
   /**
    * {@inheritdoc}
    */
-  public function orderRandom() {
+  public function orderRandom(): static {
     $alias = $this->addExpression('RANDOM()', 'random_field');
     $this->orderBy($alias);
     return $this;
@@ -52,7 +52,7 @@ class Select extends QuerySelect {
    * additional fields, this is done as an override instead of implementing it
    * directly in SelectQuery::orderBy().
    */
-  public function orderBy($field, $direction = 'ASC') {
+  public function orderBy($field, $direction = 'ASC'): static {
     // Only allow ASC and DESC, default to ASC.
     // Emulate MySQL default behavior to sort NULL values first for ascending,
     // and last for descending.

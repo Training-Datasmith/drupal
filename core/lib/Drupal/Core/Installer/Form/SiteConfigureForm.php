@@ -47,7 +47,7 @@ class SiteConfigureForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->getParameter('app.root'),
       $container->getParameter('site.path'),
@@ -64,14 +64,14 @@ class SiteConfigureForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'install_configure_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return [
       'system.date',
       'system.site',
@@ -82,7 +82,7 @@ class SiteConfigureForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     global $install_state;
     $form['#title'] = $this->t('Configure site');
 
@@ -231,7 +231,7 @@ class SiteConfigureForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $violations = $this->userNameValidator->validateName($form_state->getValue(['account', 'name']));
     if ($violations->count() > 0) {
       $form_state->setErrorByName('account][name', $violations[0]->getMessage());
@@ -241,7 +241,7 @@ class SiteConfigureForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     global $install_state;
 
     if (empty($install_state['config_install_path'])) {

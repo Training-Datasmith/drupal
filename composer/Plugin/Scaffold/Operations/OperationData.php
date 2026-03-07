@@ -25,13 +25,6 @@ class OperationData {
   protected $data;
 
   /**
-   * The destination path.
-   *
-   * @var string
-   */
-  protected $destination;
-
-  /**
    * OperationData constructor.
    *
    * @param string $destination
@@ -39,9 +32,11 @@ class OperationData {
    * @param mixed $data
    *   The raw data array to wrap.
    */
-  public function __construct($destination, $data) {
-    $this->destination = $destination;
-    $this->data = $this->normalizeScaffoldMetadata($destination, $data);
+  public function __construct(/**
+   * The destination path.
+   */
+  protected $destination, $data) {
+    $this->data = $this->normalizeScaffoldMetadata($this->destination, $data);
   }
 
   /**
@@ -70,7 +65,7 @@ class OperationData {
    * @return bool
    *   Returns true if path exists
    */
-  public function hasPath() {
+  public function hasPath(): bool {
     return isset($this->data[self::PATH]);
   }
 
@@ -90,7 +85,7 @@ class OperationData {
    * @return bool
    *   Returns true if overwrite mode was selected.
    */
-  public function overwrite() {
+  public function overwrite(): bool {
     return !empty($this->data[self::OVERWRITE]);
   }
 
@@ -113,7 +108,7 @@ class OperationData {
    * @return bool
    *   Returns true if prepend exists.
    */
-  public function hasPrepend() {
+  public function hasPrepend(): bool {
     return isset($this->data[self::PREPEND]);
   }
 
@@ -133,7 +128,7 @@ class OperationData {
    * @return bool
    *   Returns true if prepend exists.
    */
-  public function hasAppend() {
+  public function hasAppend(): bool {
     return isset($this->data[self::APPEND]);
   }
 
@@ -153,7 +148,7 @@ class OperationData {
    * @return bool
    *   Returns true if there is default data available.
    */
-  public function hasDefault() {
+  public function hasDefault(): bool {
     return isset($this->data[self::DEFAULT]);
   }
 

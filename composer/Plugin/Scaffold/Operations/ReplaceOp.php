@@ -20,37 +20,28 @@ class ReplaceOp extends AbstractOperation {
   const ID = 'replace';
 
   /**
-   * The relative path to the source file.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath
-   */
-  protected $source;
-
-  /**
-   * Whether to overwrite existing files.
-   *
-   * @var bool
-   */
-  protected $overwrite;
-
-  /**
    * Constructs a ReplaceOp.
    *
-   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $sourcePath
+   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $source
    *   The relative path to the source file.
    * @param bool $overwrite
    *   Whether to allow this scaffold file to overwrite files already at
    *   the destination. Defaults to TRUE.
    */
-  public function __construct(ScaffoldFilePath $sourcePath, $overwrite = TRUE) {
-    $this->source = $sourcePath;
-    $this->overwrite = $overwrite;
+  public function __construct(
+      protected \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $source,
+      /**
+       * Whether to overwrite existing files.
+       */
+      protected $overwrite = TRUE
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function generateContents() {
+  protected function generateContents(): string|false {
     return file_get_contents($this->source->fullPath());
   }
 
@@ -89,7 +80,7 @@ class ReplaceOp extends AbstractOperation {
    * @return \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult
    *   The scaffold result.
    */
-  protected function copyScaffold(ScaffoldFilePath $destination, IOInterface $io) {
+  protected function copyScaffold(ScaffoldFilePath $destination, IOInterface $io): \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult {
     $interpolator = $destination->getInterpolator();
     $this->source->addInterpolationData($interpolator);
     if (file_put_contents($destination->fullPath(), $this->contents()) === FALSE) {
@@ -110,7 +101,7 @@ class ReplaceOp extends AbstractOperation {
    * @return \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult
    *   The scaffold result.
    */
-  protected function symlinkScaffold(ScaffoldFilePath $destination, IOInterface $io) {
+  protected function symlinkScaffold(ScaffoldFilePath $destination, IOInterface $io): \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult {
     $interpolator = $destination->getInterpolator();
     try {
       $fs = new Filesystem();

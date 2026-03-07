@@ -19,13 +19,6 @@ class QueueFactory {
   protected $queues = [];
 
   /**
-   * The settings object.
-   *
-   * @var \Drupal\Core\Site\Settings
-   */
-  protected $settings;
-
-  /**
    * Constructs QueueFactory object.
    *
    * @param \Drupal\Core\Site\Settings $settings
@@ -34,11 +27,11 @@ class QueueFactory {
    *   A service locator that contains the queue services.
    */
   public function __construct(
-    Settings $settings,
-    #[AutowireLocator('queue_factory')]
-    protected ContainerInterface $container,
-  ) {
-    $this->settings = $settings;
+      protected \Drupal\Core\Site\Settings $settings,
+      #[AutowireLocator('queue_factory')]
+      protected ContainerInterface $container
+  )
+  {
   }
 
   /**
@@ -54,7 +47,7 @@ class QueueFactory {
    * @return \Drupal\Core\Queue\QueueInterface
    *   A queue implementation for the given name.
    */
-  public function get($name, $reliable = FALSE) {
+  public function get(string $name, $reliable = FALSE) {
     if (!isset($this->queues[$name])) {
       // If it is a reliable queue, check the specific settings first.
       if ($reliable) {

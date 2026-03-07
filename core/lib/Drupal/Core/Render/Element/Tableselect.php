@@ -55,7 +55,7 @@ class Tableselect extends Table {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#js_select' => TRUE,
@@ -95,9 +95,7 @@ class Tableselect extends Table {
         }
         return $value;
       }
-      else {
-        return is_array($input) ? array_combine($input, $input) : [];
-      }
+      return is_array($input) ? array_combine($input, $input) : [];
     }
   }
 
@@ -145,7 +143,7 @@ class Tableselect extends Table {
    * @return array
    *   The processed element.
    */
-  public static function preRenderTableselect($element) {
+  public static function preRenderTableselect(array $element): array {
     $rows = [];
     $header = $element['#header'];
     if (!empty($element['#options'])) {
@@ -218,7 +216,7 @@ class Tableselect extends Table {
    * @return array
    *   The processed element.
    */
-  public static function processTableselect(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processTableselect(array &$element, FormStateInterface $form_state, &$complete_form): array {
     if ($element['#multiple']) {
       $value = is_array($element['#value']) ? $element['#value'] : [];
     }

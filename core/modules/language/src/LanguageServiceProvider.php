@@ -18,17 +18,17 @@ class LanguageServiceProvider extends ServiceProviderBase {
   /**
    * {@inheritdoc}
    */
-  public function register(ContainerBuilder $container) {
+  public function register(ContainerBuilder $container): void {
     // The following services are needed only on multilingual sites.
     if ($this->isMultilingual()) {
-      $container->register('language_request_subscriber', 'Drupal\language\EventSubscriber\LanguageRequestSubscriber')
+      $container->register('language_request_subscriber', \Drupal\language\EventSubscriber\LanguageRequestSubscriber::class)
         ->addTag('event_subscriber')
         ->addArgument(new Reference('language_manager'))
         ->addArgument(new Reference('language_negotiator'))
         ->addArgument(new Reference('string_translation'))
         ->addArgument(new Reference('current_user'));
 
-      $container->register('path_processor_language', 'Drupal\language\HttpKernel\PathProcessorLanguage')
+      $container->register('path_processor_language', \Drupal\language\HttpKernel\PathProcessorLanguage::class)
         ->addTag('path_processor_inbound', ['priority' => 300])
         ->addTag('path_processor_outbound', ['priority' => 100])
         ->addArgument(new Reference('config.factory'))
@@ -43,9 +43,9 @@ class LanguageServiceProvider extends ServiceProviderBase {
   /**
    * {@inheritdoc}
    */
-  public function alter(ContainerBuilder $container) {
+  public function alter(ContainerBuilder $container): void {
     $definition = $container->getDefinition('language_manager');
-    $definition->setClass('Drupal\language\ConfigurableLanguageManager')
+    $definition->setClass(\Drupal\language\ConfigurableLanguageManager::class)
       ->addArgument(new Reference('config.factory'))
       ->addArgument(new Reference('module_handler'))
       ->addArgument(new Reference('language.config_factory_override'))
@@ -63,7 +63,7 @@ class LanguageServiceProvider extends ServiceProviderBase {
    * @return bool
    *   TRUE if the site is multilingual, FALSE otherwise.
    */
-  protected function isMultilingual() {
+  protected function isMultilingual(): bool {
     // Assign the prefix to a local variable so it can be used in an anonymous
     // function.
     $prefix = static::CONFIG_PREFIX;
@@ -71,9 +71,7 @@ class LanguageServiceProvider extends ServiceProviderBase {
     //   and caching. This might prove difficult as this is called before the
     //   container has finished building.
     $config_storage = BootstrapConfigStorageFactory::get();
-    $config_ids = array_filter($config_storage->listAll($prefix), function ($config_id) use ($prefix) {
-      return $config_id != $prefix . LanguageInterface::LANGCODE_NOT_SPECIFIED && $config_id != $prefix . LanguageInterface::LANGCODE_NOT_APPLICABLE;
-    });
+    $config_ids = array_filter($config_storage->listAll($prefix), fn($config_id) => $config_id != $prefix . LanguageInterface::LANGCODE_NOT_SPECIFIED && $config_id != $prefix . LanguageInterface::LANGCODE_NOT_APPLICABLE);
     return count($config_ids) > 1;
   }
 
@@ -85,7 +83,7 @@ class LanguageServiceProvider extends ServiceProviderBase {
    *   system.site:default_langcode if the corresponding configuration entity
    *   exists, otherwise FALSE.
    */
-  protected function getDefaultLanguageValues() {
+  protected function getDefaultLanguageValues(): false|array {
     $config_storage = BootstrapConfigStorageFactory::get();
     $system = $config_storage->read('system.site');
     // In Kernel tests it's possible this code is called before system.site

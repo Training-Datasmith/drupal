@@ -31,7 +31,7 @@ class BlockContentPermissions implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
     );
@@ -43,8 +43,8 @@ class BlockContentPermissions implements ContainerInjectionInterface {
    * @return array
    *   The block type permissions.
    */
-  public function blockTypePermissions() {
-    return $this->generatePermissions($this->entityTypeManager->getStorage('block_content_type')->loadMultiple(), [$this, 'buildPermissions']);
+  public function blockTypePermissions(): array {
+    return $this->generatePermissions($this->entityTypeManager->getStorage('block_content_type')->loadMultiple(), $this->buildPermissions(...));
   }
 
   /**
@@ -56,7 +56,7 @@ class BlockContentPermissions implements ContainerInjectionInterface {
    * @return array
    *   Permissions available for the given block type.
    */
-  protected function buildPermissions(BlockContentType $type) {
+  protected function buildPermissions(BlockContentType $type): array {
     $type_id = $type->id();
     $type_params = ['%type_name' => $type->label()];
     return [

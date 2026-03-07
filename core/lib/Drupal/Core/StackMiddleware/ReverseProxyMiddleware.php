@@ -20,13 +20,6 @@ class ReverseProxyMiddleware implements HttpKernelInterface {
   protected $httpKernel;
 
   /**
-   * The site settings.
-   *
-   * @var \Drupal\Core\Site\Settings
-   */
-  protected $settings;
-
-  /**
    * Constructs a ReverseProxyMiddleware object.
    *
    * @param \Symfony\Component\HttpKernel\HttpKernelInterface $http_kernel
@@ -34,9 +27,8 @@ class ReverseProxyMiddleware implements HttpKernelInterface {
    * @param \Drupal\Core\Site\Settings $settings
    *   The site settings.
    */
-  public function __construct(HttpKernelInterface $http_kernel, Settings $settings) {
+  public function __construct(HttpKernelInterface $http_kernel, protected \Drupal\Core\Site\Settings $settings) {
     $this->httpKernel = $http_kernel;
-    $this->settings = $settings;
   }
 
   /**
@@ -56,7 +48,7 @@ class ReverseProxyMiddleware implements HttpKernelInterface {
    * @param \Drupal\Core\Site\Settings $settings
    *   The site settings.
    */
-  public static function setSettingsOnRequest(Request $request, Settings $settings) {
+  public static function setSettingsOnRequest(Request $request, Settings $settings): void {
     // Initialize proxy settings.
     if ($settings->get('reverse_proxy', FALSE)) {
       $proxies = $settings->get('reverse_proxy_addresses', []);

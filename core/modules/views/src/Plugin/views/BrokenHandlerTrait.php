@@ -24,7 +24,7 @@ trait BrokenHandlerTrait {
    *
    * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
    */
-  public function defineOptions() {
+  public function defineOptions(): array {
     return [];
   }
 
@@ -33,14 +33,14 @@ trait BrokenHandlerTrait {
    *
    * @see \Drupal\views\Plugin\views\HandlerBase::ensureMyTable()
    */
-  public function ensureMyTable() {
+  public function ensureMyTable(): void {
     // No table to ensure.
   }
 
   /**
    * Modify the views query.
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     /* No query to run */
   }
 
@@ -49,7 +49,7 @@ trait BrokenHandlerTrait {
    *
    * @see \Drupal\views\Plugin\views\PluginBase::defineOptions()
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(array &$form, FormStateInterface $form_state): void {
     $description_top = $this->t('The handler for this item is broken or missing. The following details are available:');
 
     foreach ($this->definition['original_configuration'] as $key => $value) {
@@ -85,7 +85,7 @@ trait BrokenHandlerTrait {
    *
    * @see \Drupal\views\Plugin\views\HandlerBase::broken()
    */
-  public function broken() {
+  public function broken(): bool {
     return TRUE;
   }
 
@@ -97,7 +97,7 @@ trait BrokenHandlerTrait {
    *
    * @see \Drupal\views\Plugin\views\PluginBase::calculateDependencies()
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     return [];
   }
 

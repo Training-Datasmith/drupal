@@ -26,7 +26,7 @@ class Percentage {
    *
    * @see _batch_process()
    */
-  public static function format($total, $current) {
+  public static function format($total, $current): string {
     if (!$total || $total == $current) {
       // If $total doesn't evaluate as true or is equal to the current set, then
       // we're finished, and we can return "100".

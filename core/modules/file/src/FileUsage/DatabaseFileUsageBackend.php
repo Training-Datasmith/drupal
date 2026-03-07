@@ -12,20 +12,6 @@ use Drupal\file\FileInterface;
 class DatabaseFileUsageBackend extends FileUsageBase {
 
   /**
-   * The database connection used to store file usage information.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The name of the SQL table used to store file usage information.
-   *
-   * @var string
-   */
-  protected $tableName;
-
-  /**
    * Construct the DatabaseFileUsageBackend.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -33,19 +19,20 @@ class DatabaseFileUsageBackend extends FileUsageBase {
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection which will be used to store the file usage
    *   information.
-   * @param string $table
+   * @param string $tableName
    *   (optional) The table to store file usage info. Defaults to 'file_usage'.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, Connection $connection, $table = 'file_usage') {
+  public function __construct(ConfigFactoryInterface $config_factory, protected \Drupal\Core\Database\Connection $connection, /**
+   * The name of the SQL table used to store file usage information.
+   */
+  protected $tableName = 'file_usage') {
     parent::__construct($config_factory);
-    $this->connection = $connection;
-    $this->tableName = $table;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function add(FileInterface $file, $module, $type, $id, $count = 1) {
+  public function add(FileInterface $file, $module, $type, $id, $count = 1): void {
     $this->connection->merge($this->tableName)
       ->keys([
         'fid' => $file->id(),
@@ -63,7 +50,7 @@ class DatabaseFileUsageBackend extends FileUsageBase {
   /**
    * {@inheritdoc}
    */
-  public function delete(FileInterface $file, $module, $type = NULL, $id = NULL, $count = 1) {
+  public function delete(FileInterface $file, $module, $type = NULL, $id = NULL, $count = 1): void {
     // Delete rows that have an exact or less value to prevent empty rows.
     $query = $this->connection->delete($this->tableName)
       ->condition('module', $module)
@@ -97,8 +84,9 @@ class DatabaseFileUsageBackend extends FileUsageBase {
 
   /**
    * {@inheritdoc}
+   * @return non-empty-array<non-empty-array>[]
    */
-  public function listUsage(FileInterface $file) {
+  public function listUsage(FileInterface $file): array {
     $result = $this->connection->select($this->tableName, 'f')
       ->fields('f', ['module', 'type', 'id', 'count'])
       ->condition('fid', $file->id())

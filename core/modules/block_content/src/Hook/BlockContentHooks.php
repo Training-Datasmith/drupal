@@ -47,8 +47,7 @@ class BlockContentHooks {
           ':add-content-block' => Url::fromRoute('block_content.add_page')->toString(),
           ':block-layout' => Url::fromRoute('block.admin_display')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

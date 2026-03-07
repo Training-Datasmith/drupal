@@ -30,13 +30,6 @@ use Drupal\Core\Field\FieldDefinitionInterface;
 class MediaThumbnailFormatter extends ImageFormatter {
 
   /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a MediaThumbnailFormatter object.
    *
    * @param string $plugin_id
@@ -62,15 +55,14 @@ class MediaThumbnailFormatter extends ImageFormatter {
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user, ImageStyleStorageInterface $image_style_storage, FileUrlGeneratorInterface $file_url_generator, RendererInterface $renderer) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, AccountInterface $current_user, ImageStyleStorageInterface $image_style_storage, FileUrlGeneratorInterface $file_url_generator, protected \Drupal\Core\Render\RendererInterface $renderer) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings, $current_user, $image_style_storage, $file_url_generator);
-    $this->renderer = $renderer;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -93,7 +85,7 @@ class MediaThumbnailFormatter extends ImageFormatter {
    * of type \Drupal\file\Plugin\Field\FieldType\FileItem and calls
    * isDisplayed() which is not in FieldItemInterface.
    */
-  protected function needsEntityLoad(EntityReferenceItem $item) {
+  protected function needsEntityLoad(EntityReferenceItem $item): bool {
     return !$item->hasNewEntity();
   }
 
@@ -114,7 +106,7 @@ class MediaThumbnailFormatter extends ImageFormatter {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = parent::settingsSummary();
 
     // The parent class adds summary text if the image_link setting is
@@ -130,7 +122,7 @@ class MediaThumbnailFormatter extends ImageFormatter {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
     $media_items = $this->getEntitiesToView($items, $langcode);
 
@@ -168,7 +160,7 @@ class MediaThumbnailFormatter extends ImageFormatter {
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     // This formatter is only available for entity types that reference
     // media items.
     return ($field_definition->getFieldStorageDefinition()->getSetting('target_type') == 'media');

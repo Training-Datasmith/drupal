@@ -98,8 +98,9 @@ class NodeRevision extends WizardPluginBase {
 
   /**
    * {@inheritdoc}
+   * @return array{id: 'type', table: 'node_field_data', field: 'type', relationship: 'nid', value: non-empty-array<mixed>, entity_type: 'node', entity_field: 'type', plugin_id: 'bundle'}[]
    */
-  protected function defaultDisplayFiltersUser(array $form, FormStateInterface $form_state) {
+  protected function defaultDisplayFiltersUser(array $form, FormStateInterface $form_state): array {
     $filters = [];
 
     $type = $form_state->getValue(['show', 'type']);

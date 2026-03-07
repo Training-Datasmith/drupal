@@ -25,8 +25,9 @@ class CssCollectionRenderer implements AssetCollectionRendererInterface {
 
   /**
    * {@inheritdoc}
+   * @return array{'#type': 'html_tag', '#tag': 'link', '#attributes': non-empty-array}[]
    */
-  public function render(array $css_assets) {
+  public function render(array $css_assets): array {
     $elements = [];
 
     // Defaults for LINK and STYLE elements.
@@ -50,7 +51,7 @@ class CssCollectionRenderer implements AssetCollectionRendererInterface {
           // cache invalidation. This query string is updated after each full
           // cache clear.
           if (!isset($css_asset['preprocessed'])) {
-            $query_string_separator = str_contains($css_asset['data'], '?') ? '&' : '?';
+            $query_string_separator = str_contains((string) $css_asset['data'], '?') ? '&' : '?';
             $element['#attributes']['href'] .= $query_string_separator . $this->assetQueryString->get();
           }
           break;

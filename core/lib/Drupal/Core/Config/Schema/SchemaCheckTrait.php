@@ -92,7 +92,7 @@ trait SchemaCheckTrait {
    *   FALSE if no schema found. List of errors if any found. TRUE if fully
    *   valid.
    */
-  public function checkConfigSchema(TypedConfigManagerInterface $typed_config, $config_name, $config_data, bool $validate_constraints = FALSE) {
+  public function checkConfigSchema(TypedConfigManagerInterface $typed_config, $config_name, array $config_data, bool $validate_constraints = FALSE): bool|array {
     $this->configName = $config_name;
     if (!$typed_config->hasConfigSchema($config_name)) {
       return FALSE;
@@ -109,10 +109,10 @@ trait SchemaCheckTrait {
       $violations = $this->schema->validate();
       $filtered_violations = array_filter(
         iterator_to_array($violations),
-        fn(ConstraintViolationInterface $v) => !static::isViolationForIgnoredPropertyPath($v),
+        fn(ConstraintViolationInterface $v): bool => !static::isViolationForIgnoredPropertyPath($v),
       );
       $validation_errors = array_map(
-        fn(ConstraintViolationInterface $v) => sprintf("[%s] %s", $v->getPropertyPath(), (string) $v->getMessage()),
+        fn(ConstraintViolationInterface $v): string => sprintf("[%s] %s", $v->getPropertyPath(), (string) $v->getMessage()),
         $filtered_violations
       );
       // @todo Decide in https://www.drupal.org/project/drupal/issues/3395099 when/how to trigger deprecation errors or even failures for contrib modules.
@@ -200,7 +200,7 @@ trait SchemaCheckTrait {
    * @return array
    *   List of errors found while checking with the corresponding schema.
    */
-  protected function checkValue($key, $value) {
+  protected function checkValue(string $key, $value): array {
     $error_key = $this->configName . ':' . $key;
     /** @var \Drupal\Core\TypedData\TypedDataInterface $element */
     $element = $this->schema->get($key);
@@ -237,7 +237,7 @@ trait SchemaCheckTrait {
       elseif ($element instanceof ArrayElement && $element->isNullable() && $value === NULL) {
         $success = TRUE;
       }
-      $class = get_class($element);
+      $class = $element::class;
       if (!$success) {
         return [$error_key => "variable type is $type but applied schema class is $class"];
       }

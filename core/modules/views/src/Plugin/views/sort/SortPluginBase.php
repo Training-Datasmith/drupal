@@ -35,7 +35,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * Called to add the sort to a query.
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     // Add the field.
     $this->query->addOrderBy($this->tableAlias, $this->realField, $this->options['order']);
@@ -65,22 +65,16 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
     if (!empty($this->options['exposed'])) {
       return $this->t('Exposed');
     }
-    switch ($this->options['order']) {
-      case 'ASC':
-      case 'asc':
-      default:
-        return $this->t('asc');
-
-      case 'DESC':
-      case 'desc':
-        return $this->t('desc');
-    }
+    return match ($this->options['order']) {
+        'DESC', 'desc' => $this->t('desc'),
+        default => $this->t('asc'),
+    };
   }
 
   /**
    * Basic options for all sort criteria.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     if ($this->canExpose()) {
       $this->showExposeButton($form, $form_state);
@@ -96,7 +90,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * Shortcut to display the expose/hide button.
    */
-  public function showExposeButton(&$form, FormStateInterface $form_state) {
+  public function showExposeButton(&$form, FormStateInterface $form_state): void {
     $form['expose_button'] = [
       '#prefix' => '<div class="views-expose clearfix">',
       '#suffix' => '</div>',
@@ -124,7 +118,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
         '#limit_validation_errors' => [],
         '#type' => 'submit',
         '#value' => $this->t('Expose sort'),
-        '#submit' => [[$this, 'displayExposedForm']],
+        '#submit' => [$this->displayExposedForm(...)],
       ];
       $form['expose_button']['checkbox']['checkbox']['#default_value'] = 0;
     }
@@ -136,7 +130,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
         '#limit_validation_errors' => [],
         '#type' => 'submit',
         '#value' => $this->t('Hide sort'),
-        '#submit' => [[$this, 'displayExposedForm']],
+        '#submit' => [$this->displayExposedForm(...)],
       ];
       $form['expose_button']['checkbox']['checkbox']['#default_value'] = 1;
     }
@@ -145,7 +139,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * Simple validate handler.
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     $this->sortValidate($form, $form_state);
     if (!empty($this->options['exposed'])) {
       $this->validateExposeForm($form, $form_state);
@@ -156,7 +150,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * Simple submit handler.
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     // Do not store this values.
     $form_state->unsetValue('expose_button');
 
@@ -169,7 +163,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * Shortcut to display the value form.
    */
-  protected function showSortForm(&$form, FormStateInterface $form_state) {
+  protected function showSortForm(array &$form, FormStateInterface $form_state) {
     $options = $this->sortOptions();
     if (!empty($options)) {
       $form['order'] = [
@@ -202,7 +196,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * {@inheritdoc}
    */
-  public function buildExposeForm(&$form, FormStateInterface $form_state) {
+  public function buildExposeForm(&$form, FormStateInterface $form_state): void {
     // #flatten will move everything from $form['expose'][$key] to $form[$key]
     // prior to rendering. That's why the preRender for it needs to run first,
     // so that when the next preRender (the one for fieldsets) runs, it gets
@@ -232,13 +226,13 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * Validate the options form.
    */
-  public function validateExposeForm($form, FormStateInterface $form_state) {
+  public function validateExposeForm($form, FormStateInterface $form_state): void {
     $field_identifier = $form_state->getValue([
       'options',
       'expose',
       'field_identifier',
     ]);
-    if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_~.\-]*$/', $field_identifier)) {
+    if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_~.\-]*$/', (string) $field_identifier)) {
       $form_state->setErrorByName('expose][field_identifier', $this->t('This identifier has invalid characters.'));
       return;
     }
@@ -275,7 +269,7 @@ abstract class SortPluginBase extends HandlerBase implements CacheableDependency
   /**
    * Provide default options for exposed sorts.
    */
-  public function defaultExposeOptions() {
+  public function defaultExposeOptions(): void {
     $this->options['expose'] = [
       'label' => $this->definition['title'],
       'field_identifier' => $this->options['id'],

@@ -151,8 +151,6 @@ class IconPackManager extends DefaultPluginManager implements IconPackManagerInt
    * The schema validator.
    *
    * This property will only be set if the validator library is available.
-   *
-   * @var \JsonSchema\Validator|null
    */
   private ?Validator $validator = NULL;
 
@@ -206,7 +204,7 @@ class IconPackManager extends DefaultPluginManager implements IconPackManagerInt
    * {@inheritdoc}
    */
   public function processDefinition(&$definition, $plugin_id): void {
-    if (preg_match('@[^a-z0-9_]@', $plugin_id)) {
+    if (preg_match('@[^a-z0-9_]@', (string) $plugin_id)) {
       throw new IconPackConfigErrorException(sprintf('Invalid icon pack id in: %s, name: %s must contain only lowercase letters, numbers, and underscores.', $definition['provider'], $plugin_id));
     }
 
@@ -365,8 +363,12 @@ class IconPackManager extends DefaultPluginManager implements IconPackManagerInt
   /**
    * {@inheritdoc}
    */
-  protected function providerExists(mixed $provider): bool {
-    return $this->moduleHandler->moduleExists($provider) || $this->themeHandler->themeExists($provider);
+  protected function providerExists(mixed $provider): bool
+  {
+      if ($this->moduleHandler->moduleExists($provider)) {
+          return true;
+      }
+      return $this->themeHandler->themeExists($provider);
   }
 
   /**

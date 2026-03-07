@@ -22,8 +22,9 @@ class BasicStringFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#type': 'inline_template', '#template': '{{ value|nl2br }}', '#context': array{value: mixed}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($items as $delta => $item) {

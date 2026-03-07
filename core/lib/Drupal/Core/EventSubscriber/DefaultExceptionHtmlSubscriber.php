@@ -25,20 +25,6 @@ class DefaultExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
   protected $httpKernel;
 
   /**
-   * The logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
-   * The redirect destination service.
-   *
-   * @var \Drupal\Core\Routing\RedirectDestinationInterface
-   */
-  protected $redirectDestination;
-
-  /**
    * A router implementation which does not check access.
    *
    * @var \Symfony\Component\Routing\Matcher\UrlMatcherInterface
@@ -52,22 +38,20 @@ class DefaultExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
    *   The HTTP kernel.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service.
-   * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirect_destination
+   * @param \Drupal\Core\Routing\RedirectDestinationInterface $redirectDestination
    *   The redirect destination service.
    * @param \Symfony\Component\Routing\Matcher\UrlMatcherInterface $access_unaware_router
    *   A router implementation which does not check access.
    */
-  public function __construct(HttpKernelInterface $http_kernel, LoggerInterface $logger, RedirectDestinationInterface $redirect_destination, UrlMatcherInterface $access_unaware_router) {
+  public function __construct(HttpKernelInterface $http_kernel, protected \Psr\Log\LoggerInterface $logger, protected \Drupal\Core\Routing\RedirectDestinationInterface $redirectDestination, UrlMatcherInterface $access_unaware_router) {
     $this->httpKernel = $http_kernel;
-    $this->logger = $logger;
-    $this->redirectDestination = $redirect_destination;
     $this->accessUnawareRouter = $access_unaware_router;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function getPriority() {
+  protected static function getPriority(): int {
     // A very low priority so that custom handlers are almost certain to fire
     // before it, even if someone forgets to set a priority.
     return -128;
@@ -76,7 +60,7 @@ class DefaultExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  protected function getHandledFormats() {
+  protected function getHandledFormats(): array {
     return ['html'];
   }
 
@@ -86,7 +70,7 @@ class DefaultExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on4xx(ExceptionEvent $event) {
+  public function on4xx(ExceptionEvent $event): void {
     // Avoid making a subrequest for 400 errors because the same conditions that
     // caused the 400 error could also happen in the subrequest. This allows 400
     // exceptions to fall through to FinalExceptionSubscriber::on4xx.
@@ -101,7 +85,7 @@ class DefaultExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on401(ExceptionEvent $event) {
+  public function on401(ExceptionEvent $event): void {
     $this->makeSubrequest($event, '/system/401', Response::HTTP_UNAUTHORIZED);
   }
 
@@ -111,7 +95,7 @@ class DefaultExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on403(ExceptionEvent $event) {
+  public function on403(ExceptionEvent $event): void {
     $this->makeSubrequest($event, '/system/403', Response::HTTP_FORBIDDEN);
   }
 
@@ -121,7 +105,7 @@ class DefaultExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on404(ExceptionEvent $event) {
+  public function on404(ExceptionEvent $event): void {
     $this->makeSubrequest($event, '/system/404', Response::HTTP_NOT_FOUND);
   }
 

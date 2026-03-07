@@ -62,7 +62,7 @@ class UnprocessableHttpEntityException extends HttpException {
    * @param \Drupal\Core\Entity\EntityConstraintViolationListInterface $violations
    *   The constraint violations.
    */
-  public function setViolations(EntityConstraintViolationListInterface $violations) {
+  public function setViolations(EntityConstraintViolationListInterface $violations): void {
     $this->violations = $violations;
   }
 

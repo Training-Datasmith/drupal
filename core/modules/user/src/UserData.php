@@ -10,20 +10,13 @@ use Drupal\Core\Database\Connection;
 class UserData implements UserDataInterface {
 
   /**
-   * The database connection to use.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a new user data service.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection to use.
    */
-  public function __construct(Connection $connection) {
-    $this->connection = $connection;
+  public function __construct(protected \Drupal\Core\Database\Connection $connection)
+  {
   }
 
   /**
@@ -73,7 +66,7 @@ class UserData implements UserDataInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($module, $uid, $name, $value) {
+  public function set($module, $uid, $name, $value): void {
     $serialized = (int) !is_scalar($value);
     if ($serialized) {
       $value = serialize($value);
@@ -94,7 +87,7 @@ class UserData implements UserDataInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($module = NULL, $uid = NULL, $name = NULL) {
+  public function delete($module = NULL, $uid = NULL, $name = NULL): void {
     $query = $this->connection->delete('users_data');
     // Cast scalars to array so we can consistently use an IN condition.
     if (isset($module)) {

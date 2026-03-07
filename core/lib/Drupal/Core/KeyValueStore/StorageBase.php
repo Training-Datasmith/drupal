@@ -8,17 +8,16 @@ namespace Drupal\Core\KeyValueStore;
 abstract class StorageBase implements KeyValueStoreInterface {
 
   /**
-   * The name of the collection holding key and value pairs.
-   *
-   * @var string
-   */
-  protected $collection;
-
-  /**
    * {@inheritdoc}
+   * @param string $collection
    */
-  public function __construct($collection) {
-    $this->collection = $collection;
+  public function __construct(
+      /**
+       * The name of the collection holding key and value pairs.
+       */
+      protected $collection
+  )
+  {
   }
 
   /**
@@ -39,7 +38,7 @@ abstract class StorageBase implements KeyValueStoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $data) {
+  public function setMultiple(array $data): void {
     foreach ($data as $key => $value) {
       $this->set($key, $value);
     }
@@ -48,7 +47,7 @@ abstract class StorageBase implements KeyValueStoreInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($key) {
+  public function delete($key): void {
     $this->deleteMultiple([$key]);
   }
 

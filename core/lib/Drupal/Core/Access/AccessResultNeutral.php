@@ -8,40 +8,38 @@ namespace Drupal\Core\Access;
 class AccessResultNeutral extends AccessResult implements AccessResultReasonInterface {
 
   /**
-   * The reason why access is neutral. For use in messages.
-   *
-   * @var string
-   */
-  protected $reason;
-
-  /**
    * Constructs a new AccessResultNeutral instance.
    *
    * @param null|string $reason
    *   (optional) A message to provide details about this access result.
    */
-  public function __construct($reason = NULL) {
-    $this->reason = $reason;
+  public function __construct(
+      /**
+       * The reason why access is neutral. For use in messages.
+       */
+      protected $reason = NULL
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isNeutral() {
+  public function isNeutral(): bool {
     return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getReason() {
+  public function getReason(): string {
     return (string) $this->reason;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setReason($reason) {
+  public function setReason($reason): static {
     $this->reason = $reason;
     return $this;
   }

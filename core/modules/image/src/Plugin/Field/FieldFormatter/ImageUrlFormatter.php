@@ -33,13 +33,6 @@ class ImageUrlFormatter extends ImageFormatterBase {
   protected $imageStyleStorage;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * Constructs an ImageFormatter object.
    *
    * @param string $plugin_id
@@ -58,19 +51,18 @@ class ImageUrlFormatter extends ImageFormatterBase {
    *   Any third party settings.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, EntityTypeManagerInterface $entity_type_manager, AccountInterface $current_user) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Session\AccountInterface $currentUser) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
     $this->imageStyleStorage = $entity_type_manager->getStorage('image_style');
-    $this->currentUser = $current_user;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function defaultSettings() {
+  public static function defaultSettings(): array {
     return [
       'image_style' => '',
     ];
@@ -106,7 +98,7 @@ class ImageUrlFormatter extends ImageFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $image_styles = image_style_options(FALSE);
@@ -127,8 +119,9 @@ class ImageUrlFormatter extends ImageFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[][]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $items */

@@ -34,46 +34,22 @@ class CommentController extends ControllerBase {
   protected $httpKernel;
 
   /**
-   * The comment manager service.
-   *
-   * @var \Drupal\comment\CommentManagerInterface
-   */
-  protected $commentManager;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * Constructs a CommentController object.
    *
    * @param \Symfony\Component\HttpKernel\HttpKernelInterface $http_kernel
    *   HTTP kernel to handle requests.
-   * @param \Drupal\comment\CommentManagerInterface $comment_manager
+   * @param \Drupal\comment\CommentManagerInterface $commentManager
    *   The comment manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager service.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository service.
    */
-  public function __construct(HttpKernelInterface $http_kernel, CommentManagerInterface $comment_manager, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EntityRepositoryInterface $entity_repository) {
+  public function __construct(HttpKernelInterface $http_kernel, protected \Drupal\comment\CommentManagerInterface $commentManager, EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository) {
     $this->httpKernel = $http_kernel;
-    $this->commentManager = $comment_manager;
     $this->entityTypeManager = $entity_type_manager;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -211,7 +187,7 @@ class CommentController extends ControllerBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    */
-  public function getReplyForm(Request $request, EntityInterface $entity, $field_name, $pid = NULL) {
+  public function getReplyForm(Request $request, EntityInterface $entity, $field_name, $pid = NULL): array {
     $account = $this->currentUser();
     $build = [];
 

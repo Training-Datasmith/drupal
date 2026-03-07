@@ -19,7 +19,7 @@ class ContextualLinksPlaceholder extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderPlaceholder'],
@@ -44,7 +44,7 @@ class ContextualLinksPlaceholder extends RenderElementBase {
    *
    * @see \Drupal\contextual\ContextualLinksSerializer::linksToId()
    */
-  public static function preRenderPlaceholder(array $element) {
+  public static function preRenderPlaceholder(array $element): array {
     $token = Crypt::hmacBase64($element['#id'], Settings::getHashSalt() . \Drupal::service('private_key')->get());
     $attribute = new Attribute([
       'data-contextual-id' => $element['#id'],

@@ -79,12 +79,10 @@ class Bytes {
     if ($unit) {
       // Find the position of the unit in the ordered string which is the power
       // of magnitude to multiply a kilobyte by.
-      return round($size * pow(self::KILOBYTE, stripos('bkmgtpezy', $unit[0])));
+      return round($size * self::KILOBYTE ** stripos('bkmgtpezy', $unit[0]));
     }
-    else {
-      // Ensure size is a proper number type.
-      return round((float) $size);
-    }
+    // Ensure size is a proper number type.
+    return round((float) $size);
   }
 
   /**
@@ -106,7 +104,7 @@ class Bytes {
     $string = preg_replace('/^[0-9\.]+/', '', $string);
 
     // Remove remaining spaces from the value.
-    $string = trim($string);
+    $string = trim((string) $string);
 
     return in_array(strtolower($string), self::ALLOWED_SUFFIXES);
   }

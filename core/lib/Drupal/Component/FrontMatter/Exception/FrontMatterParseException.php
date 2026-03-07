@@ -16,10 +16,8 @@ class FrontMatterParseException extends InvalidDataTypeException {
    * source front matter content. It is different from \Exception::getLine()
    * which is populated with the line number of where this exception was
    * thrown in PHP.
-   *
-   * @var int
    */
-  protected $sourceLine;
+  protected int $sourceLine;
 
   /**
    * Constructs a new FrontMatterParseException instance.

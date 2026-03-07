@@ -30,13 +30,6 @@ use Symfony\Component\HttpFoundation\Request;
 class TimestampAgoFormatter extends FormatterBase {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * The current Request object.
    *
    * @var \Symfony\Component\HttpFoundation\Request
@@ -60,22 +53,20 @@ class TimestampAgoFormatter extends FormatterBase {
    *   The view mode.
    * @param array $third_party_settings
    *   Any third party settings.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The current request.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, DateFormatterInterface $date_formatter, Request $request) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, Request $request) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-
-    $this->dateFormatter = $date_formatter;
     $this->request = $request;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     // @see \Drupal\Core\Field\FormatterPluginManager::createInstance().
     return new static(
       $plugin_id,
@@ -160,8 +151,9 @@ class TimestampAgoFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($items as $delta => $item) {

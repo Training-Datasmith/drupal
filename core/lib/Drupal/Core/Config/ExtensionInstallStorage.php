@@ -13,55 +13,37 @@ use Drupal\Core\Extension\ExtensionDiscovery;
 class ExtensionInstallStorage extends InstallStorage {
 
   /**
-   * The active configuration store.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  protected $configStorage;
-
-  /**
-   * Flag to include the profile in the list of enabled modules.
-   *
-   * @var bool
-   */
-  protected $includeProfile = TRUE;
-
-  /**
-   * The name of the currently active installation profile.
-   *
-   * In the early installer this value can be NULL.
-   *
-   * @var string|false|null
-   */
-  protected $installProfile;
-
-  /**
    * Overrides \Drupal\Core\Config\InstallStorage::__construct().
    *
-   * @param \Drupal\Core\Config\StorageInterface $config_storage
+   * @param \Drupal\Core\Config\StorageInterface $configStorage
    *   The active configuration store where the list of enabled modules and
    *   themes is stored.
    * @param string $directory
    *   The directory to scan in each extension to scan for files.
    * @param string $collection
    *   The collection to store configuration in.
-   * @param bool $include_profile
+   * @param bool $includeProfile
    *   Whether to include the install profile in extensions to
    *   search and to get overrides from.
-   * @param string $profile
+   * @param string $installProfile
    *   The current installation profile.
    */
-  public function __construct(StorageInterface $config_storage, $directory, $collection, $include_profile, $profile) {
+  public function __construct(protected \Drupal\Core\Config\StorageInterface $configStorage, $directory, $collection, /**
+   * Flag to include the profile in the list of enabled modules.
+   */
+  protected $includeProfile, /**
+   * The name of the currently active installation profile.
+   *
+   * In the early installer this value can be NULL.
+   */
+  protected $installProfile) {
     parent::__construct($directory, $collection);
-    $this->configStorage = $config_storage;
-    $this->includeProfile = $include_profile;
-    $this->installProfile = $profile;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createCollection($collection) {
+  public function createCollection($collection): static {
     return new static(
       $this->configStorage,
       $this->directory,

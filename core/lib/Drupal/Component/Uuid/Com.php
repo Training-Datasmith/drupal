@@ -12,7 +12,7 @@ class Com implements UuidInterface {
   /**
    * {@inheritdoc}
    */
-  public function generate() {
+  public function generate(): string {
     // Remove {} wrapper and make lower case to keep result consistent.
     return strtolower(trim(com_create_guid(), '{}'));
   }

@@ -9,10 +9,8 @@ class FileReadOnlyStorage implements PhpStorageInterface {
 
   /**
    * The directory where the files should be stored.
-   *
-   * @var string
    */
-  protected $directory;
+  protected string $directory;
 
   /**
    * Constructs this FileStorage object.
@@ -32,14 +30,14 @@ class FileReadOnlyStorage implements PhpStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return file_exists($this->getFullPath($name));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function load($name) {
+  public function load($name): bool {
     // The FALSE returned on failure is enough for the caller to handle this,
     // we do not want a warning too.
     return (@include_once $this->getFullPath($name)) !== FALSE;
@@ -48,35 +46,36 @@ class FileReadOnlyStorage implements PhpStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function save($name, $code) {
+  public function save($name, $code): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete($name) {
+  public function delete($name): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFullPath($name) {
+  public function getFullPath($name): string {
     return $this->directory . '/' . $name;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function listAll() {
+  public function listAll(): array {
     $names = [];
     if (file_exists($this->directory)) {
       foreach (new \DirectoryIterator($this->directory) as $fileinfo) {

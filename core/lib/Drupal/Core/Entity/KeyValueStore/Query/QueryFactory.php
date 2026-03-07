@@ -13,13 +13,6 @@ use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 class QueryFactory implements QueryFactoryInterface {
 
   /**
-   * The key value factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
-   */
-  protected $keyValueFactory;
-
-  /**
    * The namespace of this class, the parent class etc.
    *
    * @var array
@@ -29,22 +22,24 @@ class QueryFactory implements QueryFactoryInterface {
   /**
    * Constructs a QueryFactory object.
    */
-  public function __construct(KeyValueFactoryInterface $key_value_factory) {
-    $this->keyValueFactory = $key_value_factory;
+  public function __construct(/**
+   * The key value factory.
+   */
+  protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory) {
     $this->namespaces = Query::getNamespaces($this);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function get(EntityTypeInterface $entity_type, $conjunction) {
+  public function get(EntityTypeInterface $entity_type, $conjunction): \Drupal\Core\Entity\KeyValueStore\Query\Query {
     return new Query($entity_type, $conjunction, $this->namespaces, $this->keyValueFactory);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
+  public function getAggregate(EntityTypeInterface $entity_type, $conjunction): never {
     throw new QueryException('Aggregation over key-value entity storage is not supported');
   }
 

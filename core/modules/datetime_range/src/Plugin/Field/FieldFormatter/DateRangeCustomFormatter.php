@@ -36,7 +36,7 @@ class DateRangeCustomFormatter extends DateTimeCustomFormatter {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     // @todo Evaluate removing this method in
     // https://www.drupal.org/node/2793143 to determine if the behavior and
     // markup in the base class implementation can be used instead.
@@ -65,16 +65,15 @@ class DateRangeCustomFormatter extends DateTimeCustomFormatter {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $form = parent::settingsForm($form, $form_state);
-    $form = $this->dateTimeRangeSettingsForm($form);
-    return $form;
+    return $this->dateTimeRangeSettingsForm($form);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     return array_merge(parent::settingsSummary(), $this->dateTimeRangeSettingsSummary());
   }
 

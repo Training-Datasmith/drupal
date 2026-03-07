@@ -24,13 +24,13 @@ use Symfony\Component\Process\PhpExecutableFinder;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class ComposerRunner implements ComposerProcessRunnerInterface {
+final readonly class ComposerRunner implements ComposerProcessRunnerInterface {
 
   public function __construct(
-    private readonly ExecutableFinderInterface $executableFinder,
-    private readonly ProcessFactoryInterface $processFactory,
-    private readonly FileSystemInterface $fileSystem,
-    private readonly ConfigFactoryInterface $configFactory,
+    private ExecutableFinderInterface $executableFinder,
+    private ProcessFactoryInterface $processFactory,
+    private FileSystemInterface $fileSystem,
+    private ConfigFactoryInterface $configFactory,
   ) {}
 
   /**

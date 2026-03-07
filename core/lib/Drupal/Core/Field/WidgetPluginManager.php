@@ -16,13 +16,6 @@ use Drupal\Core\Plugin\DefaultPluginManager;
 class WidgetPluginManager extends DefaultPluginManager {
 
   /**
-   * The field type manager to define field.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected $fieldTypeManager;
-
-  /**
    * An array of widget options for each field type.
    *
    * @var array
@@ -39,15 +32,14 @@ class WidgetPluginManager extends DefaultPluginManager {
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
    *   The 'field type' plugin manager.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, FieldTypePluginManagerInterface $field_type_manager) {
-    parent::__construct('Plugin/Field/FieldWidget', $namespaces, $module_handler, WidgetInterface::class, FieldWidget::class, 'Drupal\Core\Field\Annotation\FieldWidget');
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager) {
+    parent::__construct('Plugin/Field/FieldWidget', $namespaces, $module_handler, WidgetInterface::class, FieldWidget::class, \Drupal\Core\Field\Annotation\FieldWidget::class);
 
     $this->setCacheBackend($cache_backend, 'field_widget_types_plugins');
     $this->alterInfo('field_widget_info');
-    $this->fieldTypeManager = $field_type_manager;
   }
 
   /**
@@ -119,7 +111,7 @@ class WidgetPluginManager extends DefaultPluginManager {
     $plugin_class = DefaultFactory::getPluginClass($plugin_id, $plugin_definition);
 
     // If the plugin provides a factory method, pass the container to it.
-    if (is_subclass_of($plugin_class, 'Drupal\Core\Plugin\ContainerFactoryPluginInterface')) {
+    if (is_subclass_of($plugin_class, \Drupal\Core\Plugin\ContainerFactoryPluginInterface::class)) {
       return $plugin_class::create(\Drupal::getContainer(), $configuration, $plugin_id, $plugin_definition);
     }
 
@@ -137,7 +129,7 @@ class WidgetPluginManager extends DefaultPluginManager {
    * @return array
    *   The display properties with defaults added.
    */
-  public function prepareConfiguration($field_type, array $configuration) {
+  public function prepareConfiguration($field_type, array $configuration): array {
     // Fill in defaults for missing properties.
     $configuration += [
       'settings' => [],
@@ -171,7 +163,7 @@ class WidgetPluginManager extends DefaultPluginManager {
       $options = [];
       $field_types = $this->fieldTypeManager->getDefinitions();
       $widget_types = $this->getDefinitions();
-      uasort($widget_types, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+      uasort($widget_types, \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
       foreach ($widget_types as $name => $widget_type) {
         foreach ($widget_type['field_types'] as $widget_field_type) {
           // Check that the field type exists.

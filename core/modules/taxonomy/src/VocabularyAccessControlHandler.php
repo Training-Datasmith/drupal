@@ -23,27 +23,19 @@ class VocabularyAccessControlHandler extends EntityAccessControlHandler {
    * {@inheritdoc}
    */
   protected function checkAccess(EntityInterface $entity, $operation, AccountInterface $account) {
-    switch ($operation) {
-      case 'view label':
-        return AccessResult::allowedIfHasPermissions($account, [
+    return match ($operation) {
+        'view label' => AccessResult::allowedIfHasPermissions($account, [
           'view vocabulary labels',
           'access taxonomy overview',
           'administer taxonomy',
-        ], 'OR');
-
-      case 'access taxonomy overview':
-      case 'view':
-        return AccessResult::allowedIfHasPermissions($account, ['access taxonomy overview', 'administer taxonomy'], 'OR');
-
-      case 'reset all weights':
-        return AccessResult::allowedIfHasPermissions($account, [
+        ], 'OR'),
+        'access taxonomy overview', 'view' => AccessResult::allowedIfHasPermissions($account, ['access taxonomy overview', 'administer taxonomy'], 'OR'),
+        'reset all weights' => AccessResult::allowedIfHasPermissions($account, [
           'administer taxonomy',
           'edit terms in ' . $entity->id(),
-        ], 'OR');
-
-      default:
-        return parent::checkAccess($entity, $operation, $account);
-    }
+        ], 'OR'),
+        default => parent::checkAccess($entity, $operation, $account),
+    };
   }
 
 }

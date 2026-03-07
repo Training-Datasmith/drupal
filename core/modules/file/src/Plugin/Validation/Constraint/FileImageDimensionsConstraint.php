@@ -20,15 +20,11 @@ class FileImageDimensionsConstraint extends SymfonyConstraint {
 
   /**
    * The minimum dimensions.
-   *
-   * @var string|int
    */
   public string | int $minDimensions = 0;
 
   /**
    * The maximum dimensions.
-   *
-   * @var string|int
    */
   public string | int $maxDimensions = 0;
 

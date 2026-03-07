@@ -140,14 +140,14 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return ['configuration' => $this->getPluginCollection()];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPlugin($plugin_id) {
+  public function setPlugin($plugin_id): void {
     $this->plugin = $plugin_id;
     $this->getPluginCollection()->addInstanceID($plugin_id);
   }
@@ -155,14 +155,14 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function isIndexable() {
+  public function isIndexable(): bool {
     return $this->status() && $this->getPlugin() instanceof SearchIndexingInterface;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isDefaultSearch() {
+  public function isDefaultSearch(): bool {
     return $this->searchPageRepository()->getDefaultSearchPage() == $this->id();
   }
 
@@ -183,7 +183,7 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function postCreate(EntityStorageInterface $storage) {
+  public function postCreate(EntityStorageInterface $storage): void {
     parent::postCreate($storage);
 
     // @todo Use self::applyDefaultValue() once
@@ -196,7 +196,7 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
     $this->routeBuilder()->setRebuildNeeded();
   }
@@ -204,7 +204,7 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     $search_page_repository = \Drupal::service('search.search_page_repository');
@@ -235,7 +235,7 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
    * @return \Drupal\Core\Routing\RouteBuilderInterface
    *   An object for state storage.
    */
-  protected function routeBuilder() {
+  protected function routeBuilder(): object {
     return \Drupal::service('router.builder');
   }
 
@@ -245,7 +245,7 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
    * @return \Drupal\Core\Config\ConfigFactoryInterface
    *   A config factory object.
    */
-  protected function configFactory() {
+  protected function configFactory(): object {
     return \Drupal::service('config.factory');
   }
 
@@ -255,7 +255,7 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
    * @return \Drupal\search\SearchPageRepositoryInterface
    *   A search page repository object.
    */
-  protected function searchPageRepository() {
+  protected function searchPageRepository(): object {
     return \Drupal::service('search.search_page_repository');
   }
 
@@ -265,7 +265,7 @@ class SearchPage extends ConfigEntityBase implements SearchPageInterface, Entity
    * @return \Drupal\Component\Plugin\PluginManagerInterface
    *   A search plugin manager object.
    */
-  protected function searchPluginManager() {
+  protected function searchPluginManager(): object {
     return \Drupal::service('plugin.manager.search');
   }
 

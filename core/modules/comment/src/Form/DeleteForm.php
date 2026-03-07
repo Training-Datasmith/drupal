@@ -29,21 +29,21 @@ class DeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Any replies to this comment will be lost. This action cannot be undone.');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDeletionMessage() {
+  protected function getDeletionMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('The comment and all its replies have been deleted.');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function logDeletionMessage() {
+  public function logDeletionMessage(): void {
     $this->logger('comment')->info('Deleted comment @cid and its replies.', ['@cid' => $this->entity->id()]);
   }
 

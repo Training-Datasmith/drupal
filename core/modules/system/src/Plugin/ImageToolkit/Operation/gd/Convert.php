@@ -20,7 +20,7 @@ class Convert extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     return [
       'extension' => [
         'description' => 'The new extension of the converted image',
@@ -31,7 +31,7 @@ class Convert extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function validateArguments(array $arguments) {
+  protected function validateArguments(array $arguments): array {
     if (!in_array($arguments['extension'], $this->getToolkit()->getSupportedExtensions())) {
       throw new \InvalidArgumentException("Invalid extension ({$arguments['extension']}) specified for the image 'convert' operation");
     }
@@ -41,7 +41,7 @@ class Convert extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function execute(array $arguments) {
+  protected function execute(array $arguments): bool {
     // Create a new image of the required dimensions and format, and copy
     // the original image on it with resampling. Restore the original image upon
     // failure.

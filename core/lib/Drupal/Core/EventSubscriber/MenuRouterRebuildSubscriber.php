@@ -46,7 +46,7 @@ class MenuRouterRebuildSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Component\EventDispatcher\Event $event
    *   The event object.
    */
-  public function onRouterRebuild($event) {
+  public function onRouterRebuild($event): void {
     $this->menuLinksRebuild();
     Cache::invalidateTags(['local_task']);
   }

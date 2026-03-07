@@ -17,7 +17,7 @@ class NoBigPipeRouteAlterSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The event to process.
    */
-  public function onRoutingRouteAlterSetNoBigPipe(RouteBuildEvent $event) {
+  public function onRoutingRouteAlterSetNoBigPipe(RouteBuildEvent $event): void {
     $no_big_pipe_routes = [
       // The batch system uses a <meta> refresh to work without JavaScript.
       'system.batch_page.html',

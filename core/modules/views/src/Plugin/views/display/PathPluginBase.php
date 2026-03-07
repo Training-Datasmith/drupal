@@ -23,20 +23,6 @@ use Symfony\Component\Routing\RouteCollection;
 abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouterInterface, DisplayMenuInterface {
 
   /**
-   * The route provider.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
-   * The state key value store.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * Constructs a PathPluginBase object.
    *
    * @param array $configuration
@@ -45,16 +31,13 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key value store.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteProviderInterface $route_provider, StateInterface $state) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, protected \Drupal\Core\State\StateInterface $state) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->routeProvider = $route_provider;
-    $this->state = $state;
   }
 
   /**
@@ -68,7 +51,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
    * {@inheritdoc}
    */
   public function getPath() {
-    $bits = explode('/', $this->getOption('path'));
+    $bits = explode('/', (string) $this->getOption('path'));
     if ($this->isDefaultTabPath()) {
       array_pop($bits);
     }
@@ -251,7 +234,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
    * @return bool
    *   TRUE, when the view should override the given route.
    */
-  protected function overrideAppliesPathAndMethod($view_path, Route $view_route, Route $route) {
+  protected function overrideAppliesPathAndMethod(string $view_path, Route $view_route, Route $route) {
     // Find all paths which match the path of the current display.
     $route_path = RouteCompiler::getPathWithoutDefaults($route);
     $route_path = RouteCompiler::getPatternOutline($route_path);
@@ -323,7 +306,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
     // Replace % with the link to our standard views argument loader
     // views_arg_load -- which lives in views.module.
 
-    $bits = explode('/', $this->getOption('path'));
+    $bits = explode('/', (string) $this->getOption('path'));
 
     // Replace % with %views_arg for menu autoloading and add to the
     // page arguments so the argument actually comes through.
@@ -375,7 +358,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
   /**
    * {@inheritdoc}
    */
-  public function execute() {
+  public function execute(): void {
     // Prior to this being called, the $view should already be set to this
     // display, and arguments should be set on the view.
     $this->view->build();
@@ -392,7 +375,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
   /**
    * {@inheritdoc}
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     parent::optionsSummary($categories, $options);
 
     $categories['page'] = [
@@ -403,7 +386,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
       ],
     ];
 
-    $path = strip_tags($this->getOption('path'));
+    $path = strip_tags((string) $this->getOption('path'));
 
     if (empty($path)) {
       $path = $this->t('No path is set');
@@ -422,7 +405,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     switch ($form_state->get('section')) {
@@ -445,7 +428,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::validateOptionsForm($form, $form_state);
 
     if ($form_state->get('section') == 'path') {
@@ -455,14 +438,14 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
       }
 
       // Automatically remove '/' and trailing whitespace from path.
-      $form_state->setValue('path', trim($form_state->getValue('path'), '/ '));
+      $form_state->setValue('path', trim((string) $form_state->getValue('path'), '/ '));
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::submitOptionsForm($form, $form_state);
 
     if ($form_state->get('section') == 'path') {
@@ -479,7 +462,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
    * @return array
    *   A list of error strings.
    */
-  protected function validatePath($path) {
+  protected function validatePath(string $path) {
     $errors = [];
     if (str_starts_with($path, '%')) {
       $errors[] = $this->t('"%" may not be used for the first segment of a path.');
@@ -501,10 +484,8 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
     $path_sections = explode('/', $path);
     // Symfony routing does not allow to use numeric placeholders.
     // @see \Symfony\Component\Routing\RouteCompiler
-    $numeric_placeholders = array_filter($path_sections, function ($section) {
-      return (preg_match('/^%(.*)/', $section, $matches)
-        && is_numeric($matches[1]));
-    });
+    $numeric_placeholders = array_filter($path_sections, fn($section) => preg_match('/^%(.*)/', (string) $section, $matches)
+      && is_numeric($matches[1]));
     if (!empty($numeric_placeholders)) {
       $errors[] = $this->t("Numeric placeholders may not be used. Use plain placeholders (%).");
     }
@@ -517,9 +498,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
   public function validate() {
     $errors = parent::validate();
 
-    $errors += $this->validatePath($this->getOption('path'));
-
-    return $errors;
+    return $errors + $this->validatePath($this->getOption('path'));
   }
 
   /**
@@ -553,7 +532,7 @@ abstract class PathPluginBase extends DisplayPluginBase implements DisplayRouter
   /**
    * {@inheritdoc}
    */
-  public function remove() {
+  public function remove(): void {
     $menu_links = $this->getMenuLinks();
     /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
     $menu_link_manager = \Drupal::service('plugin.manager.menu.link');

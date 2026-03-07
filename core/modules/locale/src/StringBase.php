@@ -174,7 +174,7 @@ abstract class StringBase implements StringInterface {
    */
   public function hasLocation($type, $name) {
     $locations = $this->getLocations();
-    return isset($locations[$type]) ? !empty($locations[$type][$name]) : FALSE;
+    return isset($locations[$type]) && !empty($locations[$type][$name]);
   }
 
   /**

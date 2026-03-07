@@ -79,7 +79,7 @@ class ConfigEntity extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function fields() {
+  public function fields(): array {
     return [
       'collection' => $this->t('The config object collection.'),
       'name' => $this->t('The config object name.'),

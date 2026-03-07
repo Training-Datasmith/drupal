@@ -12,27 +12,6 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 class DefaultTableMapping implements TableMappingInterface {
 
   /**
-   * The entity type definition.
-   *
-   * @var \Drupal\Core\Entity\ContentEntityTypeInterface
-   */
-  protected $entityType;
-
-  /**
-   * The field storage definitions of this mapping.
-   *
-   * @var \Drupal\Core\Field\FieldStorageDefinitionInterface[]
-   */
-  protected $fieldStorageDefinitions = [];
-
-  /**
-   * The prefix to be used by all the tables of this mapping.
-   *
-   * @var string
-   */
-  protected $prefix;
-
-  /**
    * The base table of the entity.
    *
    * @var string
@@ -116,31 +95,33 @@ class DefaultTableMapping implements TableMappingInterface {
   /**
    * Constructs a DefaultTableMapping.
    *
-   * @param \Drupal\Core\Entity\ContentEntityTypeInterface $entity_type
+   * @param \Drupal\Core\Entity\ContentEntityTypeInterface $entityType
    *   The entity type definition.
-   * @param \Drupal\Core\Field\FieldStorageDefinitionInterface[] $storage_definitions
+   * @param \Drupal\Core\Field\FieldStorageDefinitionInterface[] $fieldStorageDefinitions
    *   A list of field storage definitions that should be available for the
    *   field columns of this table mapping.
    * @param string $prefix
    *   (optional) A prefix to be used by all the tables of this mapping.
    *   Defaults to an empty string.
    */
-  public function __construct(ContentEntityTypeInterface $entity_type, array $storage_definitions, $prefix = '') {
-    $this->entityType = $entity_type;
-    $this->fieldStorageDefinitions = $storage_definitions;
-    $this->prefix = $prefix;
-
+  public function __construct(protected \Drupal\Core\Entity\ContentEntityTypeInterface $entityType, /**
+   * The field storage definitions of this mapping.
+   */
+  protected array $fieldStorageDefinitions, /**
+   * The prefix to be used by all the tables of this mapping.
+   */
+  protected $prefix = '') {
     // @todo Remove table names from the entity type definition in
     //   https://www.drupal.org/node/2232465.
-    $this->baseTable = $this->prefix . $entity_type->getBaseTable() ?: $entity_type->id();
-    if ($entity_type->isRevisionable()) {
-      $this->revisionTable = $this->prefix . $entity_type->getRevisionTable() ?: $entity_type->id() . '_revision';
+    $this->baseTable = $this->prefix . $this->entityType->getBaseTable() ?: $this->entityType->id();
+    if ($this->entityType->isRevisionable()) {
+      $this->revisionTable = $this->prefix . $this->entityType->getRevisionTable() ?: $this->entityType->id() . '_revision';
     }
-    if ($entity_type->isTranslatable()) {
-      $this->dataTable = $this->prefix . $entity_type->getDataTable() ?: $entity_type->id() . '_field_data';
+    if ($this->entityType->isTranslatable()) {
+      $this->dataTable = $this->prefix . $this->entityType->getDataTable() ?: $this->entityType->id() . '_field_data';
     }
-    if ($entity_type->isRevisionable() && $entity_type->isTranslatable()) {
-      $this->revisionDataTable = $this->prefix . $entity_type->getRevisionDataTable() ?: $entity_type->id() . '_field_revision';
+    if ($this->entityType->isRevisionable() && $this->entityType->isTranslatable()) {
+      $this->revisionDataTable = $this->prefix . $this->entityType->getRevisionDataTable() ?: $this->entityType->id() . '_field_revision';
     }
   }
 
@@ -156,11 +137,10 @@ class DefaultTableMapping implements TableMappingInterface {
    *   (optional) A prefix to be used by all the tables of this mapping.
    *   Defaults to an empty string.
    *
-   * @return static
    *
    * @internal
    */
-  public static function create(ContentEntityTypeInterface $entity_type, array $storage_definitions, $prefix = '') {
+  public static function create(ContentEntityTypeInterface $entity_type, array $storage_definitions, $prefix = ''): static {
     $table_mapping = new static($entity_type, $storage_definitions, $prefix);
 
     $revisionable = $entity_type->isRevisionable();
@@ -172,17 +152,13 @@ class DefaultTableMapping implements TableMappingInterface {
     $uuid_key = $entity_type->getKey('uuid');
     $langcode_key = $entity_type->getKey('langcode');
 
-    $shared_table_definitions = array_filter($storage_definitions, function (FieldStorageDefinitionInterface $definition) use ($table_mapping) {
-      return $table_mapping->allowsSharedTableStorage($definition);
-    });
+    $shared_table_definitions = array_filter($storage_definitions, fn(FieldStorageDefinitionInterface $definition) => $table_mapping->allowsSharedTableStorage($definition));
 
     // The ID and UUID key may point to the same field, so make sure the list is
     // unique.
     $key_fields = array_values(array_unique(array_filter([$id_key, $revision_key, $bundle_key, $uuid_key, $langcode_key])));
     $all_fields = array_keys($shared_table_definitions);
-    $revisionable_fields = array_keys(array_filter($shared_table_definitions, function (FieldStorageDefinitionInterface $definition) {
-      return $definition->isRevisionable();
-    }));
+    $revisionable_fields = array_keys(array_filter($shared_table_definitions, fn(FieldStorageDefinitionInterface $definition) => $definition->isRevisionable()));
     // Make sure the key fields come first in the list of fields.
     $all_fields = array_merge($key_fields, array_diff($all_fields, $key_fields));
 
@@ -239,9 +215,7 @@ class DefaultTableMapping implements TableMappingInterface {
     }
 
     // Add dedicated tables.
-    $dedicated_table_definitions = array_filter($table_mapping->fieldStorageDefinitions, function (FieldStorageDefinitionInterface $definition) use ($table_mapping) {
-      return $table_mapping->requiresDedicatedTableStorage($definition);
-    });
+    $dedicated_table_definitions = array_filter($table_mapping->fieldStorageDefinitions, fn(FieldStorageDefinitionInterface $definition) => $table_mapping->requiresDedicatedTableStorage($definition));
     $extra_columns = [
       'bundle',
       'deleted',
@@ -315,7 +289,7 @@ class DefaultTableMapping implements TableMappingInterface {
   /**
    * {@inheritdoc}
    */
-  public function getTableNames() {
+  public function getTableNames(): array {
     return array_unique(array_merge(array_keys($this->fieldNames), array_keys($this->extraColumns)));
   }
 
@@ -348,10 +322,7 @@ class DefaultTableMapping implements TableMappingInterface {
    * {@inheritdoc}
    */
   public function getFieldNames($table_name) {
-    if (isset($this->fieldNames[$table_name])) {
-      return $this->fieldNames[$table_name];
-    }
-    return [];
+    return $this->fieldNames[$table_name] ?? [];
   }
 
   /**
@@ -401,10 +372,8 @@ class DefaultTableMapping implements TableMappingInterface {
   /**
    * {@inheritdoc}
    */
-  public function getAllFieldTableNames($field_name) {
-    return array_keys(array_filter($this->fieldNames, function ($table_fields) use ($field_name) {
-      return in_array($field_name, $table_fields, TRUE);
-    }));
+  public function getAllFieldTableNames($field_name): array {
+    return array_keys(array_filter($this->fieldNames, fn(array $table_fields) => in_array($field_name, $table_fields, TRUE)));
   }
 
   /**
@@ -461,7 +430,7 @@ class DefaultTableMapping implements TableMappingInterface {
    * @todo Make this method protected in drupal:9.0.0.
    * @see https://www.drupal.org/node/3067336
    */
-  public function setFieldNames($table_name, array $field_names) {
+  public function setFieldNames($table_name, array $field_names): static {
     $this->fieldNames[$table_name] = $field_names;
     // Force the re-computation of the column list.
     unset($this->allColumns[$table_name]);
@@ -472,10 +441,7 @@ class DefaultTableMapping implements TableMappingInterface {
    * {@inheritdoc}
    */
   public function getExtraColumns($table_name) {
-    if (isset($this->extraColumns[$table_name])) {
-      return $this->extraColumns[$table_name];
-    }
-    return [];
+    return $this->extraColumns[$table_name] ?? [];
   }
 
   /**
@@ -493,7 +459,7 @@ class DefaultTableMapping implements TableMappingInterface {
    * @todo Make this method protected in drupal:9.0.0.
    * @see https://www.drupal.org/node/3067336
    */
-  public function setExtraColumns($table_name, array $column_names) {
+  public function setExtraColumns($table_name, array $column_names): static {
     $this->extraColumns[$table_name] = $column_names;
     // Force the re-computation of the column list.
     unset($this->allColumns[$table_name]);
@@ -509,7 +475,7 @@ class DefaultTableMapping implements TableMappingInterface {
    * @return bool
    *   TRUE if the field can be stored in a shared table, FALSE otherwise.
    */
-  public function allowsSharedTableStorage(FieldStorageDefinitionInterface $storage_definition) {
+  public function allowsSharedTableStorage(FieldStorageDefinitionInterface $storage_definition): bool {
     return !$storage_definition->hasCustomStorage() && $storage_definition->isBaseField() && !$storage_definition->isMultiple() && !$storage_definition->isDeleted();
   }
 
@@ -522,7 +488,7 @@ class DefaultTableMapping implements TableMappingInterface {
    * @return bool
    *   TRUE if the field has to be stored in a dedicated table, FALSE otherwise.
    */
-  public function requiresDedicatedTableStorage(FieldStorageDefinitionInterface $storage_definition) {
+  public function requiresDedicatedTableStorage(FieldStorageDefinitionInterface $storage_definition): bool {
     return !$storage_definition->hasCustomStorage() && !$this->allowsSharedTableStorage($storage_definition);
   }
 
@@ -532,25 +498,18 @@ class DefaultTableMapping implements TableMappingInterface {
    * @return string[]
    *   An array of table names.
    */
-  public function getDedicatedTableNames() {
+  public function getDedicatedTableNames(): array {
     $table_mapping = $this;
-    $definitions = array_filter($this->fieldStorageDefinitions, function ($definition) use ($table_mapping) {
-      return $table_mapping->requiresDedicatedTableStorage($definition);
-    });
-    $data_tables = array_map(function ($definition) use ($table_mapping) {
-      return $table_mapping->getDedicatedDataTableName($definition);
-    }, $definitions);
-    $revision_tables = array_map(function ($definition) use ($table_mapping) {
-      return $table_mapping->getDedicatedRevisionTableName($definition);
-    }, $definitions);
-    $dedicated_tables = array_merge(array_values($data_tables), array_values($revision_tables));
-    return $dedicated_tables;
+    $definitions = array_filter($this->fieldStorageDefinitions, fn(\Drupal\Core\Field\FieldStorageDefinitionInterface $definition) => $table_mapping->requiresDedicatedTableStorage($definition));
+    $data_tables = array_map(fn(\Drupal\Core\Field\FieldStorageDefinitionInterface $definition) => $table_mapping->getDedicatedDataTableName($definition), $definitions);
+    $revision_tables = array_map(fn(\Drupal\Core\Field\FieldStorageDefinitionInterface $definition) => $table_mapping->getDedicatedRevisionTableName($definition), $definitions);
+    return array_merge(array_values($data_tables), array_values($revision_tables));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getReservedColumns() {
+  public function getReservedColumns(): array {
     return ['deleted'];
   }
 
@@ -575,9 +534,7 @@ class DefaultTableMapping implements TableMappingInterface {
       // unique ID.
       return "field_deleted_data_" . substr(hash('sha256', $storage_definition->getUniqueStorageIdentifier()), 0, 10);
     }
-    else {
-      return $this->generateFieldTableName($storage_definition, FALSE);
-    }
+    return $this->generateFieldTableName($storage_definition, FALSE);
   }
 
   /**
@@ -601,9 +558,7 @@ class DefaultTableMapping implements TableMappingInterface {
       // a short unique ID.
       return "field_deleted_revision_" . substr(hash('sha256', $storage_definition->getUniqueStorageIdentifier()), 0, 10);
     }
-    else {
-      return $this->generateFieldTableName($storage_definition, TRUE);
-    }
+    return $this->generateFieldTableName($storage_definition, TRUE);
   }
 
   /**
@@ -620,7 +575,7 @@ class DefaultTableMapping implements TableMappingInterface {
    * @return string
    *   The final table name.
    */
-  protected function generateFieldTableName(FieldStorageDefinitionInterface $storage_definition, $revision) {
+  protected function generateFieldTableName(FieldStorageDefinitionInterface $storage_definition, $revision): string {
     // The maximum length of an entity type ID is 32 characters.
     $entity_type_id = substr($storage_definition->getTargetEntityTypeId(), 0, EntityTypeInterface::ID_MAX_LENGTH);
     $separator = $revision ? '_revision__' : '__';

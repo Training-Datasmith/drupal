@@ -41,33 +41,27 @@ class ConfigHooks {
         $output .= '<dd>' . $this->t('You can import a single configuration item by pasting it in YAML format into the form on the <a href=":single-import">Single import</a> page.', [
           ':single-import' => Url::fromRoute('config.import_single')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'config.sync':
         $output = '';
-        $output .= '<p>' . $this->t('Compare the configuration uploaded to your sync directory with the active configuration before completing the import.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Compare the configuration uploaded to your sync directory with the active configuration before completing the import.') . '</p>');
 
       case 'config.export_full':
         $output = '';
-        $output .= '<p>' . $this->t('Export and download the full configuration of this site as a gzipped tar file.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Export and download the full configuration of this site as a gzipped tar file.') . '</p>');
 
       case 'config.import_full':
         $output = '';
-        $output .= '<p>' . $this->t('Upload a full site configuration archive to the sync directory. It can then be compared and imported on the Synchronize page.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Upload a full site configuration archive to the sync directory. It can then be compared and imported on the Synchronize page.') . '</p>');
 
       case 'config.export_single':
         $output = '';
-        $output .= '<p>' . $this->t('Choose a configuration item to display its YAML structure.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Choose a configuration item to display its YAML structure.') . '</p>');
 
       case 'config.import_single':
         $output = '';
-        $output .= '<p>' . $this->t('Import a single configuration item by pasting its YAML structure into the text field.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Import a single configuration item by pasting its YAML structure into the text field.') . '</p>');
     }
     return NULL;
   }

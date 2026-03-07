@@ -19,13 +19,6 @@ class ProviderFilterDecorator implements DiscoveryInterface {
   use DiscoveryTrait;
 
   /**
-   * The Discovery object being decorated.
-   *
-   * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface
-   */
-  protected $decorated;
-
-  /**
    * A callable for testing if a provider exists.
    *
    * @var callable
@@ -41,8 +34,7 @@ class ProviderFilterDecorator implements DiscoveryInterface {
    *   A callable, gets passed a provider name, should return TRUE if the
    *   provider exists and FALSE if not.
    */
-  public function __construct(DiscoveryInterface $decorated, callable $provider_exists) {
-    $this->decorated = $decorated;
+  public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated, callable $provider_exists) {
     $this->providerExists = $provider_exists;
   }
 
@@ -60,15 +52,13 @@ class ProviderFilterDecorator implements DiscoveryInterface {
    *   An array of plugin definitions. If a definition is an array and has a
    *   provider key that provider is guaranteed to exist.
    */
-  public static function filterDefinitions(array $definitions, callable $provider_exists) {
+  public static function filterDefinitions(array $definitions, callable $provider_exists): array {
     // Besides what the caller accepts, we also accept core or component.
-    $provider_exists = function ($provider) use ($provider_exists) {
-      return in_array($provider, ['core', 'component']) || $provider_exists($provider);
-    };
-    return array_filter($definitions, function ($definition) use ($provider_exists) {
+    $provider_exists = (fn($provider) => in_array($provider, ['core', 'component']) || $provider_exists($provider));
+    return array_filter($definitions, function (array $definition) use ($provider_exists): bool {
       // Plugin definitions can be objects (for example, Typed Data) those will
       // become empty array here and cause no problems.
-      $definition = (array) $definition + [
+      $definition = $definition + [
         'provider' => [],
         'providers' => [],
       ];
@@ -96,7 +86,7 @@ class ProviderFilterDecorator implements DiscoveryInterface {
    * @return mixed
    *   The return value from the method on the decorated object.
    */
-  public function __call($method, array $args) {
+  public function __call(string $method, array $args) {
     return call_user_func_array([$this->decorated, $method], $args);
   }
 

@@ -23,7 +23,7 @@ class TextProcessed extends TypedData implements CacheableDependencyInterface {
    *
    * @var \Drupal\filter\FilterProcessResult|null
    */
-  protected $processed = NULL;
+  protected $processed;
 
   /**
    * {@inheritdoc}
@@ -40,7 +40,7 @@ class TextProcessed extends TypedData implements CacheableDependencyInterface {
    * {@inheritdoc}
    */
   #[JsonSchema(['type' => 'string', 'description' => 'May contain HTML markup.'])]
-  public function getValue() {
+  public function getValue(): \Drupal\Component\Render\MarkupInterface|string {
     if ($this->processed !== NULL) {
       return FilteredMarkup::create($this->processed->getProcessedText());
     }
@@ -70,7 +70,7 @@ class TextProcessed extends TypedData implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     $this->processed = $value;
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {
@@ -108,7 +108,7 @@ class TextProcessed extends TypedData implements CacheableDependencyInterface {
    * @return \Drupal\Core\Render\RendererInterface
    *   The renderer service.
    */
-  protected function getRenderer() {
+  protected function getRenderer(): object {
     return \Drupal::service('renderer');
   }
 

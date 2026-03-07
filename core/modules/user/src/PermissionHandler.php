@@ -55,13 +55,6 @@ class PermissionHandler implements PermissionHandlerInterface {
   use StringTranslationTrait;
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * The YAML discovery class to find all .permissions.yml files.
    *
    * @var \Drupal\Core\Discovery\YamlDiscovery
@@ -69,30 +62,21 @@ class PermissionHandler implements PermissionHandlerInterface {
   protected $yamlDiscovery;
 
   /**
-   * The callable resolver.
-   *
-   * @var \Drupal\Core\Utility\CallableResolver
-   */
-  protected CallableResolver $callableResolver;
-
-  /**
    * Constructs a new PermissionHandler.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation.
-   * @param \Drupal\Core\Utility\CallableResolver $callable_resolver
+   * @param \Drupal\Core\Utility\CallableResolver $callableResolver
    *   The callable resolver.
    * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, TranslationInterface $string_translation, CallableResolver $callable_resolver, protected ModuleExtensionList $moduleExtensionList) {
-    $this->callableResolver = $callable_resolver;
-
-    // @todo It would be nice if you could pull all module directories from the
-    //   container.
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, TranslationInterface $string_translation, /**
+   * The callable resolver.
+   */
+  protected CallableResolver $callableResolver, protected ModuleExtensionList $moduleExtensionList) {
     $this->stringTranslation = $string_translation;
   }
 
@@ -121,7 +105,7 @@ class PermissionHandler implements PermissionHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function moduleProvidesPermissions($module_name) {
+  public function moduleProvidesPermissions($module_name): bool {
     // @todo Static cache this information.
     //   https://www.drupal.org/node/2339487
     $permissions = $this->getPermissions();
@@ -208,18 +192,16 @@ class PermissionHandler implements PermissionHandlerInterface {
    *
    * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
-  protected function sortPermissions(array $all_permissions = []) {
+  protected function sortPermissions(array $all_permissions = []): array {
     // Get a list of all the modules providing permissions and sort by
     // display name.
     $modules = $this->getModuleNames();
 
-    uasort($all_permissions, function (array $permission_a, array $permission_b) use ($modules) {
+    uasort($all_permissions, function (array $permission_a, array $permission_b) use ($modules): int {
       if ($modules[$permission_a['provider']] == $modules[$permission_b['provider']]) {
         return $permission_a['title'] <=> $permission_b['title'];
       }
-      else {
-        return $modules[$permission_a['provider']] <=> $modules[$permission_b['provider']];
-      }
+      return $modules[$permission_a['provider']] <=> $modules[$permission_b['provider']];
     });
     return $all_permissions;
   }
@@ -230,7 +212,7 @@ class PermissionHandler implements PermissionHandlerInterface {
    * @return string[]
    *   Returns the human readable names of all modules keyed by machine name.
    */
-  protected function getModuleNames() {
+  protected function getModuleNames(): array {
     $modules = [];
     foreach (array_keys($this->moduleHandler->getModuleList()) as $module) {
       $modules[$module] = $this->moduleExtensionList->getName($module);

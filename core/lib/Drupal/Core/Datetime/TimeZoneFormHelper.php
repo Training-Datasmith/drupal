@@ -55,7 +55,7 @@ class TimeZoneFormHelper {
     $zones = static::getOptionsList($blank);
     $grouped_zones = [];
     foreach ($zones as $key => $value) {
-      $split = explode('/', $value);
+      $split = explode('/', (string) $value);
       $city = array_pop($split);
       $region = array_shift($split);
       if (!empty($region)) {

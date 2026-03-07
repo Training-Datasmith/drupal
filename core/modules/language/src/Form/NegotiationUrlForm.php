@@ -22,31 +22,23 @@ use Drupal\language\Plugin\LanguageNegotiation\LanguageNegotiationUrl;
 class NegotiationUrlForm extends ConfigFormBase {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new NegotiationUrlForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, LanguageManagerInterface $language_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager) {
     parent::__construct($config_factory, $typedConfigManager);
-    $this->languageManager = $language_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -57,14 +49,14 @@ class NegotiationUrlForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'language_negotiation_configure_url_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['language.negotiation'];
   }
 
@@ -94,7 +86,7 @@ class NegotiationUrlForm extends ConfigFormBase {
       '#states' => [
         'visible' => [
           ':input[name="language_negotiation_url_part"]' => [
-            'value' => (string) LanguageNegotiationUrl::CONFIG_PATH_PREFIX,
+            'value' => LanguageNegotiationUrl::CONFIG_PATH_PREFIX,
           ],
         ],
       ],
@@ -108,7 +100,7 @@ class NegotiationUrlForm extends ConfigFormBase {
       '#states' => [
         'visible' => [
           ':input[name="language_negotiation_url_part"]' => [
-            'value' => (string) LanguageNegotiationUrl::CONFIG_DOMAIN,
+            'value' => LanguageNegotiationUrl::CONFIG_DOMAIN,
           ],
         ],
       ],
@@ -145,7 +137,7 @@ class NegotiationUrlForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $languages = $this->languageManager->getLanguages();
 
     // Count repeated values for uniqueness check.
@@ -165,7 +157,7 @@ class NegotiationUrlForm extends ConfigFormBase {
           ]));
         }
       }
-      elseif (str_contains($value, '/')) {
+      elseif (str_contains((string) $value, '/')) {
         // Throw a form error if the string contains a slash,
         // which would not work.
         $form_state->setErrorByName("prefix][$langcode", $this->t('The prefix may not contain a slash.'));
@@ -221,7 +213,7 @@ class NegotiationUrlForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Save selected format (prefix or domain).
     $this->config('language.negotiation')
       ->set('url.source', $form_state->getValue('language_negotiation_url_part'))

@@ -55,7 +55,7 @@ class PathFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     // Delete all aliases associated with this entity.
     $entity = $this->getEntity();
     $langcode_list = [$entity->language()->getId()];

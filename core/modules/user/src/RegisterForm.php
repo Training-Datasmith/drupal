@@ -14,7 +14,7 @@ class RegisterForm extends AccountForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     /** @var \Drupal\user\UserInterface $account */
     $account = $this->entity;
 
@@ -61,7 +61,7 @@ class RegisterForm extends AccountForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $admin = $form_state->getValue('administer_users');
 
     if (!\Drupal::config('user.settings')->get('verify_mail') || $admin) {
@@ -83,7 +83,7 @@ class RegisterForm extends AccountForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $account = $this->entity;
     $admin = $form_state->getValue('administer_users');
     $notify = !$form_state->isValueEmpty('notify');

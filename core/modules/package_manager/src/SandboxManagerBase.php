@@ -155,8 +155,6 @@ abstract class SandboxManagerBase implements LoggerAwareInterface {
 
   /**
    * The shared temp store.
-   *
-   * @var \Drupal\Core\TempStore\SharedTempStore
    */
   protected SharedTempStore $tempStore;
 
@@ -166,8 +164,6 @@ abstract class SandboxManagerBase implements LoggerAwareInterface {
    * To ensure that stage classes do not unintentionally use another stage's
    * type, all concrete subclasses MUST explicitly define this property.
    * The recommended pattern is `MODULE:TYPE`.
-   *
-   * @var string
    */
   protected string $type;
 
@@ -351,7 +347,7 @@ abstract class SandboxManagerBase implements LoggerAwareInterface {
     $event = new PreCreateEvent($this, $excluded_paths);
     // If an error occurs and we won't be able to create the stage, mark it as
     // available.
-    $this->dispatch($event, [$this, 'markAsAvailable']);
+    $this->dispatch($event, $this->markAsAvailable(...));
 
     try {
       if ($this->isDirectWrite()) {

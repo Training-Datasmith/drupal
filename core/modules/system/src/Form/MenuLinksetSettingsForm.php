@@ -35,7 +35,7 @@ class MenuLinksetSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -46,14 +46,14 @@ class MenuLinksetSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'menu_linkset_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['system.feature_flags'];
   }
 
@@ -75,7 +75,7 @@ class MenuLinksetSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config('system.feature_flags')
       ->set('linkset_endpoint', $form_state->getValue('enable_endpoint'))
       ->save();

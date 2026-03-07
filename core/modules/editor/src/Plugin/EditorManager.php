@@ -20,20 +20,16 @@ class EditorManager extends DefaultPluginManager {
 
   /**
    * Static cache of attachments.
-   *
-   * @var array
    */
   protected array $attachments = ['library' => []];
 
   /**
    * Editors.
-   *
-   * @var array
    */
   protected array $editors = [];
 
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected EntityTypeManagerInterface $entityTypeManager) {
-    parent::__construct('Plugin/Editor', $namespaces, $module_handler, EditorPluginInterface::class, Editor::class, 'Drupal\editor\Annotation\Editor');
+    parent::__construct('Plugin/Editor', $namespaces, $module_handler, EditorPluginInterface::class, Editor::class, \Drupal\editor\Annotation\Editor::class);
     $this->alterInfo('editor_info');
     $this->setCacheBackend($cache_backend, 'editor_plugins');
   }
@@ -44,7 +40,7 @@ class EditorManager extends DefaultPluginManager {
    * @return array
    *   An array of translated text editor labels, keyed by ID.
    */
-  public function listOptions() {
+  public function listOptions(): array {
     $options = [];
     foreach ($this->getDefinitions() as $key => $definition) {
       $options[$key] = $definition['label'];
@@ -63,7 +59,7 @@ class EditorManager extends DefaultPluginManager {
    *
    * @see \Drupal\Core\Render\AttachmentsResponseProcessorInterface::processAttachments()
    */
-  public function getAttachments(array $format_ids) {
+  public function getAttachments(array $format_ids): array {
     $settings = $this->attachments['drupalSettings'] ?? [];
 
     if (($editor_ids_to_load = array_diff($format_ids, array_keys($this->editors)))) {

@@ -21,20 +21,6 @@ class Query extends QueryBase implements QueryInterface {
   protected $entityType;
 
   /**
-   * The config factory used by the config entity query.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The key value factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
-   */
-  protected $keyValueFactory;
-
-  /**
    * Constructs a Query object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -42,17 +28,15 @@ class Query extends QueryBase implements QueryInterface {
    * @param string $conjunction
    *   - AND: all of the conditions on the query need to match.
    *   - OR: at least one of the conditions on the query need to match.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
    *   The key value factory.
    * @param array $namespaces
    *   List of potential namespaces of the classes belonging to this query.
    */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, ConfigFactoryInterface $config_factory, KeyValueFactoryInterface $key_value_factory, array $namespaces) {
+  public function __construct(EntityTypeInterface $entity_type, $conjunction, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory, array $namespaces) {
     parent::__construct($entity_type, $conjunction, $namespaces);
-    $this->configFactory = $config_factory;
-    $this->keyValueFactory = $key_value_factory;
   }
 
   /**
@@ -91,8 +75,8 @@ class Query extends QueryBase implements QueryInterface {
     foreach ($this->sort as $sort) {
       $direction = $sort['direction'] == 'ASC' ? -1 : 1;
       $field = $sort['field'];
-      uasort($result, function ($a, $b) use ($field, $direction) {
-        $properties = explode('.', $field);
+      uasort($result, function (array $a, array $b) use ($field, $direction): int {
+        $properties = explode('.', (string) $field);
         foreach ($properties as $property) {
           if (isset($a[$property]) || isset($b[$property])) {
             $a = $a[$property] ?? NULL;
@@ -127,7 +111,7 @@ class Query extends QueryBase implements QueryInterface {
    * @return array
    *   Config records keyed by entity IDs.
    */
-  protected function loadRecords() {
+  protected function loadRecords(): array {
     $prefix = $this->entityType->getConfigPrefix() . '.';
     $prefix_length = strlen($prefix);
 
@@ -146,18 +130,14 @@ class Query extends QueryBase implements QueryInterface {
           if ($condition['field'] == $id_key) {
             $has_added_restrictions = TRUE;
             $ids = (array) $condition['value'];
-            $filter_by_names[] = array_map(static function ($id) use ($prefix) {
-              return $prefix . $id;
-            }, $ids);
+            $filter_by_names[] = array_map(static fn($id) => $prefix . $id, $ids);
           }
           elseif (in_array($condition['field'], $lookup_keys)) {
             $has_added_restrictions = TRUE;
             // If we don't find anything then there are no matches. No point in
             // listing anything.
             $keys = (array) $condition['value'];
-            $keys = array_map(static function ($value) use ($condition) {
-              return $condition['field'] . ':' . $value;
-            }, $keys);
+            $keys = array_map(static fn($value) => $condition['field'] . ':' . $value, $keys);
             foreach ($this->getConfigKeyStore()->getMultiple($keys) as $list) {
               $filter_by_names[] = $list;
             }
@@ -194,30 +174,30 @@ class Query extends QueryBase implements QueryInterface {
       $filter = NULL;
       switch ($id_condition['operator']) {
         case '<>':
-          $filter = static function ($name) use ($value, $prefix_length) {
+          $filter = static function ($name) use ($value, $prefix_length): bool {
             $id = substr($name, $prefix_length);
             return $id !== $value;
           };
           break;
 
         case 'STARTS_WITH':
-          $filter = static function ($name) use ($value, $prefix_length) {
+          $filter = static function ($name) use ($value, $prefix_length): bool {
             $id = substr($name, $prefix_length);
-            return str_starts_with($id, $value);
+            return str_starts_with($id, (string) $value);
           };
           break;
 
         case 'CONTAINS':
-          $filter = static function ($name) use ($value, $prefix_length) {
+          $filter = static function ($name) use ($value, $prefix_length): bool {
             $id = substr($name, $prefix_length);
-            return str_contains($id, $value);
+            return str_contains($id, (string) $value);
           };
           break;
 
         case 'ENDS_WITH':
-          $filter = static function ($name) use ($value, $prefix_length) {
+          $filter = static function ($name) use ($value, $prefix_length): bool {
             $id = substr($name, $prefix_length);
-            return str_ends_with($id, $value);
+            return str_ends_with($id, (string) $value);
           };
           break;
       }

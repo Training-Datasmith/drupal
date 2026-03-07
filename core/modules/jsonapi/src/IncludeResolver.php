@@ -30,25 +30,19 @@ use Drupal\jsonapi\ResourceType\ResourceType;
 class IncludeResolver {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The JSON:API entity access checker.
-   *
-   * @var \Drupal\jsonapi\Access\EntityAccessChecker
-   */
-  protected $entityAccessChecker;
-
-  /**
    * IncludeResolver constructor.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityAccessChecker $entity_access_checker) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityAccessChecker = $entity_access_checker;
+  public function __construct(
+      /**
+       * The entity type manager.
+       */
+      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+      /**
+       * The JSON:API entity access checker.
+       */
+      protected \Drupal\jsonapi\Access\EntityAccessChecker $entityAccessChecker
+  )
+  {
   }
 
   /**
@@ -107,15 +101,15 @@ class IncludeResolver {
         // EntityAccessDeniedHttpException objects.
         assert($resource_object instanceof ResourceIdentifierInterface);
         $public_field_name = $resource_object->getResourceType()->getPublicName($field_name);
-
         if ($resource_object instanceof LabelOnlyResourceObject) {
-          $message = "The current user is not allowed to view this relationship.";
-          $exception = new EntityAccessDeniedHttpException($resource_object->getEntity(), AccessResult::forbidden("The user only has authorization for the 'view label' operation."), '', $message, $public_field_name);
-          $includes = IncludedData::merge($includes, new IncludedData([$exception]));
-          continue;
+            $message = "The current user is not allowed to view this relationship.";
+            $exception = new EntityAccessDeniedHttpException($resource_object->getEntity(), AccessResult::forbidden("The user only has authorization for the 'view label' operation."), '', $message, $public_field_name);
+            $includes = IncludedData::merge($includes, new IncludedData([$exception]));
+            continue;
         }
-        elseif (!$resource_object instanceof ResourceObject) {
-          continue;
+
+        if (!$resource_object instanceof ResourceObject) {
+            continue;
         }
 
         // Not all entities in $entity_collection will be of the same bundle and
@@ -154,12 +148,8 @@ class IncludeResolver {
       foreach ($references as $target_type => $ids) {
         $entity_storage = $this->entityTypeManager->getStorage($target_type);
         $targeted_entities = $entity_storage->loadMultiple(array_unique($ids));
-        $access_checked_entities = array_map(function (EntityInterface $entity) {
-          return $this->entityAccessChecker->getAccessCheckedResourceObject($entity);
-        }, $targeted_entities);
-        $targeted_collection = new IncludedData(array_filter($access_checked_entities, function (ResourceIdentifierInterface $resource_object) {
-          return !$resource_object->getResourceType()->isInternal();
-        }));
+        $access_checked_entities = array_map(fn(EntityInterface $entity) => $this->entityAccessChecker->getAccessCheckedResourceObject($entity), $targeted_entities);
+        $targeted_collection = new IncludedData(array_filter($access_checked_entities, fn(ResourceIdentifierInterface $resource_object) => !$resource_object->getResourceType()->isInternal()));
         $includes = static::resolveIncludeTree($children, $targeted_collection, IncludedData::merge($includes, $targeted_collection));
       }
     }
@@ -180,11 +170,9 @@ class IncludeResolver {
    */
   protected static function toIncludeTree(ResourceObjectData $data, $include_parameter) {
     // $include_parameter: 'one.two.three, one.two.four'.
-    $include_paths = array_map('trim', explode(',', $include_parameter));
+    $include_paths = array_map(trim(...), explode(',', $include_parameter));
     // $exploded_paths: [['one', 'two', 'three'], ['one', 'two', 'four']].
-    $exploded_paths = array_map(function ($include_path) {
-      return array_map('trim', explode('.', $include_path));
-    }, $include_paths);
+    $exploded_paths = array_map(fn($include_path) => array_map(trim(...), explode('.', $include_path)), $include_paths);
     $resolved_paths_per_resource_type = [];
     /** @var \Drupal\jsonapi\JsonApiResource\ResourceIdentifierInterface $resource_object */
     foreach ($data as $resource_object) {
@@ -195,7 +183,7 @@ class IncludeResolver {
       }
       $resolved_paths_per_resource_type[$resource_type_name] = static::resolveInternalIncludePaths($resource_type, $exploded_paths);
     }
-    $resolved_paths = array_reduce($resolved_paths_per_resource_type, 'array_merge', []);
+    $resolved_paths = array_reduce($resolved_paths_per_resource_type, array_merge(...), []);
     return static::buildTree($resolved_paths);
   }
 
@@ -213,15 +201,14 @@ class IncludeResolver {
    *
    * @see self::buildTree
    */
-  protected static function resolveInternalIncludePaths(ResourceType $base_resource_type, array $paths) {
+  protected static function resolveInternalIncludePaths(ResourceType $base_resource_type, array $paths): array {
     $internal_paths = array_map(function ($exploded_path) use ($base_resource_type) {
       if (empty($exploded_path)) {
         return [];
       }
       return FieldResolver::resolveInternalIncludePath($base_resource_type, $exploded_path);
     }, $paths);
-    $flattened_paths = array_reduce($internal_paths, 'array_merge', []);
-    return $flattened_paths;
+    return array_reduce($internal_paths, array_merge(...), []);
   }
 
   /**
@@ -250,7 +237,7 @@ class IncludeResolver {
    *   A multi-dimensional array representing a tree of field names to be
    *   included. Array keys are the field names. Leaves are empty arrays.
    */
-  protected static function buildTree(array $paths) {
+  protected static function buildTree(array $paths): array {
     $merged = [];
     foreach ($paths as $parts) {
       if (!$field_name = array_shift($parts)) {

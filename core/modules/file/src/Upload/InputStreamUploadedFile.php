@@ -9,16 +9,16 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * An uploaded file from an input stream.
  */
-final class InputStreamUploadedFile implements UploadedFileInterface {
+final readonly class InputStreamUploadedFile implements UploadedFileInterface {
 
   /**
    * Creates a new InputStreamUploadedFile.
    */
   public function __construct(
-    protected readonly string $clientOriginalName,
-    protected readonly string $filename,
-    protected readonly string $realPath,
-    protected readonly int | false $size,
+    protected string $clientOriginalName,
+    protected string $filename,
+    protected string $realPath,
+    protected int | false $size,
   ) {}
 
   /**

@@ -57,11 +57,14 @@ class RelationshipNormalizer extends NormalizerBase {
       return $schema;
     }
     $targets = $item_class::getReferenceableBundles($field_definition);
-    $target_types = array_reduce(array_keys($targets), function (array $carry, string $entity_type_id) use ($targets) {
+    $target_types = array_reduce(array_keys($targets), function (array $carry, string $entity_type_id) use ($targets): array {
       foreach ($targets[$entity_type_id] as $bundle) {
         // Even if a resource is internal, it can be referenced.
-        if ((!$resource = $this->resourceTypeRepository->get($entity_type_id, $bundle)) || in_array($resource->getTypeName(), $carry)) {
-          continue;
+        if (!$resource = $this->resourceTypeRepository->get($entity_type_id, $bundle)) {
+            continue;
+        }
+        if (in_array($resource->getTypeName(), $carry)) {
+            continue;
         }
         $carry[] = $resource->getTypeName();
       }
@@ -69,7 +72,7 @@ class RelationshipNormalizer extends NormalizerBase {
     }, []);
     if ($target_types) {
       $schema['properties']['type'] = [
-        'oneOf' => array_map(fn(string $resource_type_name) => ['const' => $resource_type_name], $target_types),
+        'oneOf' => array_map(fn(string $resource_type_name): array => ['const' => $resource_type_name], $target_types),
       ];
     }
     return $schema;

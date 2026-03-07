@@ -33,10 +33,10 @@ class AttributeHelper {
    */
   public static function attributeExists($name, $collection) {
     if ($collection instanceof Attribute) {
-      return $collection->hasAttribute($name);
+        return $collection->hasAttribute($name);
     }
-    elseif (is_array($collection)) {
-      return array_key_exists($name, $collection);
+    if (is_array($collection)) {
+        return array_key_exists($name, $collection);
     }
     throw new \InvalidArgumentException('Invalid collection argument');
   }

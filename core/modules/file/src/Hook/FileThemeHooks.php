@@ -240,7 +240,7 @@ class FileThemeHooks {
     foreach (Element::children($element) as $key) {
       $widgets[] = &$element[$key];
     }
-    usort($widgets, function ($a, $b) {
+    usort($widgets, function ($a, $b): int|float {
       // Sorts using ['_weight']['#value'].
       $a_weight = (is_array($a) && isset($a['_weight']['#value']) ? $a['_weight']['#value'] : 0);
       $b_weight = (is_array($b) && isset($b['_weight']['#value']) ? $b['_weight']['#value'] : 0);

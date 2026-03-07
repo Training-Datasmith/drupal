@@ -25,7 +25,7 @@ class Timer {
    * @param string $name
    *   The name of the timer.
    */
-  public static function start($name) {
+  public static function start($name): void {
     static::$timers[$name]['start'] = microtime(TRUE);
     static::$timers[$name]['count'] = isset(static::$timers[$name]['count']) ? ++static::$timers[$name]['count'] : 1;
   }

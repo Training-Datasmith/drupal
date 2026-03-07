@@ -10,50 +10,33 @@ use Drupal\Core\Extension\ProfileExtensionList;
 class LibrariesDirectoryFileFinder {
 
   /**
-   * The app root.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
-   * The site path.
-   *
-   * @var string
-   */
-  protected $sitePath;
-
-  /**
-   * The profile extension list.
-   *
-   * @var \Drupal\Core\Extension\ExtensionList
-   */
-  protected $profileExtensionList;
-
-  /**
-   * The install profile.
-   *
-   * @var string|false|null
-   */
-  protected $installProfile;
-
-  /**
    * Constructs a new LibrariesDirectoryFileFinder instance.
    *
    * @param string $root
    *   The app root.
-   * @param string $site_path
+   * @param string $sitePath
    *   The site path.
-   * @param \Drupal\Core\Extension\ProfileExtensionList $profile_extension_list
+   * @param \Drupal\Core\Extension\ProfileExtensionList $profileExtensionList
    *   The profile extension list.
-   * @param string $install_profile
+   * @param string $installProfile
    *   The install profile.
    */
-  public function __construct($root, $site_path, ProfileExtensionList $profile_extension_list, $install_profile) {
-    $this->root = $root;
-    $this->sitePath = $site_path;
-    $this->profileExtensionList = $profile_extension_list;
-    $this->installProfile = $install_profile;
+  public function __construct(
+      /**
+       * The app root.
+       */
+      protected $root,
+      /**
+       * The site path.
+       */
+      protected $sitePath,
+      protected \Drupal\Core\Extension\ProfileExtensionList $profileExtensionList,
+      /**
+       * The install profile.
+       */
+      protected $installProfile
+  )
+  {
   }
 
   /**
@@ -75,7 +58,7 @@ class LibrariesDirectoryFileFinder {
    *   The real path to the library file relative to the root directory. If the
    *   library cannot be found then FALSE.
    */
-  public function find($path) {
+  public function find(string $path): string|false {
     // Search sites/<domain>/*.
     $directories[] = "{$this->sitePath}/libraries/";
 

@@ -25,7 +25,7 @@ class ViewAjaxResponse extends AjaxResponse {
    * @param \Drupal\views\ViewExecutable $view
    *   The View executed on this ajax request.
    */
-  public function setView(ViewExecutable $view) {
+  public function setView(ViewExecutable $view): void {
     $this->view = $view;
   }
 

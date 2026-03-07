@@ -139,7 +139,7 @@ abstract class ControllerBase implements ContainerInjectionInterface {
    * @return \Drupal\Core\Cache\CacheBackendInterface
    *   The cache object associated with the specified bin.
    */
-  protected function cache($bin = 'default') {
+  protected function cache(string $bin = 'default') {
     return $this->container()->get('cache.' . $bin);
   }
 

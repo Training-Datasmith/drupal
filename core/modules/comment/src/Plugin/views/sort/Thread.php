@@ -16,7 +16,7 @@ class Thread extends SortPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
 
     // See \Drupal\comment\CommentStorage::loadThread() for an explanation of

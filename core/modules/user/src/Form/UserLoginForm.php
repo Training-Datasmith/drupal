@@ -23,69 +23,38 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UserLoginForm extends FormBase implements WorkspaceSafeFormInterface {
 
   /**
-   * The user flood control service.
-   *
-   * @var \Drupal\user\UserFloodControl
-   */
-  protected $userFloodControl;
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $userStorage;
-
-  /**
    * The user authentication object.
-   *
-   * @var \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface
    */
-  protected $userAuth;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * The bare HTML renderer.
-   *
-   * @var \Drupal\Core\Render\BareHtmlPageRendererInterface
-   */
-  protected $bareHtmlPageRenderer;
+  protected \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface $userAuth;
 
   /**
    * Constructs a new UserLoginForm.
    *
-   * @param \Drupal\user\UserFloodControlInterface $user_flood_control
+   * @param \Drupal\user\UserFloodControlInterface $userFloodControl
    *   The user flood control service.
-   * @param \Drupal\user\UserStorageInterface $user_storage
+   * @param \Drupal\user\UserStorageInterface $userStorage
    *   The user storage.
    * @param \Drupal\user\UserAuthInterface|\Drupal\user\UserAuthenticationInterface $user_auth
    *   The user authentication object.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
-   * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bare_html_renderer
+   * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bareHtmlPageRenderer
    *   The renderer.
    */
-  public function __construct(UserFloodControlInterface $user_flood_control, UserStorageInterface $user_storage, UserAuthInterface|UserAuthenticationInterface $user_auth, RendererInterface $renderer, BareHtmlPageRendererInterface $bare_html_renderer) {
-    $this->userFloodControl = $user_flood_control;
-    $this->userStorage = $user_storage;
+  public function __construct(/**
+   * The user flood control service.
+   */
+  protected \Drupal\user\UserFloodControlInterface $userFloodControl, protected \Drupal\user\UserStorageInterface $userStorage, UserAuthInterface|UserAuthenticationInterface $user_auth, protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\Render\BareHtmlPageRendererInterface $bareHtmlPageRenderer) {
     if (!$user_auth instanceof UserAuthenticationInterface) {
       @trigger_error('The $user_auth parameter not implementing UserAuthenticationInterface is deprecated in drupal:10.3.0 and will be removed in drupal:12.0.0. See https://www.drupal.org/node/3411040');
     }
     $this->userAuth = $user_auth;
-    $this->renderer = $renderer;
-    $this->bareHtmlPageRenderer = $bare_html_renderer;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('user.flood_control'),
       $container->get('entity_type.manager')->getStorage('user'),
@@ -98,14 +67,14 @@ class UserLoginForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'user_login_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config('system.site');
 
     // Display login form:
@@ -148,7 +117,7 @@ class UserLoginForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     if (empty($uid = $form_state->get('uid'))) {
       return;
     }
@@ -173,8 +142,8 @@ class UserLoginForm extends FormBase implements WorkspaceSafeFormInterface {
    *
    * If successful, $form_state->get('uid') is set to the matching user ID.
    */
-  public function validateAuthentication(array &$form, FormStateInterface $form_state) {
-    $password = trim($form_state->getValue('pass'));
+  public function validateAuthentication(array &$form, FormStateInterface $form_state): void {
+    $password = trim((string) $form_state->getValue('pass'));
     $flood_config = $this->config('user.flood');
     $account = FALSE;
     if (!$form_state->isValueEmpty('name') && strlen($password) > 0) {
@@ -254,7 +223,7 @@ class UserLoginForm extends FormBase implements WorkspaceSafeFormInterface {
    *
    * This validation function should always be the last one.
    */
-  public function validateFinal(array &$form, FormStateInterface $form_state) {
+  public function validateFinal(array &$form, FormStateInterface $form_state): void {
     $flood_config = $this->config('user.flood');
     if (!$form_state->get('uid')) {
       // Always register an IP-based failed login event.

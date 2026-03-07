@@ -14,7 +14,7 @@ class InlineFormErrorsServiceProvider extends ServiceProviderBase {
   /**
    * {@inheritdoc}
    */
-  public function alter(ContainerBuilder $container) {
+  public function alter(ContainerBuilder $container): void {
     $container->getDefinition('form_error_handler')
       ->setClass(FormErrorHandler::class)
       ->setArguments([

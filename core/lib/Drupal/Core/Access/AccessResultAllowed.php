@@ -10,7 +10,7 @@ class AccessResultAllowed extends AccessResult {
   /**
    * {@inheritdoc}
    */
-  public function isAllowed() {
+  public function isAllowed(): bool {
     return TRUE;
   }
 

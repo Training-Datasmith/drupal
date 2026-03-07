@@ -15,14 +15,14 @@ class ShortcutDeleteForm extends ContentEntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'shortcut_confirm_delete';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('entity.shortcut_set.customize_form', [
       'shortcut_set' => $this->entity->bundle(),
     ]);

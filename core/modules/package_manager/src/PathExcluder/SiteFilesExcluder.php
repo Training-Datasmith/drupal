@@ -18,12 +18,12 @@ use Symfony\Component\Filesystem\Filesystem;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class SiteFilesExcluder implements EventSubscriberInterface {
+final readonly class SiteFilesExcluder implements EventSubscriberInterface {
 
   public function __construct(
-    private readonly StreamWrapperManagerInterface $streamWrapperManager,
-    private readonly Filesystem $fileSystem,
-    private readonly array $wrappers,
+    private StreamWrapperManagerInterface $streamWrapperManager,
+    private Filesystem $fileSystem,
+    private array $wrappers,
   ) {}
 
   /**

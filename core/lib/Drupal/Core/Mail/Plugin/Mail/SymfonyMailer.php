@@ -79,7 +79,7 @@ class SymfonyMailer implements MailInterface, ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get('logger.channel.mail')
     );
@@ -103,7 +103,7 @@ class SymfonyMailer implements MailInterface, ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function format(array $message) {
+  public function format(array $message): array {
     foreach ($message['body'] as &$part) {
       // If the message contains HTML, convert it to plain text (which also
       // wraps the mail body).
@@ -126,24 +126,24 @@ class SymfonyMailer implements MailInterface, ContainerFactoryPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function mail(array $message) {
+  public function mail(array $message): bool {
     try {
       $email = new Email();
 
       $headers = $email->getHeaders();
       foreach ($message['headers'] as $name => $value) {
-        if (!in_array(strtolower($name), self::SKIP_HEADERS, TRUE)) {
-          if (in_array(strtolower($name), self::MAILBOX_LIST_HEADERS, TRUE)) {
+        if (!in_array(strtolower((string) $name), self::SKIP_HEADERS, TRUE)) {
+          if (in_array(strtolower((string) $name), self::MAILBOX_LIST_HEADERS, TRUE)) {
             // Split values by comma, but ignore commas encapsulated in double
             // quotes.
-            $value = str_getcsv($value, escape: '\\');
+            $value = str_getcsv((string) $value, escape: '\\');
           }
           $headers->addHeader($name, $value);
         }
       }
 
       // Parse the recipients into an array of addresses.
-      $recipients = array_map(trim(...), str_getcsv($message['to'], escape: "\\"));
+      $recipients = array_map(trim(...), str_getcsv((string) $message['to'], escape: "\\"));
 
       $email
         ->to(...$recipients)

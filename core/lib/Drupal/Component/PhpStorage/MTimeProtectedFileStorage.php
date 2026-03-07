@@ -45,7 +45,7 @@ class MTimeProtectedFileStorage extends MTimeProtectedFastFileStorage {
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return $this->checkFile($name) !== FALSE;
   }
 

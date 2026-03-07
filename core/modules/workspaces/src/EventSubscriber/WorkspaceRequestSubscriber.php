@@ -27,7 +27,7 @@ class WorkspaceRequestSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   An event object.
    */
-  public function onKernelRequest(RequestEvent $event) {
+  public function onKernelRequest(RequestEvent $event): void {
     if ($this->workspaceManager->hasActiveWorkspace() && $this->routeProvider instanceof CacheableRouteProviderInterface) {
       $this->routeProvider->addExtraCacheKeyPart('workspace', $this->workspaceManager->getActiveWorkspace()->id());
     }

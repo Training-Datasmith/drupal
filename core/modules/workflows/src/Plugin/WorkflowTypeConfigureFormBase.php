@@ -25,7 +25,7 @@ abstract class WorkflowTypeConfigureFormBase implements PluginFormInterface, Plu
   /**
    * {@inheritdoc}
    */
-  public function setPlugin(PluginInspectionInterface $plugin) {
+  public function setPlugin(PluginInspectionInterface $plugin): void {
     $this->workflowType = $plugin;
   }
 

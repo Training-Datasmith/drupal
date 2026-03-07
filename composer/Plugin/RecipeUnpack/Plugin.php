@@ -49,18 +49,6 @@ final class Plugin implements PluginInterface, EventSubscriberInterface, Capable
   /**
    * {@inheritdoc}
    */
-  public function deactivate(Composer $composer, IOInterface $io): void {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function uninstall(Composer $composer, IOInterface $io): void {
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public static function getSubscribedEvents(): array {
     return [
       ScriptEvents::POST_UPDATE_CMD => 'unpackOnRequire',
@@ -86,14 +74,10 @@ final class Plugin implements PluginInterface, EventSubscriberInterface, Capable
 
         // Get the list of packages being required. This code is largely copied
         // from https://github.com/symfony/flex/blob/2.x/src/Flex.php#L218.
-        $updateAllowList = \Closure::bind(function () {
-          return $this->updateAllowList ?? [];
-        }, $installer, $installer)();
+        $updateAllowList = \Closure::bind(fn() => $this->updateAllowList ?? [], $installer, $installer)();
 
         // Determine if the --no-install flag has been passed to require.
-        $isInstalling = \Closure::bind(function () {
-          return $this->install;
-        }, $installer, $installer)();
+        $isInstalling = \Closure::bind(fn() => $this->install, $installer, $installer)();
       }
 
       // If the command is a require command, populate the list of recipes to

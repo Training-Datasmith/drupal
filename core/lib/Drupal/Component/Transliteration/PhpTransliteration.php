@@ -86,13 +86,13 @@ class PhpTransliteration implements TransliterationInterface {
    *   file resides.
    */
   public function __construct($data_directory = NULL) {
-    $this->dataDirectory = (isset($data_directory)) ? $data_directory : __DIR__ . '/data';
+    $this->dataDirectory = $data_directory ?? __DIR__ . '/data';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function removeDiacritics($string) {
+  public function removeDiacritics($string): string {
     $result = '';
 
     foreach (preg_split('//u', $string, 0, PREG_SPLIT_NO_EMPTY) as $character) {
@@ -126,7 +126,7 @@ class PhpTransliteration implements TransliterationInterface {
   /**
    * {@inheritdoc}
    */
-  public function transliterate($string, $langcode = 'en', $unknown_character = '?', $max_length = NULL) {
+  public function transliterate($string, $langcode = 'en', $unknown_character = '?', $max_length = NULL): string {
     $result = '';
     $length = 0;
     $hash = FALSE;
@@ -186,7 +186,7 @@ class PhpTransliteration implements TransliterationInterface {
    * @return int
    *   The character code, or -1 if an invalid character is found.
    */
-  protected static function ordUTF8($character) {
+  protected static function ordUTF8($character): int {
     $first_byte = ord($character[0]);
 
     if (($first_byte & 0x80) == 0) {
@@ -236,11 +236,8 @@ class PhpTransliteration implements TransliterationInterface {
     if (!isset($this->languageOverrides[$langcode])) {
       $this->readLanguageOverrides($langcode);
     }
-    if (isset($this->languageOverrides[$langcode][$code])) {
-      return $this->languageOverrides[$langcode][$code];
-    }
 
-    return $this->lookupReplacement($code, $unknown_character);
+    return $this->languageOverrides[$langcode][$code] ?? $this->lookupReplacement($code, $unknown_character);
   }
 
   /**

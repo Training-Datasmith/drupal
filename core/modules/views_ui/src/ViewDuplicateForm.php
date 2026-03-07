@@ -15,16 +15,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ViewDuplicateForm extends ViewFormBase {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected LanguageManagerInterface $languageManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('language_manager')
@@ -36,12 +29,14 @@ class ViewDuplicateForm extends ViewFormBase {
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   Drupal's module handler.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(ModuleHandlerInterface $moduleHandler, LanguageManagerInterface $language_manager) {
+  public function __construct(ModuleHandlerInterface $moduleHandler, /**
+   * The language manager.
+   */
+  protected LanguageManagerInterface $languageManager) {
     $this->setModuleHandler($moduleHandler);
-    $this->languageManager = $language_manager;
   }
 
   /**
@@ -54,7 +49,7 @@ class ViewDuplicateForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     parent::form($form, $form_state);
 
     $form['#title'] = $this->t('Duplicate of @label', ['@label' => $this->entity->label()]);
@@ -84,7 +79,7 @@ class ViewDuplicateForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     $actions['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Duplicate'),
@@ -100,7 +95,7 @@ class ViewDuplicateForm extends ViewFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   A reference to a keyed array containing the current state of the form.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // The original ID gets set to NULL when duplicating, so we need to store it
     // here.
     $original_id = $this->entity->id();

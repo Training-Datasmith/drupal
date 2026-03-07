@@ -17,18 +17,9 @@ class SelectExtender implements SelectInterface {
   protected $query;
 
   /**
-   * The connection object on which to run this query.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * A unique identifier for this query object.
-   *
-   * @var string
    */
-  protected $uniqueIdentifier;
+  protected string $uniqueIdentifier;
 
   /**
    * The placeholder counter.
@@ -37,10 +28,12 @@ class SelectExtender implements SelectInterface {
    */
   protected $placeholder = 0;
 
-  public function __construct(SelectInterface $query, Connection $connection) {
+  public function __construct(SelectInterface $query, /**
+   * The connection object on which to run this query.
+   */
+  protected \Drupal\Core\Database\Connection $connection) {
     $this->uniqueIdentifier = uniqid('', TRUE);
     $this->query = $query;
-    $this->connection = $connection;
   }
 
   /**
@@ -60,7 +53,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function addTag($tag) {
+  public function addTag($tag): static {
     $this->query->addTag($tag);
     return $this;
   }
@@ -75,21 +68,21 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasAllTags(string ...$tags) {
-    return call_user_func_array([$this->query, 'hasAllTags'], $tags);
+  public function hasAllTags(string ...$tags): mixed {
+    return call_user_func_array($this->query->hasAllTags(...), $tags);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasAnyTag(string ...$tags) {
-    return call_user_func_array([$this->query, 'hasAnyTag'], $tags);
+  public function hasAnyTag(string ...$tags): mixed {
+    return call_user_func_array($this->query->hasAnyTag(...), $tags);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addMetaData($key, $object) {
+  public function addMetaData($key, $object): static {
     $this->query->addMetaData($key, $object);
     return $this;
   }
@@ -104,7 +97,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function condition($field, $value = NULL, $operator = '=') {
+  public function condition($field, $value = NULL, $operator = '='): static {
     $this->query->condition($field, $value, $operator);
     return $this;
   }
@@ -126,7 +119,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function where($snippet, $args = []) {
+  public function where($snippet, $args = []): static {
     $this->query->where($snippet, $args);
     return $this;
   }
@@ -148,7 +141,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingCondition($field, $value = NULL, $operator = '=') {
+  public function havingCondition($field, $value = NULL, $operator = '='): static {
     $this->query->havingCondition($field, $value, $operator);
     return $this;
   }
@@ -170,7 +163,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function having($snippet, $args = []) {
+  public function having($snippet, $args = []): static {
     $this->query->having($snippet, $args);
     return $this;
   }
@@ -185,7 +178,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingIsNull($field) {
+  public function havingIsNull($field): static {
     $this->query->havingIsNull($field);
     return $this;
   }
@@ -193,7 +186,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingIsNotNull($field) {
+  public function havingIsNotNull($field): static {
     $this->query->havingIsNotNull($field);
     return $this;
   }
@@ -201,7 +194,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingExists(SelectInterface $select) {
+  public function havingExists(SelectInterface $select): static {
     $this->query->havingExists($select);
     return $this;
   }
@@ -209,7 +202,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function havingNotExists(SelectInterface $select) {
+  public function havingNotExists(SelectInterface $select): static {
     $this->query->havingNotExists($select);
     return $this;
   }
@@ -284,7 +277,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function escapeField($string) {
+  public function escapeField($string): static {
     $this->query->escapeField($string);
     return $this;
   }
@@ -332,7 +325,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function distinct($distinct = TRUE) {
+  public function distinct($distinct = TRUE): static {
     $this->query->distinct($distinct);
     return $this;
   }
@@ -347,7 +340,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function fields($table_alias, array $fields = []) {
+  public function fields($table_alias, array $fields = []): static {
     $this->query->fields($table_alias, $fields);
     return $this;
   }
@@ -390,7 +383,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function orderBy($field, $direction = 'ASC') {
+  public function orderBy($field, $direction = 'ASC'): static {
     $this->query->orderBy($field, $direction);
     return $this;
   }
@@ -398,7 +391,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function orderRandom() {
+  public function orderRandom(): static {
     $this->query->orderRandom();
     return $this;
   }
@@ -406,7 +399,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function range($start = NULL, $length = NULL) {
+  public function range($start = NULL, $length = NULL): static {
     $this->query->range($start, $length);
     return $this;
   }
@@ -414,7 +407,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function union(SelectInterface $query, $type = '') {
+  public function union(SelectInterface $query, $type = ''): static {
     $this->query->union($query, $type);
     return $this;
   }
@@ -422,7 +415,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function groupBy($field) {
+  public function groupBy($field): static {
     $this->query->groupBy($field);
     return $this;
   }
@@ -430,7 +423,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function forUpdate($set = TRUE) {
+  public function forUpdate($set = TRUE): static {
     $this->query->forUpdate($set);
     return $this;
   }
@@ -445,7 +438,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function isNull($field) {
+  public function isNull($field): static {
     $this->query->isNull($field);
     return $this;
   }
@@ -453,7 +446,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function isNotNull($field) {
+  public function isNotNull($field): static {
     $this->query->isNotNull($field);
     return $this;
   }
@@ -461,7 +454,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function exists(SelectInterface $select) {
+  public function exists(SelectInterface $select): static {
     $this->query->exists($select);
     return $this;
   }
@@ -469,7 +462,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function notExists(SelectInterface $select) {
+  public function notExists(SelectInterface $select): static {
     $this->query->notExists($select);
     return $this;
   }
@@ -477,7 +470,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function alwaysFalse() {
+  public function alwaysFalse(): static {
     $this->query->alwaysFalse();
     return $this;
   }
@@ -485,7 +478,7 @@ class SelectExtender implements SelectInterface {
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     return (string) $this->query;
   }
 
@@ -509,7 +502,7 @@ class SelectExtender implements SelectInterface {
    * wrapping implementations as we do above.  Instead, we use this slower
    * catch-all method to handle any additional methods.
    */
-  public function __call($method, $args) {
+  public function __call(string $method, array $args) {
     $return = call_user_func_array([$this->query, $method], $args);
 
     // Some methods will return the called object as part of a fluent interface.
@@ -520,9 +513,7 @@ class SelectExtender implements SelectInterface {
     if ($return instanceof SelectInterface) {
       return $this;
     }
-    else {
-      return $return;
-    }
+    return $return;
   }
 
   /**

@@ -29,34 +29,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MenuForm extends EntityForm {
 
   /**
-   * The menu link manager.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkManagerInterface
-   */
-  protected $menuLinkManager;
-
-  /**
-   * The menu tree service.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkTreeInterface
-   */
-  protected $menuTree;
-
-  /**
-   * The link generator.
-   *
-   * @var \Drupal\Core\Utility\LinkGeneratorInterface
-   */
-  protected $linkGenerator;
-
-  /**
-   * The menu_link_content storage handler.
-   *
-   * @var \Drupal\menu_link_content\MenuLinkContentStorageInterface
-   */
-  protected $menuLinkContentStorage;
-
-  /**
    * The overview tree form.
    *
    * @var array
@@ -66,26 +38,23 @@ class MenuForm extends EntityForm {
   /**
    * Constructs a MenuForm object.
    *
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
+   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
    *   The menu link manager.
-   * @param \Drupal\Core\Menu\MenuLinkTreeInterface $menu_tree
+   * @param \Drupal\Core\Menu\MenuLinkTreeInterface $menuTree
    *   The menu tree service.
-   * @param \Drupal\Core\Utility\LinkGeneratorInterface $link_generator
+   * @param \Drupal\Core\Utility\LinkGeneratorInterface $linkGenerator
    *   The link generator.
-   * @param \Drupal\menu_link_content\MenuLinkContentStorageInterface $menu_link_content_storage
+   * @param \Drupal\menu_link_content\MenuLinkContentStorageInterface $menuLinkContentStorage
    *   The menu link content storage handler.
    */
-  public function __construct(MenuLinkManagerInterface $menu_link_manager, MenuLinkTreeInterface $menu_tree, LinkGeneratorInterface $link_generator, MenuLinkContentStorageInterface $menu_link_content_storage) {
-    $this->menuLinkManager = $menu_link_manager;
-    $this->menuTree = $menu_tree;
-    $this->linkGenerator = $link_generator;
-    $this->menuLinkContentStorage = $menu_link_content_storage;
+  public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager, protected \Drupal\Core\Menu\MenuLinkTreeInterface $menuTree, protected \Drupal\Core\Utility\LinkGeneratorInterface $linkGenerator, protected \Drupal\menu_link_content\MenuLinkContentStorageInterface $menuLinkContentStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.menu.link'),
       $container->get('menu.link_tree'),
@@ -97,7 +66,7 @@ class MenuForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $menu = $this->entity;
 
     if ($this->operation == 'edit') {
@@ -117,7 +86,7 @@ class MenuForm extends EntityForm {
       '#maxlength' => MenuStorage::MAX_ID_LENGTH,
       '#description' => $this->t('A unique name to construct the URL for the menu. It must only contain lowercase letters, numbers and hyphens.'),
       '#machine_name' => [
-        'exists' => [$this, 'menuNameExists'],
+        'exists' => $this->menuNameExists(...),
         'source' => ['label'],
         'replace_pattern' => '[^a-z0-9-]+',
         'replace' => '-',
@@ -176,7 +145,7 @@ class MenuForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $menu = $this->entity;
     $status = $menu->save();
     $edit_link = $this->entity->toLink($this->t('Edit'), 'edit-form')->toString();
@@ -195,7 +164,7 @@ class MenuForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     if (!$this->entity->isNew() || $this->entity->isLocked()) {
@@ -217,7 +186,7 @@ class MenuForm extends EntityForm {
    * Forms integrating this section should call menu_overview_form_submit() from
    * their form submit handler.
    */
-  protected function buildOverviewForm(array &$form, FormStateInterface $form_state) {
+  protected function buildOverviewForm(array &$form, FormStateInterface $form_state): array {
     // Ensure that menu_overview_form_submit() knows the parents of this form
     // section.
     if (!$form_state->has('menu_overview_form_parents')) {
@@ -245,10 +214,8 @@ class MenuForm extends EntityForm {
     $this->getRequest()->attributes->set('_menu_admin', FALSE);
 
     // Determine the delta; the number of weights to be made available.
-    $count = function (array $tree) {
-      $sum = function ($carry, MenuLinkTreeElement $item) {
-        return $carry + $item->count();
-      };
+    $count = function (array $tree): float|int|null {
+      $sum = (fn($carry, MenuLinkTreeElement $item) => $carry + $item->count());
       return array_reduce($tree, $sum);
     };
     $delta = max($count($tree), 50);
@@ -298,9 +265,7 @@ class MenuForm extends EntityForm {
 
     // Get the menu links which have pending revisions, and disable the
     // tabledrag if there are any.
-    $edited_ids = array_filter(array_map(function ($element) {
-      return is_array($element) && isset($element['#item']) && $element['#item']->link instanceof MenuLinkContent ? $element['#item']->link->getMetaData()['entity_id'] : NULL;
-    }, $links));
+    $edited_ids = array_filter(array_map(fn($element) => is_array($element) && isset($element['#item']) && $element['#item']->link instanceof MenuLinkContent ? $element['#item']->link->getMetaData()['entity_id'] : NULL, $links));
     $pending_menu_link_ids = array_intersect($this->menuLinkContentStorage->getMenuLinkIdsWithPendingRevisions(), $edited_ids);
     if ($pending_menu_link_ids) {
       $form['help'] = [
@@ -456,7 +421,7 @@ class MenuForm extends EntityForm {
               'url' => $add_link_url,
             ],
           ];
-          uasort($operations, [SortArray::class, 'sortByWeightElement']);
+          uasort($operations, SortArray::sortByWeightElement(...));
         }
         foreach ($operations as $key => $operation) {
           if (!isset($operations[$key]['query'])) {

@@ -30,13 +30,6 @@ class CacheContextsManager {
   protected $container;
 
   /**
-   * Available cache context IDs and corresponding labels.
-   *
-   * @var string[]
-   */
-  protected $contexts;
-
-  /**
    * The set of valid context tokens.
    */
   protected array $validContextTokens;
@@ -49,9 +42,11 @@ class CacheContextsManager {
    * @param string[] $contexts
    *   An array of the available cache context IDs.
    */
-  public function __construct(ContainerInterface $container, array $contexts) {
+  public function __construct(ContainerInterface $container, /**
+   * Available cache context IDs and corresponding labels.
+   */
+  protected array $contexts) {
     $this->container = $container;
-    $this->contexts = $contexts;
   }
 
   /**
@@ -75,7 +70,7 @@ class CacheContextsManager {
    * @return array
    *   An array of available cache contexts and corresponding labels.
    */
-  public function getLabels($include_calculated_cache_contexts = FALSE) {
+  public function getLabels($include_calculated_cache_contexts = FALSE): array {
     $with_labels = [];
     foreach ($this->contexts as $context) {
       $service = $this->getService($context);
@@ -161,7 +156,7 @@ class CacheContextsManager {
    * @return string[]
    *   A representative subset of the given set of cache context tokens.
    */
-  public function optimizeTokens(array $context_tokens) {
+  public function optimizeTokens(array $context_tokens): array {
     $optimized_content_tokens = [];
     foreach ($context_tokens as $context_token) {
 
@@ -218,7 +213,7 @@ class CacheContextsManager {
    * @return \Drupal\Core\Cache\Context\CacheContextInterface
    *   The requested cache context service.
    */
-  protected function getService($context_id) {
+  protected function getService(string $context_id) {
     return $this->container->get('cache_context.' . $context_id);
   }
 
@@ -235,7 +230,7 @@ class CacheContextsManager {
    *   - The associated parameter (for a calculated cache context), or NULL if
    *     there is no parameter.
    */
-  public static function parseTokens(array $context_tokens) {
+  public static function parseTokens(array $context_tokens): array {
     $contexts_with_parameters = [];
     foreach ($context_tokens as $context) {
       $context_id = $context;
@@ -260,7 +255,7 @@ class CacheContextsManager {
    *
    * @see \Drupal\Core\Cache\Context\CacheContextsManager::parseTokens()
    */
-  public function validateTokens(array $context_tokens = []) {
+  public function validateTokens(array $context_tokens = []): void {
     if (empty($context_tokens)) {
       return;
     }
@@ -312,7 +307,7 @@ class CacheContextsManager {
    * @return bool
    *   TRUE if context_tokens is an array of valid tokens.
    */
-  public function assertValidTokens($context_tokens) {
+  public function assertValidTokens($context_tokens): bool {
     if (!is_array($context_tokens)) {
       return FALSE;
     }

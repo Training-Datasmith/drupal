@@ -51,7 +51,7 @@ class NodeViewsData extends EntityViewsData {
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -98,7 +98,7 @@ class NodeViewsData extends EntityViewsData {
       $status_extra_help_text = $this->t('Filters out unpublished content if the current user cannot view it.');
     }
     else {
-      uasort($node_access_implementations, 'strnatcasecmp');
+      uasort($node_access_implementations, strnatcasecmp(...));
       $status_extra_help_text = new PluralTranslatableMarkup(
         $node_access_implementation_count,
         'This filter has no effect because the %module module controls access.',
@@ -434,7 +434,7 @@ class NodeViewsData extends EntityViewsData {
       foreach (['node_grants', 'node_grants_alter'] as $hook) {
         $this->moduleHandler->invokeAllWith(
           $hook,
-          static function (callable $hook, string $module) use (&$implementations, $module_data) {
+          static function (callable $hook, string $module) use (&$implementations, $module_data): void {
             $implementations[$module] = $module_data[$module]['name'];
           }
         );

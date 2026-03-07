@@ -19,7 +19,7 @@ class Counter extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usesGroupBy() {
+  public function usesGroupBy(): bool {
     return FALSE;
   }
 
@@ -35,7 +35,7 @@ class Counter extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['counter_start'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Starting value'),
@@ -50,14 +50,14 @@ class Counter extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // Do nothing -- to override the parent query.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getValue(ResultRow $values, $field = NULL) {
+  public function getValue(ResultRow $values, $field = NULL): float|int {
     // Note:  1 is subtracted from the counter start value below because the
     // counter value is incremented by 1 at the end of this function.
     $count = is_numeric($this->options['counter_start']) ? $this->options['counter_start'] - 1 : 0;

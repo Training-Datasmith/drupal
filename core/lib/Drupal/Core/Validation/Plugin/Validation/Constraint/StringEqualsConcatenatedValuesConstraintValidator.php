@@ -56,7 +56,7 @@ class StringEqualsConcatenatedValuesConstraintValidator extends ConstraintValida
     if ($expected_string !== $value) {
       $expected_format = implode(
         $constraint->separator,
-        array_map(fn (string $v) => "<$v>", $constraint->values),
+        array_map(fn (string $v): string => "<$v>", $constraint->values),
       );
       $this->context->addViolation($constraint->message, [
         '@value' => $value,

@@ -30,72 +30,32 @@ class NegotiationConfigureForm extends ConfigFormBase {
   protected $languageTypes;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The language negotiator.
-   *
-   * @var \Drupal\language\LanguageNegotiatorInterface
-   */
-  protected $negotiator;
-
-  /**
-   * The block manager.
-   *
-   * @var \Drupal\Core\Block\BlockManagerInterface
-   */
-  protected $blockManager;
-
-  /**
-   * The block storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface|null
-   */
-  protected $blockStorage;
-
-  /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
    * Constructs a NegotiationConfigureForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $language_manager
+   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\language\LanguageNegotiatorInterface $negotiator
    *   The language negotiation methods manager.
-   * @param \Drupal\Core\Block\BlockManagerInterface $block_manager
+   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
    *   The block manager.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $block_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $blockStorage
    *   The block storage, or NULL if not available.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, ConfigurableLanguageManagerInterface $language_manager, LanguageNegotiatorInterface $negotiator, BlockManagerInterface $block_manager, ThemeHandlerInterface $theme_handler, ?EntityStorageInterface $block_storage = NULL) {
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager, protected \Drupal\language\LanguageNegotiatorInterface $negotiator, protected \Drupal\Core\Block\BlockManagerInterface $blockManager, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler, protected ?\Drupal\Core\Entity\EntityStorageInterface $blockStorage = NULL) {
     parent::__construct($config_factory, $typedConfigManager);
     $this->languageTypes = $this->config('language.types');
-    $this->languageManager = $language_manager;
-    $this->negotiator = $negotiator;
-    $this->blockManager = $block_manager;
-    $this->themeHandler = $theme_handler;
-    $this->blockStorage = $block_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $entity_type_manager = $container->get('entity_type.manager');
     $block_storage = $entity_type_manager->hasHandler('block', 'storage') ? $entity_type_manager->getStorage('block') : NULL;
     return new static(
@@ -112,21 +72,22 @@ class NegotiationConfigureForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'language_negotiation_configure_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['language.types'];
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $configurable = $this->languageTypes->get('configurable');
 
     $form = [
@@ -160,7 +121,7 @@ class NegotiationConfigureForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $configurable_types = $form['#language_types'];
 
     $stored_values = $this->languageTypes->get('configurable');
@@ -218,7 +179,7 @@ class NegotiationConfigureForm extends ConfigFormBase {
    * @param string $type
    *   The language type to generate the table for.
    */
-  protected function configureFormTable(array &$form, $type) {
+  protected function configureFormTable(array &$form, string $type) {
     $info = $form['#language_types_info'][$type];
 
     $table_form = [
@@ -279,7 +240,7 @@ class NegotiationConfigureForm extends ConfigFormBase {
 
         $table_form['weight'][$method_id] = [
           '#type' => 'weight',
-          '#title' => $this->t('Weight for @title language detection method', ['@title' => mb_strtolower($method_name)]),
+          '#title' => $this->t('Weight for @title language detection method', ['@title' => mb_strtolower((string) $method_name)]),
           '#title_display' => 'invisible',
           '#default_value' => $weight,
           '#attributes' => ['class' => ["language-method-weight-$type"]],
@@ -290,7 +251,7 @@ class NegotiationConfigureForm extends ConfigFormBase {
 
         $table_form['enabled'][$method_id] = [
           '#type' => 'checkbox',
-          '#title' => $this->t('Enable @title language detection method', ['@title' => mb_strtolower($method_name)]),
+          '#title' => $this->t('Enable @title language detection method', ['@title' => mb_strtolower((string) $method_name)]),
           '#title_display' => 'invisible',
           '#default_value' => $enabled,
         ];

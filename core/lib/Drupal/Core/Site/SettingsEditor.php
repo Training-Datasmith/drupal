@@ -298,8 +298,7 @@ final class SettingsEditor {
     if (!empty($variable->comment)) {
       $return .= ' // ' . $variable->comment;
     }
-    $return .= $suffix;
-    return $return;
+    return $return . $suffix;
   }
 
 }

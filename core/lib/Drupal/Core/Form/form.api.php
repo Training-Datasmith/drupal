@@ -53,7 +53,7 @@
  *   It is discouraged to type hint this parameter as an array, to allow an
  *   object implement \ArrayAccess to be passed.
  */
-function callback_batch_operation($multiple_params, &$context) {
+function callback_batch_operation($multiple_params, &$context): void {
   $node_storage = \Drupal::entityTypeManager()->getStorage('node');
   $database = \Drupal::database();
 
@@ -112,7 +112,7 @@ function callback_batch_operation($multiple_params, &$context) {
  *   A string representing the elapsed time for the batch process, e.g.,
  *   '1 min 30 secs'.
  */
-function callback_batch_finished($success, $results, $operations, $elapsed) {
+function callback_batch_finished($success, $results, $operations, $elapsed): void {
   if ($success) {
     // Here we do something meaningful with the results.
     $message = t("@count items were processed (@elapsed).", [
@@ -153,7 +153,7 @@ function callback_batch_finished($success, $results, $operations, $elapsed) {
  * @param \Drupal\Core\Ajax\CommandInterface[] $data
  *   An array of all the rendered commands that will be sent to the client.
  */
-function hook_ajax_render_alter(array &$data) {
+function hook_ajax_render_alter(array &$data): void {
   // Inject any new status messages into the content area.
   $status_messages = ['#type' => 'status_messages'];
   $command = new \Drupal\Core\Ajax\PrependCommand('#block-system-main .content', \Drupal::service('renderer')->renderRoot($status_messages));
@@ -201,7 +201,7 @@ function hook_ajax_render_alter(array &$data) {
  *
  * @ingroup form_api
  */
-function hook_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
+function hook_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
   if (isset($form['type']) && $form['type']['#value'] . '_node_settings' == $form_id) {
     $upload_enabled_types = \Drupal::config('my_module.settings')->get('upload_enabled_types');
     $form['workflow']['upload_' . $form['type']['#value']] = [
@@ -252,7 +252,7 @@ function hook_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_stat
  *
  * @ingroup form_api
  */
-function hook_form_FORM_ID_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
+function hook_form_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
   // Modification for the form with the given form ID goes here. For example, if
   // FORM_ID is "user_register_form" this code would run only on the user
   // registration form.
@@ -308,7 +308,7 @@ function hook_form_FORM_ID_alter(&$form, \Drupal\Core\Form\FormStateInterface $f
  *
  * @ingroup form_api
  */
-function hook_form_BASE_FORM_ID_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
+function hook_form_BASE_FORM_ID_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id): void {
   // Modification for the form with the given BASE_FORM_ID goes here. For
   // example, if BASE_FORM_ID is "node_form", this code would run on every
   // node form, regardless of node type.
@@ -336,7 +336,7 @@ function hook_form_BASE_FORM_ID_alter(&$form, \Drupal\Core\Form\FormStateInterfa
  *
  * @ingroup batch
  */
-function hook_batch_alter(&$batch) {
+function hook_batch_alter(&$batch): void {
 }
 
 /**

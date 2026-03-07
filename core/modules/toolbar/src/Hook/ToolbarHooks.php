@@ -30,8 +30,7 @@ class ToolbarHooks {
         $output .= '<dd>' . $this->t('Tabs are buttons, displayed in a bar across the top of the screen. Some tabs execute an action (such as starting Edit mode), while other tabs toggle which tray is open.') . '</dd>';
         $output .= '<dt>' . $this->t('Trays') . '</dt>';
         $output .= '<dd>' . $this->t('Trays are usually lists of links, which can be hierarchical like a menu. If a tray has been toggled open, it is displayed either vertically or horizontally below the tab bar, depending on the browser width. Only one tray may be open at a time. If you click another tab, that tray will replace the tray being displayed. In wide browser widths, the user has the ability to toggle from vertical to horizontal, using a link at the bottom or right of the tray. Hierarchical menus only have open/close behavior in vertical mode; if you display a tray containing a hierarchical menu horizontally, only the top-level links will be available.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -125,10 +124,7 @@ class ToolbarHooks {
         '#attached' => $subtrees_attached,
         'toolbar_administration' => [
           '#pre_render' => [
-                      [
-                        ToolbarController::class,
-                        'preRenderAdministrationTray',
-                      ],
+                      ToolbarController::preRenderAdministrationTray(...),
           ],
           '#type' => 'container',
           '#attributes' => [

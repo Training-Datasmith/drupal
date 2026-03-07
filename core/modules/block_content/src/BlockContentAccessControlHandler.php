@@ -22,29 +22,21 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class BlockContentAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * BlockContentAccessControlHandler constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
    */
-  public function __construct(EntityTypeInterface $entity_type, EventDispatcherInterface $dispatcher) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher) {
     parent::__construct($entity_type);
-    $this->eventDispatcher = $dispatcher;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('event_dispatcher')
@@ -82,9 +74,6 @@ class BlockContentAccessControlHandler extends EntityAccessControlHandler implem
     // determined by whether the block is reusable.
     $access->addCacheableDependency($entity);
     if ($entity->isReusable() === FALSE && $access->isForbidden() !== TRUE) {
-      if (!$entity instanceof DependentAccessInterface) {
-        throw new \LogicException("Non-reusable block entities must implement \Drupal\block_content\Access\DependentAccessInterface for access control.");
-      }
       $dependency = $entity->getAccessDependency();
       if (empty($dependency)) {
         // If an access dependency has not been set let modules set one.

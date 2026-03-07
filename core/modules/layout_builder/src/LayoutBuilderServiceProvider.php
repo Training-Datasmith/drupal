@@ -26,7 +26,7 @@ class LayoutBuilderServiceProvider implements ServiceProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function register(ContainerBuilder $container) {
+  public function register(ContainerBuilder $container): void {
     $modules = $container->getParameter('container.modules');
     if (isset($modules['block_content'])) {
       $definition = new Definition(SetInlineBlockDependency::class);

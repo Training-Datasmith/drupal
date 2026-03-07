@@ -16,7 +16,7 @@ class Query extends BaseQuery {
   /**
    * {@inheritdoc}
    */
-  public function prepare() {
+  public function prepare(): static {
     $this->traitPrepare();
 
     // If the prepare() method from the trait decided that we need to alter this

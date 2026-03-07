@@ -27,7 +27,7 @@ class Datetime extends DateElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     $date_format = '';
     $time_format = '';
     // Date formats cannot be loaded during install or update.
@@ -83,7 +83,7 @@ class Datetime extends DateElementBase {
         // @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
         // 'html_datetime' is not a valid format to pass to
         // DrupalDateTime::createFromFormat()
-        [$date_input, $time_input] = explode('T', $input['date']);
+        [$date_input, $time_input] = explode('T', (string) $input['date']);
         $date_format = DateFormat::load('html_date')->getPattern();
         $time_format = DateFormat::load('html_time')->getPattern();
       }
@@ -95,7 +95,7 @@ class Datetime extends DateElementBase {
       }
 
       // Seconds will be omitted in a post in case there's no entry.
-      if (!empty($time_input) && strlen($time_input) == 5) {
+      if (!empty($time_input) && strlen((string) $time_input) == 5) {
         $time_input .= ':00';
       }
 
@@ -234,7 +234,7 @@ class Datetime extends DateElementBase {
    *
    * @see \Drupal\Core\Datetime\DateFormatterInterface::format()
    */
-  public static function processDatetime(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processDatetime(array &$element, FormStateInterface $form_state, &$complete_form): array {
     $format_settings = [];
     // The value callback has populated the #value array.
     $date = !empty($element['#value']['object']) ? $element['#value']['object'] : NULL;
@@ -283,7 +283,7 @@ class Datetime extends DateElementBase {
         '#value' => $date_value,
         '#attributes' => $element['#attributes'] + $extra_attributes,
         '#required' => $element['#required'],
-        '#size' => max(12, strlen($element['#value']['date'])),
+        '#size' => max(12, strlen((string) $element['#value']['date'])),
         '#error_no_message' => TRUE,
         '#date_date_format' => $element['#date_date_format'],
       ];
@@ -364,7 +364,7 @@ class Datetime extends DateElementBase {
    * @param array $complete_form
    *   The complete form structure.
    */
-  public static function validateDatetime(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateDatetime(array &$element, FormStateInterface $form_state, array &$complete_form): void {
     $input_exists = FALSE;
     $input = NestedArray::getValue($form_state->getValues(), $element['#parents'], $input_exists);
     if ($input_exists) {
@@ -427,18 +427,12 @@ class Datetime extends DateElementBase {
    *   Returns the right format for the date element, or the original format
    *   if this is not an HTML5 element.
    */
-  protected static function getHtml5DateFormat($element) {
-    switch ($element['#date_date_element']) {
-      case 'date':
-        return DateFormat::load('html_date')->getPattern();
-
-      case 'datetime':
-      case 'datetime-local':
-        return DateFormat::load('html_datetime')->getPattern();
-
-      default:
-        return $element['#date_date_format'];
-    }
+  protected static function getHtml5DateFormat(array $element) {
+    return match ($element['#date_date_element']) {
+        'date' => DateFormat::load('html_date')->getPattern(),
+        'datetime', 'datetime-local' => DateFormat::load('html_datetime')->getPattern(),
+        default => $element['#date_date_format'],
+    };
   }
 
   /**
@@ -454,14 +448,11 @@ class Datetime extends DateElementBase {
    *   Returns the right format for the time element, or the original format
    *   if this is not an HTML5 element.
    */
-  protected static function getHtml5TimeFormat($element) {
-    switch ($element['#date_time_element']) {
-      case 'time':
-        return DateFormat::load('html_time')->getPattern();
-
-      default:
-        return $element['#date_time_format'];
-    }
+  protected static function getHtml5TimeFormat(array $element) {
+    return match ($element['#date_time_element']) {
+        'time' => DateFormat::load('html_time')->getPattern(),
+        default => $element['#date_time_format'],
+    };
   }
 
 }

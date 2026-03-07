@@ -85,7 +85,7 @@ class CommentItem extends FieldItemBase implements CommentItemInterface {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'status' => [
@@ -102,7 +102,7 @@ class CommentItem extends FieldItemBase implements CommentItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
     $element = [];
 
     $settings = $this->getSettings();
@@ -149,14 +149,14 @@ class CommentItem extends FieldItemBase implements CommentItemInterface {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName() {
+  public static function mainPropertyName(): string {
     return 'status';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     // There is always a value for this field, it is one of
     // CommentItemInterface::OPEN, CommentItemInterface::CLOSED or
     // CommentItemInterface::HIDDEN.
@@ -166,7 +166,7 @@ class CommentItem extends FieldItemBase implements CommentItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
     $element = [];
 
     // @todo Inject entity storage once typed-data supports container injection.
@@ -194,7 +194,7 @@ class CommentItem extends FieldItemBase implements CommentItemInterface {
   /**
    * {@inheritdoc}
    */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition): array {
     $statuses = [
       CommentItemInterface::HIDDEN,
       CommentItemInterface::CLOSED,

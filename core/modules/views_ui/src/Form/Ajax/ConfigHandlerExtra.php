@@ -24,7 +24,7 @@ class ConfigHandlerExtra extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'handler-extra';
   }
 
@@ -40,14 +40,15 @@ class ConfigHandlerExtra extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_config_item_extra_form';
   }
 
   /**
    * {@inheritdoc}
+   * @return array<'#attributes'|'#markup'|'#theme_wrappers'|'#tree', array<int|'class'|'data-drupal-views-scroll', 'container'|'scroll'[]|true>|\Drupal\Core\StringTranslation\TranslatableMarkup|true>[]|\Drupal\Core\StringTranslation\TranslatableMarkup[]|non-falsy-string[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $type = $form_state->get('type');
@@ -101,7 +102,7 @@ class ConfigHandlerExtra extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $form_state->get('handler')->validateExtraOptionsForm($form['options'], $form_state);
 
     if ($form_state->getErrors()) {
@@ -115,7 +116,7 @@ class ConfigHandlerExtra extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $view = $form_state->get('view');
     $handler = $form_state->get('handler');
     // Run it through the handler's submit function.

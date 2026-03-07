@@ -40,7 +40,7 @@ class SpecialAttributesRouteSubscriber extends RouteSubscriberBase {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The route build event.
    */
-  public function onAlterRoutes(RouteBuildEvent $event) {
+  public function onAlterRoutes(RouteBuildEvent $event): void {
     $collection = $event->getRouteCollection();
     $this->alterRoutes($collection);
   }

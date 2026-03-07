@@ -19,8 +19,6 @@ class FileEncodingConstraint extends SymfonyConstraint {
 
   /**
    * The allowed file encodings.
-   *
-   * @var array
    */
   public array $encodings;
 

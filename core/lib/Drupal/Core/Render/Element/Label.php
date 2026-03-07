@@ -17,7 +17,7 @@ class Label extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#theme' => 'form_element_label',
     ];

@@ -13,20 +13,13 @@ use Drupal\migrate\Plugin\MigrationPluginManagerInterface;
 class MigrateStub implements MigrateStubInterface {
 
   /**
-   * The migration plugin manager.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationPluginManagerInterface
-   */
-  protected $migrationPluginManager;
-
-  /**
    * Constructs a MigrationStub object.
    *
-   * @param \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migration_plugin_manager
+   * @param \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migrationPluginManager
    *   The migration plugin manager.
    */
-  public function __construct(MigrationPluginManagerInterface $migration_plugin_manager) {
-    $this->migrationPluginManager = $migration_plugin_manager;
+  public function __construct(protected \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migrationPluginManager)
+  {
   }
 
   /**
@@ -83,7 +76,7 @@ class MigrateStub implements MigrateStubInterface {
     // requesting the raw return value, index it associatively using the
     // destination id keys.
     if (($key_by_destination_ids !== FALSE) && array_keys($stub) === range(0, count($stub) - 1)) {
-      $stub = array_combine(array_keys($migration->getDestinationPlugin()->getIds()), $stub);
+      return array_combine(array_keys($migration->getDestinationPlugin()->getIds()), $stub);
     }
     return $stub;
   }

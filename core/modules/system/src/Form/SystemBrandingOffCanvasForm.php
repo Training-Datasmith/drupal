@@ -28,36 +28,21 @@ class SystemBrandingOffCanvasForm extends PluginFormBase implements ContainerInj
   protected $plugin;
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * SystemBrandingOffCanvasForm constructor.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, AccountInterface $current_user) {
-    $this->configFactory = $config_factory;
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Session\AccountInterface $currentUser)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('current_user')
@@ -104,14 +89,14 @@ class SystemBrandingOffCanvasForm extends PluginFormBase implements ContainerInj
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->plugin->validateConfigurationForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $site_config = $this->configFactory->get('system.site');
     if (AccessResult::allowedIf(!$site_config->hasOverrides('name') && !$site_config->hasOverrides('slogan'))->isAllowed()) {
       $site_info = $form_state->getValue('site_information');

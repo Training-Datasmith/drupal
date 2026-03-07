@@ -15,20 +15,13 @@ use Drupal\node\NodeInterface;
 class NodePreviewAccessCheck implements AccessInterface {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs an EntityCreateAccessCheck object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -47,9 +40,7 @@ class NodePreviewAccessCheck implements AccessInterface {
       $access_controller = $this->entityTypeManager->getAccessControlHandler('node');
       return $access_controller->createAccess($node_preview->bundle(), $account, [], TRUE);
     }
-    else {
-      return $node_preview->access('update', $account, TRUE);
-    }
+    return $node_preview->access('update', $account, TRUE);
   }
 
 }

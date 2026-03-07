@@ -25,27 +25,6 @@ use Symfony\Component\HttpFoundation\Response;
 class DbUpdateController extends ControllerBase {
 
   /**
-   * The keyvalue expirable factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface
-   */
-  protected $keyValueExpirableFactory;
-
-  /**
-   * A cache backend interface.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -53,39 +32,11 @@ class DbUpdateController extends ControllerBase {
   protected $moduleHandler;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
-   * The bare HTML page renderer.
-   *
-   * @var \Drupal\Core\Render\BareHtmlPageRendererInterface
-   */
-  protected $bareHtmlPageRenderer;
-
-  /**
-   * The app root.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
-   * The post update registry.
-   *
-   * @var \Drupal\Core\Update\UpdateRegistry
-   */
-  protected $postUpdateRegistry;
-
-  /**
    * Constructs a new UpdateController.
    *
    * @param string $root
    *   The app root.
-   * @param \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $key_value_expirable_factory
+   * @param \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $keyValueExpirableFactory
    *   The keyvalue expirable factory.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   A cache backend interface.
@@ -95,38 +46,34 @@ class DbUpdateController extends ControllerBase {
    *   The module handler.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
-   * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bare_html_page_renderer
+   * @param \Drupal\Core\Render\BareHtmlPageRendererInterface $bareHtmlPageRenderer
    *   The bare HTML page renderer.
-   * @param \Drupal\Core\Update\UpdateRegistry $post_update_registry
+   * @param \Drupal\Core\Update\UpdateRegistry $postUpdateRegistry
    *   The post update registry.
    * @param \Drupal\Core\Asset\AssetQueryStringInterface $assetQueryString
    *   The asset query string.
    */
   public function __construct(
-    $root,
-    KeyValueExpirableFactoryInterface $key_value_expirable_factory,
-    CacheBackendInterface $cache,
-    StateInterface $state,
+    /**
+     * The app root.
+     */
+    protected $root,
+    protected \Drupal\Core\KeyValueStore\KeyValueExpirableFactoryInterface $keyValueExpirableFactory,
+    protected \Drupal\Core\Cache\CacheBackendInterface $cache,
+    protected \Drupal\Core\State\StateInterface $state,
     ModuleHandlerInterface $module_handler,
-    AccountInterface $account,
-    BareHtmlPageRendererInterface $bare_html_page_renderer,
-    UpdateRegistry $post_update_registry,
+    protected \Drupal\Core\Session\AccountInterface $account,
+    protected \Drupal\Core\Render\BareHtmlPageRendererInterface $bareHtmlPageRenderer,
+    protected \Drupal\Core\Update\UpdateRegistry $postUpdateRegistry,
     protected AssetQueryStringInterface $assetQueryString,
   ) {
-    $this->root = $root;
-    $this->keyValueExpirableFactory = $key_value_expirable_factory;
-    $this->cache = $cache;
-    $this->state = $state;
     $this->moduleHandler = $module_handler;
-    $this->account = $account;
-    $this->bareHtmlPageRenderer = $bare_html_page_renderer;
-    $this->postUpdateRegistry = $post_update_registry;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->getParameter('app.root'),
       $container->get('keyvalue.expirable'),
@@ -220,7 +167,7 @@ class DbUpdateController extends ControllerBase {
    * @return array
    *   A render array.
    */
-  protected function info(Request $request) {
+  protected function info(Request $request): array {
     // Change query-strings on css/js files to enforce reload for all users.
     $this->assetQueryString->reset();
     // Flush the cache of all data for the update status module.
@@ -267,7 +214,7 @@ class DbUpdateController extends ControllerBase {
    * @return array
    *   A render array.
    */
-  protected function selection(Request $request) {
+  protected function selection(Request $request): array {
     // Make sure there is no stale theme registry.
     $this->cache->deleteAll();
 
@@ -408,7 +355,7 @@ class DbUpdateController extends ControllerBase {
    * @return array
    *   A render array.
    */
-  protected function results(Request $request) {
+  protected function results(Request $request): array {
     // @todo Simplify with https://www.drupal.org/node/2548095
     $base_url = str_replace('/update.php', '', $request->getBaseUrl());
 
@@ -493,7 +440,7 @@ class DbUpdateController extends ControllerBase {
                 $title = $this->t('Update #@count', ['@count' => $name]);
               }
               else {
-                $title = $this->t('Update @name', ['@name' => trim($name, '_')]);
+                $title = $this->t('Update @name', ['@name' => trim((string) $name, '_')]);
               }
               $info_messages[] = [
                 '#theme' => 'item_list',
@@ -543,7 +490,7 @@ class DbUpdateController extends ControllerBase {
    * @return array
    *   A render array.
    */
-  public function requirements($severity, array $requirements, Request $request) {
+  public function requirements($severity, array $requirements, Request $request): array {
     $options = $severity === RequirementSeverity::Warning ? ['continue' => 1] : [];
     // @todo Revisit once https://www.drupal.org/node/2548095 is in. Something
     // like Url::fromRoute('system.db_update')->setOptions() should then be
@@ -570,7 +517,7 @@ class DbUpdateController extends ControllerBase {
    * @return array
    *   A render array.
    */
-  protected function updateTasksList($active = NULL) {
+  protected function updateTasksList($active = NULL): array {
     // Default list of tasks.
     $tasks = [
       'requirements' => $this->t('Verify requirements'),
@@ -579,13 +526,11 @@ class DbUpdateController extends ControllerBase {
       'run' => $this->t('Run updates'),
       'results' => $this->t('Review log'),
     ];
-
-    $task_list = [
+    return [
       '#theme' => 'maintenance_task_list',
       '#items' => $tasks,
       '#active' => $active,
     ];
-    return $task_list;
   }
 
   /**
@@ -605,7 +550,6 @@ class DbUpdateController extends ControllerBase {
       $this->state->set('system.maintenance_mode', TRUE);
     }
 
-    /** @var \Drupal\Core\Batch\BatchBuilder $batch_builder */
     $batch_builder = (new BatchBuilder())
       ->setTitle($this->t('Updating'))
       ->setInitMessage($this->t('Starting updates'))
@@ -673,7 +617,7 @@ class DbUpdateController extends ControllerBase {
    *   A list of all the operations that had not been completed by the batch
    *   API.
    */
-  public static function batchFinished($success, $results, $operations) {
+  public static function batchFinished($success, $results, $operations): void {
     // No updates to run, so caches won't get flushed later.  Clear them now.
     drupal_flush_all_caches();
 
@@ -698,7 +642,7 @@ class DbUpdateController extends ControllerBase {
    * @return array
    *   An array of links.
    */
-  protected function helpfulLinks(Request $request) {
+  protected function helpfulLinks(Request $request): array {
     // @todo Simplify with https://www.drupal.org/node/2548095
     $base_url = str_replace('/update.php', '', $request->getBaseUrl());
     $links['front'] = [
@@ -730,7 +674,7 @@ class DbUpdateController extends ControllerBase {
    * @return array
    *   The module updates that can be performed.
    */
-  protected function getModuleUpdates() {
+  protected function getModuleUpdates(): array {
     $return = [];
     $updates = update_get_update_list();
     foreach ($updates as $module => $update) {

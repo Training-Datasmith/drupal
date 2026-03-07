@@ -24,7 +24,7 @@ class BooleanData extends PrimitiveBase implements BooleanInterface {
    * {@inheritdoc}
    */
   #[JsonSchema(['type' => 'boolean'])]
-  public function getCastedValue() {
+  public function getCastedValue(): bool {
     return (bool) $this->value;
   }
 

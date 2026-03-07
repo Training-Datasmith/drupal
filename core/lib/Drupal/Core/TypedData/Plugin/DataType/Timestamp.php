@@ -35,7 +35,7 @@ class Timestamp extends IntegerData implements DateTimeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDateTime(DrupalDateTime $dateTime, $notify = TRUE) {
+  public function setDateTime(DrupalDateTime $dateTime, $notify = TRUE): void {
     $this->value = $dateTime->getTimestamp();
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {

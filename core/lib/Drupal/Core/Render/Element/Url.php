@@ -34,7 +34,7 @@ class Url extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#size' => 60,
@@ -62,8 +62,8 @@ class Url extends FormElementBase {
    * Note that #maxlength and #required is validated by _form_validate()
    * already.
    */
-  public static function validateUrl(&$element, FormStateInterface $form_state, &$complete_form) {
-    $value = trim($element['#value']);
+  public static function validateUrl(array &$element, FormStateInterface $form_state, &$complete_form): void {
+    $value = trim((string) $element['#value']);
     $form_state->setValueForElement($element, $value);
 
     if ($value !== '' && !UrlHelper::isValid($value, TRUE)) {
@@ -82,7 +82,7 @@ class Url extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderUrl($element) {
+  public static function preRenderUrl(array $element): array {
     $element['#attributes']['type'] = 'url';
     Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
     static::setAttributes($element, ['form-url']);

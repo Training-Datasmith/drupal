@@ -19,8 +19,6 @@ class ComponentNegotiator {
 
   /**
    * Holds the component IDs from previous negotiations.
-   *
-   * @var array
    */
   protected array $cache = [];
 
@@ -75,7 +73,7 @@ class ComponentNegotiator {
     // 'replaces' key.
     $matches = array_filter(
       $all_definitions,
-      static fn(array $definition) => $component_id === ($definition['replaces'] ?? NULL),
+      static fn(array $definition): bool => $component_id === ($definition['replaces'] ?? NULL),
     );
     $negotiated_plugin_id = $this->maybeNegotiateByTheme($matches);
     if ($negotiated_plugin_id) {
@@ -98,21 +96,21 @@ class ComponentNegotiator {
     $theme_name = $this->themeManager->getActiveTheme()->getName();
     // Let's do theme based negotiation.
     $base_theme_names = array_map(
-      static fn(Extension $extension) => $extension->getName(),
+      static fn(Extension $extension): string => $extension->getName(),
       $this->themeManager->getActiveTheme()->getBaseThemeExtensions()
     );
     $considered_themes = [$theme_name, ...$base_theme_names];
     // Only consider components in the theme hierarchy tree.
     $candidates = array_filter(
       $candidates,
-      static fn(array $definition) => $definition['extension_type'] === ExtensionType::Theme
+      static fn(array $definition): bool => $definition['extension_type'] === ExtensionType::Theme
         && in_array($definition['provider'], $considered_themes, TRUE)
     );
     if (empty($candidates)) {
       return NULL;
     }
     $theme_weights = array_flip($considered_themes);
-    $sort_by_theme_weight = static fn(array $definition_a, array $definition_b) =>
+    $sort_by_theme_weight = static fn(array $definition_a, array $definition_b): int =>
       $theme_weights[$definition_a['provider']] <=> $theme_weights[$definition_b['provider']];
     // Sort the candidates by weight and choose the one with the lowest weight.
     uasort($candidates, $sort_by_theme_weight);

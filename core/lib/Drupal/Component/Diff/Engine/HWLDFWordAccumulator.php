@@ -51,7 +51,7 @@ class HWLDFWordAccumulator {
     $this->line = '';
   }
 
-  public function addWords($words, $tag = '') {
+  public function addWords($words, $tag = ''): void {
     if ($tag != $this->tag) {
       $this->_flushGroup($tag);
     }
@@ -62,9 +62,9 @@ class HWLDFWordAccumulator {
       }
       if ($word[0] == "\n") {
         $this->_flushLine($tag);
-        $word = mb_substr($word, 1);
+        $word = mb_substr((string) $word, 1);
       }
-      assert(!str_contains($word, "\n"));
+      assert(!str_contains((string) $word, "\n"));
       $this->group .= $word;
     }
   }

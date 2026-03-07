@@ -24,32 +24,9 @@ use Drupal\Core\Lock\LockBackendInterface;
 abstract class CacheCollector implements CacheCollectorInterface, DestructableInterface {
 
   /**
-   * The cache id that is used for the cache entry.
-   *
-   * @var string
-   */
-  protected $cid;
-
-  /**
    * A list of tags that are used for the cache entry.
-   *
-   * @var array
    */
-  protected $tags;
-
-  /**
-   * The cache backend that should be used.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * The lock backend that should be used.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected $lock;
+  protected array $tags;
 
   /**
    * An array of keys to add to the cache on service termination.
@@ -110,12 +87,12 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
    * @param array $tags
    *   (optional) The tags to specify for the cache item.
    */
-  public function __construct($cid, CacheBackendInterface $cache, LockBackendInterface $lock, array $tags = []) {
+  public function __construct(/**
+   * The cache id that is used for the cache entry.
+   */
+  protected $cid, protected \Drupal\Core\Cache\CacheBackendInterface $cache, protected \Drupal\Core\Lock\LockBackendInterface $lock, array $tags = []) {
     assert(Inspector::assertAllStrings($tags), 'Cache tags must be strings.');
-    $this->cid = $cid;
-    $this->cache = $cache;
     $this->tags = $tags;
-    $this->lock = $lock;
   }
 
   /**
@@ -145,9 +122,7 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
     if (\array_key_exists($key, $this->storage)) {
       return $this->storage[$key];
     }
-    else {
-      return $this->resolveCacheMiss($key);
-    }
+    return $this->resolveCacheMiss($key);
   }
 
   /**
@@ -163,7 +138,7 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
    * This avoids a race condition if another request starts with an empty cache
    * before your ::set() call. For example: Drupal\Core\State\State.
    */
-  public function set($key, $value) {
+  public function set($key, $value): void {
     $this->lazyLoadCache();
     $this->storage[$key] = $value;
     // The key might have been marked for deletion.
@@ -174,7 +149,7 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
   /**
    * {@inheritdoc}
    */
-  public function delete($key) {
+  public function delete($key): void {
     $this->lazyLoadCache();
     unset($this->storage[$key]);
     $this->keysToRemove[$key] = $key;
@@ -232,7 +207,7 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
 
     // Lock cache writes to help avoid stampedes.
     $cid = $this->getCid();
-    $lock_name = $cid . ':' . __CLASS__;
+    $lock_name = $cid . ':' . self::class;
     if (!$lock || $this->lock->acquire($lock_name)) {
       // Set and delete operations invalidate the cache item. Try to also load
       // an eventually invalidated cache entry, only update an invalidated cache
@@ -286,7 +261,7 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): void {
     $this->storage = [];
     $this->keysToPersist = [];
     $this->keysToRemove = [];
@@ -296,7 +271,7 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
   /**
    * {@inheritdoc}
    */
-  public function clear() {
+  public function clear(): void {
     $this->reset();
     if ($this->tags) {
       Cache::invalidateTags($this->tags);
@@ -309,7 +284,7 @@ abstract class CacheCollector implements CacheCollectorInterface, DestructableIn
   /**
    * {@inheritdoc}
    */
-  public function destruct() {
+  public function destruct(): void {
     $this->updateCache();
   }
 

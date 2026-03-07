@@ -30,13 +30,6 @@ class KeyValueEntityStorage extends EntityStorageBase {
   const MAX_ID_LENGTH = 128;
 
   /**
-   * The key value store.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreInterface
-   */
-  protected $keyValueStore;
-
-  /**
    * The UUID service.
    *
    * @var \Drupal\Component\Uuid\UuidInterface
@@ -44,31 +37,22 @@ class KeyValueEntityStorage extends EntityStorageBase {
   protected $uuidService;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new KeyValueEntityStorage.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
-   * @param \Drupal\Core\KeyValueStore\KeyValueStoreInterface $key_value_store
+   * @param \Drupal\Core\KeyValueStore\KeyValueStoreInterface $keyValueStore
    *   The key value store.
    * @param \Drupal\Component\Uuid\UuidInterface $uuid_service
    *   The UUID service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
    *   The memory cache.
    */
-  public function __construct(EntityTypeInterface $entity_type, KeyValueStoreInterface $key_value_store, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Core\KeyValueStore\KeyValueStoreInterface $keyValueStore, UuidInterface $uuid_service, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, MemoryCacheInterface $memory_cache) {
     parent::__construct($entity_type, $memory_cache);
-    $this->keyValueStore = $key_value_store;
     $this->uuidService = $uuid_service;
-    $this->languageManager = $language_manager;
 
     // Check if the entity type supports UUIDs.
     $this->uuidKey = $this->entityType->getKey('uuid');
@@ -77,7 +61,7 @@ class KeyValueEntityStorage extends EntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('keyvalue')->get('entity_storage__' . $entity_type->id()),
@@ -90,7 +74,7 @@ class KeyValueEntityStorage extends EntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function doCreate(array $values = []) {
+  public function doCreate(array $values = []): object {
     // Set default language to site default if not provided.
     $values += [$this->getEntityType()->getKey('langcode') => $this->languageManager->getDefaultLanguage()->getId()];
     $entity_class = $this->getEntityClass();
@@ -130,8 +114,9 @@ class KeyValueEntityStorage extends EntityStorageBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  protected function mapFromStorageRecords(array $records) {
+  protected function mapFromStorageRecords(array $records): array {
     $entities = [];
     foreach ($records as $record) {
       /** @var \Drupal\Core\Entity\EntityInterface $entity */
@@ -144,7 +129,7 @@ class KeyValueEntityStorage extends EntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function doDelete($entities) {
+  public function doDelete($entities): void {
     $entity_ids = array_keys($entities);
     $this->keyValueStore->deleteMultiple($entity_ids);
   }
@@ -161,7 +146,7 @@ class KeyValueEntityStorage extends EntityStorageBase {
     // Check the entity ID length.
     // @todo This is not config-specific, but serial IDs will likely never hit
     //   this limit. Consider renaming the exception class.
-    if (strlen($entity->id()) > static::MAX_ID_LENGTH) {
+    if (strlen((string) $entity->id()) > static::MAX_ID_LENGTH) {
       throw new ConfigEntityIdLengthException("Entity ID {$entity->id()} exceeds maximum allowed length of " . static::MAX_ID_LENGTH . ' characters.');
     }
     return parent::save($entity);
@@ -170,7 +155,7 @@ class KeyValueEntityStorage extends EntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  protected function doSave($id, EntityInterface $entity) {
+  protected function doSave($id, EntityInterface $entity): int {
     $is_new = $entity->isNew();
 
     // Save the entity data in the key value store.
@@ -194,14 +179,14 @@ class KeyValueEntityStorage extends EntityStorageBase {
   /**
    * {@inheritdoc}
    */
-  public function hasData() {
+  public function hasData(): bool {
     return (bool) $this->keyValueStore->getAll();
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getQueryServiceName() {
+  protected function getQueryServiceName(): string {
     return 'entity.query.keyvalue';
   }
 

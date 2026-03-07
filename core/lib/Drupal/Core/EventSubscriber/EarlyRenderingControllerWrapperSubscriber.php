@@ -62,13 +62,6 @@ class EarlyRenderingControllerWrapperSubscriber implements EventSubscriberInterf
   protected $argumentResolver;
 
   /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a new EarlyRenderingControllerWrapperSubscriber instance.
    *
    * @param \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface $argument_resolver
@@ -76,9 +69,8 @@ class EarlyRenderingControllerWrapperSubscriber implements EventSubscriberInterf
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
    */
-  public function __construct(ArgumentResolverInterface $argument_resolver, RendererInterface $renderer) {
+  public function __construct(ArgumentResolverInterface $argument_resolver, protected \Drupal\Core\Render\RendererInterface $renderer) {
     $this->argumentResolver = $argument_resolver;
-    $this->renderer = $renderer;
   }
 
   /**
@@ -87,15 +79,13 @@ class EarlyRenderingControllerWrapperSubscriber implements EventSubscriberInterf
    * @param \Symfony\Component\HttpKernel\Event\ControllerEvent $event
    *   The controller event.
    */
-  public function onController(ControllerEvent $event) {
+  public function onController(ControllerEvent $event): void {
     $controller = $event->getController();
 
     // See \Symfony\Component\HttpKernel\HttpKernel::handleRaw().
     $arguments = $this->argumentResolver->getArguments($event->getRequest(), $controller);
 
-    $event->setController(function () use ($controller, $arguments) {
-      return $this->wrapControllerExecutionInRenderContext($controller, $arguments);
-    });
+    $event->setController(fn() => $this->wrapControllerExecutionInRenderContext($controller, $arguments));
   }
 
   /**
@@ -118,10 +108,9 @@ class EarlyRenderingControllerWrapperSubscriber implements EventSubscriberInterf
   protected function wrapControllerExecutionInRenderContext($controller, array $arguments) {
     $context = new RenderContext();
 
-    $response = $this->renderer->executeInRenderContext($context, function () use ($controller, $arguments) {
-      // Now call the actual controller, just like HttpKernel does.
-      return call_user_func_array($controller, $arguments);
-    });
+    $response = $this->renderer->executeInRenderContext($context, 
+        // Now call the actual controller, just like HttpKernel does.
+        fn() => call_user_func_array($controller, $arguments));
 
     // If early rendering happened, i.e. if code in the controller called
     // RendererInterface::render() outside of a render context, then the
@@ -151,7 +140,7 @@ class EarlyRenderingControllerWrapperSubscriber implements EventSubscriberInterf
       // is not permitted in that case. It is the developer's responsibility
       // to not use early rendering.
       elseif ($response instanceof AttachmentsInterface || $response instanceof CacheableDependencyInterface) {
-        throw new \LogicException(sprintf('The controller result claims to be providing relevant cache metadata, but leaked metadata was detected. Ensure you are not rendering content too early. Returned object class: %s.', get_class($response)));
+        throw new \LogicException(sprintf('The controller result claims to be providing relevant cache metadata, but leaked metadata was detected. Ensure you are not rendering content too early. Returned object class: %s.', $response::class));
       }
       else {
         // A Response or domain object is returned that does not care about

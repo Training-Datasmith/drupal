@@ -16,7 +16,7 @@ class Dropbutton extends Links {
   /**
    * {@inheritdoc}
    */
-  public function render(ResultRow $values) {
+  public function render(ResultRow $values): array|string {
     $links = $this->getLinks();
 
     if (!empty($links)) {
@@ -25,9 +25,7 @@ class Dropbutton extends Links {
         '#links' => $links,
       ];
     }
-    else {
-      return '';
-    }
+    return '';
   }
 
 }

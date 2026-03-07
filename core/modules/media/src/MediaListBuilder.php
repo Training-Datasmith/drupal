@@ -16,25 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MediaListBuilder extends EntityListBuilder {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The language manager service.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Indicates whether the 'thumbnail' image style exists.
-   *
-   * @var bool
    */
-  protected $thumbnailStyleExists = FALSE;
+  protected bool $thumbnailStyleExists;
 
   /**
    * Constructs a new MediaListBuilder object.
@@ -43,25 +27,22 @@ class MediaListBuilder extends EntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager service.
    * @param \Drupal\Core\Entity\EntityStorageInterface $image_style_storage
    *   The entity storage class for image styles.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DateFormatterInterface $date_formatter, LanguageManagerInterface $language_manager, EntityStorageInterface $image_style_storage) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, EntityStorageInterface $image_style_storage) {
     parent::__construct($entity_type, $storage);
-
-    $this->dateFormatter = $date_formatter;
-    $this->languageManager = $language_manager;
     $this->thumbnailStyleExists = !empty($image_style_storage->load('thumbnail'));
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     $entity_type_manager = $container->get('entity_type.manager');
     return new static(
       $entity_type,

@@ -34,40 +34,17 @@ class MenuLinkManager implements MenuLinkManagerInterface {
   protected $factory;
 
   /**
-   * The menu link tree storage.
-   *
-   * @var \Drupal\Core\Menu\MenuTreeStorageInterface
-   */
-  protected $treeStorage;
-
-  /**
-   * Service providing overrides for static links.
-   *
-   * @var \Drupal\Core\Menu\StaticMenuLinkOverridesInterface
-   */
-  protected $overrides;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a \Drupal\Core\Menu\MenuLinkManager object.
    *
-   * @param \Drupal\Core\Menu\MenuTreeStorageInterface $tree_storage
+   * @param \Drupal\Core\Menu\MenuTreeStorageInterface $treeStorage
    *   The menu link tree storage.
    * @param \Drupal\Core\Menu\StaticMenuLinkOverridesInterface $overrides
    *   The service providing overrides for static links.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(MenuTreeStorageInterface $tree_storage, StaticMenuLinkOverridesInterface $overrides, ModuleHandlerInterface $module_handler) {
-    $this->treeStorage = $tree_storage;
-    $this->overrides = $overrides;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Menu\MenuTreeStorageInterface $treeStorage, protected \Drupal\Core\Menu\StaticMenuLinkOverridesInterface $overrides, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
@@ -148,7 +125,7 @@ class MenuLinkManager implements MenuLinkManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function rebuild() {
+  public function rebuild(): void {
     $definitions = $this->getDefinitions();
     // Apply overrides from config.
     $overrides = $this->overrides->loadMultipleOverrides(array_keys($definitions));
@@ -174,7 +151,7 @@ class MenuLinkManager implements MenuLinkManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasDefinition($plugin_id) {
+  public function hasDefinition($plugin_id): bool {
     return (bool) $this->getDefinition($plugin_id, FALSE);
   }
 
@@ -208,7 +185,7 @@ class MenuLinkManager implements MenuLinkManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteLinksInMenu($menu_name) {
+  public function deleteLinksInMenu($menu_name): void {
     foreach ($this->treeStorage->loadByProperties(['menu_name' => $menu_name]) as $plugin_id => $definition) {
       $instance = $this->createInstance($plugin_id);
       if ($instance->isDeletable()) {
@@ -248,7 +225,7 @@ class MenuLinkManager implements MenuLinkManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeDefinition($id, $persist = TRUE) {
+  public function removeDefinition($id, $persist = TRUE): void {
     $definition = $this->treeStorage->load($id);
     // It's possible the definition has already been deleted, or doesn't exist.
     if ($definition) {
@@ -260,7 +237,7 @@ class MenuLinkManager implements MenuLinkManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function menuNameInUse($menu_name) {
+  public function menuNameInUse($menu_name): void {
     $this->treeStorage->menuNameInUse($menu_name);
   }
 
@@ -293,8 +270,9 @@ class MenuLinkManager implements MenuLinkManagerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function loadLinksByRoute($route_name, array $route_parameters = [], $menu_name = NULL) {
+  public function loadLinksByRoute($route_name, array $route_parameters = [], $menu_name = NULL): array {
     $instances = [];
     $loaded = $this->treeStorage->loadByRoute($route_name, $route_parameters, $menu_name);
     foreach ($loaded as $plugin_id => $definition) {
@@ -308,10 +286,10 @@ class MenuLinkManager implements MenuLinkManagerInterface {
    */
   public function addDefinition($id, array $definition) {
     if ($this->treeStorage->load($id)) {
-      throw new PluginException("The menu link ID $id already exists as a plugin definition");
+        throw new PluginException("The menu link ID $id already exists as a plugin definition");
     }
-    elseif ($id === '') {
-      throw new PluginException("The menu link ID cannot be empty");
+    if ($id === '') {
+        throw new PluginException("The menu link ID cannot be empty");
     }
     // Add defaults, so there is no requirement to specify everything.
     $this->processDefinition($definition, $id);
@@ -338,8 +316,7 @@ class MenuLinkManager implements MenuLinkManagerInterface {
    */
   public function resetLink($id) {
     $instance = $this->createInstance($id);
-    $new_instance = $this->resetInstance($instance);
-    return $new_instance;
+    return $this->resetInstance($instance);
   }
 
   /**
@@ -371,7 +348,7 @@ class MenuLinkManager implements MenuLinkManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function resetDefinitions() {
+  public function resetDefinitions(): void {
     $this->treeStorage->resetDefinitions();
   }
 

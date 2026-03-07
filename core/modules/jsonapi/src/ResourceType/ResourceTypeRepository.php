@@ -45,41 +45,6 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
   use LoggerChannelTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The bundle manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The cache backend.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * Cache tags used for caching the repository.
    *
    * @var string[]
@@ -97,23 +62,19 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
   /**
    * Instantiates a ResourceTypeRepository object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info service.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_bundle_info, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, EventDispatcherInterface $dispatcher) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_bundle_info;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->cache = $cache;
-    $this->eventDispatcher = $dispatcher;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Drupal\Core\Cache\CacheBackendInterface $cache, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher)
+  {
   }
 
   /**
@@ -128,7 +89,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
     $resource_types = [];
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type) {
       $bundles = array_keys($this->entityTypeBundleInfo->getBundleInfo($entity_type->id()));
-      $resource_types = array_reduce($bundles, function ($resource_types, $bundle) use ($entity_type) {
+      $resource_types = array_reduce($bundles, function ($resource_types, int|string $bundle) use ($entity_type): array {
         $resource_type = $this->createResourceType($entity_type, (string) $bundle);
         return array_merge($resource_types, [
           $resource_type->getTypeName() => $resource_type,
@@ -155,7 +116,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    * @return \Drupal\jsonapi\ResourceType\ResourceType
    *   A JSON:API resource type.
    */
-  protected function createResourceType(EntityTypeInterface $entity_type, $bundle) {
+  protected function createResourceType(EntityTypeInterface $entity_type, $bundle): \Drupal\jsonapi\ResourceType\ResourceType {
     $type_name = NULL;
     $raw_fields = $this->getAllFieldNames($entity_type, $bundle);
     $internalize_resource_type = $entity_type->isInternal();
@@ -320,28 +281,24 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    * @return string[]
    *   All field names.
    */
-  protected function getAllFieldNames(EntityTypeInterface $entity_type, $bundle) {
+  protected function getAllFieldNames(EntityTypeInterface $entity_type, $bundle): array {
     if ($entity_type instanceof ContentEntityTypeInterface) {
-      $field_definitions = $this->entityFieldManager->getFieldDefinitions(
-        $entity_type->id(),
-        $bundle
-      );
-      return array_keys($field_definitions);
+        $field_definitions = $this->entityFieldManager->getFieldDefinitions(
+          $entity_type->id(),
+          $bundle
+        );
+        return array_keys($field_definitions);
     }
-    elseif ($entity_type instanceof ConfigEntityTypeInterface) {
-      // @todo Uncomment the first line, remove everything else once https://www.drupal.org/project/drupal/issues/2483407 lands.
-      // return array_keys($entity_type->getPropertiesToExport());
-      $export_properties = $entity_type->getPropertiesToExport();
-      if ($export_properties !== NULL) {
-        return array_keys($export_properties);
-      }
-      else {
+    if ($entity_type instanceof ConfigEntityTypeInterface) {
+        // @todo Uncomment the first line, remove everything else once https://www.drupal.org/project/drupal/issues/2483407 lands.
+        // return array_keys($entity_type->getPropertiesToExport());
+        $export_properties = $entity_type->getPropertiesToExport();
+        if ($export_properties !== NULL) {
+          return array_keys($export_properties);
+        }
         return ['id', 'type', 'uuid', '_core'];
-      }
     }
-    else {
-      throw new \LogicException("Only content and config entity types are supported.");
-    }
+    throw new \LogicException("Only content and config entity types are supported.");
   }
 
   /**
@@ -355,7 +312,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    * @return bool
    *   TRUE if the entity type is mutable, FALSE otherwise.
    */
-  protected static function isMutableResourceType(EntityTypeInterface $entity_type, $bundle) {
+  protected static function isMutableResourceType(EntityTypeInterface $entity_type, $bundle): bool {
     assert(is_string($bundle) && !empty($bundle), 'A bundle ID is required. Bundleless entity types should pass the entity type ID again.');
     return !$entity_type instanceof ConfigEntityTypeInterface;
   }
@@ -371,7 +328,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    * @return bool
    *   TRUE if the entity type is locatable, FALSE otherwise.
    */
-  protected static function isLocatableResourceType(EntityTypeInterface $entity_type, $bundle) {
+  protected static function isLocatableResourceType(EntityTypeInterface $entity_type, $bundle): bool {
     assert(is_string($bundle) && !empty($bundle), 'A bundle ID is required. Bundleless entity types should pass the entity type ID again.');
     return $entity_type->getStorageClass() !== ContentEntityNullStorage::class;
   }
@@ -402,7 +359,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    * @return array
    *   The relatable JSON:API resource types, keyed by field name.
    */
-  protected function calculateRelatableResourceTypes(ResourceType $resource_type, array $resource_types) {
+  protected function calculateRelatableResourceTypes(ResourceType $resource_type, array $resource_types): array {
     // For now, only fieldable entity types may contain relationships.
     $entity_type = $this->entityTypeManager->getDefinition($resource_type->getEntityTypeId());
     if ($entity_type->entityClassImplements(FieldableEntityInterface::class)) {
@@ -411,11 +368,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
         $resource_type->getBundle()
       );
 
-      $relatable_internal = array_map(function ($field_definition) use ($resource_types) {
-        return $this->getRelatableResourceTypesFromFieldDefinition($field_definition, $resource_types);
-      }, array_filter($field_definitions, function ($field_definition) {
-        return $this->isReferenceFieldDefinition($field_definition);
-      }));
+      $relatable_internal = array_map(fn(\Drupal\Core\Field\FieldDefinitionInterface $field_definition) => $this->getRelatableResourceTypesFromFieldDefinition($field_definition, $resource_types), array_filter($field_definitions, fn(\Drupal\Core\Field\FieldDefinitionInterface $field_definition) => $this->isReferenceFieldDefinition($field_definition)));
 
       $relatable_public = [];
       foreach ($relatable_internal as $internal_field_name => $value) {
@@ -439,7 +392,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    *   The JSON:API resource types with which the given field may have a
    *   relationship.
    */
-  protected function getRelatableResourceTypesFromFieldDefinition(FieldDefinitionInterface $field_definition, array $resource_types) {
+  protected function getRelatableResourceTypesFromFieldDefinition(FieldDefinitionInterface $field_definition, array $resource_types): array {
     $item_definition = $field_definition->getItemDefinition();
     $entity_type_id = $item_definition->getSetting('target_type');
     $relatable_resource_types = [];
@@ -508,10 +461,10 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    * @return string[]
    *   The bundle IDs.
    */
-  protected function getAllBundlesForEntityType($entity_type_id) {
+  protected function getAllBundlesForEntityType(string $entity_type_id): array {
     // Ensure all keys are strings because numeric values are allowed as bundle
     // names and "array_keys()" casts "42" to 42.
-    return array_map('strval', array_keys($this->entityTypeBundleInfo->getBundleInfo($entity_type_id)));
+    return array_map(strval(...), array_keys($this->entityTypeBundleInfo->getBundleInfo($entity_type_id)));
   }
 
   /**
@@ -527,7 +480,7 @@ class ResourceTypeRepository implements ResourceTypeRepositoryInterface {
    * @return \Drupal\jsonapi\ResourceType\ResourceType|null
    *   The resource type or NULL if one cannot be found.
    */
-  protected static function lookupResourceType(array $resource_types, $entity_type_id, $bundle) {
+  protected static function lookupResourceType(array $resource_types, string $entity_type_id, string $bundle) {
     if (isset($resource_types[$entity_type_id . ResourceType::TYPE_NAME_URI_PATH_SEPARATOR . $bundle])) {
       return $resource_types[$entity_type_id . ResourceType::TYPE_NAME_URI_PATH_SEPARATOR . $bundle];
     }

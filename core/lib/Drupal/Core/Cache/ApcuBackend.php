@@ -11,56 +11,36 @@ use Drupal\Component\Datetime\TimeInterface;
 class ApcuBackend implements CacheBackendInterface {
 
   /**
-   * The name of the cache bin to use.
-   *
-   * @var string
-   */
-  protected $bin;
-
-  /**
-   * Prefix for all keys in the storage that belong to this site.
-   *
-   * @var string
-   */
-  protected $sitePrefix;
-
-  /**
    * Prefix for all keys in this cache bin.
    *
    * Includes the site-specific prefix in $sitePrefix.
-   *
-   * @var string
    */
-  protected $binPrefix;
-
-  /**
-   * The cache tags checksum provider.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsChecksumInterface
-   */
-  protected $checksumProvider;
+  protected string $binPrefix;
 
   /**
    * Constructs a new ApcuBackend instance.
    *
    * @param string $bin
    *   The name of the cache bin.
-   * @param string $site_prefix
+   * @param string $sitePrefix
    *   The prefix to use for all keys in the storage that belong to this site.
-   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksum_provider
+   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider
    *   The cache tags checksum provider.
    * @param \Drupal\Component\Datetime\TimeInterface|null $time
    *   The time service.
    */
   public function __construct(
-    $bin,
-    $site_prefix,
-    CacheTagsChecksumInterface $checksum_provider,
+    /**
+     * The name of the cache bin to use.
+     */
+    protected $bin,
+    /**
+     * Prefix for all keys in the storage that belong to this site.
+     */
+    protected $sitePrefix,
+    protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider,
     protected TimeInterface $time,
   ) {
-    $this->bin = $bin;
-    $this->sitePrefix = $site_prefix;
-    $this->checksumProvider = $checksum_provider;
     $this->binPrefix = $this->sitePrefix . '::' . $this->bin . '::';
   }
 
@@ -73,7 +53,7 @@ class ApcuBackend implements CacheBackendInterface {
    * @return string
    *   The APCu key for the cache item ID.
    */
-  public function getApcuKey($cid) {
+  public function getApcuKey(string $cid): string {
     return $this->binPrefix . $cid;
   }
 
@@ -87,8 +67,9 @@ class ApcuBackend implements CacheBackendInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
     // Translate the requested cache item IDs to APCu keys.
     $map = [];
     foreach ($cids as $cid) {
@@ -105,7 +86,7 @@ class ApcuBackend implements CacheBackendInterface {
         $tags_for_preload = [];
         foreach ($result as $item) {
           if ($item->tags) {
-            $tags_for_preload[] = explode(' ', $item->tags);
+            $tags_for_preload[] = explode(' ', (string) $item->tags);
           }
         }
         $this->checksumProvider->registerCacheTagsForPreload(array_merge(...$tags_for_preload));
@@ -157,7 +138,7 @@ class ApcuBackend implements CacheBackendInterface {
    * @return mixed
    *   The cache item or FALSE if the item expired.
    */
-  protected function prepareItem($cache, $allow_invalid) {
+  protected function prepareItem($cache, $allow_invalid): false|object {
     if (!isset($cache->data)) {
       return FALSE;
     }
@@ -182,7 +163,7 @@ class ApcuBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = CacheBackendInterface::CACHE_PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = CacheBackendInterface::CACHE_PERMANENT, array $tags = []): void {
     assert(Inspector::assertAllStrings($tags), 'Cache tags must be strings.');
     $tags = array_unique($tags);
     $cache = new \stdClass();
@@ -202,7 +183,7 @@ class ApcuBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $items = []) {
+  public function setMultiple(array $items = []): void {
     foreach ($items as $cid => $item) {
       $this->set($cid, $item['data'], $item['expire'] ?? CacheBackendInterface::CACHE_PERMANENT, $item['tags'] ?? []);
     }
@@ -211,49 +192,49 @@ class ApcuBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     apcu_delete($this->getApcuKey($cid));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $cids) {
-    apcu_delete(array_map([$this, 'getApcuKey'], $cids));
+  public function deleteMultiple(array $cids): void {
+    apcu_delete(array_map($this->getApcuKey(...), $cids));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     apcu_delete($this->getIterator('/^' . preg_quote($this->binPrefix, '/') . '/'));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     // APCu performs garbage collection automatically.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function removeBin() {
+  public function removeBin(): void {
     apcu_delete($this->getIterator('/^' . preg_quote($this->binPrefix, '/') . '/'));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invalidate($cid) {
+  public function invalidate($cid): void {
     $this->invalidateMultiple([$cid]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invalidateMultiple(array $cids) {
+  public function invalidateMultiple(array $cids): void {
     foreach ($this->getMultiple($cids) as $cache) {
       $this->set($cache->cid, $cache, $this->time->getRequestTime() - 1);
     }
@@ -277,7 +258,7 @@ class ApcuBackend implements CacheBackendInterface {
    * @return \APCUIterator
    *   An APCUIterator class.
    */
-  protected function getIterator($search = NULL, $format = APC_ITER_ALL, $chunk_size = 100, $list = APC_LIST_ACTIVE) {
+  protected function getIterator($search = NULL, $format = APC_ITER_ALL, $chunk_size = 100, $list = APC_LIST_ACTIVE): \APCUIterator {
     return new \APCUIterator($search, $format, $chunk_size, $list);
   }
 

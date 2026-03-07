@@ -26,33 +26,17 @@ class FormAjaxSubscriber implements EventSubscriberInterface {
   use StringTranslationTrait;
 
   /**
-   * The form AJAX response builder.
-   *
-   * @var \Drupal\Core\Form\FormAjaxResponseBuilderInterface
-   */
-  protected $formAjaxResponseBuilder;
-
-  /**
-   * The messenger.
-   *
-   * @var \Drupal\Core\Messenger\MessengerInterface
-   */
-  protected $messenger;
-
-  /**
    * Constructs a new FormAjaxSubscriber.
    *
-   * @param \Drupal\Core\Form\FormAjaxResponseBuilderInterface $form_ajax_response_builder
+   * @param \Drupal\Core\Form\FormAjaxResponseBuilderInterface $formAjaxResponseBuilder
    *   The form AJAX response builder.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
    */
-  public function __construct(FormAjaxResponseBuilderInterface $form_ajax_response_builder, TranslationInterface $string_translation, MessengerInterface $messenger) {
-    $this->formAjaxResponseBuilder = $form_ajax_response_builder;
+  public function __construct(protected \Drupal\Core\Form\FormAjaxResponseBuilderInterface $formAjaxResponseBuilder, TranslationInterface $string_translation, protected \Drupal\Core\Messenger\MessengerInterface $messenger) {
     $this->stringTranslation = $string_translation;
-    $this->messenger = $messenger;
   }
 
   /**
@@ -61,7 +45,7 @@ class FormAjaxSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
    *   The event to process.
    */
-  public function onView(ViewEvent $event) {
+  public function onView(ViewEvent $event): void {
     // To support an AJAX form submission of a form within a block, make the
     // later VIEW subscribers process the controller result as though for
     // HTML display (i.e., add blocks). During that block building, when the
@@ -80,7 +64,7 @@ class FormAjaxSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     $request = $event->getRequest();
 
@@ -88,7 +72,7 @@ class FormAjaxSubscriber implements EventSubscriberInterface {
     // the configured upload limit.
     if ($exception instanceof BrokenPostRequestException && $request->query->has(FormBuilderInterface::AJAX_FORM_REQUEST)) {
       $this->messenger->addError($this->t('An unrecoverable error occurred. The uploaded file likely exceeded the maximum file size (@size) that this server supports.', [
-        '@size' => ByteSizeMarkup::create((int) $exception->getSize()),
+        '@size' => ByteSizeMarkup::create($exception->getSize()),
       ]));
       $response = new AjaxResponse(NULL, 200);
       $status_messages = ['#type' => 'status_messages'];
@@ -133,7 +117,7 @@ class FormAjaxSubscriber implements EventSubscriberInterface {
    * @return \Drupal\Core\Form\FormAjaxException|null
    *   Either the form AJAX exception, or NULL if none could be found.
    */
-  protected function getFormAjaxException(\Throwable $e) {
+  protected function getFormAjaxException(\Throwable $e): ?\Drupal\Core\Form\FormAjaxException {
     $exception = NULL;
     while ($e) {
       if ($e instanceof FormAjaxException) {

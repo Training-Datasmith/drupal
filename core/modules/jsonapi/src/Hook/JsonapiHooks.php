@@ -41,8 +41,7 @@ class JsonapiHooks {
         ]) . '</dd>';
         $output .= '<dd>' . $this->t('Some multilingual features currently do not work well with JSON:API. See the <a href=":jsonapi-docs">JSON:API multilingual support documentation</a> for more information on the current status of multilingual support.', [':jsonapi-docs' => 'https://www.drupal.org/docs/8/modules/jsonapi/translations']) . '</dd>';
         $output .= '<dd>' . $this->t('Revision support is currently read-only and only for the "Content" and "Media" entity types in JSON:API. See the <a href=":jsonapi-docs">JSON:API revision support documentation</a> for more information on the current status of revision support.', [':jsonapi-docs' => 'https://www.drupal.org/docs/8/modules/jsonapi/revisions']) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

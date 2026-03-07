@@ -17,7 +17,7 @@ class StatisticsLastCommentName extends SortPluginBase {
    * The users table.
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected ?string $user_table;
+  protected ?string $user_table = null;
 
   /**
    * The user name field.
@@ -28,7 +28,7 @@ class StatisticsLastCommentName extends SortPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $definition = [
       'table' => 'users_field_data',

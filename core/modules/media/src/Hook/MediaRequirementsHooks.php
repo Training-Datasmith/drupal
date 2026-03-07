@@ -65,8 +65,14 @@ class MediaRequirementsHooks {
       }
 
       $component = $display->getComponent($source_field_definition->getName());
-      if (empty($component) || $component['type'] !== 'image' || !empty($component['settings']['image_style'])) {
-        continue;
+      if (empty($component)) {
+          continue;
+      }
+      if ($component['type'] !== 'image') {
+          continue;
+      }
+      if (!empty($component['settings']['image_style'])) {
+          continue;
       }
 
       $action_item = '';

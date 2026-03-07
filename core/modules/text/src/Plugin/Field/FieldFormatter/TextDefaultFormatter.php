@@ -23,8 +23,9 @@ class TextDefaultFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#type': 'processed_text', '#text': mixed, '#format': mixed, '#langcode': mixed}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     // The ProcessedText element already handles cache context & tag bubbling.

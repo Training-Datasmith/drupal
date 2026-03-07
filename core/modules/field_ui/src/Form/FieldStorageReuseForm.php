@@ -25,15 +25,11 @@ class FieldStorageReuseForm extends FormBase {
 
   /**
    * The name of the entity type.
-   *
-   * @var string
    */
   protected string $entityTypeId;
 
   /**
    * The entity bundle.
-   *
-   * @var string
    */
   protected string $bundle;
 
@@ -62,14 +58,14 @@ class FieldStorageReuseForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'field_ui_field_storage_reuse_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.field.field_type'),
@@ -82,7 +78,7 @@ class FieldStorageReuseForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $entity_type_id = NULL, $bundle = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $entity_type_id = NULL, $bundle = NULL): array {
     if (!$form_state->get('entity_type_id')) {
       $form_state->set('entity_type_id', $entity_type_id);
     }
@@ -168,7 +164,7 @@ class FieldStorageReuseForm extends FormBase {
             'data-dialog-type' => 'modal',
           ],
           '#submit' => [
-            'callback' => [$this, 'reuseCallback'],
+            'callback' => $this->reuseCallback(...),
           ],
         ],
       ];
@@ -241,7 +237,7 @@ class FieldStorageReuseForm extends FormBase {
    * @throws \Exception
    *   Thrown when there is an error re-using the field.
    */
-  public function reuseCallback(array $form, FormStateInterface $form_state) {
+  public function reuseCallback(array $form, FormStateInterface $form_state): void {
     $entity_type = $this->entityTypeManager->getDefinition($this->entityTypeId);
     $field_name = $form_state->getTriggeringElement()['#name'];
     // Get settings from existing configuration.
@@ -285,7 +281,7 @@ class FieldStorageReuseForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // This is no-op because there is no single submit action on the form. All
     // the actions are handled by a callback attached to individual buttons.
     // @see \Drupal\field_ui\Form\FieldStorageReuseForm::reuseCallback.

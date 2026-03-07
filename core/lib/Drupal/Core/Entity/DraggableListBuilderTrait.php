@@ -136,7 +136,7 @@ trait DraggableListBuilderTrait {
    *
    * @see \Drupal\Core\Form\FormInterface::buildForm())
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form[$this->entitiesKey] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
@@ -190,7 +190,7 @@ trait DraggableListBuilderTrait {
    *
    * @see \Drupal\Core\Form\FormInterface::validateForm())
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // No validation.
   }
 
@@ -207,7 +207,7 @@ trait DraggableListBuilderTrait {
    * @throws \Drupal\Core\Entity\EntityStorageException
    *   If there is a failure when saving the entity.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     foreach ($form_state->getValue($this->entitiesKey) as $id => $value) {
       if (isset($this->entities[$id]) && $this->getWeight($this->entities[$id]) != $value['weight']) {
         // Save entity only when its weight was changed.

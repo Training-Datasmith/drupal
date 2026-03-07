@@ -28,13 +28,11 @@ class LanguageNegotiationSelected extends LanguageNegotiationMethodBase {
    * {@inheritdoc}
    */
   public function getLangcode(?Request $request = NULL) {
-    $langcode = NULL;
-
     if ($this->languageManager) {
-      $langcode = $this->config->get('language.negotiation')->get('selected_langcode');
+      return $this->config->get('language.negotiation')->get('selected_langcode');
     }
 
-    return $langcode;
+    return NULL;
   }
 
 }

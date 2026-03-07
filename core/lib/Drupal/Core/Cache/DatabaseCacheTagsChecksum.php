@@ -13,20 +13,13 @@ class DatabaseCacheTagsChecksum implements CacheTagsChecksumInterface, CacheTags
   use CacheTagsChecksumTrait;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a DatabaseCacheTagsChecksum object.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
    */
-  public function __construct(Connection $connection) {
-    $this->connection = $connection;
+  public function __construct(protected \Drupal\Core\Database\Connection $connection)
+  {
   }
 
   /**
@@ -88,7 +81,7 @@ class DatabaseCacheTagsChecksum implements CacheTagsChecksumInterface, CacheTags
   /**
    * Check if the cache tags table exists and create it if not.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $database_schema = $this->connection->schema();
       $schema_definition = $this->schemaDefinition();
@@ -110,8 +103,8 @@ class DatabaseCacheTagsChecksum implements CacheTagsChecksumInterface, CacheTags
    *
    * @internal
    */
-  public function schemaDefinition() {
-    $schema = [
+  public function schemaDefinition(): array {
+    return [
       'description' => 'Cache table for tracking cache tag invalidations.',
       'fields' => [
         'tag' => [
@@ -130,7 +123,6 @@ class DatabaseCacheTagsChecksum implements CacheTagsChecksumInterface, CacheTags
       ],
       'primary key' => ['tag'],
     ];
-    return $schema;
   }
 
   /**

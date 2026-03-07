@@ -46,7 +46,7 @@ class TimeSpan extends IntegerData implements DurationInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDuration(\DateInterval $duration, $notify = TRUE) {
+  public function setDuration(\DateInterval $duration, $notify = TRUE): void {
     // Note that this applies the assumption of 12 month's a 30 days and
     // each year having 365 days. There is no accurate conversion for time spans
     // exceeding a day.

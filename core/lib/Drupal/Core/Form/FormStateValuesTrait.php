@@ -25,7 +25,7 @@ trait FormStateValuesTrait {
     $exists = NULL;
     $value = &NestedArray::getValue($this->getValues(), (array) $key, $exists);
     if (!$exists) {
-      $value = $default;
+      return $default;
     }
     return $value;
   }
@@ -58,7 +58,7 @@ trait FormStateValuesTrait {
   /**
    * Implements \Drupal\Core\Form\FormStateInterface::hasValue()
    */
-  public function hasValue($key) {
+  public function hasValue($key): bool {
     $exists = NULL;
     $value = NestedArray::getValue($this->getValues(), (array) $key, $exists);
     return $exists && isset($value);
@@ -67,7 +67,7 @@ trait FormStateValuesTrait {
   /**
    * Implements \Drupal\Core\Form\FormStateInterface::isValueEmpty()
    */
-  public function isValueEmpty($key) {
+  public function isValueEmpty($key): bool {
     $exists = NULL;
     $value = NestedArray::getValue($this->getValues(), (array) $key, $exists);
     return !$exists || empty($value);

@@ -13,7 +13,7 @@ class NodeTypeMapper extends ConfigEntityMapper {
   /**
    * {@inheritdoc}
    */
-  public function setEntity(ConfigEntityInterface $entity) {
+  public function setEntity(ConfigEntityInterface $entity): bool {
     parent::setEntity($entity);
 
     // Adds the title label to the translation form.

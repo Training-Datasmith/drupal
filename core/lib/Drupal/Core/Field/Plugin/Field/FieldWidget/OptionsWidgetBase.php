@@ -89,7 +89,7 @@ abstract class OptionsWidgetBase extends WidgetBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function validateElement(array $element, FormStateInterface $form_state) {
+  public static function validateElement(array $element, FormStateInterface $form_state): void {
     if ($element['#required'] && $element['#value'] == '_none') {
       if (isset($element['#required_error'])) {
         $form_state->setError($element, $element['#required_error']);
@@ -156,7 +156,7 @@ abstract class OptionsWidgetBase extends WidgetBase {
       ];
       $module_handler->alter('options_list', $options, $context);
 
-      array_walk_recursive($options, [$this, 'sanitizeLabel']);
+      array_walk_recursive($options, $this->sanitizeLabel(...));
 
       // Options might be nested ("optgroups"). If the widget does not support
       // nested options, flatten the list.

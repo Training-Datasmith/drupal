@@ -34,10 +34,8 @@ class Context extends ComponentContext implements ContextInterface {
 
   /**
    * The cacheability metadata.
-   *
-   * @var \Drupal\Core\Cache\CacheableMetadata
    */
-  protected $cacheabilityMetadata;
+  protected \Drupal\Core\Cache\CacheableMetadata $cacheabilityMetadata;
 
   /**
    * Create a context object.
@@ -48,7 +46,7 @@ class Context extends ComponentContext implements ContextInterface {
    *   The context value object.
    */
   public function __construct(ContextDefinitionInterface $context_definition, $context_value = NULL) {
-    parent::__construct($context_definition, NULL);
+    parent::__construct($context_definition);
     $this->cacheabilityMetadata = new CacheableMetadata();
     if (!is_null($context_value)) {
       $this->setContextValue($context_value);
@@ -80,7 +78,7 @@ class Context extends ComponentContext implements ContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasContextValue() {
+  public function hasContextValue(): bool {
     return $this->getTypedDataManager()->getCanonicalRepresentation($this->getContextData()) !== NULL;
   }
 
@@ -107,7 +105,7 @@ class Context extends ComponentContext implements ContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConstraints() {
+  public function getConstraints(): array {
     return $this->contextDefinition->getConstraints();
   }
 
@@ -142,7 +140,7 @@ class Context extends ComponentContext implements ContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function addCacheableDependency($dependency) {
+  public function addCacheableDependency($dependency): static {
     $this->cacheabilityMetadata = $this->cacheabilityMetadata->merge(CacheableMetadata::createFromObject($dependency));
     return $this;
   }
@@ -171,7 +169,7 @@ class Context extends ComponentContext implements ContextInterface {
   /**
    * {@inheritdoc}
    */
-  public static function createFromContext(ContextInterface $old_context, $value) {
+  public static function createFromContext(ContextInterface $old_context, $value): static {
     $context = new static($old_context->getContextDefinition(), $value);
     $context->addCacheableDependency($old_context);
     if (method_exists($old_context, 'getTypedDataManager')) {

@@ -18,7 +18,7 @@ class Current extends BooleanOperator {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->value_value = $this->t('Is the logged in user');
@@ -27,7 +27,7 @@ class Current extends BooleanOperator {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
 
     $field = $this->tableAlias . '.' . $this->realField . ' ';

@@ -60,7 +60,7 @@ class MediaLibraryEditorOpener implements MediaLibraryOpenerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSelectionResponse(MediaLibraryState $state, array $selected_ids) {
+  public function getSelectionResponse(MediaLibraryState $state, array $selected_ids): \Drupal\Core\Ajax\AjaxResponse {
     $selected_media = $this->mediaStorage->load(reset($selected_ids));
 
     $response = new AjaxResponse();

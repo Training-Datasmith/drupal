@@ -49,7 +49,7 @@ class Flatten extends ProcessPluginBase {
    *
    * For example, [[1, 2, [3, 4]]] becomes [1, 2, 3, 4].
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array {
     if (!is_array($value) && !is_object($value)) {
       $type = gettype($value);
       throw new MigrateException(sprintf("Input should be an array or an object, instead it was of type '%s'", $type));

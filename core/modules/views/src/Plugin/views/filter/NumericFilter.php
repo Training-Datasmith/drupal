@@ -44,7 +44,7 @@ class NumericFilter extends FilterPluginBase implements FilterOperatorsInterface
   /**
    * {@inheritdoc}
    */
-  public function defaultExposeOptions() {
+  public function defaultExposeOptions(): void {
     parent::defaultExposeOptions();
     $this->options['expose']['min_placeholder'] = NULL;
     $this->options['expose']['max_placeholder'] = NULL;
@@ -54,7 +54,7 @@ class NumericFilter extends FilterPluginBase implements FilterOperatorsInterface
   /**
    * {@inheritdoc}
    */
-  public function buildExposeForm(&$form, FormStateInterface $form_state) {
+  public function buildExposeForm(&$form, FormStateInterface $form_state): void {
     parent::buildExposeForm($form, $form_state);
 
     $form['expose']['min_placeholder'] = [
@@ -99,8 +99,9 @@ class NumericFilter extends FilterPluginBase implements FilterOperatorsInterface
 
   /**
    * {@inheritdoc}
+   * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opBetween', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 2}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opEmpty', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 0}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, short: Drupal\Core\StringTranslation\TranslatableMarkup, method: ('opNotRegex' | 'opRegex' | 'opSimple'), values: 1}[]
    */
-  public function operators() {
+  public function operators(): array {
     $operators = [
       '<' => [
         'title' => $this->t('Is less than'),
@@ -187,8 +188,9 @@ class NumericFilter extends FilterPluginBase implements FilterOperatorsInterface
 
   /**
    * Provide a list of all the numeric operators.
+   * @return mixed[]
    */
-  public function operatorOptions($which = 'title') {
+  public function operatorOptions($which = 'title'): array {
     $options = [];
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
@@ -199,8 +201,9 @@ class NumericFilter extends FilterPluginBase implements FilterOperatorsInterface
 
   /**
    * Gets the operators that have a given number of values.
+   * @return mixed[]
    */
-  protected function operatorValues($values = 1) {
+  protected function operatorValues($values = 1): array {
     $options = [];
     foreach ($this->operators() as $id => $info) {
       if ($info['values'] == $values) {
@@ -344,7 +347,7 @@ class NumericFilter extends FilterPluginBase implements FilterOperatorsInterface
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $field = "$this->tableAlias.$this->realField";
 

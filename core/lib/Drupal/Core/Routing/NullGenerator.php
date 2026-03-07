@@ -31,13 +31,13 @@ class NullGenerator extends UrlGenerator {
    */
   protected function getRoute($name) {
     if ($name === '<front>') {
-      return new Route('/');
+        return new Route('/');
     }
-    elseif ($name === '<current>') {
-      return new Route($this->requestStack->getCurrentRequest()->getPathInfo());
+    if ($name === '<current>') {
+        return new Route($this->requestStack->getCurrentRequest()->getPathInfo());
     }
-    elseif ($name === '<none>') {
-      return new Route('');
+    if ($name === '<none>') {
+        return new Route('');
     }
     throw new RouteNotFoundException();
   }

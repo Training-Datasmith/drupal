@@ -50,7 +50,7 @@ trait RoutePathGenerationTrait {
 
     // Remove trailing slashes (multiple slashes may result from the removal of
     // unreplaced placeholders).
-    $path = rtrim($path, '/');
+    $path = rtrim((string) $path, '/');
 
     return $path;
   }

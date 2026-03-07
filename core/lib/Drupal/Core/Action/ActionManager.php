@@ -33,7 +33,7 @@ class ActionManager extends DefaultPluginManager implements CategorizingPluginMa
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/Action', $namespaces, $module_handler, ActionInterface::class, Action::class, 'Drupal\Core\Annotation\Action');
+    parent::__construct('Plugin/Action', $namespaces, $module_handler, ActionInterface::class, Action::class, \Drupal\Core\Annotation\Action::class);
     $this->alterInfo('action_info');
     $this->setCacheBackend($cache_backend, 'action_info');
   }
@@ -47,10 +47,8 @@ class ActionManager extends DefaultPluginManager implements CategorizingPluginMa
    * @return array
    *   An array of plugin definitions for this entity type.
    */
-  public function getDefinitionsByType($type) {
-    return array_filter($this->getDefinitions(), function ($definition) use ($type) {
-      return $definition['type'] === $type;
-    });
+  public function getDefinitionsByType($type): array {
+    return array_filter($this->getDefinitions(), fn(array $definition) => $definition['type'] === $type);
   }
 
 }

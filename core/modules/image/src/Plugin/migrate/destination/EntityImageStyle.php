@@ -20,7 +20,7 @@ class EntityImageStyle extends EntityConfigBase {
   /**
    * {@inheritdoc}
    */
-  public function import(Row $row, array $old_destination_id_values = []) {
+  public function import(Row $row, array $old_destination_id_values = []): array {
     $effects = [];
 
     // Need to set the effects property to null on the row before the ImageStyle

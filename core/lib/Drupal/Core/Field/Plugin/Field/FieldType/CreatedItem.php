@@ -33,7 +33,7 @@ class CreatedItem extends TimestampItem {
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     parent::applyDefaultValue($notify);
     // Created fields default to the current timestamp.
     $this->setValue(['value' => \Drupal::time()->getRequestTime()], $notify);

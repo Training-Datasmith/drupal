@@ -54,27 +54,9 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
   protected $alterHook;
 
   /**
-   * The subdirectory within a namespace to look for plugins.
-   *
-   * Set to FALSE if the plugins are in the top level of the namespace.
-   *
-   * @var string|bool
-   */
-  protected $subdir;
-
-  /**
-   * The module handler to invoke the alter hook.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * The module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
    */
-  protected ?ModuleExtensionList $moduleExtensionList;
+  protected ?ModuleExtensionList $moduleExtensionList = null;
 
   /**
    * A set of defaults to be referenced by $this->processDefinition().
@@ -88,10 +70,8 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
 
   /**
    * The name of the annotation that contains the plugin definition.
-   *
-   * @var string
    */
-  protected $pluginDefinitionAnnotationName;
+  protected array|string|null $pluginDefinitionAnnotationName;
 
   /**
    * The name of the attribute that contains the plugin definition.
@@ -99,23 +79,6 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
    * @var string
    */
   protected $pluginDefinitionAttributeName;
-
-  /**
-   * The interface each plugin should implement.
-   *
-   * @var string|null
-   */
-  protected $pluginInterface;
-
-  /**
-   * An object of root paths that are traversable.
-   *
-   * The root paths are keyed by the corresponding namespace to look for plugin
-   * implementations.
-   *
-   * @var \Traversable
-   */
-  protected $namespaces;
 
   /**
    * Additional annotation namespaces.
@@ -135,9 +98,9 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
    *   keyed by the corresponding namespace to look for plugin implementations.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param string|null $plugin_interface
+   * @param string|null $pluginInterface
    *   (optional) The interface each plugin should implement.
    * @param string|null $plugin_definition_attribute_name
    *   (optional) The name of the attribute that contains the plugin definition.
@@ -151,11 +114,15 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
    * 'Drupal\Component\Plugin\Attribute\Plugin' once annotations are no longer
    * supported.
    */
-  public function __construct($subdir, \Traversable $namespaces, ModuleHandlerInterface $module_handler, $plugin_interface = NULL, ?string $plugin_definition_attribute_name = NULL, string|array|null $plugin_definition_annotation_name = NULL, array $additional_annotation_namespaces = []) {
-    $this->subdir = $subdir;
-    $this->namespaces = $namespaces;
-    $this->moduleHandler = $module_handler;
-    $this->pluginInterface = $plugin_interface;
+  public function __construct(/**
+   * The subdirectory within a namespace to look for plugins.
+   *
+   * Set to FALSE if the plugins are in the top level of the namespace.
+   */
+  protected $subdir, protected \Traversable $namespaces, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, /**
+   * The interface each plugin should implement.
+   */
+  protected $pluginInterface = NULL, ?string $plugin_definition_attribute_name = NULL, string|array|null $plugin_definition_annotation_name = NULL, array $additional_annotation_namespaces = []) {
     if (is_subclass_of($plugin_definition_attribute_name, AttributeInterface::class)) {
       $this->pluginDefinitionAttributeName = $plugin_definition_attribute_name;
       $this->pluginDefinitionAnnotationName = $plugin_definition_annotation_name;
@@ -163,7 +130,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
     }
     else {
       // Backward compatibility.
-      $this->pluginDefinitionAnnotationName = $plugin_definition_attribute_name ?? 'Drupal\Component\Annotation\Plugin';
+      $this->pluginDefinitionAnnotationName = $plugin_definition_attribute_name ?? \Drupal\Component\Annotation\Plugin::class;
       $this->additionalAnnotationNamespaces = $plugin_definition_annotation_name ?? [];
       if ($plugin_definition_attribute_name) {
         @trigger_error('Not supporting attribute discovery in ' . static::class . ' is deprecated in drupal:11.2.0 and is removed from drupal:12.0.0. Provide an Attribute class and an Annotation class for BC. See https://www.drupal.org/node/3395582', E_USER_DEPRECATED);
@@ -189,7 +156,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
    *   clearCachedDefinitions() method. Only use cache tags when cached plugin
    *   definitions should be cleared along with other, related cache entries.
    */
-  public function setCacheBackend(CacheBackendInterface $cache_backend, $cache_key, array $cache_tags = []) {
+  public function setCacheBackend(CacheBackendInterface $cache_backend, $cache_key, array $cache_tags = []): void {
     assert(Inspector::assertAllStrings($cache_tags), 'Cache Tags must be strings.');
     $this->cacheBackend = $cache_backend;
     $this->cacheKey = $cache_key;
@@ -222,7 +189,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     if ($this->cacheBackend) {
       if ($this->cacheTags) {
         // Use the cache tags to clear the cache.
@@ -268,7 +235,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
   /**
    * {@inheritdoc}
    */
-  public function useCaches($use_caches = FALSE) {
+  public function useCaches($use_caches = FALSE): void {
     if ($this->discovery instanceof CachedDiscoveryInterface) {
       $this->discovery->useCaches($use_caches);
     }
@@ -285,7 +252,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
    * additional processing logic they can do that by replacing or extending the
    * method.
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     // Only array-based definitions can have defaults merged in.
     if (is_array($definition) && !empty($this->defaults) && is_array($this->defaults)) {
       $definition = NestedArray::mergeDeep($this->defaults, $definition);
@@ -297,7 +264,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
       $definition->setClass(ltrim($definition->getClass(), '\\'));
     }
     elseif (is_array($definition) && isset($definition['class'])) {
-      $definition['class'] = ltrim($definition['class'], '\\');
+      $definition['class'] = ltrim((string) $definition['class'], '\\');
     }
   }
 
@@ -403,7 +370,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return [];
   }
 
@@ -417,7 +384,7 @@ class DefaultPluginManager extends PluginManagerBase implements PluginManagerInt
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 

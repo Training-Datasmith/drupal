@@ -18,42 +18,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UserPermissionsForm extends FormBase {
 
   /**
-   * The permission handler.
-   *
-   * @var \Drupal\user\PermissionHandlerInterface
-   */
-  protected $permissionHandler;
-
-  /**
-   * The role storage.
-   *
-   * @var \Drupal\user\RoleStorageInterface
-   */
-  protected $roleStorage;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a new UserPermissionsForm.
    *
-   * @param \Drupal\user\PermissionHandlerInterface $permission_handler
+   * @param \Drupal\user\PermissionHandlerInterface $permissionHandler
    *   The permission handler.
-   * @param \Drupal\user\RoleStorageInterface $role_storage
+   * @param \Drupal\user\RoleStorageInterface $roleStorage
    *   The role storage.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\Extension\ModuleExtensionList|null $moduleExtensionList
    *   The module extension list.
    */
-  public function __construct(PermissionHandlerInterface $permission_handler, RoleStorageInterface $role_storage, ModuleHandlerInterface $module_handler, protected ?ModuleExtensionList $moduleExtensionList = NULL) {
-    $this->permissionHandler = $permission_handler;
-    $this->roleStorage = $role_storage;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\user\PermissionHandlerInterface $permissionHandler, protected \Drupal\user\RoleStorageInterface $roleStorage, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected ?ModuleExtensionList $moduleExtensionList = NULL) {
     if ($this->moduleExtensionList === NULL) {
       @trigger_error('Calling ' . __METHOD__ . '() without the $moduleExtensionList argument is deprecated in drupal:10.3.0 and will be required in drupal:12.0.0. See https://www.drupal.org/node/3310017', E_USER_DEPRECATED);
       $this->moduleExtensionList = \Drupal::service('extension.list.module');
@@ -63,7 +39,7 @@ class UserPermissionsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('user.permissions'),
       $container->get('entity_type.manager')->getStorage('user_role'),
@@ -75,7 +51,7 @@ class UserPermissionsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'user_admin_permissions';
   }
 
@@ -125,7 +101,7 @@ class UserPermissionsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $role_names = [];
     $role_permissions = [];
     $admin_roles = [];
@@ -253,7 +229,7 @@ class UserPermissionsForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     foreach ($form_state->getValue('role_names') as $role_name => $name) {
       user_role_change_permissions($role_name, (array) $form_state->getValue($role_name));
     }

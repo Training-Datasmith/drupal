@@ -12,14 +12,13 @@ class ToolbarMenuLinkTree extends MenuLinkTree {
   /**
    * {@inheritdoc}
    */
-  public function build(array $tree, $level = 0) {
+  public function build(array $tree, $level = 0): array {
     if ($level == 0) {
       if (!$tree) {
         return [];
       }
       $build = parent::build($tree);
 
-      /** @var \Drupal\Core\Menu\MenuLinkInterface $link */
       $first_link = reset($tree)->link;
       // Get the menu name of the first link.
       $menu_name = $first_link->getMenuName();
@@ -29,9 +28,7 @@ class ToolbarMenuLinkTree extends MenuLinkTree {
       $build['#theme'] = 'menu__toolbar__' . strtr($menu_name, '-', '_');
       return $build;
     }
-    else {
-      return parent::build($tree);
-    }
+    return parent::build($tree);
   }
 
 }

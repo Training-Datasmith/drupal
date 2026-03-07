@@ -11,7 +11,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 /**
  * The event subscriber preventing excluded modules to be exported.
  */
-final class ExcludedModulesEventSubscriber implements EventSubscriberInterface {
+final readonly class ExcludedModulesEventSubscriber implements EventSubscriberInterface {
 
   /**
    * The key in settings and state for listing excluded modules.
@@ -21,34 +21,17 @@ final class ExcludedModulesEventSubscriber implements EventSubscriberInterface {
   const EXCLUDED_MODULES_KEY = "config_exclude_modules";
 
   /**
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  private $activeStorage;
-
-  /**
-   * @var \Drupal\Core\Site\Settings
-   */
-  private $settings;
-
-  /**
-   * @var \Drupal\Core\Config\ConfigManagerInterface
-   */
-  private $manager;
-
-  /**
    * EnvironmentModulesEventSubscriber constructor.
    *
-   * @param \Drupal\Core\Config\StorageInterface $active_storage
+   * @param \Drupal\Core\Config\StorageInterface $activeStorage
    *   The active config storage.
    * @param \Drupal\Core\Site\Settings $settings
    *   The Drupal settings.
    * @param \Drupal\Core\Config\ConfigManagerInterface $manager
    *   The config manager.
    */
-  public function __construct(StorageInterface $active_storage, Settings $settings, ConfigManagerInterface $manager) {
-    $this->activeStorage = $active_storage;
-    $this->settings = $settings;
-    $this->manager = $manager;
+  public function __construct(private StorageInterface $activeStorage, private Settings $settings, private ConfigManagerInterface $manager)
+  {
   }
 
   /**
@@ -71,7 +54,7 @@ final class ExcludedModulesEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\StorageTransformEvent $event
    *   The transformation event.
    */
-  public function onConfigTransformImport(StorageTransformEvent $event) {
+  public function onConfigTransformImport(StorageTransformEvent $event): void {
     $storage = $event->getStorage();
     if (!$storage->exists('core.extension')) {
       // If the core.extension config is not present there is nothing to do.
@@ -116,7 +99,7 @@ final class ExcludedModulesEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\StorageTransformEvent $event
    *   The transformation event.
    */
-  public function onConfigTransformExport(StorageTransformEvent $event) {
+  public function onConfigTransformExport(StorageTransformEvent $event): void {
     $storage = $event->getStorage();
     if (!$storage->exists('core.extension')) {
       // If the core.extension config is not present there is nothing to do.
@@ -154,7 +137,7 @@ final class ExcludedModulesEventSubscriber implements EventSubscriberInterface {
    * @return string[]
    *   An array of configuration names.
    */
-  private function getDependentConfigNames() {
+  private function getDependentConfigNames(): array {
     $modules = $this->getExcludedModules();
 
     $dependencyManager = $this->manager->getConfigDependencyManager();

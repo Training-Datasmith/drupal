@@ -88,7 +88,7 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
   /**
    * {@inheritdoc}
    */
-  public function setInsidePlugin() {
+  public function setInsidePlugin(): void {
     $this->insidePlugin = TRUE;
   }
 
@@ -128,28 +128,28 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
   /**
    * {@inheritdoc}
    */
-  public function getPluginId() {
+  public function getPluginId(): string {
     return 'menu_link_content:' . $this->uuid();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isEnabled() {
+  public function isEnabled(): bool {
     return (bool) $this->get('enabled')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isExpanded() {
+  public function isExpanded(): bool {
     return (bool) $this->get('expanded')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getParentId() {
+  public function getParentId(): string {
     // Cast the parent ID to a string, only an empty string means no parent,
     // NULL keeps the existing parent.
     return (string) $this->get('parent')->value;
@@ -158,16 +158,16 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
   /**
    * {@inheritdoc}
    */
-  public function getWeight() {
+  public function getWeight(): int {
     return (int) $this->get('weight')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPluginDefinition() {
+  public function getPluginDefinition(): array {
     $definition = [];
-    $definition['class'] = 'Drupal\menu_link_content\Plugin\Menu\MenuLinkContent';
+    $definition['class'] = \Drupal\menu_link_content\Plugin\Menu\MenuLinkContent::class;
     $definition['menu_name'] = $this->getMenuName();
 
     if ($url_object = $this->getUrlObject()) {
@@ -189,7 +189,7 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
     $definition['weight'] = $this->getWeight();
     $definition['id'] = $this->getPluginId();
     $definition['metadata'] = ['entity_id' => $this->id()];
-    $definition['form_class'] = '\Drupal\menu_link_content\Form\MenuLinkContentForm';
+    $definition['form_class'] = \Drupal\menu_link_content\Form\MenuLinkContentForm::class;
     $definition['enabled'] = $this->isEnabled() ? 1 : 0;
     $definition['expanded'] = $this->isExpanded() ? 1 : 0;
     $definition['provider'] = 'menu_link_content';
@@ -202,17 +202,17 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     $values += ['bundle' => 'menu_link_content'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
-    if (parse_url($this->link->uri, PHP_URL_SCHEME) === 'internal') {
+    if (parse_url((string) $this->link->uri, PHP_URL_SCHEME) === 'internal') {
       $this->setRequiresRediscovery(TRUE);
     }
     else {
@@ -223,7 +223,7 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     // Don't update the menu tree if a pending revision was saved.
@@ -258,7 +258,7 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
@@ -434,7 +434,7 @@ class MenuLinkContent extends EditorialContentEntityBase implements MenuLinkCont
   /**
    * {@inheritdoc}
    */
-  public function setRequiresRediscovery($rediscovery) {
+  public function setRequiresRediscovery($rediscovery): static {
     $this->set('rediscover', $rediscovery);
     return $this;
   }

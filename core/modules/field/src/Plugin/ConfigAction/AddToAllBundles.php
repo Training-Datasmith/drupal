@@ -26,12 +26,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   admin_label: new TranslatableMarkup('Add a field to all bundles'),
   entity_types: ['field_storage_config'],
 )]
-final class AddToAllBundles implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class AddToAllBundles implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly EntityTypeManagerInterface $entityTypeManager,
-    private readonly EntityTypeBundleInfoInterface $entityTypeBundleInfo,
-    private readonly ConfigManagerInterface $configManager,
+    private EntityTypeManagerInterface $entityTypeManager,
+    private EntityTypeBundleInfoInterface $entityTypeBundleInfo,
+    private ConfigManagerInterface $configManager,
   ) {}
 
   /**

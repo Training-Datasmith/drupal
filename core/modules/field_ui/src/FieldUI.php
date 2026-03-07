@@ -50,18 +50,15 @@ class FieldUI {
       $next_destination += [
         'route_parameters' => [],
       ];
-      $next_destination = Url::fromRoute($next_destination['route_name'], $next_destination['route_parameters'], $next_destination['options']);
+      return Url::fromRoute($next_destination['route_name'], $next_destination['route_parameters'], $next_destination['options']);
     }
-    else {
-      $options = UrlHelper::parse($next_destination);
-      if ($destinations) {
-        $options['query']['destinations'] = $destinations;
-      }
-      // Redirect to any given path within the same domain.
-      // @todo Revisit this in https://www.drupal.org/node/2418219.
-      $next_destination = Url::fromUserInput('/' . $options['path'], $options);
+    $options = UrlHelper::parse($next_destination);
+    if ($destinations) {
+      $options['query']['destinations'] = $destinations;
     }
-    return $next_destination;
+    // Redirect to any given path within the same domain.
+    // @todo Revisit this in https://www.drupal.org/node/2418219.
+    return Url::fromUserInput('/' . $options['path'], $options);
   }
 
   /**
@@ -75,7 +72,7 @@ class FieldUI {
    * @return array
    *   An array that can be used a route parameter.
    */
-  public static function getRouteBundleParameter(EntityTypeInterface $entity_type, $bundle) {
+  public static function getRouteBundleParameter(EntityTypeInterface $entity_type, $bundle): array {
     $bundle_parameter_key = $entity_type->getBundleEntityType() ?: 'bundle';
     return [$bundle_parameter_key => $bundle];
   }

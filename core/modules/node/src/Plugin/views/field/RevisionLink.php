@@ -50,7 +50,7 @@ class RevisionLink extends LinkBase {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultLabel() {
+  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('View');
   }
 

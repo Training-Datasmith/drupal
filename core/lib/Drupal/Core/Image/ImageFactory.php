@@ -10,13 +10,6 @@ use Drupal\Core\ImageToolkit\ImageToolkitManager;
 class ImageFactory {
 
   /**
-   * The image toolkit plugin manager.
-   *
-   * @var \Drupal\Core\ImageToolkit\ImageToolkitManager
-   */
-  protected $toolkitManager;
-
-  /**
    * The image toolkit ID to use for this factory.
    *
    * @var string
@@ -26,11 +19,11 @@ class ImageFactory {
   /**
    * Constructs a new ImageFactory object.
    *
-   * @param \Drupal\Core\ImageToolkit\ImageToolkitManager $toolkit_manager
+   * @param \Drupal\Core\ImageToolkit\ImageToolkitManager $toolkitManager
    *   The image toolkit plugin manager.
    */
-  public function __construct(ImageToolkitManager $toolkit_manager) {
-    $this->toolkitManager = $toolkit_manager;
+  public function __construct(protected \Drupal\Core\ImageToolkit\ImageToolkitManager $toolkitManager)
+  {
   }
 
   /**
@@ -41,7 +34,7 @@ class ImageFactory {
    *
    * @return $this
    */
-  public function setToolkitId($toolkit_id) {
+  public function setToolkitId($toolkit_id): static {
     $this->toolkitId = $toolkit_id;
     return $this;
   }
@@ -82,7 +75,7 @@ class ImageFactory {
    *
    * @see ImageFactory::setToolkitId()
    */
-  public function get($source = NULL, $toolkit_id = NULL) {
+  public function get($source = NULL, $toolkit_id = NULL): \Drupal\Core\Image\Image {
     $toolkit_id = $toolkit_id ?: $this->getToolkitId();
     return new Image($this->toolkitManager->createInstance($toolkit_id), $source);
   }
@@ -99,7 +92,7 @@ class ImageFactory {
    *
    * @see \Drupal\Core\ImageToolkit\ImageToolkitInterface::getSupportedExtensions()
    */
-  public function getSupportedExtensions($toolkit_id = NULL) {
+  public function getSupportedExtensions($toolkit_id = NULL): mixed {
     $toolkit_id = $toolkit_id ?: $this->getToolkitId();
     $definition = $this->toolkitManager->getDefinition($toolkit_id);
     return call_user_func($definition['class'] . '::getSupportedExtensions');

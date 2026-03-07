@@ -36,20 +36,6 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   use WorkspaceSafeFormTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository service.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * The action storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -64,25 +50,11 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   protected $actions = [];
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * The messenger.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
    */
   protected $messenger;
-
-  /**
-   * The current route match service.
-   *
-   * @var \Drupal\Core\Routing\ResettableStackedRouteMatchInterface
-   */
-  protected ResettableStackedRouteMatchInterface $routeMatch;
 
   /**
    * Constructs a new BulkForm object.
@@ -93,15 +65,15 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\Core\Routing\ResettableStackedRouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\ResettableStackedRouteMatchInterface $routeMatch
    *   The current route match service.
    *
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
@@ -111,40 +83,36 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    EntityTypeManagerInterface $entity_type_manager,
-    LanguageManagerInterface $language_manager,
+    protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+    protected \Drupal\Core\Language\LanguageManagerInterface $languageManager,
     MessengerInterface $messenger,
-    EntityRepositoryInterface $entity_repository,
+    protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository,
+    /**
+     * The current route match service.
+     */
     #[Autowire(service: 'current_route_match')]
-    ResettableStackedRouteMatchInterface $route_match,
+    protected ResettableStackedRouteMatchInterface $routeMatch,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->actionStorage = $entity_type_manager->getStorage('action');
-    $this->languageManager = $language_manager;
+    $this->actionStorage = $this->entityTypeManager->getStorage('action');
     $this->messenger = $messenger;
-    $this->entityRepository = $entity_repository;
-    $this->routeMatch = $route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $entity_type = $this->getEntityType();
     // Filter the actions to only include those for this entity type.
-    $this->actions = array_filter($this->actionStorage->loadMultiple(), function ($action) use ($entity_type) {
-      return $action->getType() == $entity_type;
-    });
+    $this->actions = array_filter($this->actionStorage->loadMultiple(), fn(\Drupal\Core\Entity\EntityInterface $action) => $action->getType() == $entity_type);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     // @todo Consider making the bulk operation form cacheable. See
     //   https://www.drupal.org/node/2503009.
     return 0;
@@ -160,7 +128,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return [];
   }
 
@@ -217,7 +185,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['action_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Action title'),
@@ -247,7 +215,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::validateOptionsForm($form, $form_state);
 
     $selected_actions = $form_state->getValue(['options', 'selected_actions']);
@@ -257,7 +225,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function preRender(&$values) {
+  public function preRender(&$values): void {
     parent::preRender($values);
 
     // If the view is using a table style, provide a placeholder for a
@@ -273,7 +241,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function getValue(ResultRow $row, $field = NULL) {
+  public function getValue(ResultRow $row, $field = NULL): string {
     return '<!--form-item-' . $this->options['id'] . '--' . $row->index . '-->';
   }
 
@@ -285,7 +253,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function viewsForm(&$form, FormStateInterface $form_state) {
+  public function viewsForm(array &$form, FormStateInterface $form_state): void {
     // Make sure we do not accidentally cache this form.
     // @todo Evaluate this again in https://www.drupal.org/node/2503009.
     $form['#cache']['max-age'] = 0;
@@ -359,7 +327,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
    * @return array
    *   An associative array of operations, suitable for a select element.
    */
-  protected function getBulkOptions($filtered = TRUE) {
+  protected function getBulkOptions($filtered = TRUE): array {
     $options = [];
     // Filter the action list.
     foreach ($this->actions as $id => $action) {
@@ -368,12 +336,12 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
         // If the field is configured to include only the selected actions,
         // skip actions that were not selected.
         if (($this->options['include_exclude'] == 'include') && !$in_selected) {
-          continue;
+            continue;
         }
         // Otherwise, if the field is configured to exclude the selected
         // actions, skip actions that were selected.
-        elseif (($this->options['include_exclude'] == 'exclude') && $in_selected) {
-          continue;
+        if (($this->options['include_exclude'] == 'exclude') && $in_selected) {
+            continue;
         }
       }
 
@@ -394,7 +362,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    *   Thrown when the user tried to access an action without access to it.
    */
-  public function viewsFormSubmit(&$form, FormStateInterface $form_state) {
+  public function viewsFormSubmit(&$form, FormStateInterface $form_state): void {
     if ($form_state->get('step') == 'views_form_views_form') {
       // Filter only selected checkboxes. Use the actual user input rather than
       // the raw form values array, since the site data may change before the
@@ -458,7 +426,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
    * @return string
    *   Message displayed when no items are selected.
    */
-  protected function emptySelectedMessage() {
+  protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('No items selected.');
   }
 
@@ -475,7 +443,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function viewsFormValidate(&$form, FormStateInterface $form_state) {
+  public function viewsFormValidate(&$form, FormStateInterface $form_state): void {
     $ids = $form_state->getValue($this->options['id']);
     if (empty($ids) || empty(array_filter($ids))) {
       $form_state->setErrorByName('', $this->emptySelectedMessage());
@@ -490,7 +458,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if ($this->languageManager->isMultilingual()) {
       $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
     }
@@ -499,7 +467,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
   /**
    * {@inheritdoc}
    */
-  public function clickSortable() {
+  public function clickSortable(): bool {
     return FALSE;
   }
 
@@ -522,7 +490,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
    *
    * @see self::loadEntityFromBulkFormKey()
    */
-  protected function calculateEntityBulkFormKey(EntityInterface $entity, $use_revision) {
+  protected function calculateEntityBulkFormKey(EntityInterface $entity, $use_revision): string {
     $key_parts = [$entity->language()->getId(), $entity->id()];
 
     if ($entity instanceof RevisionableInterface && $use_revision) {
@@ -572,7 +540,7 @@ class BulkForm extends FieldPluginBase implements CacheableDependencyInterface, 
     }
 
     if ($entity instanceof TranslatableInterface) {
-      $entity = $entity->getTranslation($langcode);
+      return $entity->getTranslation($langcode);
     }
 
     return $entity;

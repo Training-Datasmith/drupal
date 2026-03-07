@@ -16,7 +16,7 @@ class TermForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $term = $this->entity;
     $vocab_storage = $this->entityTypeManager->getStorage('taxonomy_vocabulary');
     /** @var \Drupal\taxonomy\TermStorageInterface $taxonomy_storage */
@@ -139,7 +139,7 @@ class TermForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     // Ensure numeric values.
@@ -151,11 +151,11 @@ class TermForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     $term = parent::buildEntity($form, $form_state);
 
     // Prevent leading and trailing spaces in term names.
-    $term->setName(trim($term->getName()));
+    $term->setName(trim((string) $term->getName()));
 
     // Assign parents with proper delta values starting from 0.
     $term->parent = array_values($form_state->getValue('parent'));
@@ -166,7 +166,7 @@ class TermForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function getEditedFieldNames(FormStateInterface $form_state) {
+  protected function getEditedFieldNames(FormStateInterface $form_state): array {
     return array_merge(['parent', 'weight'], parent::getEditedFieldNames($form_state));
   }
 
@@ -191,7 +191,7 @@ class TermForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $term = $this->entity;
 
     $result = $term->save();

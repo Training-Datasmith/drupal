@@ -17,30 +17,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MenuLinkContentAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
 
   /**
-   * The access manager to check routes by name.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
    * Creates a new MenuLinkContentAccessControlHandler.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager to check routes by name.
    */
-  public function __construct(EntityTypeInterface $entity_type, AccessManagerInterface $access_manager) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Core\Access\AccessManagerInterface $accessManager) {
     parent::__construct($entity_type);
-
-    $this->accessManager = $access_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static($entity_type, $container->get('access_manager'));
   }
 
@@ -55,10 +46,9 @@ class MenuLinkContentAccessControlHandler extends EntityAccessControlHandler imp
         return AccessResult::allowedIfHasPermission($account, 'administer menu');
 
       case 'update':
-        if (!$account->hasPermission('administer menu')) {
-          return AccessResult::neutral("The 'administer menu' permission is required.")->cachePerPermissions();
-        }
-        else {
+          if (!$account->hasPermission('administer menu')) {
+            return AccessResult::neutral("The 'administer menu' permission is required.")->cachePerPermissions();
+          }
           // Assume that access is allowed.
           $access = AccessResult::allowed()->cachePerPermissions()->addCacheableDependency($entity);
           /** @var \Drupal\menu_link_content\MenuLinkContentInterface $entity */
@@ -69,7 +59,6 @@ class MenuLinkContentAccessControlHandler extends EntityAccessControlHandler imp
             $access = $access->andIf($link_access);
           }
           return $access;
-        }
 
       case 'delete':
         return AccessResult::allowedIfHasPermission($account, 'administer menu')

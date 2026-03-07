@@ -15,20 +15,13 @@ class ToolbarLinkBuilder implements TrustedCallbackInterface {
   use StringTranslationTrait;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountProxyInterface
-   */
-  protected $account;
-
-  /**
    * ToolbarHandler constructor.
    *
    * @param \Drupal\Core\Session\AccountProxyInterface $account
    *   The current user.
    */
-  public function __construct(AccountProxyInterface $account) {
-    $this->account = $account;
+  public function __construct(protected \Drupal\Core\Session\AccountProxyInterface $account)
+  {
   }
 
   /**
@@ -37,7 +30,7 @@ class ToolbarLinkBuilder implements TrustedCallbackInterface {
    * @return array
    *   A renderable array as expected by the renderer service.
    */
-  public function renderToolbarLinks() {
+  public function renderToolbarLinks(): array {
     $links = [
       'account' => [
         'title' => $this->t('View profile'),
@@ -58,7 +51,8 @@ class ToolbarLinkBuilder implements TrustedCallbackInterface {
         'url' => Url::fromRoute('user.logout'),
       ],
     ];
-    $build = [
+
+    return [
       '#theme' => 'links__toolbar_user',
       '#links' => $links,
       '#attributes' => [
@@ -68,8 +62,6 @@ class ToolbarLinkBuilder implements TrustedCallbackInterface {
         'contexts' => ['user'],
       ],
     ];
-
-    return $build;
   }
 
   /**
@@ -78,7 +70,7 @@ class ToolbarLinkBuilder implements TrustedCallbackInterface {
    * @return array
    *   A renderable array as expected by the renderer service.
    */
-  public function renderDisplayName() {
+  public function renderDisplayName(): array {
     return [
       '#plain_text' => $this->account->getDisplayName(),
     ];
@@ -87,7 +79,7 @@ class ToolbarLinkBuilder implements TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['renderToolbarLinks', 'renderDisplayName'];
   }
 

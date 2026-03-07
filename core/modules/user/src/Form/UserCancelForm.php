@@ -36,7 +36,7 @@ class UserCancelForm extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if ($this->entity->id() == $this->currentUser()->id()) {
       return $this->t('Are you sure you want to cancel your account?');
     }
@@ -72,7 +72,7 @@ class UserCancelForm extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Confirm');
   }
 
@@ -124,15 +124,13 @@ class UserCancelForm extends ContentEntityConfirmFormBase {
       '#value' => !$own_account,
     ];
 
-    $form = parent::buildForm($form, $form_state);
-
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Cancel account immediately, if the current user has administrative
     // privileges, no confirmation mail shall be sent, and the user does not
     // attempt to cancel the own account.

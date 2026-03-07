@@ -26,10 +26,7 @@ class NodeTypeAccessControlHandler extends EntityAccessControlHandler {
         if ($entity->isLocked()) {
           return AccessResult::forbidden()->addCacheableDependency($entity);
         }
-        else {
-          return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
-        }
-        break;
+        return parent::checkAccess($entity, $operation, $account)->addCacheableDependency($entity);
 
       default:
         return parent::checkAccess($entity, $operation, $account);

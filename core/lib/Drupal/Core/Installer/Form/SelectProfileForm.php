@@ -24,14 +24,14 @@ class SelectProfileForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'install_select_profile_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $install_state = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $install_state = NULL): array {
     $form['#title'] = $this->t('Select an installation profile');
 
     $profiles = [];
@@ -76,7 +76,7 @@ class SelectProfileForm extends FormBase {
       '#type' => 'radios',
       '#title' => $this->t('Select an installation profile'),
       '#title_display' => 'invisible',
-      '#options' => array_map([$this, 't'], $names),
+      '#options' => array_map($this->t(...), $names),
       '#default_value' => 'standard',
     ];
     foreach (array_keys($names) as $profile_name) {
@@ -146,7 +146,7 @@ class SelectProfileForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     global $install_state;
     $profile = $form_state->getValue('profile');
     if ($profile === static::CONFIG_INSTALL_PROFILE_KEY) {

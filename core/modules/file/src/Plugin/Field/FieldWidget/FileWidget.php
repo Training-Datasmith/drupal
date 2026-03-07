@@ -28,16 +28,13 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 class FileWidget extends WidgetBase {
 
   /**
-   * The element info manager.
-   */
-  protected ElementInfoManagerInterface $elementInfo;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, ElementInfoManagerInterface $element_info) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, /**
+   * The element info manager.
+   */
+  protected ElementInfoManagerInterface $elementInfo) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
-    $this->elementInfo = $element_info;
   }
 
   /**
@@ -52,7 +49,7 @@ class FileWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $element['notice'] = [
       '#type' => 'container',
       '#markup' => $this->t('The UploadProgress PHP extension must be enabled to configure the progress indicator. Check the <a href=":status">status report</a> for more information.', [':status' => Url::fromRoute('system.status')->toString()]),
@@ -79,8 +76,9 @@ class FileWidget extends WidgetBase {
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
     $summary[] = $this->t('Progress indicator: @progress_indicator', ['@progress_indicator' => $this->getSetting('progress_indicator')]);
     return $summary;
@@ -90,8 +88,9 @@ class FileWidget extends WidgetBase {
    * Overrides \Drupal\Core\Field\WidgetBase::formMultipleElements().
    *
    * Special handling for draggable multiple widgets and 'add more' button.
+   * @return mixed[]
    */
-  protected function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
+  protected function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state): array {
     $field_name = $this->fieldDefinition->getName();
     $parents = $form['#parents'];
 
@@ -209,7 +208,7 @@ class FileWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $field_settings = $this->getFieldSettings();
 
     // The field settings include defaults for the field type. However, this
@@ -278,8 +277,9 @@ class FileWidget extends WidgetBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
     // Since file upload widget now supports uploads of more than one file at a
     // time it always returns an array of fids. We have to translate this to a
     // single fid, as field expects single value.
@@ -299,7 +299,7 @@ class FileWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
+  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state): void {
     parent::extractFormValues($items, $form, $form_state);
 
     // Update reference to 'items' stored during upload to take into account
@@ -316,7 +316,7 @@ class FileWidget extends WidgetBase {
    *
    * This method is assigned as a #value_callback in formElement() method.
    */
-  public static function value($element, $input, FormStateInterface $form_state) {
+  public static function value(array $element, array $input, FormStateInterface $form_state) {
     if ($input) {
       if (empty($input['display'])) {
         // Updates the display field with the default value because
@@ -351,7 +351,7 @@ class FileWidget extends WidgetBase {
    *
    * This validator is used only when cardinality not set to 1 or unlimited.
    */
-  public static function validateMultipleCount($element, FormStateInterface $form_state, $form) {
+  public static function validateMultipleCount(array $element, FormStateInterface $form_state, array $form): void {
     $values = NestedArray::getValue($form_state->getValues(), $element['#parents']);
 
     $array_parents = $element['#array_parents'];
@@ -391,7 +391,7 @@ class FileWidget extends WidgetBase {
    *
    * This method is assigned as a #process callback in formElement() method.
    */
-  public static function process($element, FormStateInterface $form_state, $form) {
+  public static function process(array $element, FormStateInterface $form_state, array $form): array {
     $item = $element['#value'];
     $item['fids'] = $element['fids']['#value'];
 
@@ -469,7 +469,7 @@ class FileWidget extends WidgetBase {
    * This method on is assigned as a #process callback in formMultipleElements()
    * method.
    */
-  public static function processMultiple($element, FormStateInterface $form_state, $form) {
+  public static function processMultiple(array $element, FormStateInterface $form_state, $form): array {
     $element_children = Element::children($element, TRUE);
     $count = count($element_children);
 
@@ -527,7 +527,7 @@ class FileWidget extends WidgetBase {
    *   A description of the file suitable for use in the administrative
    *   interface.
    */
-  protected static function getDescriptionFromElement($element) {
+  protected static function getDescriptionFromElement(array $element) {
     // Use the actual file description, if it's available.
     if (!empty($element['#default_value']['description'])) {
       return $element['#default_value']['description'];
@@ -548,7 +548,7 @@ class FileWidget extends WidgetBase {
    *
    * @see \Drupal\file\Element\ManagedFile::submit()
    */
-  public static function submit($form, FormStateInterface $form_state) {
+  public static function submit(array $form, FormStateInterface $form_state): void {
     // During the form rebuild, formElement() will create field item widget
     // elements using re-indexed deltas, so clear out FormState::$input to
     // avoid a mismatch between old and new deltas. The rebuilt elements will
@@ -573,7 +573,7 @@ class FileWidget extends WidgetBase {
     // If there are more files uploaded via the same widget, we have to separate
     // them, as we display each file in its own widget.
     $new_values = [];
-    foreach ($submitted_values as $delta => $submitted_value) {
+    foreach ($submitted_values as $submitted_value) {
       if (is_array($submitted_value['fids'])) {
         foreach ($submitted_value['fids'] as $fid) {
           $new_value = $submitted_value;
@@ -601,7 +601,7 @@ class FileWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function flagErrors(FieldItemListInterface $items, ConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state) {
+  public function flagErrors(FieldItemListInterface $items, ConstraintViolationListInterface $violations, array $form, FormStateInterface $form_state): void {
     // Never flag validation errors for the remove button.
     $clicked_button = end($form_state->getTriggeringElement()['#parents']);
     if ($clicked_button !== 'remove_button') {

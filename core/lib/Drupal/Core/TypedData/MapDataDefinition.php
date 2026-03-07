@@ -12,17 +12,15 @@ class MapDataDefinition extends ComplexDataDefinitionBase {
    *
    * @var string
    */
-  protected $mainPropertyName = NULL;
+  protected $mainPropertyName;
 
   /**
    * Creates a new map definition.
    *
    * @param string $type
    *   (optional) The data type of the map. Defaults to 'map'.
-   *
-   * @return static
    */
-  public static function create($type = 'map') {
+  public static function create($type = 'map'): static {
     $definition['type'] = $type;
     return new static($definition);
   }
@@ -54,7 +52,7 @@ class MapDataDefinition extends ComplexDataDefinitionBase {
    *
    * @return $this
    */
-  public function setPropertyDefinition($name, ?DataDefinitionInterface $definition = NULL) {
+  public function setPropertyDefinition($name, ?DataDefinitionInterface $definition = NULL): static {
     if (isset($definition)) {
       $this->propertyDefinitions[$name] = $definition;
     }
@@ -79,7 +77,7 @@ class MapDataDefinition extends ComplexDataDefinitionBase {
    *
    * @return $this
    */
-  public function setMainPropertyName($name) {
+  public function setMainPropertyName($name): static {
     $this->mainPropertyName = $name;
     return $this;
   }

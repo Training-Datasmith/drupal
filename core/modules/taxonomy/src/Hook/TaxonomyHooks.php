@@ -65,12 +65,10 @@ class TaxonomyHooks {
         ]) . '</li>';
         $output .= '</ul>';
         $output .= '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.taxonomy_vocabulary.collection':
-        $output = '<p>' . $this->t('Taxonomy is for categorizing content. Terms are grouped into vocabularies. For example, a vocabulary called "Fruit" would contain the terms "Apple" and "Banana".') . '</p>';
-        return $output;
+        return '<p>' . $this->t('Taxonomy is for categorizing content. Terms are grouped into vocabularies. For example, a vocabulary called "Fruit" would contain the terms "Apple" and "Banana".') . '</p>';
     }
     return NULL;
   }
@@ -81,7 +79,7 @@ class TaxonomyHooks {
    * @todo Evaluate removing as part of https://www.drupal.org/node/2358923.
    */
   #[Hook('local_tasks_alter')]
-  public function localTasksAlter(&$local_tasks): void {
+  public function localTasksAlter(array &$local_tasks): void {
     $local_task_key = 'config_translation.local_tasks:entity.taxonomy_vocabulary.config_translation_overview';
     if (isset($local_tasks[$local_task_key])) {
       // The config_translation module expects the base route to be
@@ -202,7 +200,7 @@ class TaxonomyHooks {
     if ($status && $node->isDefaultRevision()) {
       // Collect a unique list of all the term IDs from all node fields.
       $tid_all = [];
-      $entity_reference_class = 'Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem';
+      $entity_reference_class = \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem::class;
       foreach ($node->getFieldDefinitions() as $field) {
         $field_name = $field->getName();
         $class = $field->getItemDefinition()->getClass();

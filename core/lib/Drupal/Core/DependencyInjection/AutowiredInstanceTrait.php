@@ -21,8 +21,6 @@ trait AutowiredInstanceTrait {
    *   The service container this instance should use.
    * @param mixed ...$args
    *   Any predefined arguments to pass to the constructor.
-   *
-   * @return static
    */
   public static function createInstanceAutowired(ContainerInterface $container, mixed ...$args): static {
     $reflection = new \ReflectionClass(static::class);

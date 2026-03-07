@@ -36,60 +36,21 @@ use Twig\Runtime\EscaperRuntime;
 class TwigExtension extends AbstractExtension {
 
   /**
-   * The URL generator.
-   *
-   * @var \Drupal\Core\Routing\UrlGeneratorInterface
-   */
-  protected $urlGenerator;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
-   * The date formatter.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The file URL generator.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected $fileUrlGenerator;
-
-  /**
    * Constructs \Drupal\Core\Template\TwigExtension.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
-   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
+   * @param \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator
    *   The URL generator.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter.
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
    *   The file URL generator.
    */
-  public function __construct(RendererInterface $renderer, UrlGeneratorInterface $url_generator, ThemeManagerInterface $theme_manager, DateFormatterInterface $date_formatter, FileUrlGeneratorInterface $file_url_generator) {
-    $this->renderer = $renderer;
-    $this->urlGenerator = $url_generator;
-    $this->themeManager = $theme_manager;
-    $this->dateFormatter = $date_formatter;
-    $this->fileUrlGenerator = $file_url_generator;
+  public function __construct(protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator)
+  {
   }
 
   /**
@@ -98,17 +59,17 @@ class TwigExtension extends AbstractExtension {
   public function getFunctions() {
     return [
       // This function will receive a renderable array, if an array is detected.
-      new TwigFunction('render_var', [$this, 'renderVar']),
+      new TwigFunction('render_var', $this->renderVar(...)),
       // The URL and path function are defined in close parallel to those found
       // in \Symfony\Bridge\Twig\Extension\RoutingExtension.
-      new TwigFunction('url', [$this, 'getUrl'], ['is_safe_callback' => [$this, 'isUrlGenerationSafe']]),
-      new TwigFunction('path', [$this, 'getPath'], ['is_safe_callback' => [$this, 'isUrlGenerationSafe']]),
-      new TwigFunction('link', [$this, 'getLink']),
-      new TwigFunction('file_url', [$this, 'getFileUrl']),
-      new TwigFunction('attach_library', [$this, 'attachLibrary']),
-      new TwigFunction('active_theme_path', [$this, 'getActiveThemePath']),
-      new TwigFunction('active_theme', [$this, 'getActiveTheme']),
-      new TwigFunction('create_attribute', [$this, 'createAttribute']),
+      new TwigFunction('url', $this->getUrl(...), ['is_safe_callback' => $this->isUrlGenerationSafe(...)]),
+      new TwigFunction('path', $this->getPath(...), ['is_safe_callback' => $this->isUrlGenerationSafe(...)]),
+      new TwigFunction('link', $this->getLink(...)),
+      new TwigFunction('file_url', $this->getFileUrl(...)),
+      new TwigFunction('attach_library', $this->attachLibrary(...)),
+      new TwigFunction('active_theme_path', $this->getActiveThemePath(...)),
+      new TwigFunction('active_theme', $this->getActiveTheme(...)),
+      new TwigFunction('create_attribute', $this->createAttribute(...)),
     ];
   }
 
@@ -125,12 +86,12 @@ class TwigExtension extends AbstractExtension {
       // "raw" filter and give it identifiable names. These filters should only
       // be used in "trans" tags.
       // @see TwigNodeTrans::compileString()
-      new TwigFilter('placeholder', [$this, 'escapePlaceholder'], ['is_safe' => ['html'], 'needs_environment' => TRUE]),
+      new TwigFilter('placeholder', $this->escapePlaceholder(...), ['is_safe' => ['html'], 'needs_environment' => TRUE]),
 
       // Replace twig's escape filter with our own.
       new TwigFilter(
         'drupal_escape',
-        [$this, 'escapeFilter'],
+        $this->escapeFilter(...),
         [
           'needs_environment' => TRUE,
           'is_safe_callback' => 'twig_escape_filter_is_safe',
@@ -140,22 +101,22 @@ class TwigExtension extends AbstractExtension {
       // Implements safe joining.
       // @todo Make that the default for |join? Upstream issue:
       //   https://github.com/fabpot/Twig/issues/1420
-      new TwigFilter('safe_join', [$this, 'safeJoin'], ['needs_environment' => TRUE, 'is_safe' => ['html']]),
+      new TwigFilter('safe_join', $this->safeJoin(...), ['needs_environment' => TRUE, 'is_safe' => ['html']]),
 
       // Array filters.
-      new TwigFilter('without', [$this, 'withoutFilter']),
+      new TwigFilter('without', $this->withoutFilter(...)),
 
       // CSS class and ID filters.
       new TwigFilter('clean_class', '\Drupal\Component\Utility\Html::getClass'),
       new TwigFilter('clean_id', '\Drupal\Component\Utility\Html::getId'),
       new TwigFilter('clean_unique_id', '\Drupal\Component\Utility\Html::getUniqueId'),
-      new TwigFilter('add_class', [$this, 'addClass']),
-      new TwigFilter('set_attribute', [$this, 'setAttribute']),
+      new TwigFilter('add_class', $this->addClass(...)),
+      new TwigFilter('set_attribute', $this->setAttribute(...)),
       // This filter will render a renderable array to use the string results.
-      new TwigFilter('render', [$this, 'renderVar']),
-      new TwigFilter('format_date', [$this->dateFormatter, 'format']),
+      new TwigFilter('render', $this->renderVar(...)),
+      new TwigFilter('format_date', $this->dateFormatter->format(...)),
       // Add new theme hook suggestions directly from a Twig template.
-      new TwigFilter('add_suggestion', [$this, 'suggestThemeHook']),
+      new TwigFilter('add_suggestion', $this->suggestThemeHook(...)),
     ];
   }
 
@@ -282,12 +243,11 @@ class TwigExtension extends AbstractExtension {
     if ($text instanceof TwigMarkup) {
       $text = Markup::create($text);
     }
-    $build = [
+    return [
       '#type' => 'link',
       '#title' => $text,
       '#url' => $url,
     ];
-    return $build;
   }
 
   /**
@@ -376,7 +336,7 @@ class TwigExtension extends AbstractExtension {
    * @param string $library
    *   An asset library.
    */
-  public function attachLibrary($library) {
+  public function attachLibrary($library): void {
     assert(is_string($library), 'Argument must be a string.');
 
     // Use Renderer::render() on a temporary render array to get additional
@@ -470,7 +430,7 @@ class TwigExtension extends AbstractExtension {
         $return = $arg->toString();
       }
       else {
-        throw new \Exception('Object of type ' . get_class($arg) . ' cannot be printed.');
+        throw new \Exception('Object of type ' . $arg::class . ' cannot be printed.');
       }
     }
 
@@ -592,7 +552,7 @@ class TwigExtension extends AbstractExtension {
         return $arg->toString();
       }
       else {
-        throw new \Exception('Object of type ' . get_class($arg) . ' cannot be printed.');
+        throw new \Exception('Object of type ' . $arg::class . ' cannot be printed.');
       }
     }
 
@@ -625,10 +585,9 @@ class TwigExtension extends AbstractExtension {
       $value = iterator_to_array($value, FALSE);
     }
 
-    return implode($glue, array_map(function ($item) use ($env) {
-      // If $item is not marked safe then it will be escaped.
-      return $this->escapeFilter($env, $item, 'html', NULL, TRUE);
-    }, (array) $value));
+    return implode($glue, array_map(
+        // If $item is not marked safe then it will be escaped.
+        fn($item) => $this->escapeFilter($env, $item, 'html', NULL, TRUE), (array) $value));
   }
 
   /**

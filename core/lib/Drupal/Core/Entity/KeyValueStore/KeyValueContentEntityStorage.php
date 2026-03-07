@@ -16,7 +16,7 @@ class KeyValueContentEntityStorage extends KeyValueEntityStorage implements Cont
   /**
    * {@inheritdoc}
    */
-  public function createTranslation(ContentEntityInterface $entity, $langcode, array $values = []) {
+  public function createTranslation(ContentEntityInterface $entity, $langcode, array $values = []): void {
     // @todo Complete the content entity storage implementation in
     //   https://www.drupal.org/node/2618436.
   }
@@ -24,14 +24,14 @@ class KeyValueContentEntityStorage extends KeyValueEntityStorage implements Cont
   /**
    * {@inheritdoc}
    */
-  public function hasStoredTranslations(TranslatableInterface $entity) {
+  public function hasStoredTranslations(TranslatableInterface $entity): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createRevision(RevisionableInterface $entity, $default = TRUE, $keep_untranslatable_fields = NULL) {
+  public function createRevision(RevisionableInterface $entity, $default = TRUE, $keep_untranslatable_fields = NULL): null {
     return NULL;
   }
 
@@ -43,7 +43,7 @@ class KeyValueContentEntityStorage extends KeyValueEntityStorage implements Cont
   /**
    * {@inheritdoc}
    */
-  public function loadMultipleRevisions(array $revision_ids) {
+  public function loadMultipleRevisions(array $revision_ids): array {
     return [];
   }
 
@@ -57,28 +57,28 @@ class KeyValueContentEntityStorage extends KeyValueEntityStorage implements Cont
   /**
    * {@inheritdoc}
    */
-  public function getLatestRevisionId($entity_id) {
+  public function getLatestRevisionId($entity_id): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLatestTranslationAffectedRevisionId($entity_id, $langcode) {
+  public function getLatestTranslationAffectedRevisionId($entity_id, $langcode): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function loadRevision($revision_id) {
+  public function loadRevision($revision_id): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteRevision($revision_id) {
+  public function deleteRevision($revision_id): null {
     return NULL;
   }
 

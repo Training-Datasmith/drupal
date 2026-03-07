@@ -21,7 +21,7 @@ class DblogMessage extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if ($this->options['replace_variables']) {
@@ -42,7 +42,7 @@ class DblogMessage extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['replace_variables'] = [
@@ -62,9 +62,7 @@ class DblogMessage extends FieldPluginBase {
       $variables = unserialize($this->getvalue($values, 'variables'));
       return new FormattableMarkup($value, (array) $variables);
     }
-    else {
-      return $this->sanitizeValue($value);
-    }
+    return $this->sanitizeValue($value);
   }
 
 }

@@ -31,7 +31,7 @@ class SearchRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['score'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Display score'),
@@ -42,7 +42,7 @@ class SearchRow extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($row) {
+  public function render($row): array {
     return [
       '#theme' => $this->themeFunctions(),
       '#view' => $this->view,

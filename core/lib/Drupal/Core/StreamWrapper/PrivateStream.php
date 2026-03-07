@@ -19,7 +19,7 @@ class PrivateStream extends LocalStream {
   /**
    * {@inheritdoc}
    */
-  public static function getType() {
+  public static function getType(): int {
     return StreamWrapperInterface::LOCAL_NORMAL;
   }
 

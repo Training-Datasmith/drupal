@@ -166,7 +166,7 @@ final class Settings implements ContainerInjectionInterface {
    *   TRUE, if the user has overridden theme settings, FALSE otherwise.
    */
   public function userOverrideEnabled(?AccountInterface $account = NULL): bool {
-    $overrides = &drupal_static(__CLASS__ . '_' . __METHOD__, []);
+    $overrides = &drupal_static(self::class . '_' . __METHOD__, []);
 
     if (!$account || !$this->userData) {
       $account = $this->currentUser;
@@ -208,7 +208,7 @@ final class Settings implements ContainerInjectionInterface {
   private function getAdminTheme(): string {
     $admin_theme = $this->configFactory->get('system.theme')->get('admin');
     if (empty($admin_theme)) {
-      $admin_theme = $this->configFactory->get('system.theme')->get('default');
+      return $this->configFactory->get('system.theme')->get('default');
     }
     return $admin_theme;
   }
@@ -240,15 +240,13 @@ final class Settings implements ContainerInjectionInterface {
 
     // Accent color setting.
     $presets = Helper::accentColors();
-    $options = array_map(static function ($preset) {
-      return $preset['label'];
-    }, $presets);
+    $options = array_map(static fn(array $preset) => $preset['label'], $presets);
     $form['preset_accent_color'] = [
       '#type' => 'radios',
       '#title' => $this->t('Accent color'),
       '#default_value' => $account ? $this->get('preset_accent_color', $account) : $this->getDefault('preset_accent_color'),
       '#options' => $options,
-      '#after_build' => [[Helper::class, 'accentRadios']],
+      '#after_build' => [Helper::accentRadios(...)],
     ];
 
     // Accent color group.
@@ -284,7 +282,7 @@ final class Settings implements ContainerInjectionInterface {
       '#type' => 'color',
       '#placeholder' => '#777777',
       '#default_value' => $account ? $this->get('accent_color', $account) : $this->getDefault('accent_color'),
-      '#process' => [[__CLASS__, 'processColorPicker']],
+      '#process' => [[self::class, 'processColorPicker']],
     ];
 
     // Focus color setting.
@@ -321,7 +319,7 @@ final class Settings implements ContainerInjectionInterface {
       '#type' => 'color',
       '#placeholder' => '#777777',
       '#default_value' => $account ? $this->get('focus_color', $account) : $this->getDefault('focus_color'),
-      '#process' => [[__CLASS__, 'processColorPicker']],
+      '#process' => [[self::class, 'processColorPicker']],
     ];
 
     // Custom Focus color setting.
@@ -370,7 +368,7 @@ final class Settings implements ContainerInjectionInterface {
 
     if (!$account) {
       foreach ($form as $key => $element) {
-        $form[$key]['#after_build'][] = [__CLASS__, 'overriddenSettingByUser'];
+        $form[$key]['#after_build'][] = [self::class, 'overriddenSettingByUser'];
       }
     }
 

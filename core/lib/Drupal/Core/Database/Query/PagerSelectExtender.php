@@ -28,7 +28,7 @@ class PagerSelectExtender extends SelectExtender {
    *
    * @var int
    */
-  protected $element = NULL;
+  protected $element;
 
   /**
    * The count query that will be used for this pager.
@@ -104,7 +104,7 @@ class PagerSelectExtender extends SelectExtender {
    *   The count query object. It must return a single row with a single column,
    *   which is the total number of records.
    */
-  public function setCountQuery(SelectInterface $query) {
+  public function setCountQuery(SelectInterface $query): void {
     $this->customCountQuery = $query;
   }
 
@@ -121,9 +121,7 @@ class PagerSelectExtender extends SelectExtender {
     if ($this->customCountQuery) {
       return $this->customCountQuery;
     }
-    else {
-      return $this->query->countQuery();
-    }
+    return $this->query->countQuery();
   }
 
   /**
@@ -135,7 +133,7 @@ class PagerSelectExtender extends SelectExtender {
    *   An integer specifying the number of elements per page. If passed a false
    *   value (FALSE, 0, NULL), the pager is disabled.
    */
-  public function limit($limit = 10) {
+  public function limit($limit = 10): static {
     $this->limit = $limit;
     return $this;
   }
@@ -156,7 +154,7 @@ class PagerSelectExtender extends SelectExtender {
    * @param int $element
    *   Element ID that is used to differentiate different pager queries.
    */
-  public function element($element) {
+  public function element($element): static {
     $this->element = $element;
     $this->connection->getPagerManager()->reservePagerElementId($this->element);
     return $this;

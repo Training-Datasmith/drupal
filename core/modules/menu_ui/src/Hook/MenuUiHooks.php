@@ -64,14 +64,13 @@ class MenuUiHooks {
           ':themes' => Url::fromRoute('system.themes_page')->toString(),
           ':theme_settings' => Url::fromRoute('system.theme_settings')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     if ($route_name == 'entity.menu.add_form' && \Drupal::moduleHandler()->moduleExists('block') && \Drupal::currentUser()->hasPermission('administer blocks')) {
-      return '<p>' . $this->t('You can enable the newly-created block for this menu on the <a href=":blocks">Block layout page</a>.', [':blocks' => Url::fromRoute('block.admin_display')->toString()]) . '</p>';
+        return '<p>' . $this->t('You can enable the newly-created block for this menu on the <a href=":blocks">Block layout page</a>.', [':blocks' => Url::fromRoute('block.admin_display')->toString()]) . '</p>';
     }
-    elseif ($route_name == 'entity.menu.collection' && \Drupal::moduleHandler()->moduleExists('block') && \Drupal::currentUser()->hasPermission('administer blocks')) {
-      return '<p>' . $this->t('Each menu has a corresponding block that is managed on the <a href=":blocks">Block layout page</a>.', [':blocks' => Url::fromRoute('block.admin_display')->toString()]) . '</p>';
+    if ($route_name == 'entity.menu.collection' && \Drupal::moduleHandler()->moduleExists('block') && \Drupal::currentUser()->hasPermission('administer blocks')) {
+        return '<p>' . $this->t('Each menu has a corresponding block that is managed on the <a href=":blocks">Block layout page</a>.', [':blocks' => Url::fromRoute('block.admin_display')->toString()]) . '</p>';
     }
     return NULL;
   }
@@ -82,7 +81,7 @@ class MenuUiHooks {
   #[Hook('entity_type_build')]
   public function entityTypeBuild(array &$entity_types): void {
     /** @var \Drupal\Core\Entity\EntityTypeInterface[] $entity_types */
-    $entity_types['menu']->setFormClass('add', 'Drupal\menu_ui\MenuForm')->setFormClass('edit', 'Drupal\menu_ui\MenuForm')->setFormClass('delete', 'Drupal\menu_ui\Form\MenuDeleteForm')->setListBuilderClass('Drupal\menu_ui\MenuListBuilder')->setLinkTemplate('add-form', '/admin/structure/menu/add')->setLinkTemplate('delete-form', '/admin/structure/menu/manage/{menu}/delete')->setLinkTemplate('edit-form', '/admin/structure/menu/manage/{menu}')->setLinkTemplate('add-link-form', '/admin/structure/menu/manage/{menu}/add')->setLinkTemplate('collection', '/admin/structure/menu');
+    $entity_types['menu']->setFormClass('add', \Drupal\menu_ui\MenuForm::class)->setFormClass('edit', \Drupal\menu_ui\MenuForm::class)->setFormClass('delete', \Drupal\menu_ui\Form\MenuDeleteForm::class)->setListBuilderClass(\Drupal\menu_ui\MenuListBuilder::class)->setLinkTemplate('add-form', '/admin/structure/menu/add')->setLinkTemplate('delete-form', '/admin/structure/menu/manage/{menu}/delete')->setLinkTemplate('edit-form', '/admin/structure/menu/manage/{menu}')->setLinkTemplate('add-link-form', '/admin/structure/menu/manage/{menu}/add')->setLinkTemplate('collection', '/admin/structure/menu');
     if (isset($entity_types['node'])) {
       $entity_types['node']->addConstraint('MenuSettings', []);
     }
@@ -114,11 +113,9 @@ class MenuUiHooks {
       // The form can be used to edit or delete the menu link.
       return $entity->access('update', NULL, TRUE)->andIf($entity->access('delete', NULL, TRUE));
     }
-    else {
-      // If the node has no corresponding menu link, users needs to permission
-      // to create one.
-      return $this->entityTypeManager->getAccessControlHandler('menu_link_content')->createAccess(NULL, NULL, [], TRUE);
-    }
+    // If the node has no corresponding menu link, users needs to permission
+    // to create one.
+    return $this->entityTypeManager->getAccessControlHandler('menu_link_content')->createAccess(NULL, NULL, [], TRUE);
   }
 
   /**
@@ -129,7 +126,7 @@ class MenuUiHooks {
    * @see menu_ui_form_node_form_submit()
    */
   #[Hook('form_node_form_alter')]
-  public function formNodeFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formNodeFormAlter(array &$form, FormStateInterface $form_state) : void {
     // Generate a list of possible parents (not including this link or
     // descendants).
     // @todo This must be handled in a #process handler.
@@ -239,12 +236,10 @@ class MenuUiHooks {
    * @see menu_ui_form_node_type_form_builder()
    */
   #[Hook('form_node_type_form_alter')]
-  public function formNodeTypeFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formNodeTypeFormAlter(array &$form, FormStateInterface $form_state) : void {
     /** @var \Drupal\Core\Menu\MenuParentFormSelectorInterface $menu_parent_selector */
     $menu_parent_selector = \Drupal::service('menu.parent_form_selector');
-    $menu_options = array_map(function (MenuInterface $menu) {
-        return $menu->label();
-    }, Menu::loadMultiple());
+    $menu_options = array_map(fn(MenuInterface $menu) => $menu->label(), Menu::loadMultiple());
     asort($menu_options);
     /** @var \Drupal\node\NodeTypeInterface $type */
     $type = $form_state->getFormObject()->getEntity();
@@ -313,7 +308,7 @@ class MenuUiHooks {
         }
         $content_type->setThirdPartySetting('menu_ui', 'available_menus', $third_party_settings['available_menus']);
       }
-      if (isset($third_party_settings['parent']) && substr($third_party_settings['parent'], 0, strlen($parent_prefix)) == $parent_prefix) {
+      if (isset($third_party_settings['parent']) && str_starts_with($third_party_settings['parent'], $parent_prefix)) {
         $third_party_settings['parent'] = '';
         $content_type->setThirdPartySetting('menu_ui', 'parent', $third_party_settings['parent']);
       }

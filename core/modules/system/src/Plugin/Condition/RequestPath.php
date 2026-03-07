@@ -23,20 +23,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * An alias manager to find the alias for the current system path.
-   *
-   * @var \Drupal\path_alias\AliasManagerInterface
-   */
-  protected $aliasManager;
-
-  /**
-   * The path matcher.
-   *
-   * @var \Drupal\Core\Path\PathMatcherInterface
-   */
-  protected $pathMatcher;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -44,22 +30,15 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
   protected $requestStack;
 
   /**
-   * The current path.
-   *
-   * @var \Drupal\Core\Path\CurrentPathStack
-   */
-  protected $currentPath;
-
-  /**
    * Constructs a RequestPath condition plugin.
    *
-   * @param \Drupal\path_alias\AliasManagerInterface $alias_manager
+   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
    *   An alias manager to find the alias for the current system path.
-   * @param \Drupal\Core\Path\PathMatcherInterface $path_matcher
+   * @param \Drupal\Core\Path\PathMatcherInterface $pathMatcher
    *   The path matcher service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Path\CurrentPathStack $current_path
+   * @param \Drupal\Core\Path\CurrentPathStack $currentPath
    *   The current path.
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -68,18 +47,15 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
    * @param array $plugin_definition
    *   The plugin implementation definition.
    */
-  public function __construct(AliasManagerInterface $alias_manager, PathMatcherInterface $path_matcher, RequestStack $request_stack, CurrentPathStack $current_path, array $configuration, $plugin_id, array $plugin_definition) {
+  public function __construct(protected \Drupal\path_alias\AliasManagerInterface $aliasManager, protected \Drupal\Core\Path\PathMatcherInterface $pathMatcher, RequestStack $request_stack, protected \Drupal\Core\Path\CurrentPathStack $currentPath, array $configuration, $plugin_id, array $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->aliasManager = $alias_manager;
-    $this->pathMatcher = $path_matcher;
     $this->requestStack = $request_stack;
-    $this->currentPath = $current_path;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get('path_alias.manager'),
       $container->get('path.matcher'),
@@ -116,11 +92,17 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $paths = array_map('trim', explode("\n", $form_state->getValue('pages')));
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
+    $paths = array_map(trim(...), explode("\n", (string) $form_state->getValue('pages')));
     foreach ($paths as $path) {
-      if (empty($path) || $path === '<front>' || str_starts_with($path, '/')) {
-        continue;
+      if (empty($path)) {
+          continue;
+      }
+      if ($path === '<front>') {
+          continue;
+      }
+      if (str_starts_with($path, '/')) {
+          continue;
       }
       $form_state->setErrorByName('pages', $this->t("The path %path requires a leading forward slash when used with the Pages setting.", ['%path' => $path]));
     }
@@ -129,7 +111,7 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['pages'] = $form_state->getValue('pages');
     parent::submitConfigurationForm($form, $form_state);
   }
@@ -137,11 +119,11 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
   /**
    * {@inheritdoc}
    */
-  public function summary() {
+  public function summary(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if (empty($this->configuration['pages'])) {
       return $this->t('No page is specified');
     }
-    $pages = array_map('trim', explode("\n", $this->configuration['pages']));
+    $pages = array_map(trim(...), explode("\n", (string) $this->configuration['pages']));
     $pages = implode(', ', $pages);
     if (!empty($this->configuration['negate'])) {
       return $this->t('Do not return true on the following pages: @pages', ['@pages' => $pages]);
@@ -155,7 +137,7 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
   public function evaluate() {
     // Convert path to lowercase. This allows comparison of the same path
     // with different case. Ex: /Page, /page, /PAGE.
-    $pages = mb_strtolower($this->configuration['pages']);
+    $pages = mb_strtolower((string) $this->configuration['pages']);
     if (!$pages) {
       return TRUE;
     }
@@ -166,14 +148,16 @@ class RequestPath extends ConditionPluginBase implements ContainerFactoryPluginI
     // Do not trim a trailing slash if that is the complete path.
     $path = $path === '/' ? $path : rtrim($path, '/');
     $path_alias = mb_strtolower($this->aliasManager->getAliasByPath($path));
-
-    return $this->pathMatcher->matchPath($path_alias, $pages) || (($path != $path_alias) && $this->pathMatcher->matchPath($path, $pages));
+    if ($this->pathMatcher->matchPath($path_alias, $pages)) {
+        return true;
+    }
+    return ($path != $path_alias) && $this->pathMatcher->matchPath($path, $pages);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     $contexts = parent::getCacheContexts();
     $contexts[] = 'url.path';
     return $contexts;

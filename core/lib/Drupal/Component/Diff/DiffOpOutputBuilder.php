@@ -109,22 +109,15 @@ final class DiffOpOutputBuilder implements DiffOutputBuilderInterface {
    * @throw \InvalidArgumentException
    *   When $mode is not valid.
    */
-  private function hunkOp(int $mode, array $source, array $target): DiffOp {
-    switch ($mode) {
-      case Differ::OLD:
-        return new DiffOpCopy($source);
-
-      case self::CHANGED:
-        return new DiffOpChange($source, $target);
-
-      case Differ::ADDED:
-        return new DiffOpAdd($source);
-
-      case Differ::REMOVED:
-        return new DiffOpDelete($source);
-
-    }
-    throw new \InvalidArgumentException("Invalid \$mode {$mode} specified");
+  private function hunkOp(int $mode, array $source, array $target): DiffOp
+  {
+      return match ($mode) {
+          Differ::OLD => new DiffOpCopy($source),
+          self::CHANGED => new DiffOpChange($source, $target),
+          Differ::ADDED => new DiffOpAdd($source),
+          Differ::REMOVED => new DiffOpDelete($source),
+          default => throw new \InvalidArgumentException("Invalid \$mode {$mode} specified"),
+      };
   }
 
 }

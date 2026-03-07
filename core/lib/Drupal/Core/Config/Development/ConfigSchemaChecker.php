@@ -26,13 +26,6 @@ class ConfigSchemaChecker implements EventSubscriberInterface {
   use SchemaCheckTrait;
 
   /**
-   * The typed config manger.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected $typedManager;
-
-  /**
    * An array of config checked already. Keyed by config name and a checksum.
    *
    * @var array
@@ -40,16 +33,9 @@ class ConfigSchemaChecker implements EventSubscriberInterface {
   protected $checked = [];
 
   /**
-   * An array of config object names that are excluded from schema checking.
-   *
-   * @var string[]
-   */
-  protected $exclude = [];
-
-  /**
    * Constructs the ConfigSchemaChecker object.
    *
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_manager
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedManager
    *   The typed config manager.
    * @param string[] $exclude
    *   An array of config object names that are excluded from schema checking.
@@ -58,9 +44,15 @@ class ConfigSchemaChecker implements EventSubscriberInterface {
    *   validation errors will be added to the errors found by
    *   SchemaCheckTrait::checkConfigSchema().
    */
-  public function __construct(TypedConfigManagerInterface $typed_manager, array $exclude = [], private readonly bool $validateConstraints = FALSE) {
-    $this->typedManager = $typed_manager;
-    $this->exclude = $exclude;
+  public function __construct(
+      protected \Drupal\Core\Config\TypedConfigManagerInterface $typedManager,
+      /**
+       * An array of config object names that are excluded from schema checking.
+       */
+      protected array $exclude = [],
+      private readonly bool $validateConstraints = FALSE
+  )
+  {
   }
 
   /**
@@ -72,7 +64,7 @@ class ConfigSchemaChecker implements EventSubscriberInterface {
    * @throws \Drupal\Core\Config\Schema\SchemaIncompleteException
    *   Exception thrown when configuration does not match its schema.
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     // Only validate configuration if in the default collection. Other
     // collections may have incomplete configuration (for example language
     // overrides only). These are not valid in themselves.
@@ -88,14 +80,14 @@ class ConfigSchemaChecker implements EventSubscriberInterface {
       $this->checked[$name . ':' . $checksum] = TRUE;
       $errors = $this->checkConfigSchema($this->typedManager, $name, $data, $this->validateConstraints);
       if ($errors === FALSE) {
-        throw new SchemaIncompleteException("No schema for $name");
+          throw new SchemaIncompleteException("No schema for $name");
       }
-      elseif (is_array($errors)) {
-        $text_errors = [];
-        foreach ($errors as $key => $error) {
-          $text_errors[] = new FormattableMarkup('@key @error', ['@key' => $key, '@error' => $error]);
-        }
-        throw new SchemaIncompleteException("Schema errors for $name with the following errors: " . implode(', ', $text_errors));
+      if (is_array($errors)) {
+          $text_errors = [];
+          foreach ($errors as $key => $error) {
+            $text_errors[] = new FormattableMarkup('@key @error', ['@key' => $key, '@error' => $error]);
+          }
+          throw new SchemaIncompleteException("Schema errors for $name with the following errors: " . implode(', ', $text_errors));
       }
     }
   }

@@ -27,7 +27,7 @@ class BlockContentThemeHooks {
    * @see \Drupal\block_content\Controller\BlockContentController::addForm()
    */
   #[Hook('preprocess_entity_add_list')]
-  public function preprocessEntityAddList(&$variables): void {
+  public function preprocessEntityAddList(array &$variables): void {
     $query = $this->requestStack->getCurrentRequest()->query->all();
     if (count($query) === 0) {
       return;

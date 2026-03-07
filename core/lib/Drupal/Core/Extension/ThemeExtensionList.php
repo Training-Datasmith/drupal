@@ -57,13 +57,6 @@ class ThemeExtensionList extends ExtensionList {
   ];
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The list of installed themes.
    *
    * @var string[]
@@ -78,13 +71,14 @@ class ThemeExtensionList extends ExtensionList {
     InfoParserInterface $info_parser,
     ModuleHandlerInterface $module_handler,
     StateInterface $state,
-    ConfigFactoryInterface $config_factory,
+    /**
+     * The config factory.
+     */
+    protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory,
     #[Autowire(param: 'install_profile')]
     $install_profile,
   ) {
     parent::__construct($root, 'theme', $cache, $info_parser, $module_handler, $state, $install_profile);
-
-    $this->configFactory = $config_factory;
   }
 
   /**
@@ -210,7 +204,7 @@ class ThemeExtensionList extends ExtensionList {
    * @return array
    *   An array of base themes.
    */
-  protected function doGetBaseThemes(array $themes, $theme, array $used_themes = []) {
+  protected function doGetBaseThemes(array $themes, $theme, array $used_themes = []): array {
     if (!isset($themes[$theme]->info['base theme'])) {
       return [];
     }
@@ -271,7 +265,7 @@ class ThemeExtensionList extends ExtensionList {
   /**
    * {@inheritdoc}
    */
-  protected function getInstalledExtensionNames() {
+  protected function getInstalledExtensionNames(): array {
     // Cache the installed themes to avoid multiple calls to the config system.
     if (!isset($this->installedThemes)) {
       $this->installedThemes = $this->configFactory->get('core.extension')->get('theme') ?: [];
@@ -282,7 +276,7 @@ class ThemeExtensionList extends ExtensionList {
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): static {
     parent::reset();
     $this->installedThemes = NULL;
     return $this;

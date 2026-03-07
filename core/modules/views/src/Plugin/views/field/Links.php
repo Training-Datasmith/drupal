@@ -52,7 +52,7 @@ abstract class Links extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     // Only show fields that precede this one.
     $field_options = $this->getPreviousFieldLabels();

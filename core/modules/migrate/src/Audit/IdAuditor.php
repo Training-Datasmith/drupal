@@ -47,8 +47,9 @@ class IdAuditor implements AuditorInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function auditMultiple(array $migrations) {
+  public function auditMultiple(array $migrations): array {
     $conflicts = [];
 
     foreach ($migrations as $migration) {
@@ -71,7 +72,7 @@ class IdAuditor implements AuditorInterface {
    * @todo Refactor in https://www.drupal.org/project/drupal/issues/3061676 or
    *   https://www.drupal.org/project/drupal/issues/3091004
    */
-  private function auditEntityComplete(MigrationInterface $migration) {
+  private function auditEntityComplete(MigrationInterface $migration): bool {
     $map_table = $migration->getIdMap()->mapTableName();
 
     $database = \Drupal::database();

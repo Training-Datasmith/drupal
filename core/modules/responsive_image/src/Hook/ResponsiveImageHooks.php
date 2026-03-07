@@ -62,8 +62,7 @@ class ResponsiveImageHooks {
             'name' => 'field',
           ])->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.responsive_image_style.collection':
         return '<p>' . $this->t('A responsive image style associates an image style with each breakpoint defined by your theme.') . '</p>';

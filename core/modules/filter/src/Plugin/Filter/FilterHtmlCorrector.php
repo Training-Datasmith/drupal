@@ -23,7 +23,7 @@ class FilterHtmlCorrector extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     return new FilterProcessResult(Html::normalize($text));
   }
 

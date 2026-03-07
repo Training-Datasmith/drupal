@@ -17,30 +17,15 @@ use Drupal\Core\Site\Settings;
 class IFrameUrlHelper {
 
   /**
-   * The request context service.
-   *
-   * @var \Drupal\Core\Routing\RequestContext
-   */
-  protected $requestContext;
-
-  /**
-   * The private key service.
-   *
-   * @var \Drupal\Core\PrivateKey
-   */
-  protected $privateKey;
-
-  /**
    * IFrameUrlHelper constructor.
    *
-   * @param \Drupal\Core\Routing\RequestContext $request_context
+   * @param \Drupal\Core\Routing\RequestContext $requestContext
    *   The request context service.
-   * @param \Drupal\Core\PrivateKey $private_key
+   * @param \Drupal\Core\PrivateKey $privateKey
    *   The private key service.
    */
-  public function __construct(RequestContext $request_context, PrivateKey $private_key) {
-    $this->requestContext = $request_context;
-    $this->privateKey = $private_key;
+  public function __construct(protected \Drupal\Core\Routing\RequestContext $requestContext, protected \Drupal\Core\PrivateKey $privateKey)
+  {
   }
 
   /**
@@ -56,7 +41,7 @@ class IFrameUrlHelper {
    * @return string
    *   The hashed URL.
    */
-  public function getHash($url, $max_width = NULL, $max_height = NULL) {
+  public function getHash($url, $max_width = NULL, $max_height = NULL): string {
     return Crypt::hmacBase64("$url:$max_width:$max_height", $this->privateKey->get() . Settings::getHashSalt());
   }
 
@@ -74,7 +59,7 @@ class IFrameUrlHelper {
       return FALSE;
     }
     $url_host = parse_url($url, PHP_URL_HOST);
-    $system_host = parse_url($this->requestContext->getCompleteBaseUrl(), PHP_URL_HOST);
+    $system_host = parse_url((string) $this->requestContext->getCompleteBaseUrl(), PHP_URL_HOST);
 
     // The URL is secure if its domain is not the same as the domain of the base
     // URL of the current request.

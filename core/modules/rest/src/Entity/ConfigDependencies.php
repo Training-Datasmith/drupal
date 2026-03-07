@@ -14,36 +14,30 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ConfigDependencies implements ContainerInjectionInterface {
 
   /**
-   * The serialization format providers, keyed by format.
-   *
-   * @var string[]
-   */
-  protected $formatProviders;
-
-  /**
-   * The authentication providers, keyed by ID.
-   *
-   * @var string[]
-   */
-  protected $authProviders;
-
-  /**
    * Creates a new ConfigDependencies instance.
    *
-   * @param string[] $format_providers
+   * @param string[] $formatProviders
    *   The serialization format providers, keyed by format.
-   * @param string[] $auth_providers
+   * @param string[] $authProviders
    *   The authentication providers, keyed by ID.
    */
-  public function __construct(array $format_providers, array $auth_providers) {
-    $this->formatProviders = $format_providers;
-    $this->authProviders = $auth_providers;
+  public function __construct(
+      /**
+       * The serialization format providers, keyed by format.
+       */
+      protected array $formatProviders,
+      /**
+       * The authentication providers, keyed by ID.
+       */
+      protected array $authProviders
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->getParameter('serializer.format_providers'),
       $container->getParameter('authentication_providers')
@@ -68,24 +62,17 @@ class ConfigDependencies implements ContainerInjectionInterface {
    *
    * @see \Drupal\rest\Entity\RestResourceConfig::calculateDependencies()
    */
-  public function calculateDependencies(RestResourceConfigInterface $rest_config) {
+  public function calculateDependencies(RestResourceConfigInterface $rest_config): array {
     $granularity = $rest_config->get('granularity');
 
     // Dependency calculation is the same for either granularity, the most
     // notable difference is that for the 'resource' granularity, the same
     // authentication providers and formats are supported for every method.
-    switch ($granularity) {
-      case RestResourceConfigInterface::METHOD_GRANULARITY:
-        $methods = $rest_config->getMethods();
-        break;
-
-      case RestResourceConfigInterface::RESOURCE_GRANULARITY:
-        $methods = array_slice($rest_config->getMethods(), 0, 1);
-        break;
-
-      default:
-        throw new \InvalidArgumentException('Invalid granularity specified.');
-    }
+    $methods = match ($granularity) {
+        RestResourceConfigInterface::METHOD_GRANULARITY => $rest_config->getMethods(),
+        RestResourceConfigInterface::RESOURCE_GRANULARITY => array_slice($rest_config->getMethods(), 0, 1),
+        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+    };
 
     // The dependency lists for authentication providers and formats
     // generated on container build.
@@ -126,16 +113,11 @@ class ConfigDependencies implements ContainerInjectionInterface {
    */
   public function onDependencyRemoval(RestResourceConfigInterface $rest_config, array $dependencies) {
     $granularity = $rest_config->get('granularity');
-    switch ($granularity) {
-      case RestResourceConfigInterface::METHOD_GRANULARITY:
-        return $this->onDependencyRemovalForMethodGranularity($rest_config, $dependencies);
-
-      case RestResourceConfigInterface::RESOURCE_GRANULARITY:
-        return $this->onDependencyRemovalForResourceGranularity($rest_config, $dependencies);
-
-      default:
-        throw new \InvalidArgumentException('Invalid granularity specified.');
-    }
+    return match ($granularity) {
+        RestResourceConfigInterface::METHOD_GRANULARITY => $this->onDependencyRemovalForMethodGranularity($rest_config, $dependencies),
+        RestResourceConfigInterface::RESOURCE_GRANULARITY => $this->onDependencyRemovalForResourceGranularity($rest_config, $dependencies),
+        default => throw new \InvalidArgumentException('Invalid granularity specified.'),
+    };
   }
 
   /**

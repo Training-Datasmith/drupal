@@ -57,8 +57,7 @@ class WorkflowsHooks {
         ]) . '</dd>';
         $output .= '<dt>' . $this->t('Configuring workflows further') . '</dt>';
         $output .= '<dd>' . $this->t('Depending on the installed workflow type, additional configuration can be available in the edit form of a workflow.') . '</dd>';
-        $output .= '<dl>';
-        return $output;
+        return $output . '<dl>';
     }
     return NULL;
   }

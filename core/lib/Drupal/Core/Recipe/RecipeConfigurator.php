@@ -30,7 +30,7 @@ final class RecipeConfigurator {
    *   The recipe's include path.
    */
   public function __construct(array $recipes, string $include_path) {
-    $this->recipes = array_map(fn(string $name) => static::getIncludedRecipe($include_path, $name), $recipes);
+    $this->recipes = array_map(fn(string $name): \Drupal\Core\Recipe\Recipe => static::getIncludedRecipe($include_path, $name), $recipes);
   }
 
   /**

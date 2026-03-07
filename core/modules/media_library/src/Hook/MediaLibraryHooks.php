@@ -73,8 +73,7 @@ class MediaLibraryHooks {
         $output .= '<li>' . $this->t('When adding new media items within the modal dialog, the fields that are displayed can be customized by configuring the "Media library" form mode for each of your <a href=":media-types">media types</a>.', [
           ':media-types' => Url::fromRoute('entity.media_type.collection')->toString(),
         ]) . '</li>';
-        $output .= '</ul>';
-        return $output;
+        return $output . '</ul>';
     }
     return NULL;
   }
@@ -106,7 +105,7 @@ class MediaLibraryHooks {
    */
   #[Hook('views_pre_render')]
   public function viewsPreRender(ViewExecutable $view): void {
-    $add_classes = function (&$option, array $classes_to_add) {
+    $add_classes = function (&$option, array $classes_to_add): void {
       $classes = $option ? preg_split('/\s+/', trim($option)) : [];
       $classes = array_filter($classes);
       $classes = array_merge($classes, $classes_to_add);
@@ -139,7 +138,7 @@ class MediaLibraryHooks {
    * Implements hook_views_post_render().
    */
   #[Hook('views_post_render')]
-  public function viewsPostRender(ViewExecutable $view, &$output, CachePluginBase $cache): void {
+  public function viewsPostRender(ViewExecutable $view, array &$output, CachePluginBase $cache): void {
     if ($view->id() === 'media_library') {
       $output['#attached']['library'][] = 'media_library/view';
       if (str_starts_with($view->current_display, 'widget')) {
@@ -182,7 +181,7 @@ class MediaLibraryHooks {
   public function formAlter(array &$form, FormStateInterface $form_state, $form_id) : void {
     // Add a process callback to ensure that the media library view's exposed
     // filters submit button is not moved to the modal dialog's button area.
-    if ($form_id === 'views_exposed_form' && str_starts_with($form['#id'], 'views-exposed-form-media-library-widget')) {
+    if ($form_id === 'views_exposed_form' && str_starts_with((string) $form['#id'], 'views-exposed-form-media-library-widget')) {
       $form['#after_build'][] = '_media_library_views_form_media_library_after_build';
     }
     // Configures media_library displays when a type is submitted.
@@ -238,7 +237,7 @@ class MediaLibraryHooks {
    * Removes tasks for the Media library if the view display no longer exists.
    */
   #[Hook('local_tasks_alter')]
-  public function localTasksAlter(&$local_tasks): void {
+  public function localTasksAlter(array &$local_tasks): void {
     /** @var \Symfony\Component\Routing\RouteCollection $route_collection */
     $route_collection = \Drupal::service('router')->getRouteCollection();
     foreach (['media_library.grid', 'media_library.table'] as $key) {

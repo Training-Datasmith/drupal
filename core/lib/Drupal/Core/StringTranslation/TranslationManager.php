@@ -33,7 +33,7 @@ class TranslationManager implements TranslationInterface, TranslatorInterface {
    * @see \Drupal\Core\StringTranslation\TranslationManager::addTranslator()
    * @see \Drupal\Core\StringTranslation\TranslationManager::sortTranslators()
    */
-  protected $sortedTranslators = NULL;
+  protected $sortedTranslators;
 
   /**
    * The default langcode used in translations.
@@ -63,7 +63,7 @@ class TranslationManager implements TranslationInterface, TranslatorInterface {
    *
    * @return $this
    */
-  public function addTranslator(TranslatorInterface $translator, $priority = 0) {
+  public function addTranslator(TranslatorInterface $translator, $priority = 0): static {
     $this->translators[$priority][] = $translator;
     // Reset sorted translators property to trigger rebuild.
     $this->sortedTranslators = NULL;
@@ -76,7 +76,7 @@ class TranslationManager implements TranslationInterface, TranslatorInterface {
    * @return \Drupal\Core\StringTranslation\Translator\TranslatorInterface[]
    *   A sorted array of translator objects.
    */
-  protected function sortTranslators() {
+  protected function sortTranslators(): array {
     krsort($this->translators);
     return array_merge(...$this->translators);
   }
@@ -101,7 +101,7 @@ class TranslationManager implements TranslationInterface, TranslatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function translate($string, array $args = [], array $options = []) {
+  public function translate($string, array $args = [], array $options = []): \Drupal\Core\StringTranslation\TranslatableMarkup {
     // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
     return new TranslatableMarkup($string, $args, $options, $this);
   }
@@ -145,7 +145,7 @@ class TranslationManager implements TranslationInterface, TranslatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function formatPlural($count, $singular, $plural, array $args = [], array $options = []) {
+  public function formatPlural($count, $singular, $plural, array $args = [], array $options = []): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     return new PluralTranslatableMarkup($count, $singular, $plural, $args, $options, $this);
   }
 
@@ -155,14 +155,14 @@ class TranslationManager implements TranslationInterface, TranslatorInterface {
    * @param string $langcode
    *   A language code.
    */
-  public function setDefaultLangcode($langcode) {
+  public function setDefaultLangcode($langcode): void {
     $this->defaultLangcode = $langcode;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): void {
     if ($this->sortedTranslators === NULL) {
       $this->sortedTranslators = $this->sortTranslators();
     }

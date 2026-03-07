@@ -75,8 +75,7 @@ class ContentModerationHooks {
         }
         $output .= '<dt>' . $this->t('Configure Content Moderation permissions') . '</dt>';
         $output .= '<dd>' . $this->t('Each transition is exposed as a permission. If a user has the permission for a transition, they can use the transition to change the state of the content item, from Draft to Published.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -296,7 +295,7 @@ class ContentModerationHooks {
    * Implements hook_entity_bundle_info_alter().
    */
   #[Hook('entity_bundle_info_alter')]
-  public function entityBundleInfoAlter(&$bundles): void {
+  public function entityBundleInfoAlter(array &$bundles): void {
     $translatable = FALSE;
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     foreach (Workflow::loadMultipleByType('content_moderation') as $workflow) {
@@ -375,7 +374,7 @@ class ContentModerationHooks {
     // @todo Remove this once broken handlers in views configuration result in
     //   a view no longer returning results. https://www.drupal.org/i/2907954.
     foreach ($view->filter as $id => $filter) {
-      if (str_starts_with($id, 'moderation_state') && $filter instanceof Broken) {
+      if (str_starts_with((string) $id, 'moderation_state') && $filter instanceof Broken) {
         $view->result = [];
         break;
       }

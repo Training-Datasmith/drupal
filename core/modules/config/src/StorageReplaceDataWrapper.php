@@ -12,25 +12,11 @@ class StorageReplaceDataWrapper implements StorageInterface {
   use DependencySerializationTrait;
 
   /**
-   * The configuration storage to be wrapped.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  protected $storage;
-
-  /**
    * The configuration replacement data, keyed by configuration object name.
    *
    * @var array
    */
   protected $replacementData = [];
-
-  /**
-   * The storage collection.
-   *
-   * @var string
-   */
-  protected $collection;
 
   /**
    * Constructs a new StorageReplaceDataWrapper.
@@ -41,16 +27,17 @@ class StorageReplaceDataWrapper implements StorageInterface {
    *   (optional) The collection to store configuration in. Defaults to the
    *   default collection.
    */
-  public function __construct(StorageInterface $storage, $collection = StorageInterface::DEFAULT_COLLECTION) {
-    $this->storage = $storage;
-    $this->collection = $collection;
-    $this->replacementData[$collection] = [];
+  public function __construct(protected \Drupal\Core\Config\StorageInterface $storage, /**
+   * The storage collection.
+   */
+  protected $collection = StorageInterface::DEFAULT_COLLECTION) {
+    $this->replacementData[$this->collection] = [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return isset($this->replacementData[$this->collection][$name]) || $this->storage->exists($name);
   }
 
@@ -58,10 +45,7 @@ class StorageReplaceDataWrapper implements StorageInterface {
    * {@inheritdoc}
    */
   public function read($name) {
-    if (isset($this->replacementData[$this->collection][$name])) {
-      return $this->replacementData[$this->collection][$name];
-    }
-    return $this->storage->read($name);
+    return $this->replacementData[$this->collection][$name] ?? $this->storage->read($name);
   }
 
   /**
@@ -133,13 +117,13 @@ class StorageReplaceDataWrapper implements StorageInterface {
     }
     else {
       foreach (array_keys($this->replacementData[$this->collection]) as $name) {
-        if (str_starts_with($name, $prefix)) {
+        if (str_starts_with((string) $name, $prefix)) {
           $additional_names[] = $name;
         }
       }
     }
     if (!empty($additional_names)) {
-      $names = array_unique(array_merge($names, $additional_names));
+      return array_unique(array_merge($names, $additional_names));
     }
     return $names;
   }
@@ -153,7 +137,7 @@ class StorageReplaceDataWrapper implements StorageInterface {
     }
     else {
       foreach (array_keys($this->replacementData[$this->collection]) as $name) {
-        if (str_starts_with($name, $prefix)) {
+        if (str_starts_with((string) $name, $prefix)) {
           unset($this->replacementData[$this->collection][$name]);
         }
       }
@@ -164,7 +148,7 @@ class StorageReplaceDataWrapper implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function createCollection($collection) {
+  public function createCollection($collection): static {
     return new static(
       $this->storage->createCollection($collection),
       $collection
@@ -195,7 +179,7 @@ class StorageReplaceDataWrapper implements StorageInterface {
    *
    * @return $this
    */
-  public function replaceData($name, array $data) {
+  public function replaceData($name, array $data): static {
     $this->replacementData[$this->collection][$name] = $data;
     return $this;
   }

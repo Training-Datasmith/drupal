@@ -17,7 +17,7 @@ abstract class ActionBase extends PluginBase implements ActionInterface {
   /**
    * {@inheritdoc}
    */
-  public function executeMultiple(array $entities) {
+  public function executeMultiple(array $entities): void {
     foreach ($entities as $entity) {
       $this->execute($entity);
     }

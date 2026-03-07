@@ -47,7 +47,7 @@ trait ComputedItemListTrait {
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     parent::setValue($values, $notify);
 
     // Make sure that subsequent getter calls do not try to compute the values

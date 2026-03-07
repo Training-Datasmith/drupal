@@ -80,13 +80,6 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
   protected $database;
 
   /**
-   * State service for retrieving database info.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * The count of the number of batches run.
    *
    * @var int
@@ -105,9 +98,11 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, StateInterface $state) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, /**
+   * State service for retrieving database info.
+   */
+  protected \Drupal\Core\State\StateInterface $state) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
-    $this->state = $state;
   }
 
   /**
@@ -129,7 +124,7 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
    * @return string
    *   The query string.
    */
-  public function __toString() {
+  public function __toString(): string {
     return (string) $this->prepareQuery();
   }
 
@@ -196,9 +191,7 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
       if ($key == 'migrate') {
         throw new RequirementsException("No database connection configured for source plugin " . $this->pluginId, [], 0, $e);
       }
-      else {
-        throw $e;
-      }
+      throw $e;
     }
     return $connection;
   }
@@ -206,7 +199,7 @@ abstract class SqlBase extends SourcePluginBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function checkRequirements() {
+  public function checkRequirements(): void {
     if ($this->pluginDefinition['requirements_met'] === TRUE) {
       try {
         $this->getDatabase();

@@ -27,20 +27,6 @@ use Symfony\Component\Routing\RouteCollection;
 abstract class ResourceBase extends PluginBase implements ContainerFactoryPluginInterface, ResourceInterface {
 
   /**
-   * The available serialization formats.
-   *
-   * @var array
-   */
-  protected $serializerFormats = [];
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a Drupal\rest\Plugin\ResourceBase object.
    *
    * @param array $configuration
@@ -49,15 +35,13 @@ abstract class ResourceBase extends PluginBase implements ContainerFactoryPlugin
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param array $serializer_formats
+   * @param array $serializerFormats
    *   The available serialization formats.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, array $serializer_formats, LoggerInterface $logger) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected array $serializerFormats, protected \Psr\Log\LoggerInterface $logger) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->serializerFormats = $serializer_formats;
-    $this->logger = $logger;
   }
 
   /**
@@ -84,7 +68,7 @@ abstract class ResourceBase extends PluginBase implements ContainerFactoryPlugin
     $permissions = [];
     $definition = $this->getPluginDefinition();
     foreach ($this->availableMethods() as $method) {
-      $lowered_method = strtolower($method);
+      $lowered_method = strtolower((string) $method);
       $permissions["restful $lowered_method $this->pluginId"] = [
         'title' => $this->t('Access @method on %label resource', [
           '@method' => $method,
@@ -153,7 +137,7 @@ abstract class ResourceBase extends PluginBase implements ContainerFactoryPlugin
     $available = [];
     foreach ($methods as $method) {
       // Only expose methods where the HTTP request method exists on the plugin.
-      if (method_exists($this, strtolower($method))) {
+      if (method_exists($this, strtolower((string) $method))) {
         $available[] = $method;
       }
     }

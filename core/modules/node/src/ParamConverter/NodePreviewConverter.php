@@ -12,20 +12,13 @@ use Drupal\Core\ParamConverter\ParamConverterInterface;
 class NodePreviewConverter implements ParamConverterInterface {
 
   /**
-   * Stores the tempstore factory.
-   *
-   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
-   */
-  protected $tempStoreFactory;
-
-  /**
    * Constructs a new NodePreviewConverter.
    *
-   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
+   * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory
    *   The factory for the temp store object.
    */
-  public function __construct(PrivateTempStoreFactory $temp_store_factory) {
-    $this->tempStoreFactory = $temp_store_factory;
+  public function __construct(protected \Drupal\Core\TempStore\PrivateTempStoreFactory $tempStoreFactory)
+  {
   }
 
   /**
@@ -41,7 +34,7 @@ class NodePreviewConverter implements ParamConverterInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies($definition, $name, Route $route) {
+  public function applies($definition, $name, Route $route): bool {
     if (!empty($definition['type']) && $definition['type'] == 'node_preview') {
       return TRUE;
     }

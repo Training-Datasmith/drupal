@@ -111,7 +111,7 @@ class PhpArrayContainer extends Container {
       }
 
       if (!is_callable($callable)) {
-        throw new InvalidArgumentException(sprintf('The configurator for class "%s" is not a callable.', get_class($service)));
+        throw new InvalidArgumentException(sprintf('The configurator for class "%s" is not a callable.', $service::class));
       }
 
       call_user_func($callable, $service);
@@ -133,7 +133,6 @@ class PhpArrayContainer extends Container {
     foreach ($arguments as $key => $argument) {
       if ($argument instanceof \stdClass) {
         $type = $argument->type;
-
         // Private services are a special flavor: In case a private service is
         // only used by one other service, the ContainerBuilder uses a
         // Definition object as an argument, which does not have an ID set.
@@ -147,42 +146,36 @@ class PhpArrayContainer extends Container {
         //
         // @see \Drupal\Component\DependencyInjection\Dumper\OptimizedPhpArrayDumper::getPrivateServiceCall
         if ($type == 'private_service') {
-          $id = $argument->id;
-
-          // Check if the private service already exists - in case it is shared.
-          if (!empty($argument->shared) && isset($this->privateServices[$id])) {
-            $arguments[$key] = $this->privateServices[$id];
-            continue;
-          }
-
-          // Create a private service from a service definition.
-          $arguments[$key] = $this->createService($argument->value, $id);
-          if (!empty($argument->shared)) {
-            $this->privateServices[$id] = $arguments[$key];
-          }
-
-          continue;
-        }
-        elseif ($type == 'service_closure') {
-          $arguments[$key] = function () use ($argument) {
-            return $this->get($argument->id, $argument->invalidBehavior);
-          };
-
-          continue;
-        }
-        elseif ($type == 'raw') {
-          $arguments[$key] = $argument->value;
-
-          continue;
-        }
-        elseif ($type == 'iterator') {
-          $services = $argument->value;
-          $arguments[$key] = new RewindableGenerator(function () use ($services) {
-            foreach ($services as $key => $service) {
-              yield $key => $this->resolveServicesAndParameters([$service])[0];
+            $id = $argument->id;
+            // Check if the private service already exists - in case it is shared.
+            if (!empty($argument->shared) && isset($this->privateServices[$id])) {
+              $arguments[$key] = $this->privateServices[$id];
+              continue;
             }
-          }, count($services));
-          continue;
+            // Create a private service from a service definition.
+            $arguments[$key] = $this->createService($argument->value, $id);
+            if (!empty($argument->shared)) {
+              $this->privateServices[$id] = $arguments[$key];
+            }
+            continue;
+        }
+        if ($type == 'service_closure') {
+            $arguments[$key] = (fn() => $this->get($argument->id, $argument->invalidBehavior));
+            continue;
+        }
+        if ($type == 'raw') {
+            $arguments[$key] = $argument->value;
+            continue;
+        }
+
+        if ($type == 'iterator') {
+            $services = $argument->value;
+            $arguments[$key] = new RewindableGenerator(function () use ($services) {
+              foreach ($services as $key => $service) {
+                yield $key => $this->resolveServicesAndParameters([$service])[0];
+              }
+            }, count($services));
+            continue;
         }
 
         if ($type !== NULL) {
@@ -213,7 +206,7 @@ class PhpArrayContainer extends Container {
 
       // Resolve services.
       if ($argument[0] === '@') {
-        $id = substr($argument, 1);
+        $id = substr((string) $argument, 1);
         $invalid_behavior = ContainerInterface::EXCEPTION_ON_INVALID_REFERENCE;
         if ($id[0] === '?') {
           $id = substr($id, 1);

@@ -15,30 +15,15 @@ use Drupal\Core\Site\Settings;
 class CsrfTokenGenerator {
 
   /**
-   * The private key service.
-   *
-   * @var \Drupal\Core\PrivateKey
-   */
-  protected $privateKey;
-
-  /**
-   * The session metadata bag.
-   *
-   * @var \Drupal\Core\Session\MetadataBag
-   */
-  protected $sessionMetadata;
-
-  /**
    * Constructs the token generator.
    *
-   * @param \Drupal\Core\PrivateKey $private_key
+   * @param \Drupal\Core\PrivateKey $privateKey
    *   The private key service.
-   * @param \Drupal\Core\Session\MetadataBag $session_metadata
+   * @param \Drupal\Core\Session\MetadataBag $sessionMetadata
    *   The session metadata bag.
    */
-  public function __construct(PrivateKey $private_key, MetadataBag $session_metadata) {
-    $this->privateKey = $private_key;
-    $this->sessionMetadata = $session_metadata;
+  public function __construct(protected \Drupal\Core\PrivateKey $privateKey, protected \Drupal\Core\Session\MetadataBag $sessionMetadata)
+  {
   }
 
   /**
@@ -111,7 +96,7 @@ class CsrfTokenGenerator {
    *
    * @see \Drupal\Core\Site\Settings::getHashSalt()
    */
-  protected function computeToken($seed, $value = '') {
+  protected function computeToken(string $seed, $value = ''): string {
     return Crypt::hmacBase64($value, $seed . $this->privateKey->get() . Settings::getHashSalt());
   }
 

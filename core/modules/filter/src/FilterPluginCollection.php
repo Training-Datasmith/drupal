@@ -80,7 +80,7 @@ class FilterPluginCollection extends DefaultLazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function sort() {
+  public function sort(): static {
     $this->getAll();
     return parent::sort();
   }
@@ -88,7 +88,7 @@ class FilterPluginCollection extends DefaultLazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function sortHelper($aID, $bID) {
+  public function sortHelper(string $aID, string $bID): int {
     $a = $this->get($aID);
     $b = $this->get($bID);
     if ($a->status != $b->status) {
@@ -98,7 +98,7 @@ class FilterPluginCollection extends DefaultLazyPluginCollection {
       return $a->weight <=> $b->weight;
     }
     if ($a->provider != $b->provider) {
-      return strnatcasecmp($a->provider, $b->provider);
+      return strnatcasecmp((string) $a->provider, (string) $b->provider);
     }
     return parent::sortHelper($aID, $bID);
   }
@@ -106,7 +106,7 @@ class FilterPluginCollection extends DefaultLazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function getConfiguration() {
+  public function getConfiguration(): array {
     $configuration = parent::getConfiguration();
     // Remove configuration if it matches the defaults. In self::getAll(), we
     // load all available filters, in addition to the enabled filters stored in

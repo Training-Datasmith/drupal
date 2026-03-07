@@ -40,8 +40,6 @@ class UpdateRegistry implements EventSubscriberInterface {
    *
    * This array is keyed by Drupal root, site path, extension name and update
    * type. The value if the extension has been searched for is TRUE.
-   *
-   * @var array
    */
   protected static array $loadedFiles = [];
 
@@ -78,7 +76,7 @@ class UpdateRegistry implements EventSubscriberInterface {
    * @return string[]
    *   A list of post-update functions that have been removed.
    */
-  public function getRemovedPostUpdates($extension) {
+  public function getRemovedPostUpdates(?string $extension) {
     $this->scanExtensionsAndLoadUpdateFiles($extension);
     $function = "{$extension}_removed_post_updates";
     if (function_exists($function)) {
@@ -93,26 +91,28 @@ class UpdateRegistry implements EventSubscriberInterface {
    * @return callable[]
    *   An alphabetical list of available update functions.
    */
-  protected function getAvailableUpdateFunctions() {
+  protected function getAvailableUpdateFunctions(): array {
     $regexp = '/^(?<extension>.+)_' . $this->updateType . '_(?<name>.+)$/';
     $functions = get_defined_functions();
 
     $updates = [];
     foreach (preg_grep('/_' . $this->updateType . '_/', $functions['user']) as $function) {
-      // If this function is an extension update function, add it to the list of
-      // extension updates.
-      if (preg_match($regexp, $function, $matches)) {
-        if (in_array($matches['extension'], $this->enabledExtensions)) {
-          $function_name = $matches['extension'] . '_' . $this->updateType . '_' . $matches['name'];
-          if ($this->updateType === 'post_update') {
-            $removed = array_keys($this->getRemovedPostUpdates($matches['extension']));
-            if (array_search($function_name, $removed) !== FALSE) {
-              throw new RemovedPostUpdateNameException(sprintf('The following update is specified as removed in hook_removed_post_updates() but still exists in the code base: %s', $function_name));
-            }
-          }
-          $updates[] = $function_name;
+        // If this function is an extension update function, add it to the list of
+        // extension updates.
+        if (!preg_match($regexp, $function, $matches)) {
+            continue;
         }
-      }
+        if (!in_array($matches['extension'], $this->enabledExtensions)) {
+            continue;
+        }
+        $function_name = $matches['extension'] . '_' . $this->updateType . '_' . $matches['name'];
+        if ($this->updateType === 'post_update') {
+          $removed = array_keys($this->getRemovedPostUpdates($matches['extension']));
+          if (array_search($function_name, $removed) !== FALSE) {
+            throw new RemovedPostUpdateNameException(sprintf('The following update is specified as removed in hook_removed_post_updates() but still exists in the code base: %s', $function_name));
+          }
+        }
+        $updates[] = $function_name;
     }
     // Ensure that the update order is deterministic.
     sort($updates);
@@ -125,7 +125,7 @@ class UpdateRegistry implements EventSubscriberInterface {
    * @return callable[]
    *   An alphabetical list of update functions that have not been executed.
    */
-  public function getPendingUpdateFunctions() {
+  public function getPendingUpdateFunctions(): array {
     // We need a) the list of active extensions (we get that from the config
     // bootstrap factory) and b) the path to the extensions, we use extension
     // discovery for that.
@@ -137,9 +137,8 @@ class UpdateRegistry implements EventSubscriberInterface {
     $existing_update_functions = $this->keyValue->get('existing_updates', []);
 
     $available_update_functions = $this->getAvailableUpdateFunctions();
-    $not_executed_update_functions = array_diff($available_update_functions, $existing_update_functions);
 
-    return $not_executed_update_functions;
+    return array_diff($available_update_functions, $existing_update_functions);
   }
 
   /**
@@ -187,7 +186,7 @@ class UpdateRegistry implements EventSubscriberInterface {
    *       including the description from source code comment for each update
    *       function. This array is keyed by the update name.
    */
-  public function getPendingUpdateInformation() {
+  public function getPendingUpdateInformation(): array {
     $functions = $this->getPendingUpdateFunctions();
 
     $ret = [];
@@ -212,7 +211,7 @@ class UpdateRegistry implements EventSubscriberInterface {
    *
    * @return $this
    */
-  public function registerInvokedUpdates(array $function_names) {
+  public function registerInvokedUpdates(array $function_names): static {
     $executed_updates = $this->keyValue->get('existing_updates', []);
     $executed_updates = array_merge($executed_updates, $function_names);
     $this->keyValue->set('existing_updates', $executed_updates);
@@ -229,7 +228,7 @@ class UpdateRegistry implements EventSubscriberInterface {
    * @return callable[]
    *   A list of update functions.
    */
-  public function getUpdateFunctions($extension_name) {
+  public function getUpdateFunctions(?string $extension_name): array {
     $this->scanExtensionsAndLoadUpdateFiles($extension_name);
 
     $updates = [];
@@ -275,12 +274,10 @@ class UpdateRegistry implements EventSubscriberInterface {
    * @param string $extension
    *   The extension name.
    */
-  public function filterOutInvokedUpdatesByExtension(string $extension) {
+  public function filterOutInvokedUpdatesByExtension(string $extension): void {
     $existing_update_functions = $this->keyValue->get('existing_updates', []);
 
-    $remaining_update_functions = array_filter($existing_update_functions, function ($function_name) use ($extension) {
-      return !str_starts_with($function_name, "{$extension}_{$this->updateType}_");
-    });
+    $remaining_update_functions = array_filter($existing_update_functions, fn($function_name) => !str_starts_with((string) $function_name, "{$extension}_{$this->updateType}_"));
 
     $this->keyValue->set('existing_updates', array_values($remaining_update_functions));
   }
@@ -299,7 +296,7 @@ class UpdateRegistry implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The Event to process.
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     $config = $event->getConfig();
     if ($config->getName() === 'core.extension') {
       // Build the old extension configuration list from configuration rather

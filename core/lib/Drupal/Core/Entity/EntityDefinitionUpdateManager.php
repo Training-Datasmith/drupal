@@ -16,73 +16,35 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   use StringTranslationTrait;
 
   /**
-   * The entity field manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The entity type listener service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeListenerInterface
-   */
-  protected $entityTypeListener;
-
-  /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The field storage definition listener service.
-   *
-   * @var \Drupal\Core\Field\FieldStorageDefinitionListenerInterface
-   */
-  protected $fieldStorageDefinitionListener;
-
-  /**
-   * The last installed schema repository.
-   *
-   * @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface
-   */
-  protected $entityLastInstalledSchemaRepository;
-
-  /**
    * Constructs a new EntityDefinitionUpdateManager.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository
+   * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository
    *   The last installed schema repository service.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager service.
-   * @param \Drupal\Core\Entity\EntityTypeListenerInterface $entity_type_listener
+   * @param \Drupal\Core\Entity\EntityTypeListenerInterface $entityTypeListener
    *   The entity type listener interface.
-   * @param \Drupal\Core\Field\FieldStorageDefinitionListenerInterface $field_storage_definition_listener
+   * @param \Drupal\Core\Field\FieldStorageDefinitionListenerInterface $fieldStorageDefinitionListener
    *   The field storage definition listener service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository, EntityFieldManagerInterface $entity_field_manager, EntityTypeListenerInterface $entity_type_listener, FieldStorageDefinitionListenerInterface $field_storage_definition_listener) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityLastInstalledSchemaRepository = $entity_last_installed_schema_repository;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->entityTypeListener = $entity_type_listener;
-    $this->fieldStorageDefinitionListener = $field_storage_definition_listener;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Drupal\Core\Entity\EntityTypeListenerInterface $entityTypeListener, protected \Drupal\Core\Field\FieldStorageDefinitionListenerInterface $fieldStorageDefinitionListener)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function needsUpdates() {
+  public function needsUpdates(): bool {
     return (bool) $this->getChangeList();
   }
 
   /**
    * {@inheritdoc}
+   * @return non-empty-list[]
    */
-  public function getChangeSummary() {
+  public function getChangeSummary(): array {
     $summary = [];
 
     foreach ($this->getChangeList() as $entity_type_id => $change_list) {
@@ -130,7 +92,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function getEntityType($entity_type_id) {
+  public function getEntityType($entity_type_id): ?\Drupal\Core\Entity\EntityTypeInterface {
     $entity_type = $this->entityLastInstalledSchemaRepository->getLastInstalledDefinition($entity_type_id);
     return $entity_type ? clone $entity_type : NULL;
   }
@@ -145,7 +107,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function installEntityType(EntityTypeInterface $entity_type) {
+  public function installEntityType(EntityTypeInterface $entity_type): void {
     $this->clearCachedDefinitions();
     $this->entityTypeListener->onEntityTypeCreate($entity_type);
   }
@@ -153,7 +115,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function updateEntityType(EntityTypeInterface $entity_type) {
+  public function updateEntityType(EntityTypeInterface $entity_type): void {
     $original = $this->getEntityType($entity_type->id());
     $this->clearCachedDefinitions();
     $this->entityTypeListener->onEntityTypeUpdate($entity_type, $original);
@@ -162,7 +124,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function uninstallEntityType(EntityTypeInterface $entity_type) {
+  public function uninstallEntityType(EntityTypeInterface $entity_type): void {
     $this->clearCachedDefinitions();
     $this->entityTypeListener->onEntityTypeDelete($entity_type);
   }
@@ -170,7 +132,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function installFieldableEntityType(EntityTypeInterface $entity_type, array $field_storage_definitions) {
+  public function installFieldableEntityType(EntityTypeInterface $entity_type, array $field_storage_definitions): void {
     $this->clearCachedDefinitions();
     foreach ($field_storage_definitions as $name => $field_storage_definition) {
       if ($field_storage_definition instanceof BaseFieldDefinition) {
@@ -187,7 +149,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function updateFieldableEntityType(EntityTypeInterface $entity_type, array $field_storage_definitions, ?array &$sandbox = NULL) {
+  public function updateFieldableEntityType(EntityTypeInterface $entity_type, array $field_storage_definitions, ?array &$sandbox = NULL): void {
     $original = $this->getEntityType($entity_type->id());
 
     if ($this->requiresEntityDataMigration($entity_type, $original) && $sandbox === NULL) {
@@ -202,7 +164,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function installFieldStorageDefinition($name, $entity_type_id, $provider, FieldStorageDefinitionInterface $storage_definition) {
+  public function installFieldStorageDefinition($name, $entity_type_id, $provider, FieldStorageDefinitionInterface $storage_definition): void {
     // @todo Pass a mutable field definition interface when we have one. See
     //   https://www.drupal.org/node/2346329.
     if ($storage_definition instanceof BaseFieldDefinition) {
@@ -219,7 +181,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function getFieldStorageDefinition($name, $entity_type_id) {
+  public function getFieldStorageDefinition($name, $entity_type_id): ?\Drupal\Core\Field\FieldStorageDefinitionInterface {
     $storage_definitions = $this->entityLastInstalledSchemaRepository->getLastInstalledFieldStorageDefinitions($entity_type_id);
     return isset($storage_definitions[$name]) ? clone $storage_definitions[$name] : NULL;
   }
@@ -227,7 +189,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function updateFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition) {
+  public function updateFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition): void {
     $original = $this->getFieldStorageDefinition($storage_definition->getName(), $storage_definition->getTargetEntityTypeId());
     $this->clearCachedDefinitions();
     $this->fieldStorageDefinitionListener->onFieldStorageDefinitionUpdate($storage_definition, $original);
@@ -236,7 +198,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function uninstallFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition) {
+  public function uninstallFieldStorageDefinition(FieldStorageDefinitionInterface $storage_definition): void {
     $this->clearCachedDefinitions();
     $this->fieldStorageDefinitionListener->onFieldStorageDefinitionDelete($storage_definition);
   }
@@ -244,7 +206,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
   /**
    * {@inheritdoc}
    */
-  public function getChangeList() {
+  public function getChangeList(): array {
     $this->entityTypeManager->useCaches(FALSE);
     $this->entityFieldManager->useCaches(FALSE);
     $change_list = [];
@@ -319,7 +281,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
    * @return bool
    *   TRUE if storage schema changes are required, FALSE otherwise.
    */
-  protected function requiresEntityStorageSchemaChanges(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+  protected function requiresEntityStorageSchemaChanges(EntityTypeInterface $entity_type, EntityTypeInterface $original): bool {
     $storage = $this->entityTypeManager->getStorage($entity_type->id());
     return ($storage instanceof EntityStorageSchemaInterface) && $storage->requiresEntityStorageSchemaChanges($entity_type, $original);
   }
@@ -335,7 +297,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
    * @return bool
    *   TRUE if storage schema changes are required, FALSE otherwise.
    */
-  protected function requiresFieldStorageSchemaChanges(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {
+  protected function requiresFieldStorageSchemaChanges(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original): bool {
     $storage = $this->entityTypeManager->getStorage($storage_definition->getTargetEntityTypeId());
     return ($storage instanceof DynamicallyFieldableEntityStorageSchemaInterface) && $storage->requiresFieldStorageSchemaChanges($storage_definition, $original);
   }
@@ -351,7 +313,7 @@ class EntityDefinitionUpdateManager implements EntityDefinitionUpdateManagerInte
    * @return bool
    *   TRUE if data migration is required, FALSE otherwise.
    */
-  protected function requiresEntityDataMigration(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+  protected function requiresEntityDataMigration(EntityTypeInterface $entity_type, EntityTypeInterface $original): bool {
     $storage = $this->entityTypeManager->getStorage($entity_type->id());
     return ($storage instanceof EntityStorageSchemaInterface) && $storage->requiresEntityDataMigration($entity_type, $original);
   }

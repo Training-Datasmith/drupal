@@ -67,44 +67,23 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   const FIELD_NAME = 'layout_builder__layout';
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, SectionStorageManagerInterface $section_storage_manager, EntityRepositoryInterface $entity_repository, AccountInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The entity type manager.
+   */
+  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
+   * The entity field manager.
+   */
+  protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, SectionStorageManagerInterface $section_storage_manager, /**
+   * The entity repository.
+   */
+  protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, /**
+   * The current user.
+   */
+  protected \Drupal\Core\Session\AccountInterface $currentUser) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityFieldManager = $entity_field_manager;
     $this->sectionStorageManager = $section_storage_manager;
-    $this->entityRepository = $entity_repository;
-    $this->currentUser = $current_user;
   }
 
   /**
@@ -127,7 +106,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function getStorageId() {
+  public function getStorageId(): string {
     $entity = $this->getEntity();
     return $entity->getEntityTypeId() . '.' . $entity->id();
   }
@@ -135,7 +114,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function getTempstoreKey() {
+  public function getTempstoreKey(): string {
     $key = parent::getTempstoreKey();
     $key .= '.' . $this->getContextValue('view_mode');
 
@@ -150,14 +129,13 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function deriveContextsFromRoute($value, $definition, $name, array $defaults) {
-    $contexts = [];
-
+  public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array {
     if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
-      $contexts = $this->getSectionStorageContextsForEntity($entity);
+      return $this->getSectionStorageContextsForEntity($entity);
     }
-    return $contexts;
+    return [];
   }
 
   /**
@@ -176,9 +154,9 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * @see \Drupal\layout_builder\SectionStorageInterface::deriveContextsFromRoute()
    * @see \Drupal\Core\ParamConverter\ParamConverterInterface::convert()
    */
-  private function extractEntityFromRoute($value, array $defaults) {
-    if (str_contains($value, '.')) {
-      [$entity_type_id, $entity_id] = explode('.', $value, 2);
+  private function extractEntityFromRoute($value, array $defaults): ?\Drupal\Core\Entity\FieldableEntityInterface {
+    if (str_contains((string) $value, '.')) {
+      [$entity_type_id, $entity_id] = explode('.', (string) $value, 2);
     }
     elseif (isset($defaults['entity_type_id']) && !empty($defaults[$defaults['entity_type_id']])) {
       $entity_type_id = $defaults['entity_type_id'];
@@ -195,7 +173,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function buildRoutes(RouteCollection $collection) {
+  public function buildRoutes(RouteCollection $collection): void {
     foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
       // If the canonical route does not exist, do not provide any Layout
       // Builder UI routes for this entity type.
@@ -222,8 +200,9 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
 
   /**
    * {@inheritdoc}
+   * @return array<non-falsy-string, non-empty-array>
    */
-  public function buildLocalTasks($base_plugin_definition) {
+  public function buildLocalTasks($base_plugin_definition): array {
     $local_tasks = [];
     foreach ($this->getEntityTypes() as $entity_type_id => $entity_type) {
       $local_tasks["layout_builder.overrides.$entity_type_id.view"] = $base_plugin_definition + [
@@ -251,7 +230,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    *
    * @see https://www.drupal.org/node/3566814
    */
-  protected function hasIntegerId(EntityTypeInterface $entity_type) {
+  protected function hasIntegerId(EntityTypeInterface $entity_type): ?bool {
     @trigger_error(__METHOD__ . "() is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use \Drupal\Core\Entity\EntityTypeInterface::hasIntegerId() instead. See https://www.drupal.org/node/3566814", E_USER_DEPRECATED);
     return $entity_type->hasIntegerId();
   }
@@ -262,10 +241,8 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
    * @return \Drupal\Core\Entity\EntityTypeInterface[]
    *   An array of entity types.
    */
-  protected function getEntityTypes() {
-    return array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $entity_type) {
-      return $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical');
-    });
+  protected function getEntityTypes(): array {
+    return array_filter($this->entityTypeManager->getDefinitions(), fn(EntityTypeInterface $entity_type) => $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->hasLinkTemplate('canonical'));
   }
 
   /**
@@ -286,7 +263,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function getLayoutBuilderUrl($rel = 'view') {
+  public function getLayoutBuilderUrl($rel = 'view'): \Drupal\Core\Url {
     $entity = $this->getEntity();
     $route_parameters[$entity->getEntityTypeId()] = $entity->id();
     return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getEntity()->getEntityTypeId()}.$rel", $route_parameters);
@@ -374,7 +351,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function isApplicable(RefinableCacheableDependencyInterface $cacheability) {
+  public function isApplicable(RefinableCacheableDependencyInterface $cacheability): bool {
     $default_section_storage = $this->getDefaultSectionStorage();
     $cacheability->addCacheableDependency($default_section_storage)->addCacheableDependency($this);
     // Check that overrides are enabled and have at least one section.
@@ -384,7 +361,7 @@ class OverridesSectionStorage extends SectionStorageBase implements ContainerFac
   /**
    * {@inheritdoc}
    */
-  public function isOverridden() {
+  public function isOverridden(): bool {
     // If there are any sections at all, including a blank one, this section
     // storage has been overridden. Do not use count() as it does not include
     // blank sections.

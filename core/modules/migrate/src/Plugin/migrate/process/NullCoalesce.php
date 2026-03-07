@@ -46,10 +46,7 @@ class NullCoalesce extends ProcessPluginBase {
         return $val;
       }
     }
-    if (isset($this->configuration['default_value'])) {
-      return $this->configuration['default_value'];
-    }
-    return NULL;
+    return $this->configuration['default_value'] ?? NULL;
   }
 
 }

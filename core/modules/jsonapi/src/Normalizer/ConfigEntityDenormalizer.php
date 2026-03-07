@@ -18,8 +18,9 @@ final class ConfigEntityDenormalizer extends EntityDenormalizerBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  protected function prepareInput(array $data, ResourceType $resource_type, $format, array $context) {
+  protected function prepareInput(array $data, ResourceType $resource_type, $format, array $context): array {
     $prepared = [];
     foreach ($data as $key => $value) {
       $prepared[$resource_type->getInternalName($key)] = $value;

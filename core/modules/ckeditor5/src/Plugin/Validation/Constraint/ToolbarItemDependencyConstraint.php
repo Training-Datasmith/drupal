@@ -24,7 +24,7 @@ class ToolbarItemDependencyConstraint extends SymfonyConstraint {
    *
    * @var null|string
    */
-  public $toolbarItem = NULL;
+  public $toolbarItem;
 
   public function __construct(
     mixed $options = NULL,

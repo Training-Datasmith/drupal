@@ -19,20 +19,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 class LocalActionsBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The local action manager.
-   *
-   * @var \Drupal\Core\Menu\LocalActionManagerInterface
-   */
-  protected $localActionManager;
-
-  /**
-   * The route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Creates a LocalActionsBlock instance.
    *
    * @param array $configuration
@@ -41,21 +27,19 @@ class LocalActionsBlock extends BlockBase implements ContainerFactoryPluginInter
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Menu\LocalActionManagerInterface $local_action_manager
+   * @param \Drupal\Core\Menu\LocalActionManagerInterface $localActionManager
    *   A local action manager.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LocalActionManagerInterface $local_action_manager, RouteMatchInterface $route_match) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Menu\LocalActionManagerInterface $localActionManager, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->localActionManager = $local_action_manager;
-    $this->routeMatch = $route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return ['label_display' => '0'];
   }
 
@@ -64,9 +48,8 @@ class LocalActionsBlock extends BlockBase implements ContainerFactoryPluginInter
    */
   public function build() {
     $route_name = $this->routeMatch->getRouteName();
-    $local_actions = $this->localActionManager->getActionsForRoute($route_name);
 
-    return $local_actions;
+    return $this->localActionManager->getActionsForRoute($route_name);
   }
 
   /**

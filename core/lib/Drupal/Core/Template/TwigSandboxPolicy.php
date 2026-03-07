@@ -20,11 +20,9 @@ class TwigSandboxPolicy implements SecurityPolicyInterface {
 
   /**
    * An array of allowed methods in the form of methodName => TRUE.
-   *
-   * @var array
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $allowed_methods;
+  protected array $allowed_methods;
 
   /**
    * Allowed method prefixes.
@@ -38,11 +36,9 @@ class TwigSandboxPolicy implements SecurityPolicyInterface {
 
   /**
    * An array of class names for which any method calls are allowed.
-   *
-   * @var array
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $allowed_classes;
+  protected array $allowed_classes;
 
   /**
    * Constructs a new TwigSandboxPolicy object.
@@ -53,7 +49,7 @@ class TwigSandboxPolicy implements SecurityPolicyInterface {
     $allowed_classes = Settings::get('twig_sandbox_allowed_classes', [
       // Allow any operations on the Attribute object as it is intended to be
       // changed from a Twig template, for example calling addClass().
-      'Drupal\Core\Template\Attribute',
+      \Drupal\Core\Template\Attribute::class,
     ]);
     // Flip the array so we can check using isset().
     $this->allowed_classes = array_flip($allowed_classes);
@@ -97,7 +93,7 @@ class TwigSandboxPolicy implements SecurityPolicyInterface {
     // If the method name starts with an allowed prefix, allow it. Note:
     // strpos() is between 3x and 7x faster than preg_match() in this case.
     foreach ($this->allowed_prefixes as $prefix) {
-      if (str_starts_with($method, $prefix)) {
+      if (str_starts_with((string) $method, (string) $prefix)) {
         return;
       }
     }
@@ -108,7 +104,7 @@ class TwigSandboxPolicy implements SecurityPolicyInterface {
       return;
     }
 
-    throw new SecurityError(sprintf('Calling "%s" method on a "%s" object is not allowed.', $method, get_class($obj)));
+    throw new SecurityError(sprintf('Calling "%s" method on a "%s" object is not allowed.', $method, $obj::class));
   }
 
   /**

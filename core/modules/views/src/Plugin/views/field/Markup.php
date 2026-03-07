@@ -28,7 +28,7 @@ class Markup extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->format = $this->definition['format'];
@@ -64,11 +64,7 @@ class Markup extends FieldPluginBase {
       return 'span';
     }
 
-    if (isset($this->definition['element type'])) {
-      return $this->definition['element type'];
-    }
-
-    return 'div';
+    return $this->definition['element type'] ?? 'div';
   }
 
 }

@@ -34,36 +34,21 @@ use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 class Fast404ExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The cache tags invalidator.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
-   */
-  protected $cacheTagsInvalidator;
-
-  /**
    * Constructs a new Fast404ExceptionHtmlSubscriber.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
    *   The cache tags invalidator.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, CacheTagsInvalidatorInterface $cache_tags_invalidator) {
-    $this->configFactory = $config_factory;
-    $this->cacheTagsInvalidator = $cache_tags_invalidator;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function getPriority() {
+  protected static function getPriority(): int {
     // A very high priority so that it can take precedent over anything else,
     // and thus be fast.
     return 200;
@@ -72,7 +57,7 @@ class Fast404ExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  protected function getHandledFormats() {
+  protected function getHandledFormats(): array {
     return ['html'];
   }
 
@@ -82,14 +67,14 @@ class Fast404ExceptionHtmlSubscriber extends HttpExceptionSubscriberBase {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function on404(ExceptionEvent $event) {
+  public function on404(ExceptionEvent $event): void {
     $request = $event->getRequest();
 
     $config = $this->configFactory->get('system.performance');
     $exclude_paths = $config->get('fast_404.exclude_paths');
-    if ($config->get('fast_404.enabled') && $exclude_paths && !preg_match($exclude_paths, $request->getPathInfo())) {
+    if ($config->get('fast_404.enabled') && $exclude_paths && !preg_match($exclude_paths, (string) $request->getPathInfo())) {
       $fast_paths = $config->get('fast_404.paths');
-      if ($fast_paths && preg_match($fast_paths, $request->getPathInfo())) {
+      if ($fast_paths && preg_match($fast_paths, (string) $request->getPathInfo())) {
         $fast_404_html = strtr($config->get('fast_404.html'), ['@path' => Html::escape($request->getUri())]);
         $response = new HtmlResponse($fast_404_html, Response::HTTP_NOT_FOUND);
         // Some routes such as system.files conditionally throw a

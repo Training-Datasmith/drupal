@@ -99,15 +99,13 @@ EOD;
    *   - \Drupal\Component\Utility\Unicode::STATUS_ERROR
    *     An error occurred. No unicode support.
    */
-  public static function getStatus() {
-    switch (static::check()) {
-      case 'mb_strlen':
-        return Unicode::STATUS_SINGLEBYTE;
-
-      case '':
-        return Unicode::STATUS_MULTIBYTE;
-    }
-    return Unicode::STATUS_ERROR;
+  public static function getStatus(): int
+  {
+      return match (static::check()) {
+          'mb_strlen' => Unicode::STATUS_SINGLEBYTE,
+          '' => Unicode::STATUS_MULTIBYTE,
+          default => Unicode::STATUS_ERROR,
+      };
   }
 
   /**
@@ -121,7 +119,7 @@ EOD;
    *   A string identifier of a failed multibyte extension check, if any.
    *   Otherwise, an empty string.
    */
-  public static function check() {
+  public static function check(): string {
     // Set appropriate configuration.
     mb_internal_encoding('utf-8');
     mb_language('uni');
@@ -164,7 +162,7 @@ EOD;
     ];
 
     foreach ($bomMap as $bom => $encoding) {
-      if (str_starts_with($data, $bom)) {
+      if (str_starts_with($data, (string) $bom)) {
         return $encoding;
       }
     }
@@ -184,7 +182,7 @@ EOD;
    * @return string|false
    *   Converted data or FALSE.
    */
-  public static function convertToUtf8($data, $encoding) {
+  public static function convertToUtf8($data, $encoding): string|false {
     return @iconv($encoding, 'utf-8', $data);
   }
 
@@ -211,13 +209,6 @@ EOD;
     if (strlen($string) <= $len) {
       return $string;
     }
-    if ((ord($string[$len]) < 0x80) || (ord($string[$len]) >= 0xC0)) {
-      return substr($string, 0, $len);
-    }
-    // Scan backwards to beginning of the byte sequence.
-    // @todo Make the code more readable in https://www.drupal.org/node/2911497.
-    while (--$len >= 0 && ord($string[$len]) >= 0x80 && ord($string[$len]) < 0xC0) {
-    }
 
     return substr($string, 0, $len);
   }
@@ -231,7 +222,7 @@ EOD;
    * @return string
    *   The string with the first character as uppercase.
    */
-  public static function ucfirst($text) {
+  public static function ucfirst($text): string {
     return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
   }
 
@@ -246,7 +237,7 @@ EOD;
    *
    * @ingroup php_wrappers
    */
-  public static function lcfirst($text) {
+  public static function lcfirst($text): string {
     // Note: no mbstring equivalent!
     return mb_strtolower(mb_substr($text, 0, 1)) . mb_substr($text, 1);
   }
@@ -262,11 +253,9 @@ EOD;
    *
    * @ingroup php_wrappers
    */
-  public static function ucwords($text) {
+  public static function ucwords($text): ?string {
     $regex = '/(^|[' . static::PREG_CLASS_WORD_BOUNDARY . '])([^' . static::PREG_CLASS_WORD_BOUNDARY . '])/u';
-    return preg_replace_callback($regex, function (array $matches) {
-      return $matches[1] . mb_strtoupper($matches[2]);
-    }, $text);
+    return preg_replace_callback($regex, fn(array $matches) => $matches[1] . mb_strtoupper((string) $matches[2]), $text);
   }
 
   /**
@@ -369,7 +358,7 @@ EOD;
    *   Returns < 0 if $str1 is less than $str2; > 0 if $str1 is greater than
    *   $str2, and 0 if they are equal.
    */
-  public static function strcasecmp($str1, $str2) {
+  public static function strcasecmp($str1, $str2): int {
     return strcmp(mb_strtoupper($str1), mb_strtoupper($str2));
   }
 

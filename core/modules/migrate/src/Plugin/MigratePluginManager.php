@@ -45,7 +45,7 @@ class MigratePluginManager extends DefaultPluginManager implements MigratePlugin
    *   (optional) The annotation class name. Defaults to
    *   'Drupal\Component\Annotation\PluginID'.
    */
-  public function __construct($type, \Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, $attribute = PluginID::class, $annotation = 'Drupal\Component\Annotation\PluginID') {
+  public function __construct($type, \Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ?string $attribute = PluginID::class, string|array|null $annotation = \Drupal\Component\Annotation\PluginID::class) {
     if (!is_subclass_of($attribute, AttributeInterface::class)) {
       // Backward compatibility.
       $annotation = $attribute;
@@ -63,13 +63,10 @@ class MigratePluginManager extends DefaultPluginManager implements MigratePlugin
     $plugin_definition = $this->getDefinition($plugin_id);
     $plugin_class = DefaultFactory::getPluginClass($plugin_id, $plugin_definition);
     // If the plugin provides a factory method, pass the container to it.
-    if (is_subclass_of($plugin_class, 'Drupal\Core\Plugin\ContainerFactoryPluginInterface')) {
-      $plugin = $plugin_class::create(\Drupal::getContainer(), $configuration, $plugin_id, $plugin_definition, $migration);
+    if (is_subclass_of($plugin_class, \Drupal\Core\Plugin\ContainerFactoryPluginInterface::class)) {
+      return $plugin_class::create(\Drupal::getContainer(), $configuration, $plugin_id, $plugin_definition, $migration);
     }
-    else {
-      $plugin = new $plugin_class($configuration, $plugin_id, $plugin_definition, $migration);
-    }
-    return $plugin;
+    return new $plugin_class($configuration, $plugin_id, $plugin_definition, $migration);
   }
 
 }

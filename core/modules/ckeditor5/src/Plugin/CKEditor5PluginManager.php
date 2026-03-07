@@ -52,7 +52,7 @@ class CKEditor5PluginManager extends DefaultPluginManager implements CKEditor5Pl
       $module_handler,
       CKEditor5PluginInterface::class,
       CKEditor5Plugin::class,
-      '\Drupal\ckeditor5\Annotation\CKEditor5Plugin',
+      \Drupal\ckeditor5\Annotation\CKEditor5Plugin::class,
     );
 
     $this->alterInfo('ckeditor5_plugin_info');
@@ -79,7 +79,7 @@ class CKEditor5PluginManager extends DefaultPluginManager implements CKEditor5Pl
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     if (!$definition instanceof CKEditor5PluginDefinition) {
       throw new InvalidPluginDefinitionException($plugin_id, sprintf('The "%s" CKEditor 5 plugin definition must extend %s', $plugin_id, CKEditor5PluginDefinition::class));
     }
@@ -289,12 +289,8 @@ class CKEditor5PluginManager extends DefaultPluginManager implements CKEditor5Pl
         // for $tag configuration, they both have attribute configuration. Check
         // which attribute configuration is more permissive.
         if ($selected_plugin && is_array($selected_config) && is_array($provided_elements[$tag])) {
-          $selected_plugin_full_attributes = array_filter($selected_config, function ($attribute_config) {
-            return !is_array($attribute_config);
-          });
-          $being_checked_plugin_full_attributes = array_filter($provided_elements[$tag], function ($attribute_config) {
-            return !is_array($attribute_config);
-          });
+          $selected_plugin_full_attributes = array_filter($selected_config, fn($attribute_config) => !is_array($attribute_config));
+          $being_checked_plugin_full_attributes = array_filter($provided_elements[$tag], fn($attribute_config) => !is_array($attribute_config));
           if (count($being_checked_plugin_full_attributes) > count($selected_plugin_full_attributes)) {
             $broader_attribute_config = TRUE;
           }
@@ -382,8 +378,8 @@ class CKEditor5PluginManager extends DefaultPluginManager implements CKEditor5Pl
         // work: otherwise it would not be able to know which plugins to enable.
         elseif (isset($editor)) {
           $subset = $this->getPlugin($id, $editor)->getElementsSubset();
-          $subset_restrictions = HTMLRestrictions::fromString(implode($subset));
-          $defined_restrictions = HTMLRestrictions::fromString(implode($defined_elements));
+          $subset_restrictions = HTMLRestrictions::fromString(implode('', $subset));
+          $defined_restrictions = HTMLRestrictions::fromString(implode('', $defined_elements));
           // Determine max supported elements by resolving wildcards in the
           // restrictions defined by the plugin.
           $max_supported = $defined_restrictions;
@@ -407,8 +403,8 @@ class CKEditor5PluginManager extends DefaultPluginManager implements CKEditor5Pl
           // Also detect what is technically a valid subset, but has lost the
           // ability to create tags that are still in the subset. This points to
           // a bug in the plugin's ::getElementsSubset() logic.
-          $defined_creatable = HTMLRestrictions::fromString(implode($definition->getCreatableElements()));
-          $subset_creatable_actual = HTMLRestrictions::fromString(implode(array_filter($subset, [
+          $defined_creatable = HTMLRestrictions::fromString(implode('', $definition->getCreatableElements()));
+          $subset_creatable_actual = HTMLRestrictions::fromString(implode('', array_filter($subset, [
             CKEditor5PluginDefinition::class,
             'isCreatableElement',
           ])));
@@ -416,7 +412,7 @@ class CKEditor5PluginManager extends DefaultPluginManager implements CKEditor5Pl
             ->intersect($defined_creatable);
           $missing_creatable_for_subset = $subset_creatable_needed->diff($subset_creatable_actual);
           if (!$missing_creatable_for_subset->allowsNothing()) {
-            throw new \LogicException(sprintf('The "%s" CKEditor 5 plugin implements ::getElementsSubset() and did return a subset ("%s") but the following tags can no longer be created: "%s".', $id, implode($subset_restrictions->toCKEditor5ElementsArray()), implode($missing_creatable_for_subset->toCKEditor5ElementsArray())));
+            throw new \LogicException(sprintf('The "%s" CKEditor 5 plugin implements ::getElementsSubset() and did return a subset ("%s") but the following tags can no longer be created: "%s".', $id, implode('', $subset_restrictions->toCKEditor5ElementsArray()), implode('', $missing_creatable_for_subset->toCKEditor5ElementsArray())));
           }
 
           $defined_elements = $subset;
@@ -456,13 +452,11 @@ class CKEditor5PluginManager extends DefaultPluginManager implements CKEditor5Pl
         return $definition->$get_method();
       }
     }, $definitions));
-    return array_reduce($per_plugin, function (array $result, $current): array {
-      return is_array($current) && is_array(reset($current))
-        // Merge nested arrays using their keys.
-        ? $result + $current
-        // Merge everything else by appending.
-        : array_merge($result, (array) $current);
-    }, []);
+    return array_reduce($per_plugin, fn(array $result, $current): array => is_array($current) && is_array(reset($current))
+      // Merge nested arrays using their keys.
+      ? $result + $current
+      // Merge everything else by appending.
+      : array_merge($result, (array) $current), []);
   }
 
   /**

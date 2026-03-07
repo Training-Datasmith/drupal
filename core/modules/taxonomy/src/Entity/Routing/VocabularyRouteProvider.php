@@ -14,7 +14,7 @@ class VocabularyRouteProvider extends AdminHtmlRouteProvider {
   /**
    * {@inheritdoc}
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
+  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
 
     $collection = parent::getRoutes($entity_type);
 
@@ -38,7 +38,7 @@ class VocabularyRouteProvider extends AdminHtmlRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getResetPageRoute(EntityTypeInterface $entity_type) {
+  protected function getResetPageRoute(EntityTypeInterface $entity_type): \Symfony\Component\Routing\Route {
     $route = new Route('/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/reset');
     $route->setDefault('_entity_form', 'taxonomy_vocabulary.reset');
     $route->setDefault('_title', 'Reset');
@@ -62,7 +62,7 @@ class VocabularyRouteProvider extends AdminHtmlRouteProvider {
    * @return \Symfony\Component\Routing\Route|null
    *   The generated route, if available.
    */
-  protected function getOverviewPageRoute(EntityTypeInterface $entity_type) {
+  protected function getOverviewPageRoute(EntityTypeInterface $entity_type): \Symfony\Component\Routing\Route {
     $route = new Route('/admin/structure/taxonomy/manage/{taxonomy_vocabulary}/overview');
     $route->setDefault('_title_callback', '\Drupal\Core\Entity\Controller\EntityController::title');
     $route->setDefault('_entity_form', 'taxonomy_vocabulary.overview');

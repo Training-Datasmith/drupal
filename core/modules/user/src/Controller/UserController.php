@@ -25,48 +25,13 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class UserController extends ControllerBase {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $userStorage;
-
-  /**
-   * The user data service.
-   *
-   * @var \Drupal\user\UserDataInterface
-   */
-  protected $userData;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
-   * The flood service.
-   *
-   * @var \Drupal\Core\Flood\FloodInterface
-   */
-  protected $flood;
-
-  /**
    * Constructs a UserController object.
    *
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
-   * @param \Drupal\user\UserStorageInterface $user_storage
+   * @param \Drupal\user\UserStorageInterface $userStorage
    *   The user storage.
-   * @param \Drupal\user\UserDataInterface $user_data
+   * @param \Drupal\user\UserDataInterface $userData
    *   The user data service.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
@@ -75,25 +40,14 @@ class UserController extends ControllerBase {
    * @param \Drupal\Component\Datetime\TimeInterface|null $time
    *   The time service.
    */
-  public function __construct(
-    DateFormatterInterface $date_formatter,
-    UserStorageInterface $user_storage,
-    UserDataInterface $user_data,
-    LoggerInterface $logger,
-    FloodInterface $flood,
-    protected TimeInterface $time,
-  ) {
-    $this->dateFormatter = $date_formatter;
-    $this->userStorage = $user_storage;
-    $this->userData = $user_data;
-    $this->logger = $logger;
-    $this->flood = $flood;
+  public function __construct(protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\user\UserStorageInterface $userStorage, protected \Drupal\user\UserDataInterface $userData, protected \Psr\Log\LoggerInterface $logger, protected \Drupal\Core\Flood\FloodInterface $flood, protected TimeInterface $time)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('date.formatter'),
       $container->get('entity_type.manager')->getStorage('user'),
@@ -141,25 +95,22 @@ class UserController extends ControllerBase {
           ]
         );
       }
-      // A different user is already logged in on the computer.
-      else {
-        /** @var \Drupal\user\UserInterface $reset_link_user */
-        $reset_link_user = $this->userStorage->load($uid);
-        if ($reset_link_user && $this->validatePathParameters($reset_link_user, $timestamp, $hash)) {
-          $this->messenger()
-            ->addWarning($this->t('Another user (%other_user) is already logged into the site on this computer, but you tried to use a one-time link for user %resetting_user. <a href=":logout">Log out</a> and try using the link again.',
-              [
-                '%other_user' => $account->getAccountName(),
-                '%resetting_user' => $reset_link_user->getAccountName(),
-                ':logout' => Url::fromRoute('user.logout')->toString(),
-              ]));
-        }
-        else {
-          // Invalid one-time link specifies an unknown user.
-          $this->messenger()->addError($this->t('The one-time login link you clicked is invalid.'));
-        }
-        return $this->redirect('<front>');
+      /** @var \Drupal\user\UserInterface $reset_link_user */
+      $reset_link_user = $this->userStorage->load($uid);
+      if ($reset_link_user && $this->validatePathParameters($reset_link_user, $timestamp, $hash)) {
+        $this->messenger()
+          ->addWarning($this->t('Another user (%other_user) is already logged into the site on this computer, but you tried to use a one-time link for user %resetting_user. <a href=":logout">Log out</a> and try using the link again.',
+            [
+              '%other_user' => $account->getAccountName(),
+              '%resetting_user' => $reset_link_user->getAccountName(),
+              ':logout' => Url::fromRoute('user.logout')->toString(),
+            ]));
       }
+      else {
+        // Invalid one-time link specifies an unknown user.
+        $this->messenger()->addError($this->t('The one-time login link you clicked is invalid.'));
+      }
+      return $this->redirect('<front>');
     }
 
     /** @var \Drupal\user\UserInterface $reset_link_user */
@@ -315,12 +266,13 @@ class UserController extends ControllerBase {
     $timeout = $this->config('user.settings')->get('password_reset_timeout');
     // No time out for first time login.
     if ($user->getLastLoginTime() && $current - $timestamp > $timeout) {
-      $this->messenger()->addError($this->t('You have tried to use a one-time login link that has expired. Request a new one using the form below.'));
-      return $this->redirect('user.pass');
+        $this->messenger()->addError($this->t('You have tried to use a one-time login link that has expired. Request a new one using the form below.'));
+        return $this->redirect('user.pass');
     }
-    elseif ($user->isAuthenticated() && $this->validatePathParameters($user, $timestamp, $hash, $timeout)) {
-      // The information provided is valid.
-      return NULL;
+    // No time out for first time login.
+    if ($user->isAuthenticated() && $this->validatePathParameters($user, $timestamp, $hash, $timeout)) {
+        // The information provided is valid.
+        return NULL;
     }
 
     $this->messenger()->addError($this->t('You have tried to use a one-time login link that has either been used or is no longer valid. Request a new one using the form below.'));
@@ -386,7 +338,7 @@ class UserController extends ControllerBase {
    *   The user account name as a render array or an empty string if $user is
    *   NULL.
    */
-  public function userTitle(?UserInterface $user = NULL) {
+  public function userTitle(?UserInterface $user = NULL): array|string {
     return $user ? ['#markup' => $user->getDisplayName(), '#allowed_tags' => Xss::getHtmlTagList()] : '';
   }
 
@@ -434,10 +386,8 @@ class UserController extends ControllerBase {
         // after completion.
         return batch_process('<front>');
       }
-      else {
-        $this->messenger()->addError($this->t('You have tried to use an account cancellation link that has expired. Request a new one using the form below.'));
-        return $this->redirect('entity.user.cancel_form', ['user' => $user->id()], ['absolute' => TRUE]);
-      }
+      $this->messenger()->addError($this->t('You have tried to use an account cancellation link that has expired. Request a new one using the form below.'));
+      return $this->redirect('entity.user.cancel_form', ['user' => $user->id()], ['absolute' => TRUE]);
     }
     throw new AccessDeniedHttpException();
   }

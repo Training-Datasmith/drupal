@@ -165,7 +165,7 @@ class MediaType extends ConfigEntityBundleBase implements MediaTypeInterface, En
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return [
       'source_configuration' => $this->sourcePluginCollection(),
     ];

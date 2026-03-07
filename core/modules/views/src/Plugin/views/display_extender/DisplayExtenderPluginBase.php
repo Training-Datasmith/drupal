@@ -40,7 +40,7 @@ abstract class DisplayExtenderPluginBase extends PluginBase {
   /**
    * Provide a form to edit options for this plugin.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {}
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {}
 
   /**
    * Validate the options form.

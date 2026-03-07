@@ -13,7 +13,7 @@ trait PreviewToggleTrait {
    * @return array
    *   The render array for the content preview toggle.
    */
-  protected function buildContentPreviewToggle() {
+  protected function buildContentPreviewToggle(): array {
     return [
       '#type' => 'container',
       '#attributes' => [

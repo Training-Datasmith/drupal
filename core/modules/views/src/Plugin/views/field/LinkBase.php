@@ -23,39 +23,11 @@ abstract class LinkBase extends FieldPluginBase {
   use EntityTranslationRenderTrait;
 
   /**
-   * The access manager service.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
    * Current user object.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
   protected $currentUser;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
 
   /**
    * Constructs a LinkBase object.
@@ -66,21 +38,17 @@ abstract class LinkBase extends FieldPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccessManagerInterface $access_manager, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository, LanguageManagerInterface $language_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->accessManager = $access_manager;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityRepository = $entity_repository;
-    $this->languageManager = $language_manager;
   }
 
   /**
@@ -111,7 +79,7 @@ abstract class LinkBase extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['text'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Text to display'),
@@ -136,7 +104,7 @@ abstract class LinkBase extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if ($this->languageManager->isMultilingual()) {
       $this->getEntityTranslationRenderer()->query($this->query, $this->relationship);
     }

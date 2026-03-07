@@ -31,7 +31,7 @@ class FilterCaption extends FilterBase implements ContainerFactoryPluginInterfac
    *
    * @var \Drupal\filter\FilterPluginManager
    */
-  protected $filterManager;
+  protected object $filterManager;
 
   /**
    * Constructs a new FilterCaption.
@@ -59,7 +59,7 @@ class FilterCaption extends FilterBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     $result = new FilterProcessResult($text);
 
     if (stristr($text, 'data-caption') !== FALSE) {
@@ -145,7 +145,7 @@ class FilterCaption extends FilterBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function tips($long = FALSE) {
+  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if ($long) {
       return $this->t('
         <p>You can caption images, videos, blockquotes, and so on. Examples:</p>
@@ -156,9 +156,7 @@ class FilterCaption extends FilterBase implements ContainerFactoryPluginInterfac
             <li><code>&lt;code data-caption="Hello world in JavaScript."&gt;alert("Hello world!");&lt;/code&gt;</code></li>
         </ul>');
     }
-    else {
-      return $this->t('You can caption images (<code>data-caption="Text"</code>), but also videos, blockquotes, and so on.');
-    }
+    return $this->t('You can caption images (<code>data-caption="Text"</code>), but also videos, blockquotes, and so on.');
   }
 
 }

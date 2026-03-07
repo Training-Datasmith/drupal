@@ -22,26 +22,19 @@ class AddSectionController implements ContainerInjectionInterface {
   use LayoutRebuildTrait;
 
   /**
-   * The layout tempstore repository.
-   *
-   * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
-   */
-  protected $layoutTempstoreRepository;
-
-  /**
    * AddSectionController constructor.
    *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
+   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
    *   The layout tempstore repository.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository) {
-    $this->layoutTempstoreRepository = $layout_tempstore_repository;
+  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('layout_builder.tempstore_repository')
     );
@@ -68,10 +61,8 @@ class AddSectionController implements ContainerInjectionInterface {
     if ($this->isAjax()) {
       return $this->rebuildAndClose($section_storage);
     }
-    else {
-      $url = $section_storage->getLayoutBuilderUrl();
-      return new RedirectResponse($url->setAbsolute()->toString());
-    }
+    $url = $section_storage->getLayoutBuilderUrl();
+    return new RedirectResponse($url->setAbsolute()->toString());
   }
 
 }

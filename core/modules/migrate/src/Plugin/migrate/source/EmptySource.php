@@ -30,7 +30,7 @@ class EmptySource extends SourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function fields() {
+  public function fields(): array {
     return [
       'id' => $this->t('ID'),
     ];
@@ -39,14 +39,14 @@ class EmptySource extends SourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function initializeIterator() {
+  public function initializeIterator(): \ArrayIterator {
     return new \ArrayIterator([['id' => '']]);
   }
 
   /**
    * Allows class to decide how it will react when it is treated like a string.
    */
-  public function __toString() {
+  public function __toString(): string {
     return '';
   }
 
@@ -61,7 +61,7 @@ class EmptySource extends SourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  protected function doCount() {
+  protected function doCount(): int {
     return 1;
   }
 

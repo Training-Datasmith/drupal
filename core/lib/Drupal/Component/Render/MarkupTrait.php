@@ -29,7 +29,7 @@ trait MarkupTrait {
    * @return string|\Drupal\Component\Render\MarkupInterface
    *   A safe string.
    */
-  public static function create($string) {
+  public static function create($string): \Drupal\Component\Render\MarkupInterface|string|self {
     if ($string instanceof MarkupInterface) {
       return $string;
     }

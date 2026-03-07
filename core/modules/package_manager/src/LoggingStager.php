@@ -19,11 +19,11 @@ use PhpTuf\ComposerStager\API\Process\Value\OutputTypeEnum;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class LoggingStager implements StagerInterface {
+final readonly class LoggingStager implements StagerInterface {
 
   public function __construct(
-    private readonly StagerInterface $decorated,
-    private readonly ConfigFactoryInterface $configFactory,
+    private StagerInterface $decorated,
+    private ConfigFactoryInterface $configFactory,
   ) {}
 
   /**

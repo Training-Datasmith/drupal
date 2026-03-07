@@ -48,7 +48,7 @@ class MenuLinksetRoutes extends RouteSubscriberBase implements ContainerInjectio
    * @param \Symfony\Component\Routing\RouteCollection $collection
    *   A collection of routes.
    */
-  public function alterRoutes(RouteCollection $collection) {
+  public function alterRoutes(RouteCollection $collection): void {
     if ($this->configFactory->get('system.feature_flags')->get('linkset_endpoint')) {
       $collection->get('system.menu.linkset')->setOption('_auth', $this->providerIds);
     }
@@ -57,7 +57,7 @@ class MenuLinksetRoutes extends RouteSubscriberBase implements ContainerInjectio
   /**
    * {@inheritdoc}
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     $saved_config = $event->getConfig();
     if ($saved_config->getName() === 'system.feature_flags' && $event->isChanged('linkset_endpoint')) {
       $this->routeBuilder->setRebuildNeeded();
@@ -77,7 +77,7 @@ class MenuLinksetRoutes extends RouteSubscriberBase implements ContainerInjectio
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->getParameter('authentication_providers'),
       $container->get('config.factory'),
@@ -91,7 +91,7 @@ class MenuLinksetRoutes extends RouteSubscriberBase implements ContainerInjectio
    * @return \Symfony\Component\Routing\Route[]
    *   An array of route objects.
    */
-  public function routes() {
+  public function routes(): array {
     $routes = [];
 
     // Only enable linkset routes if the related config option is enabled.

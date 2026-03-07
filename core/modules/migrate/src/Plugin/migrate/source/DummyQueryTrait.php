@@ -27,7 +27,7 @@ trait DummyQueryTrait {
   /**
    * {@inheritdoc}
    */
-  protected function doCount() {
+  protected function doCount(): int {
     return 1;
   }
 

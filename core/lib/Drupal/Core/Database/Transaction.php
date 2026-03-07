@@ -42,13 +42,13 @@ class Transaction {
    * Prevent transactions from being unserialized.
    */
   public function __wakeup(): void {
-    throw new \BadMethodCallException('Cannot unserialize ' . get_class($this));
+    throw new \BadMethodCallException('Cannot unserialize ' . static::class);
   }
 
   /**
    * Retrieves the name of the transaction or savepoint.
    */
-  public function name() {
+  public function name(): string {
     return $this->name;
   }
 
@@ -70,7 +70,7 @@ class Transaction {
    * operation (for a root item), or to a ROLLBACK TO SAVEPOINT + a RELEASE
    * SAVEPOINT operations (for a savepoint item) executed on the database.
    */
-  public function rollBack() {
+  public function rollBack(): void {
     $this->connection->transactionManager()->rollback($this->name, $this->id);
   }
 

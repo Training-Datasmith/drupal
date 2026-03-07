@@ -16,7 +16,7 @@ trait LanguageConfigCollectionNameTrait {
    * @return string
    *   The configuration collection name for a language code.
    */
-  protected function createConfigCollectionName($langcode) {
+  protected function createConfigCollectionName(string $langcode): string {
     return 'language.' . $langcode;
   }
 
@@ -35,7 +35,7 @@ trait LanguageConfigCollectionNameTrait {
    *
    * @see self::createConfigCollectionName()
    */
-  protected function getLangcodeFromCollectionName($collection) {
+  protected function getLangcodeFromCollectionName($collection): string {
     preg_match('/^language\.(.*)$/', $collection, $matches);
     if (!isset($matches[1])) {
       throw new \InvalidArgumentException("'$collection' is not a valid language override collection");

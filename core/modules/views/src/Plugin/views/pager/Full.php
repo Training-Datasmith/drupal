@@ -39,7 +39,7 @@ class Full extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['quantity'] = [
@@ -68,7 +68,7 @@ class Full extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     if (!empty($this->options['offset'])) {
       return $this->formatPlural($this->options['items_per_page'],
         '@count item, skip @skip',
@@ -84,7 +84,7 @@ class Full extends SqlBase {
   /**
    * {@inheritdoc}
    */
-  public function render($input) {
+  public function render($input): array {
     // The 0, 1, 3, 4 indexes are correct. See the
     // \Drupal\Core\Pager\PagerPreprocess::preprocessPager() documentation.
     $tags = [

@@ -56,25 +56,11 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   protected $uuidKey = 'uuid';
 
   /**
-   * The config factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The config storage service.
    *
    * @var \Drupal\Core\Config\StorageInterface
    */
   protected $configStorage;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
 
   /**
    * Determines if the underlying configuration is retrieved override free.
@@ -88,27 +74,24 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory service.
    * @param \Drupal\Component\Uuid\UuidInterface $uuid_service
    *   The UUID service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
    *   The memory cache backend.
    */
-  public function __construct(EntityTypeInterface $entity_type, ConfigFactoryInterface $config_factory, UuidInterface $uuid_service, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, UuidInterface $uuid_service, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, MemoryCacheInterface $memory_cache) {
     parent::__construct($entity_type, $memory_cache);
-
-    $this->configFactory = $config_factory;
     $this->uuidService = $uuid_service;
-    $this->languageManager = $language_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('config.factory'),
@@ -127,14 +110,14 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
    * @return string
    *   The full configuration prefix, for example 'views.view.'.
    */
-  protected function getPrefix() {
+  protected function getPrefix(): string {
     return $this->entityType->getConfigPrefix() . '.';
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function getIDFromConfigName($config_name, $config_prefix) {
+  public static function getIDFromConfigName($config_name, $config_prefix): string {
     return substr($config_name, strlen($config_prefix . '.'));
   }
 
@@ -201,9 +184,8 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
     // Set default language to current language if not provided.
     $values += [$this->langcodeKey => $this->languageManager->getCurrentLanguage()->getId()];
     $entity_class = $this->getEntityClass();
-    $entity = new $entity_class($values, $this->entityTypeId);
 
-    return $entity;
+    return new $entity_class($values, $this->entityTypeId);
   }
 
   /**
@@ -232,7 +214,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
     // @see \Drupal\Core\Config\Entity\ConfigEntityStorage::MAX_ID_LENGTH
     // @todo Consider moving this to a protected method on the parent class, and
     //   abstracting it for all entity types.
-    if (strlen($id) > static::MAX_ID_LENGTH) {
+    if (strlen((string) $id) > static::MAX_ID_LENGTH) {
       throw new ConfigEntityIdLengthException("Configuration entity ID {$id} exceeds maximum allowed length of " . static::MAX_ID_LENGTH . " characters.");
     }
 
@@ -242,7 +224,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   /**
    * {@inheritdoc}
    */
-  protected function doSave($id, EntityInterface $entity) {
+  protected function doSave($id, EntityInterface $entity): int {
     $is_new = $entity->isNew();
     $prefix = $this->getPrefix();
     $config_name = $prefix . $entity->id();
@@ -290,7 +272,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   /**
    * {@inheritdoc}
    */
-  protected function has($id, EntityInterface $entity) {
+  protected function has($id, EntityInterface $entity): bool {
     $prefix = $this->getPrefix();
     $config = $this->configFactory->get($prefix . $id);
     return !$config->isNew();
@@ -299,21 +281,21 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   /**
    * {@inheritdoc}
    */
-  public function hasData() {
+  public function hasData(): bool {
     return (bool) $this->configFactory->listAll($this->getPrefix());
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function buildCacheId($id) {
+  protected function buildCacheId($id): string {
     return parent::buildCacheId($id) . ':' . ($this->overrideFree ? '' : implode(':', $this->configFactory->getCacheKeys()));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function resetCache(?array $ids = NULL) {
+  public function resetCache(?array $ids = NULL): void {
     if ($this->entityType->isStaticallyCacheable()) {
       // Always invalidate through the cache tag, since config entities may
       // be cached under different cache keys depending on the override flag.
@@ -339,14 +321,14 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   /**
    * {@inheritdoc}
    */
-  protected function getQueryServiceName() {
+  protected function getQueryServiceName(): string {
     return 'entity.query.config';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function importCreate($name, Config $new_config, Config $old_config) {
+  public function importCreate($name, Config $new_config, Config $old_config): bool {
     $entity = $this->_doCreateFromStorageRecord($new_config->get(), TRUE);
     $entity->save();
     return TRUE;
@@ -355,7 +337,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   /**
    * {@inheritdoc}
    */
-  public function importUpdate($name, Config $new_config, Config $old_config) {
+  public function importUpdate($name, Config $new_config, Config $old_config): bool {
     $id = static::getIDFromConfigName($name, $this->entityType->getConfigPrefix());
     $entity = $this->load($id);
     if (!$entity) {
@@ -370,7 +352,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   /**
    * {@inheritdoc}
    */
-  public function importDelete($name, Config $new_config, Config $old_config) {
+  public function importDelete($name, Config $new_config, Config $old_config): bool {
     $id = static::getIDFromConfigName($name, $this->entityType->getConfigPrefix());
     $entity = $this->load($id);
     $entity->setSyncing(TRUE);
@@ -432,7 +414,7 @@ class ConfigEntityStorage extends EntityStorageBase implements ConfigEntityStora
   /**
    * {@inheritdoc}
    */
-  public function updateFromStorageRecord(ConfigEntityInterface $entity, array $values) {
+  public function updateFromStorageRecord(ConfigEntityInterface $entity, array $values): ConfigEntityInterface {
     $entity->setOriginal(clone $entity);
 
     $data = $this->mapFromStorageRecords([$values]);

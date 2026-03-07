@@ -10,13 +10,6 @@ use Drupal\Core\Database\Query\PlaceholderInterface;
 abstract class Schema implements PlaceholderInterface {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * The placeholder counter.
    *
    * @var int
@@ -38,14 +31,17 @@ abstract class Schema implements PlaceholderInterface {
 
   /**
    * A unique identifier for this query object.
-   *
-   * @var string
    */
-  protected $uniqueIdentifier;
+  protected string $uniqueIdentifier;
 
-  public function __construct($connection) {
+  /**
+   * @param \Drupal\Core\Database\Connection $connection
+   */
+  public function __construct(/**
+   * The database connection.
+   */
+  protected $connection) {
     $this->uniqueIdentifier = uniqid('', TRUE);
-    $this->connection = $connection;
   }
 
   /**
@@ -201,7 +197,7 @@ abstract class Schema implements PlaceholderInterface {
     // couldn't use \Drupal::database()->select() here because it would prefix
     // information_schema.tables and the query would fail.
     // Don't use {} around information_schema.tables table.
-    return (bool) $this->connection->query("SELECT 1 FROM information_schema.tables WHERE " . (string) $condition, $condition->arguments())->fetchField();
+    return (bool) $this->connection->query("SELECT 1 FROM information_schema.tables WHERE " . $condition, $condition->arguments())->fetchField();
   }
 
   /**
@@ -233,16 +229,16 @@ abstract class Schema implements PlaceholderInterface {
     // couldn't use \Drupal::database()->select() here because it would prefix
     // information_schema.tables and the query would fail.
     // Don't use {} around information_schema.tables table.
-    $results = $this->connection->query("SELECT table_name AS table_name FROM information_schema.tables WHERE " . (string) $condition, $condition->arguments());
+    $results = $this->connection->query("SELECT table_name AS table_name FROM information_schema.tables WHERE " . $condition, $condition->arguments());
     foreach ($results as $table) {
-      if ($prefix && substr($table->table_name, 0, $prefix_length) !== $prefix) {
+      if ($prefix && substr((string) $table->table_name, 0, $prefix_length) !== $prefix) {
         // This table name does not start the prefix, which means that it is
         // not managed by Drupal so it should be excluded from the result.
         continue;
       }
 
       // Remove the prefix from the returned tables.
-      $unprefixed_table_name = substr($table->table_name, $prefix_length);
+      $unprefixed_table_name = substr((string) $table->table_name, $prefix_length);
 
       // The pattern can match a table which is the same as the prefix. That
       // will become an empty string when we remove the prefix, which will
@@ -256,9 +252,8 @@ abstract class Schema implements PlaceholderInterface {
     // Convert the table expression from its SQL LIKE syntax to a regular
     // expression and escape the delimiter that will be used for matching.
     $table_expression = str_replace(['%', '_'], ['.*?', '.'], preg_quote($table_expression, '/'));
-    $tables = preg_grep('/^' . $table_expression . '$/i', $tables);
 
-    return $tables;
+    return preg_grep('/^' . $table_expression . '$/i', $tables);
   }
 
   /**
@@ -281,7 +276,7 @@ abstract class Schema implements PlaceholderInterface {
     // couldn't use \Drupal::database()->select() here because it would prefix
     // information_schema.tables and the query would fail.
     // Don't use {} around information_schema.columns table.
-    return (bool) $this->connection->query("SELECT 1 FROM information_schema.columns WHERE " . (string) $condition, $condition->arguments())->fetchField();
+    return (bool) $this->connection->query("SELECT 1 FROM information_schema.columns WHERE " . $condition, $condition->arguments())->fetchField();
   }
 
   /**
@@ -640,7 +635,7 @@ abstract class Schema implements PlaceholderInterface {
    * @throws \BadMethodCallException
    *   When ::createTableSql() is not implemented in the concrete driver class.
    */
-  public function createTable($name, $table) {
+  public function createTable($name, $table): void {
     if ($this->tableExists($name)) {
       throw new SchemaObjectExistsException("Table '$name' already exists.");
     }
@@ -674,7 +669,7 @@ abstract class Schema implements PlaceholderInterface {
    *   an abstract method here for implementation in each driver.
    */
   protected function createTableSql($name, $table) {
-    throw new \BadMethodCallException(get_class($this) . '::createTableSql() not implemented.');
+    throw new \BadMethodCallException(static::class . '::createTableSql() not implemented.');
   }
 
   /**

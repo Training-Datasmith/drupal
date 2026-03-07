@@ -41,10 +41,8 @@ class FieldItemDataDefinition extends DataDefinition implements FieldItemDataDef
    *
    * @param \Drupal\Core\Field\FieldDefinitionInterface $field_definition
    *   The field definition the item definition belongs to.
-   *
-   * @return static
    */
-  public static function create($field_definition) {
+  public static function create($field_definition): static {
     $definition['type'] = 'field_item:' . $field_definition->getType();
     $item_definition = new static($definition);
     $item_definition->fieldDefinition = $field_definition;
@@ -82,7 +80,7 @@ class FieldItemDataDefinition extends DataDefinition implements FieldItemDataDef
   /**
    * {@inheritdoc}
    */
-  public function setFieldDefinition($field_definition) {
+  public function setFieldDefinition($field_definition): static {
     $this->fieldDefinition = $field_definition;
     return $this;
   }

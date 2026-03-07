@@ -51,7 +51,7 @@ class PoStreamWriter implements PoWriterInterface, PoStreamInterface {
    * @param \Drupal\Component\Gettext\PoHeader $header
    *   The Gettext PO header to set.
    */
-  public function setHeader(PoHeader $header) {
+  public function setHeader(PoHeader $header): void {
     $this->header = $header;
   }
 
@@ -71,14 +71,14 @@ class PoStreamWriter implements PoWriterInterface, PoStreamInterface {
    * @param string $langcode
    *   The language code.
    */
-  public function setLangcode($langcode) {
+  public function setLangcode($langcode): void {
     $this->langcode = $langcode;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function open() {
+  public function open(): void {
     // Open in write mode. Will overwrite the stream if it already exists.
     $this->fd = fopen($this->getURI(), 'w');
     // Write the header at the start.
@@ -91,7 +91,7 @@ class PoStreamWriter implements PoWriterInterface, PoStreamInterface {
    * @throws \Exception
    *   If the stream is not open.
    */
-  public function close() {
+  public function close(): void {
     if ($this->fd) {
       fclose($this->fd);
     }
@@ -110,7 +110,7 @@ class PoStreamWriter implements PoWriterInterface, PoStreamInterface {
    * @throws \Exception
    *   If writing the data is not possible.
    */
-  private function write($data) {
+  private function write($data): void {
     $result = fwrite($this->fd, $data);
     if ($result === FALSE || $result != strlen($data)) {
       throw new \Exception('Unable to write data: ' . substr($data, 0, 20));
@@ -120,21 +120,21 @@ class PoStreamWriter implements PoWriterInterface, PoStreamInterface {
   /**
    * Write the PO header to the stream.
    */
-  private function writeHeader() {
+  private function writeHeader(): void {
     $this->write($this->header);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function writeItem(PoItem $item) {
+  public function writeItem(PoItem $item): void {
     $this->write($item);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function writeItems(PoReaderInterface $reader, $count = -1) {
+  public function writeItems(PoReaderInterface $reader, $count = -1): void {
     $forever = $count == -1;
     while (($count-- > 0 || $forever) && ($item = $reader->readItem())) {
       $this->writeItem($item);
@@ -157,7 +157,7 @@ class PoStreamWriter implements PoWriterInterface, PoStreamInterface {
   /**
    * {@inheritdoc}
    */
-  public function setURI($uri) {
+  public function setURI($uri): void {
     $this->uri = $uri;
   }
 

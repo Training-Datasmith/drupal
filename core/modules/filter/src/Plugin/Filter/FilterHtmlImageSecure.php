@@ -23,14 +23,14 @@ class FilterHtmlImageSecure extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     return new FilterProcessResult(_filter_html_image_secure_process($text));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function tips($long = FALSE) {
+  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Only images hosted on this site may be used in &lt;img&gt; tags.');
   }
 

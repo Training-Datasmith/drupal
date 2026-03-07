@@ -286,14 +286,14 @@ class JoinPluginBase extends PluginBase implements JoinPluginInterface {
       $this->adjusted = $configuration['adjusted'];
     }
 
-    $this->extraOperator = strtoupper($configuration['extra_operator']);
+    $this->extraOperator = strtoupper((string) $configuration['extra_operator']);
     $this->type = $configuration['type'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildJoin($select_query, $table, $view_query) {
+  public function buildJoin($select_query, $table, $view_query): void {
     if (empty($this->configuration['table formula'])) {
       $right_table = $this->table;
     }
@@ -337,7 +337,7 @@ class JoinPluginBase extends PluginBase implements JoinPluginInterface {
    * @param array $left_table
    *   The left table.
    */
-  protected function joinAddExtra(&$arguments, &$condition, $table, SelectInterface $select_query, $left_table = NULL) {
+  protected function joinAddExtra(&$arguments, string &$condition, $table, SelectInterface $select_query, $left_table = NULL) {
     if (is_array($this->extra)) {
       $extras = [];
       foreach ($this->extra as $info) {
@@ -375,7 +375,7 @@ class JoinPluginBase extends PluginBase implements JoinPluginInterface {
    * @return string
    *   The extra condition
    */
-  protected function buildExtra($info, &$arguments, $table, SelectInterface $select_query, $left) {
+  protected function buildExtra(array $info, array &$arguments, array $table, SelectInterface $select_query, array $left): string {
     // Do not require 'value' to be set; allow for field syntax instead.
     $info += [
       'value' => NULL,
@@ -389,7 +389,7 @@ class JoinPluginBase extends PluginBase implements JoinPluginInterface {
     elseif (isset($info['table'])) {
       // If we're aware of a table alias for this table, use the table
       // alias instead of the table name.
-      if (isset($left) && $left['table'] == $info['table']) {
+      if ($left['table'] == $info['table']) {
         $join_table = $left['alias'] . '.';
       }
       else {

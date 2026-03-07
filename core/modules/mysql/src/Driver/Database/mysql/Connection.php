@@ -212,7 +212,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
     ];
     if (!empty($connection_options['isolation_level'])) {
       $connection_options['init_commands'] += [
-        'isolation_level' => 'SET SESSION TRANSACTION ISOLATION LEVEL ' . strtoupper($connection_options['isolation_level']),
+        'isolation_level' => 'SET SESSION TRANSACTION ISOLATION LEVEL ' . strtoupper((string) $connection_options['isolation_level']),
       ];
     }
 
@@ -234,7 +234,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function queryTemporary($query, array $args = [], array $options = []) {
+  public function queryTemporary($query, array $args = [], array $options = []): string {
     $tablename = 'db_temporary_' . uniqid();
     $this->query('CREATE TEMPORARY TABLE {' . $tablename . '} Engine=MEMORY ' . $query, $args, $options);
     return $tablename;
@@ -243,14 +243,14 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function driver() {
+  public function driver(): string {
     return 'mysql';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function version() {
+  public function version(): ?string {
     if ($this->isMariaDb()) {
       return $this->getMariaDbVersionMatch();
     }
@@ -300,7 +300,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function databaseType() {
+  public function databaseType(): string {
     return 'mysql';
   }
 
@@ -312,7 +312,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *
    * @throws \Drupal\Core\Database\DatabaseNotFoundException
    */
-  public function createDatabase($database) {
+  public function createDatabase($database): void {
     // Escape the database name.
     $database = Database::getConnection()->escapeDatabase($database);
 
@@ -329,7 +329,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function mapConditionOperator($operator) {
+  public function mapConditionOperator($operator): null {
     // We don't want to override any of the defaults.
     return NULL;
   }
@@ -337,21 +337,21 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function exceptionHandler() {
+  public function exceptionHandler(): \Drupal\mysql\Driver\Database\mysql\ExceptionHandler {
     return new ExceptionHandler();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function insert($table, array $options = []) {
+  public function insert($table, array $options = []): \Drupal\mysql\Driver\Database\mysql\Insert {
     return new Insert($this, $table, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function upsert($table, array $options = []) {
+  public function upsert($table, array $options = []): \Drupal\mysql\Driver\Database\mysql\Upsert {
     return new Upsert($this, $table, $options);
   }
 

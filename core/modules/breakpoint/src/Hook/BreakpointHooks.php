@@ -38,8 +38,7 @@ class BreakpointHooks {
         $output .= '<dl>';
         $output .= '<dt>' . $this->t('Defining breakpoints and breakpoint groups') . '</dt>';
         $output .= '<dd>' . $this->t('Modules and themes can use the API provided by the Breakpoint module to define breakpoints and breakpoint groups, and to assign resolution multipliers to breakpoints.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

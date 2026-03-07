@@ -62,10 +62,7 @@ final class SimpleAnnotationReader
       '}' => TRUE,
     ];
 
-    /**
-     * @var DocParser
-     */
-    private $parser;
+    private readonly \Drupal\Component\Annotation\Doctrine\DocParser $parser;
 
     /**
      * Constructor.
@@ -83,10 +80,8 @@ final class SimpleAnnotationReader
      * Adds a namespace in which we will look for annotations.
      *
      * @param string $namespace
-     *
-     * @return void
      */
-    public function addNamespace($namespace)
+    public function addNamespace($namespace): void
     {
         $this->parser->addNamespace($namespace);
     }
@@ -141,7 +136,7 @@ final class SimpleAnnotationReader
      *
      * @template T
      */
-    public function getClassAnnotation(\ReflectionClass $class, $annotationName)
+    public function getClassAnnotation(\ReflectionClass $class, $annotationName): ?object
     {
         foreach ($this->getClassAnnotations($class) as $annotation) {
             if ($annotation instanceof $annotationName) {
@@ -162,7 +157,7 @@ final class SimpleAnnotationReader
      *
      * @template T
      */
-    public function getMethodAnnotation(\ReflectionMethod $method, $annotationName)
+    public function getMethodAnnotation(\ReflectionMethod $method, $annotationName): ?object
     {
         foreach ($this->getMethodAnnotations($method) as $annotation) {
             if ($annotation instanceof $annotationName) {
@@ -183,7 +178,7 @@ final class SimpleAnnotationReader
      *
      * @template T
      */
-    public function getPropertyAnnotation(\ReflectionProperty $property, $annotationName)
+    public function getPropertyAnnotation(\ReflectionProperty $property, $annotationName): ?object
     {
         foreach ($this->getPropertyAnnotations($property) as $annotation) {
             if ($annotation instanceof $annotationName) {

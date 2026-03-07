@@ -67,9 +67,9 @@ class DemoUmamiHooks {
    * Allows the profile to alter the site configuration form.
    */
   #[Hook('form_install_configure_form_alter')]
-  public function formInstallConfigureFormAlter(&$form, FormStateInterface $form_state): void {
+  public function formInstallConfigureFormAlter(array &$form, FormStateInterface $form_state): void {
     $form['site_information']['site_name']['#default_value'] = 'Umami Food Magazine';
-    $form['#submit'][] = [$this, 'installConfigureSubmit'];
+    $form['#submit'][] = $this->installConfigureSubmit(...);
   }
 
   /**

@@ -16,13 +16,6 @@ class FilterUninstallValidator implements ModuleUninstallValidatorInterface {
   use StringTranslationTrait;
 
   /**
-   * The filter plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $filterManager;
-
-  /**
    * The filter entity storage.
    *
    * @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface
@@ -32,23 +25,23 @@ class FilterUninstallValidator implements ModuleUninstallValidatorInterface {
   /**
    * Constructs a new FilterUninstallValidator.
    *
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $filter_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $filterManager
    *   The filter plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
    */
-  public function __construct(PluginManagerInterface $filter_manager, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
-    $this->filterManager = $filter_manager;
+  public function __construct(protected \Drupal\Component\Plugin\PluginManagerInterface $filterManager, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
     $this->filterStorage = $entity_type_manager->getStorage('filter_format');
     $this->stringTranslation = $string_translation;
   }
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function validate($module) {
+  public function validate($module): array {
     $reasons = [];
     // Get filter plugins supplied by this module.
     if ($filter_plugins = $this->getFilterDefinitionsByProvider($module)) {
@@ -79,10 +72,8 @@ class FilterUninstallValidator implements ModuleUninstallValidatorInterface {
    * @return array
    *   The filter definitions for the specified provider.
    */
-  protected function getFilterDefinitionsByProvider($provider) {
-    return array_filter($this->filterManager->getDefinitions(), function ($definition) use ($provider) {
-      return $definition['provider'] == $provider;
-    });
+  protected function getFilterDefinitionsByProvider($provider): array {
+    return array_filter($this->filterManager->getDefinitions(), fn(array $definition) => $definition['provider'] == $provider);
   }
 
   /**

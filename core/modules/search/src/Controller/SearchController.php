@@ -16,13 +16,6 @@ use Symfony\Component\HttpFoundation\Request;
 class SearchController extends ControllerBase {
 
   /**
-   * The search page repository.
-   *
-   * @var \Drupal\search\SearchPageRepositoryInterface
-   */
-  protected $searchPageRepository;
-
-  /**
    * A logger instance.
    *
    * @var \Psr\Log\LoggerInterface
@@ -30,24 +23,15 @@ class SearchController extends ControllerBase {
   protected $logger;
 
   /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a new search controller.
    *
-   * @param \Drupal\search\SearchPageRepositoryInterface $search_page_repository
+   * @param \Drupal\search\SearchPageRepositoryInterface $searchPageRepository
    *   The search page repository.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
    */
-  public function __construct(SearchPageRepositoryInterface $search_page_repository, RendererInterface $renderer) {
-    $this->searchPageRepository = $search_page_repository;
+  public function __construct(protected \Drupal\search\SearchPageRepositoryInterface $searchPageRepository, protected \Drupal\Core\Render\RendererInterface $renderer) {
     $this->logger = $this->getLogger('search');
-    $this->renderer = $renderer;
   }
 
   /**
@@ -61,7 +45,7 @@ class SearchController extends ControllerBase {
    * @return array
    *   The search form and search results build array.
    */
-  public function view(Request $request, SearchPageInterface $entity) {
+  public function view(Request $request, SearchPageInterface $entity): array {
     $build = [];
     $plugin = $entity->getPlugin();
 
@@ -69,7 +53,7 @@ class SearchController extends ControllerBase {
     // and we don't want to build the results based on last time's request.
     $build['#cache']['contexts'][] = 'url.query_args:keys';
     if ($request->query->has('keys')) {
-      $keys = trim($request->query->get('keys'));
+      $keys = trim((string) $request->query->get('keys'));
       $plugin->setSearch($keys, $request->query->all(), $request->attributes->all());
     }
 
@@ -146,7 +130,7 @@ class SearchController extends ControllerBase {
    * @return array
    *   The search help page.
    */
-  public function searchHelp(SearchPageInterface $entity) {
+  public function searchHelp(SearchPageInterface $entity): array {
     $build = [];
 
     $build['search_help'] = $entity->getPlugin()->getHelp();
@@ -178,7 +162,7 @@ class SearchController extends ControllerBase {
    * @return string
    *   The title for the search page edit form.
    */
-  public function editTitle(SearchPageInterface $search_page) {
+  public function editTitle(SearchPageInterface $search_page): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Edit %label search page', ['%label' => $search_page->label()]);
   }
 

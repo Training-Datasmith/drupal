@@ -89,7 +89,7 @@ class Schema extends DatabaseSchema {
    * @return string
    *   The index/constraint/pkey identifier.
    */
-  protected function ensureIdentifiersLength($table_identifier_part, $column_identifier_part, $tag, $separator = '__') {
+  protected function ensureIdentifiersLength($table_identifier_part, $column_identifier_part, string $tag, $separator = '__'): string {
     $info = $this->getPrefixInfo($table_identifier_part);
     $table_identifier_part = $info['table'];
     $identifierName = implode($separator, [$table_identifier_part, $column_identifier_part, $tag]);
@@ -101,12 +101,9 @@ class Schema extends DatabaseSchema {
     }
 
     if (strlen($identifierName) > $this->maxIdentifierLength) {
-      $saveIdentifier = '"drupal_' . $this->hashBase64($identifierName) . '_' . $tag . '"';
+      return '"drupal_' . $this->hashBase64($identifierName) . '_' . $tag . '"';
     }
-    else {
-      $saveIdentifier = $identifierName;
-    }
-    return $saveIdentifier;
+    return $identifierName;
   }
 
   /**
@@ -126,7 +123,7 @@ class Schema extends DatabaseSchema {
    * @throws \Exception
    *   Exception thrown when the query for the table information fails.
    */
-  public function queryTableInformation($table) {
+  public function queryTableInformation(string $table) {
     // Generate a key to reference this table's information on.
     $prefixed_table = $this->connection->getPrefix() . $table;
     $key = $this->connection->prefixTables('{' . $table . '}');
@@ -187,7 +184,7 @@ EOD;
         if ($column->data_type == 'bytea') {
           $table_information->blob_fields[$column->column_name] = TRUE;
         }
-        elseif (preg_match("/nextval\('([^']+)'/", $column->column_default, $matches)) {
+        elseif (preg_match("/nextval\('([^']+)'/", (string) $column->column_default, $matches)) {
           // We must know of any sequences in the table structure to help us
           // return the last insert id. If there is more than 1 sequences the
           // first one (index 0 of the sequences array) will be used.
@@ -219,7 +216,7 @@ EOD;
    * @param string $table
    *   The non-prefixed name of the table.
    */
-  protected function resetTableInformation($table) {
+  protected function resetTableInformation(string $table) {
     $key = $this->defaultSchema . '.' . $this->connection->getPrefix() . $table;
     unset($this->tableInformation[$key]);
   }
@@ -277,9 +274,7 @@ EOD;
 
     $this->connection->releaseSavepoint();
 
-    $field_information = $checks->fetchCol();
-
-    return $field_information;
+    return $checks->fetchCol();
   }
 
   /**
@@ -344,7 +339,7 @@ EOD;
    * @param array $spec
    *   The field specification, as per the schema data structure format.
    */
-  protected function createFieldSql($name, $spec) {
+  protected function createFieldSql(string $name, array $spec): string {
     // The PostgreSQL server converts names into lowercase, unless quoted.
     $sql = '"' . $name . '" ' . $spec['pgsql_type'];
 
@@ -385,7 +380,7 @@ EOD;
    * @param array $field
    *   A field description array, as specified in the schema documentation.
    */
-  protected function processField($field) {
+  protected function processField(array $field): array {
     if (!isset($field['size'])) {
       $field['size'] = 'normal';
     }
@@ -475,7 +470,7 @@ EOD;
   /**
    * Creates the SQL key for the given fields.
    */
-  protected function _createKeySql($fields) {
+  protected function _createKeySql($fields): string {
     $return = [];
     foreach ($fields as $field) {
       if (is_array($field)) {
@@ -495,7 +490,7 @@ EOD;
    * that requires a separate database lookup for each column in the key. The
    * key length defined in the schema is ignored.
    */
-  protected function createPrimaryKeySql($fields) {
+  protected function createPrimaryKeySql($fields): string {
     $return = [];
     foreach ($fields as $field) {
       if (is_array($field)) {
@@ -511,7 +506,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function tableExists($table, $add_prefix = TRUE) {
+  public function tableExists($table, $add_prefix = TRUE): bool {
     $prefixInfo = $this->getPrefixInfo($table, $add_prefix);
 
     return (bool) $this->connection->query("SELECT 1 FROM pg_tables WHERE schemaname = :schema AND tablename = :table", [
@@ -523,7 +518,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function findTables($table_expression) {
+  public function findTables($table_expression): array|false {
     $prefix = $this->connection->getPrefix();
     $prefix_length = strlen($prefix);
     $tables = [];
@@ -532,14 +527,14 @@ EOD;
     // prefixes. The actual matching is done at the bottom of the method.
     $results = $this->connection->query("SELECT tablename FROM pg_tables WHERE schemaname = :schema", [':schema' => $this->defaultSchema]);
     foreach ($results as $table) {
-      if ($prefix && substr($table->tablename, 0, $prefix_length) !== $prefix) {
+      if ($prefix && substr((string) $table->tablename, 0, $prefix_length) !== $prefix) {
         // This table name does not start the default prefix, which means that
         // it is not managed by Drupal so it should be excluded from the result.
         continue;
       }
 
       // Remove the prefix from the returned tables.
-      $unprefixed_table_name = substr($table->tablename, $prefix_length);
+      $unprefixed_table_name = substr((string) $table->tablename, $prefix_length);
 
       // The pattern can match a table which is the same as the prefix. That
       // will become an empty string when we remove the prefix, which will
@@ -553,15 +548,14 @@ EOD;
     // Convert the table expression from its SQL LIKE syntax to a regular
     // expression and escape the delimiter that will be used for matching.
     $table_expression = str_replace(['%', '_'], ['.*?', '.'], preg_quote($table_expression, '/'));
-    $tables = preg_grep('/^' . $table_expression . '$/i', $tables);
 
-    return $tables;
+    return preg_grep('/^' . $table_expression . '$/i', $tables);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function renameTable($table, $new_name) {
+  public function renameTable($table, $new_name): void {
     if (!$this->tableExists($table)) {
       throw new SchemaObjectDoesNotExistException("Cannot rename '$table' to '$new_name': table '$table' doesn't exist.");
     }
@@ -580,21 +574,21 @@ EOD;
 
     foreach ($indexes as $index) {
       // Get the index type by suffix, e.g. idx/key/pkey.
-      $index_type = substr($index->indexname, strrpos($index->indexname, '_') + 1);
+      $index_type = substr((string) $index->indexname, strrpos((string) $index->indexname, '_') + 1);
 
       // If the index is already rewritten by ensureIdentifiersLength() to not
       // exceed the 63 chars limit of PostgreSQL, we need to take care of that.
       // cSpell:disable-next-line
       // Example (drupal_Gk7Su_T1jcBHVuvSPeP22_I3Ni4GrVEgTYlIYnBJkro_idx).
-      if (str_starts_with($index->indexname, 'drupal_')) {
-        preg_match('/^drupal_(.*)_' . preg_quote($index_type, NULL) . '/', $index->indexname, $matches);
+      if (str_starts_with((string) $index->indexname, 'drupal_')) {
+        preg_match('/^drupal_(.*)_' . preg_quote($index_type) . '/', (string) $index->indexname, $matches);
         $index_name = $matches[1];
       }
       else {
         // Make sure to remove the suffix from index names, because
         // $this->ensureIdentifiersLength() will add the suffix again and thus
         // would result in a wrong index name.
-        preg_match('/^' . preg_quote($table_name, NULL) . '__(.*)__' . preg_quote($index_type, NULL) . '/', $index->indexname, $matches);
+        preg_match('/^' . preg_quote($table_name) . '__(.*)__' . preg_quote($index_type) . '/', (string) $index->indexname, $matches);
         $index_name = $matches[1];
       }
       // The renaming of an index will fail when the there exists an table with
@@ -634,7 +628,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function dropTable($table) {
+  public function dropTable($table): bool {
     if (!$this->tableExists($table)) {
       return FALSE;
     }
@@ -647,7 +641,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function addField($table, $field, $spec, $new_keys = []) {
+  public function addField($table, $field, $spec, $new_keys = []): void {
     if (!$this->tableExists($table)) {
       throw new SchemaObjectDoesNotExistException("Cannot add field '$table.$field': table doesn't exist.");
     }
@@ -709,7 +703,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function dropField($table, $field) {
+  public function dropField($table, $field): bool {
     if (!$this->fieldExists($table, $field)) {
       return FALSE;
     }
@@ -722,7 +716,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function fieldExists($table, $column) {
+  public function fieldExists($table, $column): bool {
     $prefixInfo = $this->getPrefixInfo($table);
 
     return (bool) $this->connection->query("SELECT 1 FROM pg_attribute WHERE attrelid = :key::regclass AND attname = :column AND NOT attisdropped AND attnum > 0", [
@@ -734,7 +728,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function indexExists($table, $name) {
+  public function indexExists($table, $name): bool {
     // Details https://www.postgresql.org/docs/12/view-pg-indexes.html
     $index_name = $this->ensureIdentifiersLength($table, $name, 'idx');
     // Remove leading and trailing quotes because the index name is in a WHERE
@@ -760,7 +754,7 @@ EOD;
    * @return bool
    *   TRUE if the constraint exists, FALSE otherwise.
    */
-  public function constraintExists($table, $name) {
+  public function constraintExists($table, $name): bool {
     // ::ensureIdentifiersLength() expects three parameters, although not
     // explicitly stated in its signature, thus we split our constraint name in
     // a proper name and a suffix.
@@ -783,7 +777,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function addPrimaryKey($table, $fields) {
+  public function addPrimaryKey($table, $fields): void {
     if (!$this->tableExists($table)) {
       throw new SchemaObjectDoesNotExistException("Cannot add primary key to table '$table': table doesn't exist.");
     }
@@ -798,7 +792,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function dropPrimaryKey($table) {
+  public function dropPrimaryKey($table): bool {
     if (!$this->constraintExists($table, 'pkey')) {
       return FALSE;
     }
@@ -821,7 +815,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function addUniqueKey($table, $name, $fields) {
+  public function addUniqueKey($table, $name, $fields): void {
     if (!$this->tableExists($table)) {
       throw new SchemaObjectDoesNotExistException("Cannot add unique key '$name' to table '$table': table doesn't exist.");
     }
@@ -839,7 +833,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function dropUniqueKey($table, $name) {
+  public function dropUniqueKey($table, $name): bool {
     if (!$this->constraintExists($table, $name . '__key')) {
       return FALSE;
     }
@@ -852,7 +846,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function addIndex($table, $name, $fields, array $spec) {
+  public function addIndex($table, $name, $fields, array $spec): void {
     if (!$this->tableExists($table)) {
       throw new SchemaObjectDoesNotExistException("Cannot add index '$name' to table '$table': table doesn't exist.");
     }
@@ -867,7 +861,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function dropIndex($table, $name) {
+  public function dropIndex($table, $name): bool {
     if (!$this->indexExists($table, $name)) {
       return FALSE;
     }
@@ -880,7 +874,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  protected function introspectIndexSchema($table) {
+  protected function introspectIndexSchema($table): array {
     if (!$this->tableExists($table)) {
       throw new SchemaObjectDoesNotExistException("The table $table doesn't exist.");
     }
@@ -897,13 +891,13 @@ EOD;
       ':table_name' => $full_name,
     ])->fetchAll();
     foreach ($result as $row) {
-      if (str_ends_with($row->index_name, '_pkey')) {
+      if (str_ends_with((string) $row->index_name, '_pkey')) {
         $index_schema['primary key'][] = $row->column_name;
       }
-      elseif (str_ends_with($row->index_name, '_key')) {
+      elseif (str_ends_with((string) $row->index_name, '_key')) {
         $index_schema['unique keys'][$row->index_name][] = $row->column_name;
       }
-      elseif (str_ends_with($row->index_name, '_idx')) {
+      elseif (str_ends_with((string) $row->index_name, '_idx')) {
         $index_schema['indexes'][$row->index_name][] = $row->column_name;
       }
     }
@@ -914,7 +908,7 @@ EOD;
   /**
    * {@inheritdoc}
    */
-  public function changeField($table, $field, $field_new, $spec, $new_keys = []) {
+  public function changeField($table, $field, $field_new, $spec, $new_keys = []): void {
     if (!$this->fieldExists($table, $field)) {
       throw new SchemaObjectDoesNotExistException("Cannot change the definition of field '$table.$field': field doesn't exist.");
     }
@@ -1036,16 +1030,15 @@ EOD;
   /**
    * Creates a statement for an SQL index for the given fields.
    */
-  protected function _createIndexSql($table, $name, $fields) {
+  protected function _createIndexSql(string $table, $name, $fields): string {
     $query = 'CREATE INDEX ' . $this->ensureIdentifiersLength($table, $name, 'idx') . ' ON {' . $table . '} (';
-    $query .= $this->_createKeySql($fields) . ')';
-    return $query;
+    return $query . ($this->_createKeySql($fields) . ')');
   }
 
   /**
    * Adds keys for an SQL table.
    */
-  protected function _createKeys($table, $new_keys) {
+  protected function _createKeys($table, array $new_keys) {
     if (isset($new_keys['primary key'])) {
       $this->addPrimaryKey($table, $new_keys['primary key']);
     }
@@ -1084,12 +1077,10 @@ EOD;
         $column,
       ])->fetchField() ?? FALSE;
     }
-    else {
-      return $this->connection->query('SELECT obj_description(oid, ?) FROM pg_class WHERE relname = ?', [
-        'pg_class',
-        $info['table'],
-      ])->fetchField() ?? FALSE;
-    }
+    return $this->connection->query('SELECT obj_description(oid, ?) FROM pg_class WHERE relname = ?', [
+      'pg_class',
+      $info['table'],
+    ])->fetchField() ?? FALSE;
   }
 
   /**
@@ -1105,7 +1096,7 @@ EOD;
    *   A base-64 encoded sha-256 hash, with + and / replaced with _ and any =
    *   padding characters removed.
    */
-  protected function hashBase64($data) {
+  protected function hashBase64($data): string {
     $hash = base64_encode(hash('sha256', $data, TRUE));
     // Modify the hash so it's safe to use in PostgreSQL identifiers.
     return strtr($hash, ['+' => '_', '/' => '_', '=' => '']);

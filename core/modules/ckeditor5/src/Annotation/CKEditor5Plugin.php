@@ -54,7 +54,7 @@ class CKEditor5Plugin extends Plugin {
    *
    * @see \Drupal\Component\Annotation\Plugin\Discovery\AnnotationBridgeDecorator::getDefinitions()
    */
-  public function __construct($values) {
+  public function __construct(array $values) {
     if (isset($values['ckeditor5']) && is_array($values['ckeditor5'])) {
       $values['ckeditor5'] = new CKEditor5AspectsOfCKEditor5Plugin($values['ckeditor5']);
     }
@@ -74,7 +74,7 @@ class CKEditor5Plugin extends Plugin {
   /**
    * {@inheritdoc}
    */
-  public function setClass($class) {
+  public function setClass($class): void {
     $this->definition['drupal']['class'] = $class;
   }
 

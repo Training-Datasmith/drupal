@@ -32,9 +32,7 @@ abstract class SandboxValidationEvent extends SandboxEvent {
    */
   public function getResults(?int $severity = NULL): array {
     if ($severity !== NULL) {
-      return array_filter($this->results, function ($result) use ($severity) {
-        return $result->severity === $severity;
-      });
+      return array_filter($this->results, fn(\Drupal\package_manager\ValidationResult $result) => $result->severity === $severity);
     }
     return $this->results;
   }

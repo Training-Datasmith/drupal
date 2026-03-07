@@ -79,14 +79,14 @@ class Menu extends ConfigEntityBase implements MenuInterface {
   /**
    * {@inheritdoc}
    */
-  public function isLocked() {
+  public function isLocked(): bool {
     return (bool) $this->locked;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
     /** @var \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager */
     $menu_link_manager = \Drupal::service('plugin.manager.menu.link');
@@ -112,7 +112,7 @@ class Menu extends ConfigEntityBase implements MenuInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     parent::delete();
     \Drupal::cache('menu')->deleteAll();
 

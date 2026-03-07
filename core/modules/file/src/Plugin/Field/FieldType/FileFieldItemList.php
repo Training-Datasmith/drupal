@@ -18,7 +18,7 @@ class FileFieldItemList extends EntityReferenceFieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function postSave($update) {
+  public function postSave($update): bool {
     $entity = $this->getEntity();
 
     if (!$update) {
@@ -76,7 +76,7 @@ class FileFieldItemList extends EntityReferenceFieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     parent::delete();
     $entity = $this->getEntity();
 
@@ -91,7 +91,7 @@ class FileFieldItemList extends EntityReferenceFieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function deleteRevision() {
+  public function deleteRevision(): void {
     parent::deleteRevision();
     $entity = $this->getEntity();
 

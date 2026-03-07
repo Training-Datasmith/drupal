@@ -26,13 +26,6 @@ class LanguageManager implements LanguageManagerInterface {
   protected $languages = [];
 
   /**
-   * The default language object.
-   *
-   * @var \Drupal\Core\Language\LanguageDefault
-   */
-  protected $defaultLanguage;
-
-  /**
    * Information about all defined language types.
    */
   protected array $definedLanguageTypesInfo;
@@ -40,24 +33,24 @@ class LanguageManager implements LanguageManagerInterface {
   /**
    * Constructs the language manager.
    *
-   * @param \Drupal\Core\Language\LanguageDefault $default_language
+   * @param \Drupal\Core\Language\LanguageDefault $defaultLanguage
    *   The default language.
    */
-  public function __construct(LanguageDefault $default_language) {
-    $this->defaultLanguage = $default_language;
+  public function __construct(protected \Drupal\Core\Language\LanguageDefault $defaultLanguage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isMultilingual() {
+  public function isMultilingual(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLanguageTypes() {
+  public function getLanguageTypes(): array {
     return [LanguageInterface::TYPE_INTERFACE, LanguageInterface::TYPE_CONTENT, LanguageInterface::TYPE_URL];
   }
 
@@ -81,7 +74,7 @@ class LanguageManager implements LanguageManagerInterface {
    *   language type machine name, in the format of
    *   hook_language_types_info().
    */
-  public function getDefinedLanguageTypesInfo() {
+  public function getDefinedLanguageTypesInfo(): array {
     $this->definedLanguageTypesInfo = [
       LanguageInterface::TYPE_INTERFACE => [
         'name' => new TranslatableMarkup('Interface text'),
@@ -111,7 +104,7 @@ class LanguageManager implements LanguageManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function reset($type = NULL) {
+  public function reset($type = NULL): static {
     return $this;
   }
 
@@ -176,7 +169,7 @@ class LanguageManager implements LanguageManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDefaultLockedLanguages($weight = 0) {
+  public function getDefaultLockedLanguages($weight = 0): array {
     $languages = [];
 
     $locked_language = [
@@ -204,29 +197,29 @@ class LanguageManager implements LanguageManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function isLanguageLocked($langcode) {
+  public function isLanguageLocked($langcode): bool {
     $language = $this->getLanguage($langcode);
-    return ($language ? $language->isLocked() : FALSE);
+    return ($language && $language->isLocked());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFallbackCandidates(array $context = []) {
+  public function getFallbackCandidates(array $context = []): array {
     return [LanguageInterface::LANGCODE_DEFAULT];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLanguageSwitchLinks($type, Url $url) {
+  public function getLanguageSwitchLinks($type, Url $url): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function getStandardLanguageList() {
+  public static function getStandardLanguageList(): array {
     // This list is based on languages available from localize.drupal.org. See
     // http://localize.drupal.org/issues for information on how to add languages
     // there.
@@ -357,7 +350,7 @@ class LanguageManager implements LanguageManagerInterface {
    *   An array with language codes as keys, and English and native language
    *   names as values.
    */
-  public static function getUnitedNationsLanguageList() {
+  public static function getUnitedNationsLanguageList(): array {
     // cSpell:disable
     return [
       'ar' => ['Arabic', /* Left-to-right marker "‭" */ 'العربية', LanguageInterface::DIRECTION_RTL],
@@ -384,7 +377,7 @@ class LanguageManager implements LanguageManagerInterface {
    *
    * @see \Drupal\language\ConfigurableLanguageManager::setConfigOverrideLanguage()
    */
-  public function setConfigOverrideLanguage(?LanguageInterface $language = NULL) {
+  public function setConfigOverrideLanguage(?LanguageInterface $language = NULL): static {
     return $this;
   }
 
@@ -410,7 +403,7 @@ class LanguageManager implements LanguageManagerInterface {
    * @return \Drupal\Core\Language\LanguageInterface[]
    *   An associative array of languages, keyed by the language code.
    */
-  protected function filterLanguages(array $languages, $flags = LanguageInterface::STATE_CONFIGURABLE) {
+  protected function filterLanguages(array $languages, $flags = LanguageInterface::STATE_CONFIGURABLE): array {
     // STATE_ALL means we don't actually filter, so skip the rest of the method.
     if ($flags == LanguageInterface::STATE_ALL) {
       return $languages;

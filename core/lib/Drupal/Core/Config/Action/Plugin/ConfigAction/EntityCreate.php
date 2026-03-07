@@ -21,7 +21,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   id: 'entity_create',
   deriver: EntityCreateDeriver::class,
 )]
-final class EntityCreate implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class EntityCreate implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   /**
    * Constructs a EntityCreate object.
@@ -32,8 +32,8 @@ final class EntityCreate implements ConfigActionPluginInterface, ContainerFactor
    *   Determines behavior of action depending on entity existence.
    */
   public function __construct(
-    protected readonly ConfigManagerInterface $configManager,
-    protected readonly Exists $exists,
+    protected ConfigManagerInterface $configManager,
+    protected Exists $exists,
   ) {
   }
 

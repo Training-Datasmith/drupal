@@ -16,22 +16,19 @@ use Twig\Node\Node;
 class TwigNodeCheckDeprecations extends Node {
 
   /**
-   * The named variables used in the template.
-   */
-  protected array $usedNames = [];
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(array $usedNames) {
-    $this->usedNames = $usedNames;
+  public function __construct(/**
+   * The named variables used in the template.
+   */
+  protected array $usedNames) {
     parent::__construct();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function compile(Compiler $compiler) {
+  public function compile(Compiler $compiler): void {
     $usedNamesNode = new ArrayExpression([], $this->getTemplateLine());
     foreach ($this->usedNames as $name) {
       $usedNamesNode->addElement(new ConstantExpression($name, $this->getTemplateLine()));

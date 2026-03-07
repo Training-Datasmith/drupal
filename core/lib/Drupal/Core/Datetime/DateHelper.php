@@ -24,7 +24,7 @@ class DateHelper {
    * @return array
    *   An array of month names.
    */
-  public static function monthNamesUntranslated() {
+  public static function monthNamesUntranslated(): array {
     // Force the key to use the correct month value, rather than
     // starting with zero.
     return [
@@ -49,7 +49,7 @@ class DateHelper {
    * @return array
    *   An array of month names.
    */
-  public static function monthNamesAbbrUntranslated() {
+  public static function monthNamesAbbrUntranslated(): array {
     // Force the key to use the correct month value, rather than
     // starting with zero.
     return [
@@ -78,7 +78,7 @@ class DateHelper {
    * @return array
    *   An array of month names.
    */
-  public static function monthNames($required = FALSE) {
+  public static function monthNames($required = FALSE): array {
     // Force the key to use the correct month value, rather than
     // starting with zero.
     $month_names = [
@@ -109,7 +109,7 @@ class DateHelper {
    * @return array
    *   An array of month abbreviations.
    */
-  public static function monthNamesAbbr($required = FALSE) {
+  public static function monthNamesAbbr($required = FALSE): array {
     // Force the key to use the correct month value, rather than
     // starting with zero.
     $month_names = [
@@ -136,7 +136,7 @@ class DateHelper {
    * @return array
    *   An array of week day names
    */
-  public static function weekDaysUntranslated() {
+  public static function weekDaysUntranslated(): array {
     return [
       'Sunday',
       'Monday',
@@ -158,7 +158,7 @@ class DateHelper {
    * @return array
    *   An array of week day names
    */
-  public static function weekDays($required = FALSE) {
+  public static function weekDays($required = FALSE): array {
     $weekdays = [
       t('Sunday'),
       t('Monday'),
@@ -182,7 +182,7 @@ class DateHelper {
    * @return array
    *   An array of week day abbreviations
    */
-  public static function weekDaysAbbr($required = FALSE) {
+  public static function weekDaysAbbr($required = FALSE): array {
     $weekdays = [
       t('Sun', [], ['context' => 'Abbreviated weekday']),
       t('Mon', [], ['context' => 'Abbreviated weekday']),
@@ -206,7 +206,7 @@ class DateHelper {
    * @return array
    *   An array of week day 2 letter abbreviations
    */
-  public static function weekDaysAbbr2($required = FALSE) {
+  public static function weekDaysAbbr2($required = FALSE): array {
     $weekdays = [
       t('Su', [], ['context' => 'Abbreviated weekday']),
       t('Mo', [], ['context' => 'Abbreviated weekday']),
@@ -230,7 +230,7 @@ class DateHelper {
    * @return array
    *   An array of week day 1 letter abbreviations
    */
-  public static function weekDaysAbbr1($required = FALSE) {
+  public static function weekDaysAbbr1($required = FALSE): array {
     $weekdays = [
       t('S', [], ['context' => 'Abbreviated 1 letter weekday Sunday']),
       t('M', [], ['context' => 'Abbreviated 1 letter weekday Monday']),
@@ -255,7 +255,7 @@ class DateHelper {
    *   keys will remain unchanged. For example, if the first day of the week is
    *   set to be Monday, the array keys will be [1, 2, 3, 4, 5, 6, 0].
    */
-  public static function weekDaysOrdered($weekdays) {
+  public static function weekDaysOrdered(array $weekdays): array {
     $first_day = \Drupal::config('system.date')->get('first_day');
     if ($first_day > 0) {
       for ($i = 1; $i <= $first_day; $i++) {
@@ -434,7 +434,7 @@ class DateHelper {
    * @return array
    *   An array of AM and PM options.
    */
-  public static function ampm($required = FALSE) {
+  public static function ampm($required = FALSE): array {
     $none = ['' => ''];
     $ampm = [
       'am' => t('am', [], ['context' => 'ampm']),
@@ -454,7 +454,7 @@ class DateHelper {
    *   The number of days in the month, or null if the $date has errors.
    */
   public static function daysInMonth($date = NULL) {
-    $date = $date ?? 'now';
+    $date ??= 'now';
     if (!$date instanceof DrupalDateTime) {
       $date = new DrupalDateTime($date);
     }
@@ -474,8 +474,8 @@ class DateHelper {
    * @return int|null
    *   The number of days in the year, or null if the $date has errors.
    */
-  public static function daysInYear($date = NULL) {
-    $date = $date ?? 'now';
+  public static function daysInYear($date = NULL): ?int {
+    $date ??= 'now';
     if (!$date instanceof DrupalDateTime) {
       $date = new DrupalDateTime($date);
     }
@@ -483,9 +483,7 @@ class DateHelper {
       if ($date->format('L')) {
         return 366;
       }
-      else {
-        return 365;
-      }
+      return 365;
     }
     return NULL;
   }
@@ -501,7 +499,7 @@ class DateHelper {
    *   The number of the day in the week, or null if the $date has errors.
    */
   public static function dayOfWeek($date = NULL) {
-    $date = $date ?? 'now';
+    $date ??= 'now';
     if (!$date instanceof DrupalDateTime) {
       $date = new DrupalDateTime($date);
     }
@@ -526,7 +524,7 @@ class DateHelper {
    *   errors.
    */
   public static function dayOfWeekName($date = NULL, $abbr = TRUE) {
-    $date = $date ?? 'now';
+    $date ??= 'now';
     if (!$date instanceof DrupalDateTime) {
       $date = new DrupalDateTime($date);
     }

@@ -37,7 +37,7 @@ class Pager extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         static::class . '::preRenderPager',
@@ -72,7 +72,7 @@ class Pager extends RenderElementBase {
    * @return array
    *   The render array with cache contexts added.
    */
-  public static function preRenderPager(array $pager) {
+  public static function preRenderPager(array $pager): array {
     // Note: the default pager theme preprocess function
     // \Drupal\Core\Pager\PagerPreprocess::preprocessPager() also calls
     // \Drupal\Core\Pager\PagerManagerInterface::getUpdatedParameters(), which

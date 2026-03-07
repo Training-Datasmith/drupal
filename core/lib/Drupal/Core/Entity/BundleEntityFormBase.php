@@ -19,7 +19,7 @@ class BundleEntityFormBase extends EntityForm {
    * @return array
    *   The updated entity bundle form array.
    */
-  protected function protectBundleIdElement(array $form) {
+  protected function protectBundleIdElement(array $form): array {
     $entity = $this->getEntity();
     $id_key = $entity->getEntityType()->getKey('id');
     assert(isset($form[$id_key]));

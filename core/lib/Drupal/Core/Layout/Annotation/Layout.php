@@ -168,7 +168,7 @@ class Layout extends Plugin {
   /**
    * {@inheritdoc}
    */
-  public function get() {
+  public function get(): \Drupal\Core\Layout\LayoutDefinition {
     return new LayoutDefinition($this->definition);
   }
 

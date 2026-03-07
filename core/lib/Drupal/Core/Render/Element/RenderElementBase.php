@@ -132,7 +132,7 @@ abstract class RenderElementBase extends PluginBase implements ElementInterface 
   /**
    * {@inheritdoc}
    */
-  public static function setAttributes(&$element, $class = []) {
+  public static function setAttributes(&$element, $class = []): void {
     if (!empty($class)) {
       if (!isset($element['#attributes']['class'])) {
         $element['#attributes']['class'] = [];
@@ -162,7 +162,7 @@ abstract class RenderElementBase extends PluginBase implements ElementInterface 
    * @return array
    *   The modified element with all group members.
    */
-  public static function preRenderGroup($element) {
+  public static function preRenderGroup(array $element) {
     // The element may be rendered outside of a Form API context.
     if (!isset($element['#parents']) || !isset($element['#groups'])) {
       return $element;
@@ -183,9 +183,7 @@ abstract class RenderElementBase extends PluginBase implements ElementInterface 
         $sort = TRUE;
       }
       // Re-sort the element's children if we injected group member elements.
-      if (isset($sort)) {
-        $element['#sorted'] = FALSE;
-      }
+      $element['#sorted'] = FALSE;
     }
 
     if (isset($element['#group'])) {
@@ -257,7 +255,7 @@ abstract class RenderElementBase extends PluginBase implements ElementInterface 
    * @return array
    *   The processed element with the necessary JavaScript attached to it.
    */
-  public static function preRenderAjaxForm($element) {
+  public static function preRenderAjaxForm(array $element) {
     // Skip already processed elements.
     if (isset($element['#ajax_processed'])) {
       return $element;
@@ -458,7 +456,7 @@ abstract class RenderElementBase extends PluginBase implements ElementInterface 
    * @return array
    *   The processed element.
    */
-  public static function processGroup(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processGroup(array &$element, FormStateInterface $form_state, &$complete_form) {
     $parents = implode('][', $element['#parents']);
 
     // Each details element forms a new group. The #type 'vertical_tabs'

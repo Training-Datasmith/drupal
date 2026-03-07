@@ -10,27 +10,6 @@ use Drupal\workflows\StateInterface;
 class ContentModerationState implements StateInterface {
 
   /**
-   * The vanilla state object from the Workflow module.
-   *
-   * @var \Drupal\workflows\StateInterface
-   */
-  protected $state;
-
-  /**
-   * If entities should be published if in this state.
-   *
-   * @var bool
-   */
-  protected $published;
-
-  /**
-   * If entities should be the default revision if in this state.
-   *
-   * @var bool
-   */
-  protected $defaultRevision;
-
-  /**
    * ContentModerationState constructor.
    *
    * Decorates state objects to add methods to determine if an entity should be
@@ -41,14 +20,22 @@ class ContentModerationState implements StateInterface {
    * @param bool $published
    *   (optional) TRUE if entities should be published if in this state, FALSE
    *   if not. Defaults to FALSE.
-   * @param bool $default_revision
+   * @param bool $defaultRevision
    *   (optional) TRUE if entities should be the default revision if in this
    *   state, FALSE if not. Defaults to FALSE.
    */
-  public function __construct(StateInterface $state, $published = FALSE, $default_revision = FALSE) {
-    $this->state = $state;
-    $this->published = $published;
-    $this->defaultRevision = $default_revision;
+  public function __construct(
+      protected \Drupal\workflows\StateInterface $state,
+      /**
+       * If entities should be published if in this state.
+       */
+      protected $published = FALSE,
+      /**
+       * If entities should be the default revision if in this state.
+       */
+      protected $defaultRevision = FALSE
+  )
+  {
   }
 
   /**

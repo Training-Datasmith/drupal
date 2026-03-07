@@ -30,22 +30,16 @@ abstract class AssetControllerBase extends FileDownloadController {
 
   /**
    * The asset type.
-   *
-   * @var string
    */
   protected string $assetType;
 
   /**
    * The aggregate file extension.
-   *
-   * @var string
    */
   protected string $fileExtension;
 
   /**
    * The asset aggregate content type to send as Content-Type header.
-   *
-   * @var string
    */
   protected string $contentType;
 
@@ -161,7 +155,7 @@ abstract class AssetControllerBase extends FileDownloadController {
     $include_libraries = explode(',', UrlHelper::uncompressQueryParameter($request->query->get('include')));
 
     // Check that library names are in the correct format.
-    $validate = function ($libraries_to_check) {
+    $validate = function ($libraries_to_check): void {
       foreach ($libraries_to_check as $library) {
         if (substr_count($library, '/') === 0) {
           throw new BadRequestHttpException(sprintf('The "%s" library name must include at least one slash.', $library));
@@ -198,20 +192,17 @@ abstract class AssetControllerBase extends FileDownloadController {
     if (hash_equals($generated_hash, $received_hash)) {
       $data = $this->optimizer->optimizeGroup($group);
       $this->dumper->dumpToUri($data, $this->assetType, $uri);
-      $response = new Response($data, 200, [
+      return new Response($data, 200, [
         'Cache-control' => static::CACHE_CONTROL,
         'Content-Type' => $this->contentType,
       ]);
     }
-    else {
-      $expected_filename = $this->fileExtension . '_' . $generated_hash . '.' . $this->fileExtension;
-      $response = new RedirectResponse(
-        str_replace($file_name, $expected_filename, $request->getRequestUri()),
-        301,
-        ['Cache-Control' => 'public, max-age=3600, must-revalidate'],
-      );
-    }
-    return $response;
+    $expected_filename = $this->fileExtension . '_' . $generated_hash . '.' . $this->fileExtension;
+    return new RedirectResponse(
+      str_replace($file_name, $expected_filename, $request->getRequestUri()),
+      301,
+      ['Cache-Control' => 'public, max-age=3600, must-revalidate'],
+    );
   }
 
   /**

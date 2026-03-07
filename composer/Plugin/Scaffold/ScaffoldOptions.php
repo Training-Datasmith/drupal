@@ -15,10 +15,8 @@ class ScaffoldOptions {
 
   /**
    * The raw data from the 'extras' section of the top-level composer.json file.
-   *
-   * @var array
    */
-  protected $options = [];
+  protected array $options;
 
   /**
    * ScaffoldOptions constructor.
@@ -50,7 +48,7 @@ class ScaffoldOptions {
    * @return bool
    *   True if scaffold options have been declared
    */
-  public static function hasOptions(array $extras) {
+  public static function hasOptions(array $extras): bool {
     return array_key_exists('drupal-scaffold', $extras);
   }
 
@@ -63,7 +61,7 @@ class ScaffoldOptions {
    * @return self
    *   The scaffold options object representing the provided scaffold options
    */
-  public static function create(array $extras) {
+  public static function create(array $extras): self {
     $options = static::hasOptions($extras) ? $extras['drupal-scaffold'] : [];
     return new self($options);
   }
@@ -77,7 +75,7 @@ class ScaffoldOptions {
    * @return self
    *   The scaffold options object representing the provided scaffold options
    */
-  protected function override(array $options) {
+  protected function override(array $options): self {
     return new self($options + $this->options);
   }
 
@@ -100,7 +98,7 @@ class ScaffoldOptions {
    * @return bool
    *   Whether there are allowed packages
    */
-  public function hasAllowedPackages() {
+  public function hasAllowedPackages(): bool {
     return !empty($this->allowedPackages());
   }
 
@@ -133,7 +131,7 @@ class ScaffoldOptions {
    * @return bool
    *   True if the specified named location exist.
    */
-  protected function hasLocation($name) {
+  protected function hasLocation($name): bool {
     return array_key_exists($name, $this->locations());
   }
 
@@ -166,7 +164,7 @@ class ScaffoldOptions {
    * @return bool
    *   Whether or not the scaffold options contain any file mappings
    */
-  public function hasFileMapping() {
+  public function hasFileMapping(): bool {
     return !empty($this->fileMapping());
   }
 
@@ -186,7 +184,7 @@ class ScaffoldOptions {
    * @return bool
    *   Whether or not there is a 'gitignore' option setting
    */
-  public function hasGitIgnore() {
+  public function hasGitIgnore(): bool {
     return isset($this->options['gitignore']);
   }
 

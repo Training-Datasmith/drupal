@@ -167,8 +167,7 @@ class FieldHooks {
         $output .= '</dl></li>';
         $output .= '<li>' . $this->t('<strong>Number fields</strong>: When you add a number field you can choose from three types: <em>decimal</em>, <em>float</em>, and <em>integer</em>. The <em>decimal</em> number field type allows users to enter exact decimal values, with fixed numbers of decimal places. The <em>float</em> number field type allows users to enter approximate decimal values. The <em>integer</em> number field type allows users to enter whole numbers, such as years (for example, 2012) or values (for example, 1, 2, 5, 305). It does not allow decimals.') . '</li>';
         $output .= '</ul></dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -224,7 +223,7 @@ class FieldHooks {
           $fields[$field_instance->getTargetBundle()][] = $field_instance->id();
         }
         $this->memoryCache->set($cid, $fields, Cache::PERMANENT, ['entity_field_info']);
-        $field_configs = array_filter($field_configs, static fn(FieldConfigInterface $field_instance) => $field_instance->getTargetBundle() === $bundle);
+        $field_configs = array_filter($field_configs, static fn(FieldConfigInterface $field_instance): bool => $field_instance->getTargetBundle() === $bundle);
       }
       if (isset($fields[$bundle])) {
         // Rely on the entity static cache for the field config entity loading
@@ -299,7 +298,7 @@ class FieldHooks {
       // Add a step to the beginning of the configuration synchronization
       // process to purge field data where the module that provides the field is
       // being uninstalled.
-      array_unshift($sync_steps, ['\Drupal\field\ConfigImporterFieldPurger', 'process']);
+      array_unshift($sync_steps, \Drupal\field\ConfigImporterFieldPurger::process(...));
     }
   }
 
@@ -358,7 +357,7 @@ class FieldHooks {
     // Act on all sub-types of the entity_reference field type.
     /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager */
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-    $item_class = 'Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem';
+    $item_class = \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem::class;
     $class = $field_type_manager->getPluginClass($field_storage->getType());
     if ($class !== $item_class && !is_subclass_of($class, $item_class)) {
       return;
@@ -390,7 +389,7 @@ class FieldHooks {
     // Act on all sub-types of the entity_reference field type.
     /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager */
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-    $item_class = 'Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem';
+    $item_class = \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem::class;
     $class = $field_type_manager->getPluginClass($field->getType());
     if ($class !== $item_class && !is_subclass_of($class, $item_class)) {
       return;
@@ -403,7 +402,7 @@ class FieldHooks {
     // Make sure the selection handler plugin is the correct derivative for the
     // target entity type.
     $selection_manager = \Drupal::service('plugin.manager.entity_reference_selection');
-    [$current_handler] = explode(':', $field->getSetting('handler'), 2);
+    [$current_handler] = explode(':', (string) $field->getSetting('handler'), 2);
     $field->setSetting('handler', $selection_manager->getPluginId($target_type, $current_handler));
   }
 
@@ -422,7 +421,7 @@ class FieldHooks {
     // Act on all sub-types of the entity_reference field type.
     /** @var \Drupal\Core\Field\FieldTypePluginManager $field_type_manager */
     $field_type_manager = \Drupal::service('plugin.manager.field.field_type');
-    $item_class = 'Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem';
+    $item_class = \Drupal\Core\Field\Plugin\Field\FieldType\EntityReferenceItem::class;
     $class = $field_type_manager->getPluginClass($field->getType());
     if ($class !== $item_class && !is_subclass_of($class, $item_class)) {
       return;

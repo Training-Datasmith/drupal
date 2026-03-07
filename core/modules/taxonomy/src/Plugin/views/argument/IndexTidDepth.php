@@ -46,7 +46,7 @@ class IndexTidDepth extends ArgumentPluginBase implements ContainerFactoryPlugin
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['depth'] = [
       '#type' => 'weight',
       '#title' => $this->t('Depth'),

@@ -47,8 +47,6 @@ final class NavigationRenderer {
 
   /**
    * The navigation local tasks render array.
-   *
-   * @var array
    */
   protected array $localTasks;
 
@@ -56,17 +54,17 @@ final class NavigationRenderer {
    * Construct a new NavigationRenderer object.
    */
   public function __construct(
-    private ConfigFactoryInterface $configFactory,
-    private ModuleHandlerInterface $moduleHandler,
-    private RouteMatchInterface $routeMatch,
-    private LocalTaskManagerInterface $localTaskManager,
-    private ImageFactory $imageFactory,
-    private FileUrlGeneratorInterface $fileUrlGenerator,
-    private SectionStorageManagerInterface $sectionStorageManager,
-    private RequestStack $requestStack,
-    private ModuleExtensionList $moduleExtensionList,
-    private AccountInterface $currentUser,
-    private EntityRouteHelper $entityRouteHelper,
+    private readonly ConfigFactoryInterface $configFactory,
+    private readonly ModuleHandlerInterface $moduleHandler,
+    private readonly RouteMatchInterface $routeMatch,
+    private readonly LocalTaskManagerInterface $localTaskManager,
+    private readonly ImageFactory $imageFactory,
+    private readonly FileUrlGeneratorInterface $fileUrlGenerator,
+    private readonly SectionStorageManagerInterface $sectionStorageManager,
+    private readonly RequestStack $requestStack,
+    private readonly ModuleExtensionList $moduleExtensionList,
+    private readonly AccountInterface $currentUser,
+    private readonly EntityRouteHelper $entityRouteHelper,
   ) {}
 
   /**
@@ -180,10 +178,10 @@ final class NavigationRenderer {
     ];
     $content_top_items = $this->moduleHandler->invokeAll('navigation_content_top');
     $this->moduleHandler->alter('navigation_content_top', $content_top_items);
-    uasort($content_top_items, [SortArray::class, 'sortByWeightElement']);
+    uasort($content_top_items, SortArray::sortByWeightElement(...));
     // Filter out empty items, taking care to merge any cacheability metadata.
     $cacheability = new CacheableMetadata();
-    $content_top_items = array_filter($content_top_items, function ($item) use (&$cacheability) {
+    $content_top_items = array_filter($content_top_items, function ($item) use (&$cacheability): bool {
       if (Element::isEmpty($item)) {
         $cacheability = $cacheability->merge(CacheableMetadata::createFromRenderArray($item));
         return FALSE;
@@ -277,7 +275,7 @@ final class NavigationRenderer {
       return $this->localTasks;
     }
     $entity_local_tasks = $this->localTaskManager->getLocalTasks($this->routeMatch->getRouteName());
-    uasort($entity_local_tasks['tabs'], [SortArray::class, 'sortByWeightProperty']);
+    uasort($entity_local_tasks['tabs'], SortArray::sortByWeightProperty(...));
     foreach ($entity_local_tasks['tabs'] as $local_task_name => $local_task) {
       // Exclude current route local task, since it is not going to be included
       // in the page actions link list.

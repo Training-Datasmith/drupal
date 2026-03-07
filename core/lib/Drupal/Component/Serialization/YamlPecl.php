@@ -12,7 +12,7 @@ class YamlPecl implements SerializationInterface {
   /**
    * {@inheritdoc}
    */
-  public static function encode($data) {
+  public static function encode($data): string {
     static $init;
     if (!isset($init)) {
       ini_set('yaml.output_indent', 2);
@@ -48,7 +48,7 @@ class YamlPecl implements SerializationInterface {
     // parsing errors into a throwable exception.
     // @see Drupal\Component\Serialization\Exception\InvalidDataTypeException
     // @see http://php.net/manual/class.errorexception.php
-    set_error_handler([__CLASS__, 'errorHandler']);
+    set_error_handler(self::errorHandler(...));
     $ndocs = 0;
     $data = yaml_parse($raw, 0, $ndocs, [
       YAML_BOOL_TAG => '\Drupal\Component\Serialization\YamlPecl::applyBooleanCallbacks',
@@ -67,7 +67,7 @@ class YamlPecl implements SerializationInterface {
    *
    * @see \Drupal\Component\Serialization\YamlPecl::decode()
    */
-  public static function errorHandler($severity, $message) {
+  public static function errorHandler($severity, $message): never {
     restore_error_handler();
     throw new InvalidDataTypeException($message, $severity);
   }
@@ -75,7 +75,7 @@ class YamlPecl implements SerializationInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getFileExtension() {
+  public static function getFileExtension(): string {
     return 'yml';
   }
 
@@ -97,14 +97,14 @@ class YamlPecl implements SerializationInterface {
     // YAML 1.1 spec dictates that 'Y', 'N', 'y' and 'n' are booleans. But, we
     // want the 1.2 behavior, so we only consider 'false', 'FALSE', 'true' and
     // 'TRUE' as booleans.
-    if (!in_array(strtolower($value), ['false', 'true'], TRUE)) {
+    if (!in_array(strtolower((string) $value), ['false', 'true'], TRUE)) {
       return $value;
     }
     $map = [
       'false' => FALSE,
       'true' => TRUE,
     ];
-    return $map[strtolower($value)];
+    return $map[strtolower((string) $value)];
   }
 
 }

@@ -37,8 +37,7 @@ class SyslogHooks {
         $output .= '<dd>' . $this->t('On UNIX, Linux, and Mac OS X, you will find the configuration in the file <em>/etc/syslog.conf</em>, or in <em>/etc/rsyslog.conf</em> or in the directory <em>/etc/rsyslog.d</em>. These files define the routing configuration. Messages can be flagged with the codes <code>LOG_LOCAL0</code> through <code>LOG_LOCAL7</code>. For information on Syslog facilities, severity levels, and how to set up <em>syslog.conf</em> or <em>rsyslog.conf</em>, see the <em>syslog.conf</em> or <em>rsyslog.conf</em> manual page on your command line.') . '</dd>';
         $output .= '<dt>' . $this->t('Logging for Microsoft Windows') . '</dt>';
         $output .= '<dd>' . $this->t('On Microsoft Windows, messages are always sent to the Event Log using the code <code>LOG_USER</code>.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -47,7 +46,7 @@ class SyslogHooks {
    * Implements hook_form_FORM_ID_alter().
    */
   #[Hook('form_system_logging_settings_alter')]
-  public function formSystemLoggingSettingsAlter(&$form, FormStateInterface $form_state) : void {
+  public function formSystemLoggingSettingsAlter(array &$form, FormStateInterface $form_state) : void {
     $help = $this->moduleHandler->moduleExists('help') ? ' ' . Link::fromTextAndUrl($this->t('More information'), Url::fromRoute('help.page', ['name' => 'syslog']))->toString() . '.' : '';
     $form['syslog_identity'] = [
       '#type' => 'textfield',

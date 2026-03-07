@@ -20,32 +20,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 abstract class ConfigTranslationFormBase extends FormBase implements BaseFormIdInterface {
 
   /**
-   * The typed configuration manager.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected $typedConfigManager;
-
-  /**
-   * The configuration mapper manager.
-   *
-   * @var \Drupal\config_translation\ConfigMapperManagerInterface
-   */
-  protected $configMapperManager;
-
-  /**
    * The mapper for configuration translation.
    *
    * @var \Drupal\config_translation\ConfigMapperInterface
    */
   protected $mapper;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
 
   /**
    * The language of the configuration translation.
@@ -71,17 +50,15 @@ abstract class ConfigTranslationFormBase extends FormBase implements BaseFormIdI
   /**
    * Constructs a ConfigTranslationFormBase.
    *
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed configuration manager.
-   * @param \Drupal\config_translation\ConfigMapperManagerInterface $config_mapper_manager
+   * @param \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager
    *   The configuration mapper manager.
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $language_manager
+   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
    *   The configurable language manager.
    */
-  public function __construct(TypedConfigManagerInterface $typed_config_manager, ConfigMapperManagerInterface $config_mapper_manager, ConfigurableLanguageManagerInterface $language_manager) {
-    $this->typedConfigManager = $typed_config_manager;
-    $this->configMapperManager = $config_mapper_manager;
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager, protected \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager, protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager)
+  {
   }
 
   /**
@@ -173,7 +150,7 @@ abstract class ConfigTranslationFormBase extends FormBase implements BaseFormIdI
       $source_config = $this->baseConfigData[$name];
       $translation_config = $this->configFactory()->get($name)->get();
 
-      if ($form_element = $this->createFormElement($schema)) {
+      if ($form_element = static::createFormElement($schema)) {
         $parents = ['config_names', $name];
         $form['config_names'][$name] += $form_element->getTranslationBuild($this->sourceLanguage, $this->language, $source_config, $translation_config, $parents);
       }
@@ -195,7 +172,7 @@ abstract class ConfigTranslationFormBase extends FormBase implements BaseFormIdI
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $form_values = $form_state->getValue(['translation', 'config_names']);
 
     foreach ($form_values as $name => $value) {
@@ -205,7 +182,7 @@ abstract class ConfigTranslationFormBase extends FormBase implements BaseFormIdI
       $base_config = $this->configFactory()->getEditable($name);
       $config_translation = $this->languageManager->getLanguageConfigOverride($this->language->getId(), $name);
 
-      $element = $this->createFormElement($schema);
+      $element = static::createFormElement($schema);
       $element->setConfig($base_config, $config_translation, $value);
 
       // If no overrides, delete language specific configuration file.

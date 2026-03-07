@@ -21,7 +21,7 @@ class BooleanOperatorString extends BooleanOperator {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $where = "$this->tableAlias.$this->realField ";
 

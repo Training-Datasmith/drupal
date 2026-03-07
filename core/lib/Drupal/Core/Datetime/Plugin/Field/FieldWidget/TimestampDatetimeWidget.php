@@ -25,7 +25,7 @@ class TimestampDatetimeWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $default_value = isset($items[$delta]->value) ? DrupalDateTime::createFromTimestamp($items[$delta]->value) : '';
     $element['value'] = $element + [
       '#type' => 'datetime',
@@ -42,7 +42,7 @@ class TimestampDatetimeWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
     foreach ($values as &$item) {
       // @todo The structure is different whether access is denied or not, to
       //   be fixed in https://www.drupal.org/node/2326533.

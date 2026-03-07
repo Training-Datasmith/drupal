@@ -45,15 +45,14 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
     if (isset($this->cache[$cid])) {
       return $this->prepareItem($this->cache[$cid], $allow_invalid);
     }
-    else {
-      return FALSE;
-    }
+    return FALSE;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
     $ret = [];
 
     $items = array_intersect_key($this->cache, array_flip($cids));
@@ -86,7 +85,7 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
    *   The item with data as appropriate or FALSE if there is no
    *   valid item to load.
    */
-  protected function prepareItem($cache, $allow_invalid) {
+  protected function prepareItem($cache, $allow_invalid): false|object {
     if (!isset($cache->data)) {
       return FALSE;
     }
@@ -111,7 +110,7 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
     assert(Inspector::assertAllStrings($tags), 'Cache Tags must be strings.');
     $tags = array_unique($tags);
     // Sort the cache tags so that they are stored consistently in the database.
@@ -128,7 +127,7 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $items = []) {
+  public function setMultiple(array $items = []): void {
     foreach ($items as $cid => $item) {
       $this->set($cid, $item['data'], $item['expire'] ?? CacheBackendInterface::CACHE_PERMANENT, $item['tags'] ?? []);
     }
@@ -137,28 +136,28 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     unset($this->cache[$cid]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $cids) {
+  public function deleteMultiple(array $cids): void {
     $this->cache = array_diff_key($this->cache, array_flip($cids));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     $this->cache = [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invalidate($cid) {
+  public function invalidate($cid): void {
     if (isset($this->cache[$cid])) {
       $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
     }
@@ -167,7 +166,7 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
   /**
    * {@inheritdoc}
    */
-  public function invalidateMultiple(array $cids) {
+  public function invalidateMultiple(array $cids): void {
     $items = array_intersect_key($this->cache, array_flip($cids));
     foreach ($items as $cid => $item) {
       $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
@@ -177,7 +176,7 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
   /**
    * {@inheritdoc}
    */
-  public function invalidateTags(array $tags) {
+  public function invalidateTags(array $tags): void {
     foreach ($this->cache as $cid => $item) {
       if (array_intersect($tags, $item->tags)) {
         $this->cache[$cid]->expire = $this->time->getRequestTime() - 1;
@@ -188,17 +187,15 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     $requestTime = $this->time->getRequestTime();
-    $this->cache = array_filter($this->cache, function ($item) use ($requestTime) {
-      return $item->expire == Cache::PERMANENT || $item->expire >= $requestTime;
-    });
+    $this->cache = array_filter($this->cache, fn(object $item) => $item->expire == Cache::PERMANENT || $item->expire >= $requestTime);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function removeBin() {
+  public function removeBin(): void {
     $this->cache = [];
   }
 
@@ -214,7 +211,7 @@ class MemoryBackend implements CacheBackendInterface, CacheTagsInvalidatorInterf
    *
    * This is only used by tests.
    */
-  public function reset() {
+  public function reset(): void {
     $this->cache = [];
   }
 

@@ -19,14 +19,14 @@ class Custom extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usesGroupBy() {
+  public function usesGroupBy(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // Do nothing -- to override the parent query.
   }
 
@@ -45,14 +45,14 @@ class Custom extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     // Remove the checkbox.
     unset($form['alter']['alter_text']);
     unset($form['alter']['text']['#states']);
     unset($form['alter']['help']['#states']);
-    $form['#pre_render'][] = [$this, 'preRenderCustomForm'];
+    $form['#pre_render'][] = $this->preRenderCustomForm(...);
   }
 
   /**
@@ -67,7 +67,7 @@ class Custom extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render(ResultRow $values) {
+  public function render(ResultRow $values): \Drupal\Component\Render\MarkupInterface|string {
     // Return the text, so the code never thinks the value is empty.
     return ViewsRenderPipelineMarkup::create(Xss::filterAdmin($this->options['alter']['text']));
   }
@@ -81,7 +81,7 @@ class Custom extends FieldPluginBase {
    * @return array
    *   The modified form build array.
    */
-  public function preRenderCustomForm($form) {
+  public function preRenderCustomForm(array $form): array {
     $form['text'] = $form['alter']['text'];
     $form['help'] = $form['alter']['help'];
     unset($form['alter']['text']);

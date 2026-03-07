@@ -19,10 +19,8 @@ trait AutowireTrait {
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The service container this instance should use.
-   *
-   * @return static
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return static::createInstanceAutowired($container);
   }
 

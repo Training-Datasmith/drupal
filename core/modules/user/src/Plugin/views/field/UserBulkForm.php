@@ -18,15 +18,13 @@ class UserBulkForm extends BulkForm {
    *
    * Provide a more useful title to improve the accessibility.
    */
-  public function viewsForm(&$form, FormStateInterface $form_state) {
+  public function viewsForm(&$form, FormStateInterface $form_state): void {
     parent::viewsForm($form, $form_state);
 
-    if (!empty($this->view->result)) {
-      foreach ($this->view->result as $row_index => $result) {
-        $account = $result->_entity;
-        if ($account instanceof UserInterface) {
-          $form[$this->options['id']][$row_index]['#title'] = $this->t('Update the user %name', ['%name' => $account->label()]);
-        }
+    foreach ($this->view->result as $row_index => $result) {
+      $account = $result->_entity;
+      if ($account instanceof UserInterface) {
+        $form[$this->options['id']][$row_index]['#title'] = $this->t('Update the user %name', ['%name' => $account->label()]);
       }
     }
   }
@@ -34,7 +32,7 @@ class UserBulkForm extends BulkForm {
   /**
    * {@inheritdoc}
    */
-  protected function emptySelectedMessage() {
+  protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('No users selected.');
   }
 

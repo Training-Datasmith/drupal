@@ -53,7 +53,7 @@ class EntityController implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
@@ -100,7 +100,7 @@ class EntityController implements ContainerInjectionInterface {
    *   If there's only one available bundle, a redirect response.
    *   Otherwise, a render array with the add links for each bundle.
    */
-  public function addPage($entity_type_id, Request $request) {
+  public function addPage(string $entity_type_id, Request $request) {
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
     $bundles = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
     $bundle_key = $entity_type->getKey('bundle');
@@ -195,12 +195,7 @@ class EntityController implements ContainerInjectionInterface {
     if ((count($bundles) > 1) && isset($bundles[$bundle])) {
       return $this->t('Add @bundle', ['@bundle' => $bundles[$bundle]['label']]);
     }
-    // If the entity supports bundles generally, but only has a single bundle,
-    // the bundle is probably something like 'Default' so that it preferable to
-    // use the entity type label.
-    else {
-      return $this->addTitle($entity_type_id);
-    }
+    return $this->addTitle($entity_type_id);
   }
 
   /**
@@ -312,7 +307,7 @@ class EntityController implements ContainerInjectionInterface {
    * @return array
    *   An array of sorted bundle information including bundle descriptions.
    */
-  protected function loadBundleDescriptions(array $bundles, EntityTypeInterface $bundle_entity_type) {
+  protected function loadBundleDescriptions(array $bundles, EntityTypeInterface $bundle_entity_type): array {
     if (!$bundle_entity_type->entityClassImplements(EntityDescriptionInterface::class)) {
       return $bundles;
     }

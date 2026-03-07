@@ -53,7 +53,7 @@ trait DoTrustedCallbackTrait {
    * @see \Drupal\Core\Security\Attribute\TrustedCallback
    * @see \Drupal\Core\Security\TrustedCallbackInterface
    */
-  public function doTrustedCallback(callable $callback, array $args, $message, $error_type = TrustedCallbackInterface::THROW_EXCEPTION, $extra_trusted_interface = NULL) {
+  public function doTrustedCallback(callable $callback, array $args, $message, $error_type = TrustedCallbackInterface::THROW_EXCEPTION, $extra_trusted_interface = NULL): mixed {
     $object_or_classname = $callback;
     $safe_callback = FALSE;
 
@@ -89,7 +89,7 @@ trait DoTrustedCallbackTrait {
     if (!$safe_callback) {
       $description = $object_or_classname;
       if (is_object($description)) {
-        $description = get_class($description);
+        $description = $description::class;
       }
       if (isset($method_name)) {
         $description .= '::' . $method_name;

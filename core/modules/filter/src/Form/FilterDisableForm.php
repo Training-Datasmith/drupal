@@ -16,28 +16,28 @@ class FilterDisableForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to disable the text format %format?', ['%format' => $this->entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('filter.admin_overview');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Disable');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t(
       'Any content saved with the %format text format will not be displayed on the site until it is resaved with an enabled text format.',
       ['%format' => $this->entity->label()],
@@ -47,7 +47,7 @@ class FilterDisableForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->entity->disable()->save();
     $this->messenger()->addStatus($this->t('Disabled text format %format.', ['%format' => $this->entity->label()]));
 

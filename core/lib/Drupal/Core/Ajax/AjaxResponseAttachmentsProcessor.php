@@ -65,7 +65,7 @@ class AjaxResponseAttachmentsProcessor implements AttachmentsResponseProcessorIn
   /**
    * {@inheritdoc}
    */
-  public function processAttachments(AttachmentsInterface $response) {
+  public function processAttachments(AttachmentsInterface $response): AttachmentsInterface {
     assert($response instanceof AjaxResponse, '\Drupal\Core\Ajax\AjaxResponse instance expected.');
 
     $request = $this->requestStack->getCurrentRequest();

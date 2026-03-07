@@ -17,14 +17,14 @@ class NullDestination extends DestinationBase {
   /**
    * {@inheritdoc}
    */
-  public function getIds() {
+  public function getIds(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function fields() {
+  public function fields(): array {
     return [];
   }
 

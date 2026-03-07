@@ -20,7 +20,7 @@ class UnpublishAction extends EntityActionBase {
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
+  public function execute($entity = NULL): void {
     $entity->setUnpublished()->save();
   }
 

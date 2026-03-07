@@ -17,7 +17,7 @@ final class NavigationLayout extends LayoutDefault {
   /**
    * {@inheritdoc}
    */
-  public function build(array $regions) {
+  public function build(array $regions): array {
     foreach (Element::children($regions) as $region_id) {
       foreach (Element::children($regions[$region_id]) as $component_uuid) {
         if (!Element::isEmpty($regions[$region_id][$component_uuid])) {

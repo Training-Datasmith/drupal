@@ -17,11 +17,6 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 class UserData extends DestinationBase implements ContainerFactoryPluginInterface {
 
   /**
-   * @var \Drupal\user\UserData
-   */
-  protected $userData;
-
-  /**
    * Builds a user data entity destination.
    *
    * @param array $configuration
@@ -32,18 +27,17 @@ class UserData extends DestinationBase implements ContainerFactoryPluginInterfac
    *   The plugin implementation definition.
    * @param \Drupal\migrate\Plugin\MigrationInterface $migration
    *   The migration.
-   * @param \Drupal\user\UserData $user_data
+   * @param \Drupal\user\UserData $userData
    *   The user data service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, UserDataStorage $user_data) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, protected \Drupal\user\UserData $userData) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
-    $this->userData = $user_data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -56,7 +50,7 @@ class UserData extends DestinationBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function import(Row $row, array $old_destination_id_values = []) {
+  public function import(Row $row, array $old_destination_id_values = []): array {
     $uid = $row->getDestinationProperty('uid');
     $module = $row->getDestinationProperty('module');
     $key = $row->getDestinationProperty('key');
@@ -68,7 +62,7 @@ class UserData extends DestinationBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function getIds() {
+  public function getIds(): array {
     $ids['uid']['type'] = 'integer';
     $ids['module']['type'] = 'string';
     $ids['key']['type'] = 'string';
@@ -78,7 +72,7 @@ class UserData extends DestinationBase implements ContainerFactoryPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function fields() {
+  public function fields(): array {
     return [
       'uid' => 'The user id.',
       'module' => 'The module name responsible for the settings.',

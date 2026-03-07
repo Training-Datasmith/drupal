@@ -26,8 +26,6 @@ abstract class EntityDisplayModeBase extends ConfigEntityBase implements EntityD
 
   /**
    * Description of the form or view mode.
-   *
-   * @var string|null
    */
   protected ?string $description = NULL;
 
@@ -98,7 +96,7 @@ abstract class EntityDisplayModeBase extends ConfigEntityBase implements EntityD
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
   }
@@ -106,7 +104,7 @@ abstract class EntityDisplayModeBase extends ConfigEntityBase implements EntityD
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
   }

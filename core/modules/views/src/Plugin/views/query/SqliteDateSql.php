@@ -20,13 +20,6 @@ class SqliteDateSql implements DateSqlInterface {
   use DependencySerializationTrait;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * An array of PHP-to-SQLite date replacement patterns.
    *
    * @var array
@@ -65,8 +58,8 @@ class SqliteDateSql implements DateSqlInterface {
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(Connection $database) {
-    $this->database = $database;
+  public function __construct(protected \Drupal\Core\Database\Connection $database)
+  {
   }
 
   /**
@@ -74,7 +67,7 @@ class SqliteDateSql implements DateSqlInterface {
    */
   public function getDateField($field, $string_date) {
     if ($string_date) {
-      $field = "strftime('%s', $field)";
+      return "strftime('%s', $field)";
     }
     return $field;
   }
@@ -82,7 +75,7 @@ class SqliteDateSql implements DateSqlInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDateFormat($field, $format) {
+  public function getDateFormat($field, $format): string {
     $format = strtr($format, static::$replace);
 
     // SQLite does not have an ISO week substitution string, so it needs special
@@ -103,7 +96,7 @@ class SqliteDateSql implements DateSqlInterface {
     // @see http://www.sqlite.org/lang_datefunc.html
     // @see http://www.sqlite.org/lang_expr.html#castexpr
     if (preg_match('/^(?:%\w)+$/', $format)) {
-      $expression = "CAST($expression AS NUMERIC)";
+      return "CAST($expression AS NUMERIC)";
     }
     return $expression;
   }
@@ -111,14 +104,14 @@ class SqliteDateSql implements DateSqlInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTimezoneOffset($offset) {
+  public function setTimezoneOffset($offset): void {
     // Nothing to do here.
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setFieldTimezoneOffset(&$field, $offset, $string_date = FALSE) {
+  public function setFieldTimezoneOffset(&$field, $offset, $string_date = FALSE): void {
     if (!empty($offset)) {
       $field = "($field + $offset)";
     }

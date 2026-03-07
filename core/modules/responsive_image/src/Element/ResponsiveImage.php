@@ -14,7 +14,7 @@ class ResponsiveImage extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#theme' => 'responsive_image',
     ];

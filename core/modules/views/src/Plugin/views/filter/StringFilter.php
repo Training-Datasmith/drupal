@@ -29,13 +29,6 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
   protected $alwaysMultiple = TRUE;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a new StringFilter object.
    *
    * @param array $configuration
@@ -47,9 +40,8 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $connection) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Database\Connection $connection) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->connection = $connection;
   }
 
   /**
@@ -67,7 +59,7 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
   /**
    * {@inheritdoc}
    */
-  public function defaultExposeOptions() {
+  public function defaultExposeOptions(): void {
     parent::defaultExposeOptions();
     $this->options['expose']['placeholder'] = NULL;
   }
@@ -75,7 +67,7 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
   /**
    * {@inheritdoc}
    */
-  public function buildExposeForm(&$form, FormStateInterface $form_state) {
+  public function buildExposeForm(&$form, FormStateInterface $form_state): void {
     parent::buildExposeForm($form, $form_state);
     $form['expose']['placeholder'] = [
       '#type' => 'textfield',
@@ -88,8 +80,9 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
 
   /**
    * {@inheritdoc}
+   * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opEmpty', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 0}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, short: Drupal\Core\StringTranslation\TranslatableMarkup, method: ('opContains' | 'opContainsWord' | 'opEndsWith' | 'opEqual' | 'opLongerThan' | 'opNotEndsWith' | 'opNotLike' | 'opNotRegex' | 'opNotStartsWith' | 'opRegex' | 'opShorterThan' | 'opStartsWith'), values: 1}[]
    */
-  public function operators() {
+  public function operators(): array {
     $operators = [
       '=' => [
         'title' => $this->t('Is equal to'),
@@ -199,8 +192,9 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
 
   /**
    * Build strings from the operators() for 'select' options.
+   * @return mixed[]
    */
-  public function operatorOptions($which = 'title') {
+  public function operatorOptions($which = 'title'): array {
     $options = [];
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
@@ -233,8 +227,9 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
 
   /**
    * Gets the operators that have a given number of values.
+   * @return mixed[]
    */
-  protected function operatorValues($values = 1) {
+  protected function operatorValues($values = 1): array {
     $options = [];
     foreach ($this->operators() as $id => $info) {
       if (isset($info['values']) && $info['values'] == $values) {
@@ -336,7 +331,7 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
    * level of indirection. You will find them in $this->operator
    * and $this->value respectively.
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $field = "$this->tableAlias.$this->realField";
 
@@ -349,7 +344,7 @@ class StringFilter extends FilterPluginBase implements FilterOperatorsInterface 
   /**
    * Adds a where clause for the operation, 'equals'.
    */
-  public function opEqual($field) {
+  public function opEqual($field): void {
     $this->query->addWhere($this->options['group'], $field, $this->connection->escapeLike($this->value), $this->operator());
   }
 

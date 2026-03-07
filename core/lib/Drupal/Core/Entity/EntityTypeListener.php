@@ -12,56 +12,25 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class EntityTypeListener implements EntityTypeListenerInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
-   * The entity last installed schema repository.
-   *
-   * @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface
-   */
-  protected $entityLastInstalledSchemaRepository;
-
-  /**
    * Constructs a new EntityTypeListener.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
-   * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository
+   * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository
    *   The entity last installed schema repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, EventDispatcherInterface $event_dispatcher, EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->eventDispatcher = $event_dispatcher;
-    $this->entityLastInstalledSchemaRepository = $entity_last_installed_schema_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher, protected \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {
+  public function onEntityTypeCreate(EntityTypeInterface $entity_type): void {
     $entity_type_id = $entity_type->id();
 
     // @todo Forward this to all interested handlers, not only storage, once
@@ -83,7 +52,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
+  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions): void {
     $entity_type_id = $entity_type->id();
 
     // @todo Forward this to all interested handlers, not only storage, once
@@ -105,7 +74,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original): void {
     // An entity type can be updated even when its live (in-code) definition has
     // been removed from the codebase, so we need to instantiate a custom
     // storage handler that uses the passed-in entity type definition.
@@ -126,7 +95,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type): void {
     $entity_type_id = $entity_type->id();
 
     // An entity type can be deleted even when its live (in-code) definition has
@@ -149,7 +118,7 @@ class EntityTypeListener implements EntityTypeListenerInterface {
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL) {
+  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL): void {
     $entity_type_id = $entity_type->id();
 
     // @todo Forward this to all interested handlers, not only storage, once

@@ -14,15 +14,13 @@ class Upsert extends QueryUpsert {
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     // Create a sanitized comment string to prepend to the query.
     $comments = $this->connection->makeComment($this->comments);
 
     // Default fields are always placed first for consistency.
     $insert_fields = array_merge($this->defaultFields, $this->insertFields);
-    $insert_fields = array_map(function ($field) {
-      return $this->connection->escapeField($field);
-    }, $insert_fields);
+    $insert_fields = array_map(fn($field) => $this->connection->escapeField($field), $insert_fields);
 
     $query = $comments . 'INSERT INTO {' . $this->table . '} (' . implode(', ', $insert_fields) . ') VALUES ';
 
@@ -39,9 +37,7 @@ class Upsert extends QueryUpsert {
       $update[] = "$field = EXCLUDED.$field";
     }
 
-    $query .= ' ON CONFLICT (' . $this->connection->escapeField($this->key) . ') DO UPDATE SET ' . implode(', ', $update);
-
-    return $query;
+    return $query . (' ON CONFLICT (' . $this->connection->escapeField($this->key) . ') DO UPDATE SET ' . implode(', ', $update));
   }
 
 }

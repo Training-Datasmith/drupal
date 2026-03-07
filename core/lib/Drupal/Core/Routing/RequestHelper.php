@@ -25,7 +25,7 @@ class RequestHelper {
    * @return bool
    *   TRUE if the request is using a clean URL.
    */
-  public static function isCleanUrl(Request $request) {
+  public static function isCleanUrl(Request $request): bool {
     $base_url = $request->getBaseUrl();
     return (empty($base_url) || !str_contains($base_url, $request->getScriptName()));
   }

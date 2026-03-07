@@ -25,7 +25,7 @@ abstract class WorkflowTypeStateFormBase implements PluginFormInterface, PluginA
   /**
    * {@inheritdoc}
    */
-  public function setPlugin(PluginInspectionInterface $plugin) {
+  public function setPlugin(PluginInspectionInterface $plugin): void {
     $this->workflowType = $plugin;
   }
 
@@ -38,7 +38,7 @@ abstract class WorkflowTypeStateFormBase implements PluginFormInterface, PluginA
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $values = $form_state->getValues();
     $state = $form_state->get('state');
     $configuration = $this->workflowType->getConfiguration();

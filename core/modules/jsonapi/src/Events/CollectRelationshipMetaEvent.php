@@ -25,8 +25,6 @@ final class CollectRelationshipMetaEvent extends Event implements RefinableCache
 
   /**
    * The metadata.
-   *
-   * @var array
    */
   private array $meta = [];
 

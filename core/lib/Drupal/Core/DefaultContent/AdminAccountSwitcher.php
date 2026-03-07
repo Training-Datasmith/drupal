@@ -13,12 +13,12 @@ use Drupal\Core\Session\AccountSwitcherInterface;
  * @internal
  *   This API is experimental.
  */
-final class AdminAccountSwitcher implements AccountSwitcherInterface {
+final readonly class AdminAccountSwitcher implements AccountSwitcherInterface {
 
   public function __construct(
-    private readonly AccountSwitcherInterface $decorated,
-    private readonly EntityTypeManagerInterface $entityTypeManager,
-    private readonly bool $isSuperUserAccessEnabled,
+    private AccountSwitcherInterface $decorated,
+    private EntityTypeManagerInterface $entityTypeManager,
+    private bool $isSuperUserAccessEnabled,
   ) {}
 
   /**

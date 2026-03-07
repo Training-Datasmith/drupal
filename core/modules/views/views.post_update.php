@@ -61,9 +61,7 @@ function views_post_update_views_data_argument_plugin_id(?array &$sandbox = NULL
   /** @var \Drupal\views\ViewsConfigUpdater $view_config_updater */
   $view_config_updater = \Drupal::service(ViewsConfigUpdater::class);
   $view_config_updater->setDeprecationsEnabled(FALSE);
-  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', function (ViewEntityInterface $view) use ($view_config_updater): bool {
-    return $view_config_updater->needsEntityArgumentUpdate($view);
-  });
+  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', fn(ViewEntityInterface $view): bool => $view_config_updater->needsEntityArgumentUpdate($view));
 }
 
 /**
@@ -73,9 +71,7 @@ function views_post_update_format_plural(?array &$sandbox = NULL): void {
   /** @var \Drupal\views\ViewsConfigUpdater $view_config_updater */
   $view_config_updater = \Drupal::classResolver(ViewsConfigUpdater::class);
   $view_config_updater->setDeprecationsEnabled(FALSE);
-  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', function (ViewEntityInterface $view) use ($view_config_updater): bool {
-    return $view_config_updater->needsFormatPluralUpdate($view);
-  });
+  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', fn(ViewEntityInterface $view): bool => $view_config_updater->needsFormatPluralUpdate($view));
 }
 
 /**
@@ -85,9 +81,7 @@ function views_post_update_update_remember_role_empty(?array &$sandbox = NULL): 
   /** @var \Drupal\views\ViewsConfigUpdater $view_config_updater */
   $view_config_updater = \Drupal::service(ViewsConfigUpdater::class);
   $view_config_updater->setDeprecationsEnabled(FALSE);
-  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', function (ViewEntityInterface $view) use ($view_config_updater): bool {
-    return $view_config_updater->needsRememberRolesUpdate($view);
-  });
+  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', fn(ViewEntityInterface $view): bool => $view_config_updater->needsRememberRolesUpdate($view));
 }
 
 /**
@@ -97,9 +91,7 @@ function views_post_update_table_css_class(?array &$sandbox = NULL): void {
   /** @var \Drupal\views\ViewsConfigUpdater $view_config_updater */
   $view_config_updater = \Drupal::service(ViewsConfigUpdater::class);
   $view_config_updater->setDeprecationsEnabled(FALSE);
-  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', function (ViewEntityInterface $view) use ($view_config_updater): bool {
-    return $view_config_updater->needsTableCssClassUpdate($view);
-  });
+  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', fn(ViewEntityInterface $view): bool => $view_config_updater->needsTableCssClassUpdate($view));
 }
 
 /**

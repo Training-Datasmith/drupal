@@ -32,10 +32,8 @@ class EntityContext extends Context {
    *   Entity type from which a definition will be derived.
    * @param string $label
    *   (optional) The label of the context.
-   *
-   * @return static
    */
-  public static function fromEntityType(EntityTypeInterface $entity_type, $label = NULL) {
+  public static function fromEntityType(EntityTypeInterface $entity_type, $label = NULL): static {
     $definition = EntityContextDefinition::fromEntityType($entity_type);
     if ($label) {
       $definition->setLabel($label);

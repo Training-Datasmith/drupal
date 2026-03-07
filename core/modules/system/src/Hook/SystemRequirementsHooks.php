@@ -809,6 +809,7 @@ class SystemRequirementsHooks {
     }
 
     // See if updates are available in update.php.
+    // Display the deployment identifier if set.
     if ($phase == 'runtime') {
       $requirements['update'] = [
         'title' => $this->t('Database updates'),
@@ -865,10 +866,6 @@ class SystemRequirementsHooks {
         $requirements['entity_update']['value'] = $this->t('Mismatched entity and/or field definitions');
         $requirements['entity_update']['description'] = $this->t('The following changes were detected in the entity type and field definitions. @updates', ['@updates' => $entity_update_issues]);
       }
-    }
-
-    // Display the deployment identifier if set.
-    if ($phase == 'runtime') {
       if ($deployment_identifier = Settings::get('deployment_identifier')) {
         $requirements['deployment identifier'] = [
           'title' => $this->t('Deployment identifier'),
@@ -897,7 +894,7 @@ class SystemRequirementsHooks {
 
     // Display an error if a newly introduced dependency in a module is not
     // resolved.
-    $create_extension_incompatibility_list = function (array $extension_names, PluralTranslatableMarkup $description, PluralTranslatableMarkup $title, TranslatableMarkup|string $message = '', TranslatableMarkup|string $additional_description = '') {
+    $create_extension_incompatibility_list = function (array $extension_names, PluralTranslatableMarkup $description, PluralTranslatableMarkup $title, TranslatableMarkup|string $message = '', TranslatableMarkup|string $additional_description = ''): array {
       if ($message === '') {
         $message = new TranslatableMarkup('Review the <a href=":url"> suggestions for resolving this incompatibility</a> to repair your installation, and then re-run update.php.', [':url' => 'https://www.drupal.org/docs/updating-drupal/troubleshooting-database-updates']);
       }
@@ -934,10 +931,12 @@ class SystemRequirementsHooks {
     $php_incompatible_extensions = [];
     foreach ($files as $extension_name => $file) {
       // Ignore uninstalled extensions and installation profiles.
-      if (!$file->status || $extension_name == $profile) {
-        continue;
+      if (!$file->status) {
+          continue;
       }
-
+      if ($extension_name == $profile) {
+          continue;
+      }
       $name = $file->info['name'];
       if (!empty($file->info['core_incompatible'])) {
         $core_incompatible_extensions[$file->info['type']][] = $name;
@@ -1058,10 +1057,8 @@ class SystemRequirementsHooks {
     $extension_config = \Drupal::configFactory()->get('core.extension');
 
     // Look for removed core modules.
-    $is_removed_module = function ($extension_name) use ($module_extension_list) {
-      return !$module_extension_list->exists($extension_name)
-        && array_key_exists($extension_name, SystemRequirements::DRUPAL_CORE_REMOVED_MODULE_LIST);
-    };
+    $is_removed_module = (fn($extension_name) => !$module_extension_list->exists($extension_name)
+      && array_key_exists($extension_name, SystemRequirements::DRUPAL_CORE_REMOVED_MODULE_LIST));
     $removed_modules = array_filter(array_keys($extension_config->get('module')), $is_removed_module);
     if (!empty($removed_modules)) {
       $list = [];
@@ -1096,10 +1093,8 @@ class SystemRequirementsHooks {
     }
 
     // Look for removed core themes.
-    $is_removed_theme = function ($extension_name) use ($theme_extension_list) {
-      return !$theme_extension_list->exists($extension_name)
-        && array_key_exists($extension_name, SystemRequirements::DRUPAL_CORE_REMOVED_THEME_LIST);
-    };
+    $is_removed_theme = (fn($extension_name) => !$theme_extension_list->exists($extension_name)
+      && array_key_exists($extension_name, SystemRequirements::DRUPAL_CORE_REMOVED_THEME_LIST));
     $removed_themes = array_filter(array_keys($extension_config->get('theme')), $is_removed_theme);
     if (!empty($removed_themes)) {
       $list = [];
@@ -1134,7 +1129,7 @@ class SystemRequirementsHooks {
     }
 
     // Look for missing modules.
-    $is_missing_module = fn($extension_name) => !$module_extension_list->exists($extension_name)
+    $is_missing_module = fn($extension_name): bool => !$module_extension_list->exists($extension_name)
       && !array_key_exists($extension_name, SystemRequirements::DRUPAL_CORE_REMOVED_MODULE_LIST);
 
     $invalid_modules = array_filter(array_keys($extension_config->get('module')), $is_missing_module);
@@ -1156,7 +1151,7 @@ class SystemRequirementsHooks {
     }
 
     // Look for invalid themes.
-    $is_missing_theme = fn($extension_name) => !$theme_extension_list->exists($extension_name)
+    $is_missing_theme = fn($extension_name): bool => !$theme_extension_list->exists($extension_name)
       && !array_key_exists($extension_name, SystemRequirements::DRUPAL_CORE_REMOVED_THEME_LIST);
 
     $invalid_themes = array_filter(array_keys($extension_config->get('theme')), $is_missing_theme);

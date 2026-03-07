@@ -17,27 +17,27 @@ class EntityTypeRepository implements EntityTypeRepositoryInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Contains cached mappings of class names to entity types.
    *
    * @var array
    */
   protected $classNameEntityTypeMap = [];
 
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(
+      /**
+       * The entity type manager.
+       */
+      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+      protected EntityTypeBundleInfoInterface $entityTypeBundleInfo
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getEntityTypeLabels($group = FALSE) {
+  public function getEntityTypeLabels($group = FALSE): array {
     $options = [];
     $definitions = $this->entityTypeManager->getDefinitions();
 

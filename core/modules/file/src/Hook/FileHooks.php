@@ -55,8 +55,7 @@ class FileHooks {
         $output .= '<dd>' . $this->t('The maximum file size that users can upload is limited by PHP settings of the server, but you can restrict by entering the desired value as the <em>Maximum upload size</em> setting. The maximum file size is automatically displayed to users in the help text of the file field.') . '</dd>';
         $output .= '<dt>' . $this->t('Displaying files and descriptions') . '<dt>';
         $output .= '<dd>' . $this->t('In the field settings, you can allow users to toggle whether individual files are displayed. In the display settings, you can then choose one of the following formats: <ul><li><em>Generic file</em> displays links to the files and adds icons that symbolize the file extensions. If <em>descriptions</em> are enabled and have been submitted, then the description is displayed instead of the file name.</li><li><em>URL to file</em> displays the full path to the file as plain text.</li><li><em>Table of files</em> lists links to the files and the file sizes in a table.</li><li><em>RSS enclosure</em> only displays the first file, and only in a RSS feed, formatted according to the RSS 2.0 syntax for enclosures.</li></ul> A file can still be linked to directly by its URI even if it is not displayed.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

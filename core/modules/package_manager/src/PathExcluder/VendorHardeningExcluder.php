@@ -16,9 +16,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *   at any time without warning. External code should not interact with this
  *   class.
  */
-final class VendorHardeningExcluder implements EventSubscriberInterface {
+final readonly class VendorHardeningExcluder implements EventSubscriberInterface {
 
-  public function __construct(private readonly PathLocator $pathLocator) {}
+  public function __construct(private PathLocator $pathLocator) {}
 
   /**
    * {@inheritdoc}

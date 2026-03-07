@@ -74,14 +74,14 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function getType() {
+  public function getType(): string {
     return 'feed';
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function buildResponse($view_id, $display_id, array $args = []) {
+  public static function buildResponse($view_id, $display_id, array $args = []): \Drupal\Core\Cache\CacheableResponse {
     $build = static::buildBasicRenderable($view_id, $display_id, $args);
 
     // Set up an empty response, so for example RSS can set the proper
@@ -134,7 +134,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
 
       // Drupal treats the HTTP response status code like a header, even though
       // it really is not.
-      if (strtolower($name) === 'status') {
+      if (strtolower((string) $name) === 'status') {
         $response->setStatusCode($value);
       }
       else {
@@ -159,7 +159,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
     $output = $this->view->render();
 
     if (!empty($this->view->live_preview)) {
-      $output = [
+      return [
         '#prefix' => '<pre>',
         '#plain_text' => $this->renderer->renderRoot($output),
         '#suffix' => '</pre>',
@@ -173,7 +173,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
    * {@inheritdoc}
    */
   public function render() {
-    $build = $this->view->style_plugin->render($this->view->result);
+    $build = $this->view->style_plugin->render();
 
     $this->applyDisplayCacheabilityMetadata($build);
 
@@ -222,7 +222,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function newDisplay() {
+  public function newDisplay(): void {
     parent::newDisplay();
 
     // Set the default row style. Ideally this would be part of the option
@@ -241,7 +241,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     parent::optionsSummary($categories, $options);
 
     // Since we're childing off the 'path' type, we'll still *call* our
@@ -284,7 +284,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     // It is very important to call the parent function here.
     parent::buildOptionsForm($form, $form_state);
 
@@ -319,7 +319,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
           '#title' => $this->t('Displays'),
           '#type' => 'checkboxes',
           '#description' => $this->t('The feed icon will be available only to the selected displays.'),
-          '#options' => array_map('\Drupal\Component\Utility\Html::escape', $displays),
+          '#options' => array_map(\Drupal\Component\Utility\Html::escape(...), $displays),
           '#default_value' => $this->getOption('displays'),
         ];
         break;
@@ -332,7 +332,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::submitOptionsForm($form, $form_state);
     $section = $form_state->get('section');
     switch ($section) {
@@ -349,7 +349,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function attachTo(ViewExecutable $view, $display_id, array &$build) {
+  public function attachTo(ViewExecutable $view, $display_id, array &$build): void {
     $displays = $this->getOption('displays');
     if (empty($displays[$display_id])) {
       return;
@@ -371,7 +371,7 @@ class Feed extends PathPluginBase implements ResponseDisplayPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function usesLinkDisplay() {
+  public function usesLinkDisplay(): bool {
     return TRUE;
   }
 

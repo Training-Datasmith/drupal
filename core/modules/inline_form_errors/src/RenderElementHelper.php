@@ -16,9 +16,9 @@ class RenderElementHelper {
    *   An associative array with structure identical to that of the return value
    *   of \Drupal\Core\Render\ElementInfoManagerInterface::getInfo().
    */
-  public function alterElementInfo(array &$info) {
+  public function alterElementInfo(array &$info): void {
     foreach ($info as $element_type => $element_info) {
-      $info[$element_type]['#process'][] = [static::class, 'processElement'];
+      $info[$element_type]['#process'][] = static::processElement(...);
     }
   }
 
@@ -37,7 +37,7 @@ class RenderElementHelper {
    * @return array
    *   The processed element.
    */
-  public static function processElement(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  public static function processElement(array &$element, FormStateInterface $form_state, array &$complete_form): array {
     // Prevent displaying inline form errors when disabled for the whole form.
     if (!empty($complete_form['#disable_inline_form_errors'])) {
       $element['#error_no_message'] = TRUE;

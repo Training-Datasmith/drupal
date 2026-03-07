@@ -23,20 +23,6 @@ abstract class RendererBase implements CacheableDependencyInterface {
   public $view;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The type of the entity being rendered.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
-   */
-  protected $entityType;
-
-  /**
    * Contains an array of render arrays, one for each rendered entity.
    *
    * @var array
@@ -48,15 +34,13 @@ abstract class RendererBase implements CacheableDependencyInterface {
    *
    * @param \Drupal\views\ViewExecutable $view
    *   The entity row being rendered.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
    *   The entity type.
    */
-  public function __construct(ViewExecutable $view, LanguageManagerInterface $language_manager, EntityTypeInterface $entity_type) {
+  public function __construct(ViewExecutable $view, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Entity\EntityTypeInterface $entityType) {
     $this->view = $view;
-    $this->languageManager = $language_manager;
-    $this->entityType = $entity_type;
   }
 
   /**

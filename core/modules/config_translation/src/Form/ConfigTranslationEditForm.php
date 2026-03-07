@@ -15,7 +15,7 @@ class ConfigTranslationEditForm extends ConfigTranslationFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'config_translation_edit_form';
   }
 
@@ -34,7 +34,7 @@ class ConfigTranslationEditForm extends ConfigTranslationFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
     $this->messenger()->addStatus($this->t('Successfully updated @language translation.', ['@language' => $this->language->getName()]));
   }

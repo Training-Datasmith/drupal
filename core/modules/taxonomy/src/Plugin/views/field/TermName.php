@@ -44,7 +44,7 @@ class TermName extends EntityField {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['convert_spaces'] = [
       '#title' => $this->t('Convert spaces in term names to hyphens'),
       '#type' => 'checkbox',

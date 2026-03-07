@@ -33,7 +33,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasActiveWorkspace() {
+  public function hasActiveWorkspace(): bool {
     return $this->getActiveWorkspace() !== NULL;
   }
 
@@ -77,7 +77,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setActiveWorkspace(WorkspaceInterface $workspace, bool $persist = TRUE) {
+  public function setActiveWorkspace(WorkspaceInterface $workspace, bool $persist = TRUE): static {
     $this->doSwitchWorkspace($workspace);
 
     // Set the workspace on the first applicable negotiator.
@@ -97,7 +97,7 @@ class WorkspaceManager implements WorkspaceManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function switchToLive() {
+  public function switchToLive(): static {
     $this->doSwitchWorkspace(NULL);
 
     // Unset the active workspace on all negotiators.

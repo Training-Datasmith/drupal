@@ -43,10 +43,11 @@ trait DiscoveryTrait {
   protected function doGetDefinition(array $definitions, $plugin_id, $exception_on_invalid) {
     // Avoid using a ternary that would create a copy of the array.
     if (isset($definitions[$plugin_id])) {
-      return $definitions[$plugin_id];
+        return $definitions[$plugin_id];
     }
-    elseif (!$exception_on_invalid) {
-      return NULL;
+    // Avoid using a ternary that would create a copy of the array.
+    if (!$exception_on_invalid) {
+        return NULL;
     }
 
     $valid_ids = implode(', ', array_keys($definitions));
@@ -56,7 +57,7 @@ trait DiscoveryTrait {
   /**
    * {@inheritdoc}
    */
-  public function hasDefinition($plugin_id) {
+  public function hasDefinition($plugin_id): bool {
     return (bool) $this->getDefinition($plugin_id, FALSE);
   }
 

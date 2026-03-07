@@ -38,7 +38,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
    * @return $this
    *   The called object.
    */
-  public function appendBackend(CacheBackendInterface $backend) {
+  public function appendBackend(CacheBackendInterface $backend): static {
     $this->backends[] = $backend;
 
     return $this;
@@ -53,7 +53,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
    * @return $this
    *   The called object.
    */
-  public function prependBackend(CacheBackendInterface $backend) {
+  public function prependBackend(CacheBackendInterface $backend): static {
     array_unshift($this->backends, $backend);
 
     return $this;
@@ -81,8 +81,9 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
     $return = [];
 
     foreach ($this->backends as $index => $backend) {
@@ -113,7 +114,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
     foreach ($this->backends as $backend) {
       $backend->set($cid, $data, $expire, $tags);
     }
@@ -122,7 +123,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $items) {
+  public function setMultiple(array $items): void {
     foreach ($this->backends as $backend) {
       $backend->setMultiple($items);
     }
@@ -131,7 +132,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     foreach ($this->backends as $backend) {
       $backend->delete($cid);
     }
@@ -140,7 +141,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $cids) {
+  public function deleteMultiple(array $cids): void {
     foreach ($this->backends as $backend) {
       $backend->deleteMultiple($cids);
     }
@@ -149,7 +150,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     foreach ($this->backends as $backend) {
       $backend->deleteAll();
     }
@@ -158,7 +159,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function invalidate($cid) {
+  public function invalidate($cid): void {
     foreach ($this->backends as $backend) {
       $backend->invalidate($cid);
     }
@@ -167,7 +168,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function invalidateMultiple(array $cids) {
+  public function invalidateMultiple(array $cids): void {
     foreach ($this->backends as $backend) {
       $backend->invalidateMultiple($cids);
     }
@@ -176,7 +177,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function invalidateTags(array $tags) {
+  public function invalidateTags(array $tags): void {
     foreach ($this->backends as $backend) {
       if ($backend instanceof CacheTagsInvalidatorInterface) {
         $backend->invalidateTags($tags);
@@ -187,7 +188,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     foreach ($this->backends as $backend) {
       $backend->garbageCollection();
     }
@@ -196,7 +197,7 @@ class BackendChain implements CacheBackendInterface, CacheTagsInvalidatorInterfa
   /**
    * {@inheritdoc}
    */
-  public function removeBin() {
+  public function removeBin(): void {
     foreach ($this->backends as $backend) {
       $backend->removeBin();
     }

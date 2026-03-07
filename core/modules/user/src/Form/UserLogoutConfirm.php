@@ -25,7 +25,7 @@ class UserLogoutConfirm extends ConfirmFormBase implements WorkspaceSafeFormInte
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     // phpcs:ignore Drupal.Semantics.FunctionT.EmptyString
     return $this->t('');
   }

@@ -52,13 +52,15 @@ class FileSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function validateReferenceableNewEntities(array $entities) {
+  public function validateReferenceableNewEntities(array $entities): array {
     $entities = parent::validateReferenceableNewEntities($entities);
-    $entities = array_filter($entities, function ($file) {
-      /** @var \Drupal\file\FileInterface $file */
-      return $file->isPermanent() || $file->getOwnerId() === $this->currentUser->id();
+    return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $file): bool {
+        /** @var \Drupal\file\FileInterface $file */
+        if ($file->isPermanent()) {
+            return true;
+        }
+        return $file->getOwnerId() === $this->currentUser->id();
     });
-    return $entities;
   }
 
 }

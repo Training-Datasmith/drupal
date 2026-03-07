@@ -13,13 +13,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class BatchNegotiator implements ThemeNegotiatorInterface {
 
   /**
-   * The batch storage.
-   *
-   * @var \Drupal\Core\Batch\BatchStorageInterface
-   */
-  protected $batchStorage;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -29,20 +22,19 @@ class BatchNegotiator implements ThemeNegotiatorInterface {
   /**
    * Constructs a BatchNegotiator.
    *
-   * @param \Drupal\Core\Batch\BatchStorageInterface $batch_storage
+   * @param \Drupal\Core\Batch\BatchStorageInterface $batchStorage
    *   The batch storage.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack used to retrieve the current request.
    */
-  public function __construct(BatchStorageInterface $batch_storage, RequestStack $request_stack) {
-    $this->batchStorage = $batch_storage;
+  public function __construct(protected \Drupal\Core\Batch\BatchStorageInterface $batchStorage, RequestStack $request_stack) {
     $this->requestStack = $request_stack;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match) {
+  public function applies(RouteMatchInterface $route_match): bool {
     return $route_match->getRouteName() == 'system.batch_page.html';
   }
 

@@ -74,7 +74,7 @@ class Shortcut extends ContentEntityBase implements ShortcutInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($link_title) {
+  public function setTitle($link_title): static {
     $this->set('title', $link_title);
     return $this;
   }
@@ -89,7 +89,7 @@ class Shortcut extends ContentEntityBase implements ShortcutInterface {
   /**
    * {@inheritdoc}
    */
-  public function setWeight($weight) {
+  public function setWeight($weight): static {
     $this->set('weight', $weight);
     return $this;
   }
@@ -104,7 +104,7 @@ class Shortcut extends ContentEntityBase implements ShortcutInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     // EntityBase::postSave() calls EntityBase::invalidateTagsOnSave(), which
@@ -187,7 +187,7 @@ class Shortcut extends ContentEntityBase implements ShortcutInterface {
    * @return int
    *   The comparison result for uasort().
    */
-  public static function sort(ShortcutInterface $a, ShortcutInterface $b) {
+  public static function sort(ShortcutInterface $a, ShortcutInterface $b): int {
     $a_weight = $a->getWeight();
     $b_weight = $b->getWeight();
     if ($a_weight == $b_weight) {

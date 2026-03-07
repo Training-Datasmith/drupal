@@ -24,10 +24,10 @@ class FormElementHelper {
   public static function getElementByName($name, array $form) {
     foreach (Element::children($form) as $key) {
       if (implode('][', $form[$key]['#parents']) === $name) {
-        return $form[$key];
+          return $form[$key];
       }
-      elseif ($element = static::getElementByName($name, $form[$key])) {
-        return $element;
+      if ($element = static::getElementByName($name, $form[$key])) {
+          return $element;
       }
     }
     return [];

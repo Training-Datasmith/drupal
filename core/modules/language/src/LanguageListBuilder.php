@@ -25,20 +25,6 @@ class LanguageListBuilder extends DraggableListBuilder {
   protected $entitiesKey = 'languages';
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The messenger.
    *
    * @var \Drupal\Core\Messenger\MessengerInterface
@@ -48,7 +34,7 @@ class LanguageListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -65,17 +51,15 @@ class LanguageListBuilder extends DraggableListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage handler class.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory, MessengerInterface $messenger) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, MessengerInterface $messenger) {
     parent::__construct($entity_type, $storage);
-    $this->languageManager = $language_manager;
-    $this->configFactory = $config_factory;
     $this->messenger = $messenger;
   }
 
@@ -94,7 +78,7 @@ class LanguageListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'language_admin_overview_form';
   }
 
@@ -102,11 +86,10 @@ class LanguageListBuilder extends DraggableListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header = [
+    return [
       'label' => $this->t('Name'),
       'default' => $this->t('Default'),
     ] + parent::buildHeader();
-    return $header;
   }
 
   /**
@@ -132,7 +115,7 @@ class LanguageListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildForm($form, $form_state);
 
     $form[$this->entitiesKey]['#languages'] = $this->entities;
@@ -143,7 +126,7 @@ class LanguageListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     if (!isset($this->entities[$form_state->getValue('site_default_language')])) {
       $form_state->setErrorByName('site_default_language', $this->t('Selected default language no longer exists.'));
     }
@@ -152,7 +135,7 @@ class LanguageListBuilder extends DraggableListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     // Save the default language if changed.

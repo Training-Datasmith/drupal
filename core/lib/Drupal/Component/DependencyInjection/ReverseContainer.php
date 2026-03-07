@@ -14,15 +14,11 @@ final class ReverseContainer {
 
   /**
    * A closure on the container that can search for services.
-   *
-   * @var \Closure
    */
-  private \Closure $getServiceId;
+  private readonly \Closure $getServiceId;
 
   /**
    * A static map of services to a hash.
-   *
-   * @var array
    */
   private static array $recordedServices = [];
 
@@ -33,9 +29,7 @@ final class ReverseContainer {
    *   The service container.
    */
   public function __construct(private readonly Container|SymfonyContainer $serviceContainer) {
-    $this->getServiceId = \Closure::bind(function ($service): ?string {
-      return array_search($service, $this->services, TRUE) ?: NULL;
-    }, $serviceContainer, $serviceContainer);
+    $this->getServiceId = \Closure::bind(fn($service): ?string => array_search($service, $this->services, TRUE) ?: NULL, $serviceContainer, $serviceContainer);
   }
 
   /**
@@ -69,10 +63,8 @@ final class ReverseContainer {
    * container has been re-initialized.
    */
   public function recordContainer(): void {
-    $service_recorder = \Closure::bind(function () : array {
-      return $this->services;
-    }, $this->serviceContainer, $this->serviceContainer);
-    self::$recordedServices = array_merge(self::$recordedServices, array_flip(array_map([$this, 'generateServiceIdHash'], $service_recorder())));
+    $service_recorder = \Closure::bind(fn(): array => $this->services, $this->serviceContainer, $this->serviceContainer);
+    self::$recordedServices = array_merge(self::$recordedServices, array_flip(array_map($this->generateServiceIdHash(...), $service_recorder())));
   }
 
   /**
@@ -90,7 +82,7 @@ final class ReverseContainer {
     // guarantee to be unique but makes collisions incredibly difficult and even
     // then the interface would be preserved.
     // @see https://php.net/spl_object_hash#refsect1-function.spl-object-hash-notes
-    return get_class($object) . spl_object_hash($object);
+    return $object::class . spl_object_hash($object);
   }
 
 }

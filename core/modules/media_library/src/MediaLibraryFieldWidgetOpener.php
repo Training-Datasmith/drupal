@@ -20,20 +20,13 @@ use Drupal\Core\Field\EntityReferenceFieldItemList;
 class MediaLibraryFieldWidgetOpener implements MediaLibraryOpenerInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * MediaLibraryFieldWidgetOpener constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -117,7 +110,7 @@ class MediaLibraryFieldWidgetOpener implements MediaLibraryOpenerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSelectionResponse(MediaLibraryState $state, array $selected_ids) {
+  public function getSelectionResponse(MediaLibraryState $state, array $selected_ids): \Drupal\Core\Ajax\AjaxResponse {
     $response = new AjaxResponse();
 
     $parameters = $state->getOpenerParameters();

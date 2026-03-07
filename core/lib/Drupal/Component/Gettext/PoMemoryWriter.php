@@ -9,10 +9,8 @@ class PoMemoryWriter implements PoWriterInterface {
 
   /**
    * Array to hold all PoItem elements.
-   *
-   * @var array
    */
-  protected $items;
+  protected array $items;
 
   /**
    * Constructor, initialize empty items.
@@ -24,7 +22,7 @@ class PoMemoryWriter implements PoWriterInterface {
   /**
    * {@inheritdoc}
    */
-  public function writeItem(PoItem $item) {
+  public function writeItem(PoItem $item): void {
     if (is_array($item->getSource())) {
       $item->setSource(implode(PoItem::DELIMITER, $item->getSource()));
       $item->setTranslation(implode(PoItem::DELIMITER, $item->getTranslation()));
@@ -36,7 +34,7 @@ class PoMemoryWriter implements PoWriterInterface {
   /**
    * {@inheritdoc}
    */
-  public function writeItems(PoReaderInterface $reader, $count = -1) {
+  public function writeItems(PoReaderInterface $reader, $count = -1): void {
     $forever = $count == -1;
     while (($count-- > 0 || $forever) && ($item = $reader->readItem())) {
       $this->writeItem($item);
@@ -66,7 +64,7 @@ class PoMemoryWriter implements PoWriterInterface {
    *
    * Not implemented. Not relevant for the MemoryWriter.
    */
-  public function getLangcode() {
+  public function getLangcode(): never {
     throw new \LogicException(__METHOD__ . '() not implemented. Not relevant for the MemoryWriter');
   }
 

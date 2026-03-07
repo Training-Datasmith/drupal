@@ -23,7 +23,7 @@ class Equality extends FilterPluginBase {
   /**
    * Provide simple equality operator.
    */
-  public function operatorOptions() {
+  public function operatorOptions(): array {
     return [
       '=' => $this->t('Is equal to'),
       '!=' => $this->t('Is not equal to'),

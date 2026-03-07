@@ -34,7 +34,7 @@ class UuidItem extends StringItem {
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     // Default to one field item with a generated UUID.
     $uuid = \Drupal::service('uuid');
     $this->setValue(['value' => $uuid->generate()], $notify);

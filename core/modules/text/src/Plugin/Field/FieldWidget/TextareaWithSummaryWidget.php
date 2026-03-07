@@ -54,7 +54,7 @@ class TextareaWithSummaryWidget extends TextareaWidget {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = parent::settingsSummary();
 
     $summary[] = $this->t('Number of summary rows: @rows', ['@rows' => $this->getSetting('summary_rows')]);
@@ -68,7 +68,7 @@ class TextareaWithSummaryWidget extends TextareaWidget {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
 
     $display_summary = $items[$delta]->summary || $this->getFieldSetting('display_summary');

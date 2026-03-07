@@ -25,7 +25,7 @@ class FilterUrl extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $form['filter_url_length'] = [
       '#type' => 'number',
       '#title' => $this->t('Maximum link text length'),
@@ -40,14 +40,14 @@ class FilterUrl extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     return new FilterProcessResult(_filter_url($text, $this));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function tips($long = FALSE) {
+  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Web page addresses and email addresses turn into links automatically.');
   }
 

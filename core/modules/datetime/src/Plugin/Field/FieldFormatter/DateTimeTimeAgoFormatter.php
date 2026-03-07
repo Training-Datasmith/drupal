@@ -23,7 +23,7 @@ class DateTimeTimeAgoFormatter extends TimestampAgoFormatter {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($items as $delta => $item) {

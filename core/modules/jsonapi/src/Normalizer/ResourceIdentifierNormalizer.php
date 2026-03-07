@@ -24,20 +24,13 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 class ResourceIdentifierNormalizer extends NormalizerBase implements DenormalizerInterface {
 
   /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $fieldManager;
-
-  /**
    * RelationshipNormalizer constructor.
    *
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $fieldManager
    *   The entity field manager.
    */
-  public function __construct(EntityFieldManagerInterface $field_manager) {
-    $this->fieldManager = $field_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityFieldManagerInterface $fieldManager)
+  {
   }
 
   /**
@@ -73,13 +66,11 @@ class ResourceIdentifierNormalizer extends NormalizerBase implements Denormalize
     /** @var \Drupal\field\Entity\FieldConfig $field_definition */
     $field_definition = $field_definitions[$context['related']];
     $target_resource_types = $resource_type->getRelatableResourceTypesByField($resource_type->getPublicName($context['related']));
-    $target_resource_type_names = array_map(function (ResourceType $resource_type) {
-      return $resource_type->getTypeName();
-    }, $target_resource_types);
+    $target_resource_type_names = array_map(fn(ResourceType $resource_type) => $resource_type->getTypeName(), $target_resource_types);
 
     $is_multiple = $field_definition->getFieldStorageDefinition()->isMultiple();
     $data = $this->massageRelationshipInput($data, $is_multiple);
-    $resource_identifiers = array_map(function ($value) use ($target_resource_type_names) {
+    $resource_identifiers = array_map(function (array $value) use ($target_resource_type_names): \Drupal\jsonapi\JsonApiResource\ResourceIdentifier {
       // Make sure that the provided type is compatible with the targeted
       // resource.
       if (!in_array($value['type'], $target_resource_type_names)) {
@@ -108,15 +99,13 @@ class ResourceIdentifierNormalizer extends NormalizerBase implements Denormalize
    * @return array
    *   The massaged data array.
    */
-  protected function massageRelationshipInput(array $data, $is_multiple) {
+  protected function massageRelationshipInput(array $data, $is_multiple): array {
     if ($is_multiple) {
       if (!is_array($data['data'])) {
         throw new BadRequestHttpException('Invalid body payload for the relationship.');
       }
       // Leave the invalid elements.
-      $invalid_elements = array_filter($data['data'], function ($element) {
-        return empty($element['type']) || empty($element['id']);
-      });
+      $invalid_elements = array_filter($data['data'], fn(array $element) => empty($element['type']) || empty($element['id']));
       if ($invalid_elements) {
         throw new BadRequestHttpException('Invalid body payload for the relationship.');
       }

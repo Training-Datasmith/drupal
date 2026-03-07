@@ -118,9 +118,7 @@ final class Importer implements LoggerAwareInterface {
           if ($existing === Existing::Skip) {
             continue;
           }
-          else {
-            throw new ImportException("$entity_type_id $uuid already exists.");
-          }
+          throw new ImportException("$entity_type_id $uuid already exists.");
         }
 
         $entity = $this->toEntity($decoded)->enforceIsNew()->setSyncing(TRUE);

@@ -77,107 +77,23 @@ class EntityResource {
   use EntityValidationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $fieldManager;
-
-  /**
-   * The resource type repository.
-   *
-   * @var \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface
-   */
-  protected $resourceTypeRepository;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The include resolver.
-   *
-   * @var \Drupal\jsonapi\IncludeResolver
-   */
-  protected $includeResolver;
-
-  /**
-   * The JSON:API entity access checker.
-   *
-   * @var \Drupal\jsonapi\Access\EntityAccessChecker
-   */
-  protected $entityAccessChecker;
-
-  /**
-   * The JSON:API field resolver.
-   *
-   * @var \Drupal\jsonapi\Context\FieldResolver
-   */
-  protected $fieldResolver;
-
-  /**
-   * The JSON:API serializer.
-   *
-   * @var \Symfony\Component\Serializer\SerializerInterface|\Symfony\Component\Serializer\Normalizer\DenormalizerInterface
-   */
-  protected $serializer;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
-
-  /**
-   * The current user account.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $user;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
-   */
-  protected EventDispatcherInterface $eventDispatcher;
-
-  /**
    * Instantiates an EntityResource object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $fieldManager
    *   The entity type field manager.
-   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resource_type_repository
+   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository
    *   The JSON:API resource type repository.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\jsonapi\IncludeResolver $include_resolver
+   * @param \Drupal\jsonapi\IncludeResolver $includeResolver
    *   The include resolver.
-   * @param \Drupal\jsonapi\Access\EntityAccessChecker $entity_access_checker
+   * @param \Drupal\jsonapi\Access\EntityAccessChecker $entityAccessChecker
    *   The JSON:API entity access checker.
-   * @param \Drupal\jsonapi\Context\FieldResolver $field_resolver
+   * @param \Drupal\jsonapi\Context\FieldResolver $fieldResolver
    *   The JSON:API field resolver.
    * @param \Symfony\Component\Serializer\SerializerInterface|\Symfony\Component\Serializer\Normalizer\DenormalizerInterface $serializer
    *   The JSON:API serializer.
@@ -185,22 +101,30 @@ class EntityResource {
    *   The time service.
    * @param \Drupal\Core\Session\AccountInterface $user
    *   The current user account.
-   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $field_manager, ResourceTypeRepositoryInterface $resource_type_repository, RendererInterface $renderer, EntityRepositoryInterface $entity_repository, IncludeResolver $include_resolver, EntityAccessChecker $entity_access_checker, FieldResolver $field_resolver, SerializerInterface $serializer, TimeInterface $time, AccountInterface $user, EventDispatcherInterface $event_dispatcher) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->fieldManager = $field_manager;
-    $this->resourceTypeRepository = $resource_type_repository;
-    $this->renderer = $renderer;
-    $this->entityRepository = $entity_repository;
-    $this->includeResolver = $include_resolver;
-    $this->entityAccessChecker = $entity_access_checker;
-    $this->fieldResolver = $field_resolver;
-    $this->serializer = $serializer;
-    $this->time = $time;
-    $this->user = $user;
-    $this->eventDispatcher = $event_dispatcher;
+  public function __construct(
+      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+      protected \Drupal\Core\Entity\EntityFieldManagerInterface $fieldManager,
+      protected \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository,
+      protected \Drupal\Core\Render\RendererInterface $renderer,
+      protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository,
+      protected \Drupal\jsonapi\IncludeResolver $includeResolver,
+      protected \Drupal\jsonapi\Access\EntityAccessChecker $entityAccessChecker,
+      protected \Drupal\jsonapi\Context\FieldResolver $fieldResolver,
+      /**
+       * The JSON:API serializer.
+       */
+      protected \Symfony\Component\Serializer\SerializerInterface $serializer,
+      protected \Drupal\Component\Datetime\TimeInterface $time,
+      protected \Drupal\Core\Session\AccountInterface $user,
+      /**
+       * The event dispatcher.
+       */
+      protected EventDispatcherInterface $eventDispatcher
+  )
+  {
   }
 
   /**
@@ -223,8 +147,7 @@ class EntityResource {
       throw $resource_object;
     }
     $primary_data = new ResourceObjectData([$resource_object], 1);
-    $response = $this->buildWrappedResponse($primary_data, $request, $this->getIncludes($request, $primary_data));
-    return $response;
+    return $this->buildWrappedResponse($primary_data, $request, $this->getIncludes($request, $primary_data));
   }
 
   /**
@@ -251,9 +174,7 @@ class EntityResource {
       // by the user. Field access makes no distinction between 'create' and
       // 'update', so the 'edit' operation is used here.
       $document = Json::decode($request->getContent());
-      $field_mapping = array_map(function (ResourceTypeField $field) {
-        return $field->getPublicName();
-      }, $resource_type->getFields());
+      $field_mapping = array_map(fn(ResourceTypeField $field) => $field->getPublicName(), $resource_type->getFields());
       // User resource objects contain a read-only attribute that is not a
       // real field on the user entity type.
       // @see \Drupal\jsonapi\JsonApiResource\ResourceObject::extractContentEntityFields()
@@ -335,7 +256,7 @@ class EntityResource {
       ));
     }
     $data += ['attributes' => [], 'relationships' => []];
-    $field_names = array_map([$resource_type, 'getInternalName'], array_merge(array_keys($data['attributes']), array_keys($data['relationships'])));
+    $field_names = array_map($resource_type->getInternalName(...), array_merge(array_keys($data['attributes']), array_keys($data['relationships'])));
 
     // User resource objects contain a read-only attribute that is not a real
     // field on the user entity type.
@@ -345,7 +266,7 @@ class EntityResource {
       $field_names = array_diff($field_names, [$resource_type->getPublicName('display_name')]);
     }
 
-    array_reduce($field_names, function (EntityInterface $destination, $field_name) use ($resource_type, $parsed_entity) {
+    array_reduce($field_names, function (EntityInterface $destination, string $field_name) use ($resource_type, $parsed_entity): \Drupal\Core\Entity\EntityInterface {
       $this->updateEntityField($resource_type, $parsed_entity, $destination, $field_name);
       return $destination;
     }, $entity);
@@ -380,7 +301,7 @@ class EntityResource {
    * @return \Drupal\jsonapi\ResourceResponse
    *   The response.
    */
-  public function deleteIndividual(EntityInterface $entity) {
+  public function deleteIndividual(EntityInterface $entity): \Drupal\jsonapi\ResourceResponse {
     // @todo Replace with entity handlers in: https://www.drupal.org/project/drupal/issues/3230434
     if ($entity->getEntityTypeId() === 'user') {
       $cancel_method = \Drupal::service('config.factory')->get('user.settings')->get('cancel_method');
@@ -447,9 +368,7 @@ class EntityResource {
         $cacheability = (new CacheableMetadata())->addCacheContexts(['url.path', 'url.query_args:filter']);
         throw new CacheableBadRequestHttpException($cacheability, sprintf("Filtering on config entities is not supported by Drupal's entity API. You tried to filter on a %s config entity.", $config_entity_type_id));
       }
-      else {
-        throw $e;
-      }
+      throw $e;
     }
 
     $storage = $this->entityTypeManager->getStorage($entity_type_id);
@@ -516,9 +435,7 @@ class EntityResource {
    */
   protected function executeQueryInRenderContext(QueryInterface $query, CacheableMetadata $query_cacheability) {
     $context = new RenderContext();
-    $results = $this->renderer->executeInRenderContext($context, function () use ($query) {
-      return $query->execute();
-    });
+    $results = $this->renderer->executeInRenderContext($context, fn() => $query->execute());
     if (!$context->isEmpty()) {
       $query_cacheability->addCacheableDependency($context->pop());
     }
@@ -551,12 +468,10 @@ class EntityResource {
     /** @var \Drupal\Core\Entity\EntityInterface[] $referenced_entities */
     $referenced_entities = array_filter(
       $field_list->referencedEntities(),
-      function (EntityInterface $entity) {
-        return (bool) $this->resourceTypeRepository->get(
-          $entity->getEntityTypeId(),
-          $entity->bundle()
-        );
-      }
+      fn(EntityInterface $entity) => (bool) $this->resourceTypeRepository->get(
+        $entity->getEntityTypeId(),
+        $entity->bundle()
+      )
     );
     $collection_data = [];
     foreach ($referenced_entities as $referenced_entity) {
@@ -640,7 +555,7 @@ class EntityResource {
    * @throws \Drupal\jsonapi\Exception\UnprocessableHttpEntityException
    *   Thrown when the updated entity does not pass validation.
    */
-  public function addToRelationshipData(ResourceType $resource_type, FieldableEntityInterface $entity, $related, Request $request) {
+  public function addToRelationshipData(ResourceType $resource_type, FieldableEntityInterface $entity, string $related, Request $request) {
     $resource_identifiers = $this->deserialize($resource_type, $request, ResourceIdentifier::class, $related);
     $internal_relationship_field_name = $resource_type->getInternalName($related);
     // According to the specification, you are only allowed to POST to a
@@ -756,7 +671,7 @@ class EntityResource {
    *   The field definition of the entity field to be updated.
    */
   protected function doPatchMultipleRelationship(EntityInterface $entity, array $resource_identifiers, FieldDefinitionInterface $field_definition) {
-    $entity->{$field_definition->getName()} = array_map(function (ResourceIdentifier $resource_identifier) {
+    $entity->{$field_definition->getName()} = array_map(function (ResourceIdentifier $resource_identifier): array {
       // We assume all entity reference fields have an 'entity' computed
       // property that can be used to assign the needed values.
       $field_properties = ['entity' => $this->getEntityFromResourceIdentifier($resource_identifier)];
@@ -789,7 +704,7 @@ class EntityResource {
    * @throws \Drupal\Core\Entity\EntityStorageException
    *   Thrown when the underlying entity cannot be saved.
    */
-  public function removeFromRelationshipData(ResourceType $resource_type, EntityInterface $entity, $related, Request $request) {
+  public function removeFromRelationshipData(ResourceType $resource_type, EntityInterface $entity, string $related, Request $request) {
     $resource_identifiers = $this->deserialize($resource_type, $request, ResourceIdentifier::class, $related);
     $internal_relationship_field_name = $resource_type->getInternalName($related);
     /** @var \Drupal\Core\Field\EntityReferenceFieldItemListInterface $field_list */
@@ -862,9 +777,7 @@ class EntityResource {
       if ($request->isMethod('DELETE') && $relationship_field_name) {
         throw new BadRequestHttpException(sprintf('You need to provide a body for DELETE operations on a relationship (%s).', $relationship_field_name));
       }
-      else {
-        throw new BadRequestHttpException('Empty request body.');
-      }
+      throw new BadRequestHttpException('Empty request body.');
     }
     // First decode the request data. We can then determine if the serialized
     // data was malformed.
@@ -884,12 +797,7 @@ class EntityResource {
       }
       return $this->serializer->denormalize($decoded, $class, 'api_json', $context);
     }
-    // These two serialization exception types mean there was a problem with
-    // the structure of the decoded data and it's not valid.
-    catch (UnexpectedValueException $e) {
-      throw new UnprocessableEntityHttpException($e->getMessage());
-    }
-    catch (InvalidArgumentException $e) {
+    catch (UnexpectedValueException|InvalidArgumentException $e) {
       throw new UnprocessableEntityHttpException($e->getMessage());
     }
   }
@@ -1012,7 +920,7 @@ class EntityResource {
    *   Whether the final array of resource identifiers is different than the
    *   client-sent data.
    */
-  protected static function relationshipResponseRequiresBody(array $received_resource_identifiers, array $final_resource_identifiers) {
+  protected static function relationshipResponseRequiresBody(array $received_resource_identifiers, array $final_resource_identifiers): bool {
     return !empty(array_udiff(
       $final_resource_identifiers,
       $received_resource_identifiers,
@@ -1042,7 +950,7 @@ class EntityResource {
    * @return \Drupal\jsonapi\ResourceResponse
    *   The response.
    */
-  protected function buildWrappedResponse(TopLevelDataInterface $data, Request $request, IncludedData $includes, $response_code = 200, array $headers = [], ?LinkCollection $links = NULL, array $meta = []) {
+  protected function buildWrappedResponse(TopLevelDataInterface $data, Request $request, IncludedData $includes, $response_code = 200, array $headers = [], ?LinkCollection $links = NULL, array $meta = []): \Drupal\jsonapi\ResourceResponse|\Drupal\jsonapi\CacheableResourceResponse {
     $links = ($links ?: new LinkCollection([]));
     if (!$links->hasLinkWithKey('self')) {
       $self_link = new Link(new CacheableMetadata(), self::getRequestLink($request), 'self');
@@ -1182,7 +1090,7 @@ class EntityResource {
    *
    * @see \Drupal\rest\Plugin\rest\resource\EntityResource::checkPatchFieldAccess()
    */
-  protected function checkPatchFieldAccess(FieldItemListInterface $original_field, FieldItemListInterface $received_field) {
+  protected function checkPatchFieldAccess(FieldItemListInterface $original_field, FieldItemListInterface $received_field): bool {
     // If the user is allowed to edit the field, it is always safe to set the
     // received value. We may be setting an unchanged value, but that is ok.
     $field_edit_access = $original_field->access('edit', NULL, TRUE);
@@ -1222,7 +1130,7 @@ class EntityResource {
    * @return array
    *   An array of loaded entities and/or an access exceptions.
    */
-  protected function loadEntitiesWithAccess(EntityStorageInterface $storage, array $ids, $load_latest_revisions) {
+  protected function loadEntitiesWithAccess(EntityStorageInterface $storage, array $ids, $load_latest_revisions): array {
     $output = [];
     if ($load_latest_revisions) {
       assert($storage instanceof RevisionableStorageInterface);
@@ -1246,7 +1154,7 @@ class EntityResource {
    * @return bool
    *   Whether the entity already has been created.
    */
-  protected function entityExists(EntityInterface $entity) {
+  protected function entityExists(EntityInterface $entity): bool {
     $entity_storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
     return !empty($entity_storage->loadByProperties([
       'uuid' => $entity->uuid(),
@@ -1372,7 +1280,7 @@ class EntityResource {
    * @return array
    *   The pagination query param array.
    */
-  protected static function getPagerQueries($link_id, $offset, $size, array $query = [], $total = 0) {
+  protected static function getPagerQueries($link_id, $offset, $size, array $query = [], $total = 0): array {
     $extra_query = [];
     switch ($link_id) {
       case 'next':

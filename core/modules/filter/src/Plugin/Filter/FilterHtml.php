@@ -44,7 +44,7 @@ class FilterHtml extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $form['allowed_html'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Allowed HTML tags'),
@@ -67,7 +67,7 @@ class FilterHtml extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration(array $configuration) {
+  public function setConfiguration(array $configuration): void {
     if (isset($configuration['settings']['allowed_html'])) {
       // The javascript in core/modules/filter/filter.filter_html.admin.js
       // removes new lines and double spaces so, for consistency when javascript
@@ -82,7 +82,7 @@ class FilterHtml extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     $restrictions = $this->getHtmlRestrictions();
     // Split the work into two parts. For filtering HTML tags out of the content
     // we rely on the well-tested Xss::filter() code. Since there is no '*' tag
@@ -103,7 +103,7 @@ class FilterHtml extends FilterBase {
    * @return string
    *   Filtered HTML with attributes filtered according to the settings.
    */
-  public function filterAttributes($text) {
+  public function filterAttributes($text): string {
     $restrictions = $this->getHTMLRestrictions();
     $global_allowed_attributes = array_filter($restrictions['allowed']['*']);
     unset($restrictions['allowed']['*']);
@@ -121,7 +121,7 @@ class FilterHtml extends FilterBase {
       $allowed_attributes = ['exact' => [], 'prefix' => []];
       foreach (($global_allowed_attributes + $tag_attributes) as $name => $values) {
         // A trailing * indicates wildcard, but it must have some prefix.
-        if (str_ends_with($name, '*') && $name[0] !== '*') {
+        if (str_ends_with((string) $name, '*') && $name[0] !== '*') {
           $allowed_attributes['prefix'][str_replace('*', '', $name)] = $this->prepareAttributeValues($values);
         }
         else {
@@ -204,7 +204,7 @@ class FilterHtml extends FilterBase {
     }
     // Handle prefix (wildcard) matches.
     foreach ($allowed['prefix'] as $prefix => $value) {
-      if (str_starts_with($name, $prefix)) {
+      if (str_starts_with($name, (string) $prefix)) {
         return $value;
       }
     }
@@ -224,14 +224,14 @@ class FilterHtml extends FilterBase {
    *   An array containing 'exact' and 'prefix' lists of allowed values,
    *   or TRUE/FALSE if all or no values are allowed.
    */
-  protected function prepareAttributeValues($attribute_values) {
+  protected function prepareAttributeValues($attribute_values): bool|array {
     if ($attribute_values === TRUE || $attribute_values === FALSE) {
       return $attribute_values;
     }
     $result = ['exact' => [], 'prefix' => []];
     foreach ($attribute_values as $name => $allowed) {
       // A trailing * indicates wildcard, but it must have some prefix.
-      if (str_ends_with($name, '*') && $name[0] !== '*') {
+      if (str_ends_with((string) $name, '*') && $name[0] !== '*') {
         $result['prefix'][str_replace('*', '', $name)] = $allowed;
       }
       else {
@@ -271,7 +271,7 @@ class FilterHtml extends FilterBase {
        * phpcs:ignore Drupal.Commenting.FunctionComment.Missing
        * @phpstan-ignore-next-line
        */
-      public function setTextMode($textMode, $untilTag = NULL) {
+      public function setTextMode($textMode, $untilTag = NULL): void {
         // Do nothing, we never enter text mode.
       }
 
@@ -318,9 +318,7 @@ class FilterHtml extends FilterBase {
           // allowed attribute values with a wildcard. A wildcard by itself
           // would mean allowing all possible attribute values. But in that
           // case, one would not specify an attribute value at all.
-          $allowed_attribute_values = array_filter($allowed_attribute_values, function ($value) {
-            return $value !== '*';
-          });
+          $allowed_attribute_values = array_filter($allowed_attribute_values, fn($value) => $value !== '*');
 
           if (empty($allowed_attribute_values)) {
             // If the value is the empty string all values are allowed.
@@ -453,7 +451,7 @@ class FilterHtml extends FilterBase {
       'h6' => [$this->t('Heading'), '<h6>' . $this->t('Subtitle six') . '</h6>'],
     ];
     $header = [$this->t('Tag Description'), $this->t('You Type'), $this->t('You Get')];
-    preg_match_all('/<([a-z0-9]+)[^a-z0-9]/i', $allowed_html, $out);
+    preg_match_all('/<([a-z0-9]+)[^a-z0-9]/i', (string) $allowed_html, $out);
     foreach ($out[1] as $tag) {
       if (!empty($tips[$tag])) {
         $rows[] = [
@@ -527,8 +525,7 @@ class FilterHtml extends FilterBase {
       '#header' => $header,
       '#rows' => $rows,
     ];
-    $output .= \Drupal::service('renderer')->render($table);
-    return $output;
+    return $output . \Drupal::service('renderer')->render($table);
   }
 
 }

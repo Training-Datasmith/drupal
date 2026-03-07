@@ -28,39 +28,23 @@ class AccessAwareRouter implements AccessAwareRouterInterface {
   protected $router;
 
   /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
-   * The account to use in access checks.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
    * Constructs a router for Drupal with access check and upcasting.
    *
    * @param \Symfony\Component\Routing\RouterInterface $router
    *   The router doing the actual routing.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The account to use in access checks.
    */
-  public function __construct(RouterInterface $router, AccessManagerInterface $access_manager, AccountInterface $account) {
+  public function __construct(RouterInterface $router, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $account) {
     $this->router = $router;
-    $this->accessManager = $access_manager;
-    $this->account = $account;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __call($name, $arguments) {
+  public function __call(string $name, array $arguments) {
     // Ensure to call every other function to the router.
     return call_user_func_array([$this->router, $name], $arguments);
   }
@@ -113,9 +97,7 @@ class AccessAwareRouter implements AccessAwareRouterInterface {
       if ($access_result instanceof CacheableDependencyInterface && $request->isMethodCacheable()) {
         throw new CacheableAccessDeniedHttpException($access_result, $access_result instanceof AccessResultReasonInterface ? $access_result->getReason() : '');
       }
-      else {
-        throw new AccessDeniedHttpException($access_result instanceof AccessResultReasonInterface ? $access_result->getReason() : '');
-      }
+      throw new AccessDeniedHttpException($access_result instanceof AccessResultReasonInterface ? $access_result->getReason() : '');
     }
   }
 

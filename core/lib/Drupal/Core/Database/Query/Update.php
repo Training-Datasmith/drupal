@@ -14,13 +14,6 @@ class Update extends Query implements ConditionInterface {
   use QueryConditionTrait;
 
   /**
-   * The table to update.
-   *
-   * @var string
-   */
-  protected $table;
-
-  /**
    * An array of fields that will be updated.
    *
    * @var array
@@ -59,9 +52,11 @@ class Update extends Query implements ConditionInterface {
    * @param array $options
    *   Array of database options.
    */
-  public function __construct(Connection $connection, $table, array $options = []) {
+  public function __construct(Connection $connection, /**
+   * The table to update.
+   */
+  protected $table, array $options = []) {
     parent::__construct($connection, $options);
-    $this->table = $table;
 
     $this->condition = $this->connection->condition('AND');
   }
@@ -76,7 +71,7 @@ class Update extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  public function fields(array $fields) {
+  public function fields(array $fields): static {
     $this->fields = $fields;
     return $this;
   }
@@ -99,7 +94,7 @@ class Update extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  public function expression($field, $expression, ?array $arguments = NULL) {
+  public function expression($field, $expression, ?array $arguments = NULL): static {
     $this->expressionFields[$field] = [
       'expression' => $expression,
       'arguments' => $arguments,
@@ -141,7 +136,7 @@ class Update extends Query implements ConditionInterface {
    * @return string
    *   The prepared statement.
    */
-  public function __toString() {
+  public function __toString(): string {
     // Create a sanitized comment string to prepend to the query.
     $comments = $this->connection->makeComment($this->comments);
 
@@ -180,7 +175,7 @@ class Update extends Query implements ConditionInterface {
   /**
    * {@inheritdoc}
    */
-  public function arguments() {
+  public function arguments(): float|int|array {
     [$args] = $this->getQueryArguments();
     return $this->condition->arguments() + $args;
   }

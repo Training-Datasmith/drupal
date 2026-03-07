@@ -86,7 +86,7 @@ abstract class RowPluginBase extends PluginBase {
   /**
    * Provide a form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     if (isset($this->base_table)) {
       $executable = $form_state->get('view')->getExecutable();
@@ -147,7 +147,7 @@ abstract class RowPluginBase extends PluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if (isset($this->base_table)) {
       if (isset($this->options['relationship']) && isset($this->view->relationship[$this->options['relationship']])) {
         $relationship = $this->view->relationship[$this->options['relationship']];

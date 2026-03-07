@@ -11,13 +11,6 @@ use Drupal\migrate\Plugin\MigrationInterface;
 class AuditResult implements MarkupInterface, \Countable {
 
   /**
-   * The audited migration.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
-
-  /**
    * The result of the audit (TRUE if passed, FALSE otherwise).
    *
    * @var bool
@@ -41,13 +34,12 @@ class AuditResult implements MarkupInterface, \Countable {
    * @param string[] $reasons
    *   (optional) The reasons why the migration passed or failed the audit.
    */
-  public function __construct(MigrationInterface $migration, $status, array $reasons = []) {
+  public function __construct(protected \Drupal\migrate\Plugin\MigrationInterface $migration, $status, array $reasons = []) {
     if (!is_bool($status)) {
       throw new \InvalidArgumentException('Audit results must have a boolean status.');
     }
-    $this->migration = $migration;
     $this->status = $status;
-    array_walk($reasons, [$this, 'addReason']);
+    array_walk($reasons, $this->addReason(...));
   }
 
   /**
@@ -79,7 +71,7 @@ class AuditResult implements MarkupInterface, \Countable {
    *
    * @return $this
    */
-  public function addReason($reason) {
+  public function addReason($reason): static {
     array_push($this->reasons, (string) $reason);
     return $this;
   }
@@ -91,10 +83,8 @@ class AuditResult implements MarkupInterface, \Countable {
    *   The audited migration.
    * @param string[] $reasons
    *   (optional) The reasons why the migration passed the audit.
-   *
-   * @return static
    */
-  public static function pass(MigrationInterface $migration, array $reasons = []) {
+  public static function pass(MigrationInterface $migration, array $reasons = []): static {
     return new static($migration, TRUE, $reasons);
   }
 
@@ -105,10 +95,8 @@ class AuditResult implements MarkupInterface, \Countable {
    *   The audited migration.
    * @param array $reasons
    *   (optional) The reasons why the migration failed the audit.
-   *
-   * @return static
    */
-  public static function fail(MigrationInterface $migration, array $reasons = []) {
+  public static function fail(MigrationInterface $migration, array $reasons = []): static {
     return new static($migration, FALSE, $reasons);
   }
 
@@ -132,7 +120,7 @@ class AuditResult implements MarkupInterface, \Countable {
    *
    * @see \Drupal\Component\Render\MarkupInterface
    */
-  public function __toString() {
+  public function __toString(): string {
     return implode("\n", $this->reasons);
   }
 

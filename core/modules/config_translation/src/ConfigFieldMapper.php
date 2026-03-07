@@ -35,14 +35,14 @@ class ConfigFieldMapper extends ConfigEntityMapper {
   /**
    * {@inheritdoc}
    */
-  public function getOverviewRouteName() {
+  public function getOverviewRouteName(): string {
     return 'entity.field_config.config_translation_overview.' . $this->pluginDefinition['base_entity_type'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getTypeLabel() {
+  public function getTypeLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $base_entity_info = $this->entityTypeManager->getDefinition($this->pluginDefinition['base_entity_type']);
     return $this->t('@label fields', ['@label' => $base_entity_info->getLabel()]);
   }
@@ -50,7 +50,7 @@ class ConfigFieldMapper extends ConfigEntityMapper {
   /**
    * {@inheritdoc}
    */
-  public function setEntity(ConfigEntityInterface $entity) {
+  public function setEntity(ConfigEntityInterface $entity): bool {
     if (parent::setEntity($entity)) {
 
       // Field storage config can also contain translatable values. Add the name

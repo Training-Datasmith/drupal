@@ -39,7 +39,7 @@ class EntityUuidConverter extends EntityConverter {
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager to get the current content language.
    */
-  public function setLanguageManager(LanguageManagerInterface $language_manager) {
+  public function setLanguageManager(LanguageManagerInterface $language_manager): void {
     $this->languageManager = $language_manager;
   }
 
@@ -81,10 +81,10 @@ class EntityUuidConverter extends EntityConverter {
   /**
    * {@inheritdoc}
    */
-  public function applies($definition, $name, Route $route) {
+  public function applies($definition, $name, Route $route): bool {
     return (
       (bool) Routes::getResourceTypeNameFromParameters($route->getDefaults()) &&
-      !empty($definition['type']) && str_starts_with($definition['type'], 'entity')
+      !empty($definition['type']) && str_starts_with((string) $definition['type'], 'entity')
     );
   }
 

@@ -36,8 +36,9 @@ class LinkSeparateFormatter extends LinkFormatter {
 
   /**
    * {@inheritdoc}
+   * @return array{'#theme': 'link_formatter_link_separate', '#title': mixed, '#url_title': mixed, '#url': mixed}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $element = [];
     $entity = $items->getEntity();
     $settings = $this->getSettings();

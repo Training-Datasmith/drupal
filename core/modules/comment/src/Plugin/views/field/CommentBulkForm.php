@@ -14,7 +14,7 @@ class CommentBulkForm extends BulkForm {
   /**
    * {@inheritdoc}
    */
-  protected function emptySelectedMessage() {
+  protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Select one or more comments to perform the update on.');
   }
 

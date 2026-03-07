@@ -14,7 +14,7 @@ class SingleFlushStrategy implements PlaceholderStrategyInterface {
   /**
    * {@inheritdoc}
    */
-  public function processPlaceholders(array $placeholders) {
+  public function processPlaceholders(array $placeholders): array {
     // Return all placeholders as is; they should be rendered directly.
     return $placeholders;
   }

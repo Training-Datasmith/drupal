@@ -26,12 +26,12 @@ class Formula extends ArgumentPluginBase {
    *
    * @var string|null
    */
-  public $formula = NULL;
+  public $formula;
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if (!empty($this->definition['formula'])) {
@@ -42,7 +42,7 @@ class Formula extends ArgumentPluginBase {
   /**
    * Gets the prepared formula.
    */
-  public function getFormula() {
+  public function getFormula(): string {
     return str_replace('***table***', $this->tableAlias, $this->formula);
   }
 
@@ -64,7 +64,7 @@ class Formula extends ArgumentPluginBase {
   /**
    * Build the query based upon the formula.
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $this->ensureMyTable();
     // Now that our table is secure, get our formula.
     $placeholder = $this->placeholder();

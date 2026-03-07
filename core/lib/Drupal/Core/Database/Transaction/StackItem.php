@@ -7,7 +7,7 @@ namespace Drupal\Core\Database\Transaction;
 /**
  * A value object for items on the transaction stack.
  */
-final class StackItem {
+final readonly class StackItem {
 
   /**
    * Constructor.
@@ -18,8 +18,8 @@ final class StackItem {
    *   The stack item type.
    */
   public function __construct(
-    public readonly string $name,
-    public readonly StackItemType $type,
+    public string $name,
+    public StackItemType $type,
   ) {
   }
 

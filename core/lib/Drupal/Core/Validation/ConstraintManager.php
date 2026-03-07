@@ -51,7 +51,7 @@ class ConstraintManager extends DefaultPluginManager {
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
     $this->factory = new ConstraintFactory($this);
-    parent::__construct('Plugin/Validation/Constraint', $namespaces, $module_handler, NULL, Constraint::class, 'Drupal\Core\Validation\Annotation\Constraint');
+    parent::__construct('Plugin/Validation/Constraint', $namespaces, $module_handler, NULL, Constraint::class, \Drupal\Core\Validation\Annotation\Constraint::class);
     $this->alterInfo('validation_constraint');
     $this->setCacheBackend($cache_backend, 'validation_constraint_plugins');
   }
@@ -62,7 +62,7 @@ class ConstraintManager extends DefaultPluginManager {
   protected function getDiscovery() {
     if (!isset($this->discovery)) {
       $this->discovery = parent::getDiscovery();
-      $this->discovery = new StaticDiscoveryDecorator($this->discovery, [$this, 'registerDefinitions']);
+      $this->discovery = new StaticDiscoveryDecorator($this->discovery, $this->registerDefinitions(...));
     }
     return $this->discovery;
   }
@@ -91,7 +91,7 @@ class ConstraintManager extends DefaultPluginManager {
    *
    * @see ConstraintManager::__construct()
    */
-  public function registerDefinitions() {
+  public function registerDefinitions(): void {
     $this->getDiscovery()->setDefinition('Callback', [
       'label' => new TranslatableMarkup('Callback'),
       'class' => Callback::class,
@@ -142,7 +142,7 @@ class ConstraintManager extends DefaultPluginManager {
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     // Make sure 'type' is set and either an array or FALSE.
     if ($definition['type'] !== FALSE && !is_array($definition['type'])) {
       $definition['type'] = [$definition['type']];
@@ -159,7 +159,7 @@ class ConstraintManager extends DefaultPluginManager {
    *   An array of constraint plugin definitions supporting the given type,
    *   keyed by constraint name (plugin ID).
    */
-  public function getDefinitionsByType($type) {
+  public function getDefinitionsByType($type): array {
     $definitions = [];
     foreach ($this->getDefinitions() as $plugin_id => $definition) {
       if ($definition['type'] === FALSE || in_array($type, $definition['type'])) {

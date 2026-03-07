@@ -38,7 +38,7 @@ class AuthenticationCollector implements AuthenticationCollectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function addProvider(AuthenticationProviderInterface $provider, $provider_id, $priority = 0, $global = FALSE) {
+  public function addProvider(AuthenticationProviderInterface $provider, $provider_id, $priority = 0, $global = FALSE): void {
     $this->providers[$provider_id] = $provider;
     $this->providerOrders[$priority][$provider_id] = $provider;
     // Force the providers to be re-sorted.
@@ -52,7 +52,7 @@ class AuthenticationCollector implements AuthenticationCollectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function isGlobal($provider_id) {
+  public function isGlobal($provider_id): bool {
     return isset($this->globalProviders[$provider_id]);
   }
 

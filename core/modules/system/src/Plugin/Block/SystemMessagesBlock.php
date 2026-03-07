@@ -22,7 +22,7 @@ class SystemMessagesBlock extends BlockBase implements MessagesBlockPluginInterf
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'label_display' => '0',
     ];
@@ -31,7 +31,7 @@ class SystemMessagesBlock extends BlockBase implements MessagesBlockPluginInterf
   /**
    * {@inheritdoc}
    */
-  public function build() {
+  public function build(): array {
     return [
       '#type' => 'status_messages',
       '#include_fallback' => TRUE,
@@ -41,7 +41,7 @@ class SystemMessagesBlock extends BlockBase implements MessagesBlockPluginInterf
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     // The messages are session-specific and hence aren't cacheable, but the
     // block itself *is* cacheable because it uses a #lazy_builder callback and
     // hence the block has a globally cacheable render array.

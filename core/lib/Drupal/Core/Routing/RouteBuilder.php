@@ -19,41 +19,6 @@ use Symfony\Component\Routing\Route;
 class RouteBuilder implements RouteBuilderInterface, DestructableInterface {
 
   /**
-   * The dumper to which we should send collected routes.
-   *
-   * @var \Drupal\Core\Routing\MatcherDumperInterface
-   */
-  protected $dumper;
-
-  /**
-   * The used lock backend instance.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected $lock;
-
-  /**
-   * The event dispatcher to notify of routes.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $dispatcher;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The controller resolver.
-   *
-   * @var \Drupal\Core\Controller\ControllerResolverInterface
-   */
-  protected $controllerResolver;
-
-  /**
    * The route collection during the rebuild.
    *
    * @var \Symfony\Component\Routing\RouteCollection
@@ -75,13 +40,6 @@ class RouteBuilder implements RouteBuilderInterface, DestructableInterface {
   protected $rebuildNeeded = FALSE;
 
   /**
-   * The check provider.
-   *
-   * @var \Drupal\Core\Access\CheckProviderInterface
-   */
-  protected $checkProvider;
-
-  /**
    * Constructs the RouteBuilder using the passed MatcherDumperInterface.
    *
    * @param \Drupal\Core\Routing\MatcherDumperInterface $dumper
@@ -90,33 +48,28 @@ class RouteBuilder implements RouteBuilderInterface, DestructableInterface {
    *   The lock backend.
    * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher
    *   The event dispatcher to notify of routes.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Controller\ControllerResolverInterface $controller_resolver
+   * @param \Drupal\Core\Controller\ControllerResolverInterface $controllerResolver
    *   The controller resolver.
-   * @param \Drupal\Core\Access\CheckProviderInterface $check_provider
+   * @param \Drupal\Core\Access\CheckProviderInterface $checkProvider
    *   The check provider.
    */
-  public function __construct(MatcherDumperInterface $dumper, LockBackendInterface $lock, EventDispatcherInterface $dispatcher, ModuleHandlerInterface $module_handler, ControllerResolverInterface $controller_resolver, CheckProviderInterface $check_provider) {
-    $this->dumper = $dumper;
-    $this->lock = $lock;
-    $this->dispatcher = $dispatcher;
-    $this->moduleHandler = $module_handler;
-    $this->controllerResolver = $controller_resolver;
-    $this->checkProvider = $check_provider;
+  public function __construct(protected \Drupal\Core\Routing\MatcherDumperInterface $dumper, protected \Drupal\Core\Lock\LockBackendInterface $lock, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $dispatcher, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Controller\ControllerResolverInterface $controllerResolver, protected \Drupal\Core\Access\CheckProviderInterface $checkProvider)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setRebuildNeeded() {
+  public function setRebuildNeeded(): void {
     $this->rebuildNeeded = TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function rebuild() {
+  public function rebuild(): bool {
     if ($this->building) {
       throw new \RuntimeException('Recursive router rebuild detected.');
     }
@@ -227,7 +180,7 @@ class RouteBuilder implements RouteBuilderInterface, DestructableInterface {
   /**
    * {@inheritdoc}
    */
-  public function destruct() {
+  public function destruct(): void {
     // Rebuild routes only once at the end of the request lifecycle to not
     // trigger multiple rebuilds and also make the page more responsive for the
     // user.
@@ -240,7 +193,7 @@ class RouteBuilder implements RouteBuilderInterface, DestructableInterface {
    * @return array
    *   The defined routes, keyed by provider.
    */
-  protected function getRouteDefinitions() {
+  protected function getRouteDefinitions(): array {
     // Always instantiate a new YamlDiscovery object so that we always search on
     // the up-to-date list of modules.
     $discovery = new YamlDiscovery('routing', $this->moduleHandler->getModuleDirectories());

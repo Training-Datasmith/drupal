@@ -21,14 +21,14 @@ class FormRouteEnhancer implements EnhancerInterface {
    * @return bool
    *   TRUE when the enhancer runs on the current route, FALSE otherwise.
    */
-  protected function applies(Route $route) {
+  protected function applies(Route $route): bool {
     return $route->hasDefault('_form') && !$route->hasDefault(RouteObjectInterface::CONTROLLER_NAME);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function enhance(array $defaults, Request $request) {
+  public function enhance(array $defaults, Request $request): array {
     $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
     if (!$this->applies($route)) {
       return $defaults;

@@ -13,13 +13,6 @@ use Drupal\Component\Plugin\Discovery\DiscoveryInterface;
 class YamlDiscoveryDecorator extends YamlDiscovery {
 
   /**
-   * The Discovery object being decorated.
-   *
-   * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface
-   */
-  protected $decorated;
-
-  /**
    * Constructs a YamlDiscoveryDecorator object.
    *
    * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
@@ -30,23 +23,21 @@ class YamlDiscoveryDecorator extends YamlDiscovery {
    * @param array $directories
    *   An array of directories to scan.
    */
-  public function __construct(DiscoveryInterface $decorated, $name, array $directories) {
+  public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated, $name, array $directories) {
     parent::__construct($name, $directories);
-
-    $this->decorated = $decorated;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDefinitions() {
+  public function getDefinitions(): float|int|array {
     return parent::getDefinitions() + $this->decorated->getDefinitions();
   }
 
   /**
    * Passes through all unknown calls onto the decorated object.
    */
-  public function __call($method, $args) {
+  public function __call(string $method, array $args) {
     return call_user_func_array([$this->decorated, $method], $args);
   }
 

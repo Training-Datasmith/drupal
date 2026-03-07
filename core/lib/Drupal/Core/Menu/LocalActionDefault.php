@@ -20,13 +20,6 @@ class LocalActionDefault extends PluginBase implements LocalActionInterface, Con
   use DependencySerializationTrait;
 
   /**
-   * The route provider to load routes by name.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
    * Constructs a LocalActionDefault object.
    *
    * @param array $configuration
@@ -35,19 +28,17 @@ class LocalActionDefault extends PluginBase implements LocalActionInterface, Con
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider to load routes by name.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteProviderInterface $route_provider) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->routeProvider = $route_provider;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -66,7 +57,7 @@ class LocalActionDefault extends PluginBase implements LocalActionInterface, Con
   /**
    * {@inheritdoc}
    */
-  public function getTitle(?Request $request = NULL) {
+  public function getTitle(?Request $request = NULL): string {
     // Subclasses may pull in the request or specific attributes as parameters.
     // The title from YAML file discovery may be a TranslatableMarkup object.
     return (string) $this->pluginDefinition['title'];
@@ -118,7 +109,7 @@ class LocalActionDefault extends PluginBase implements LocalActionInterface, Con
   /**
    * {@inheritdoc}
    */
-  public function getOptions(RouteMatchInterface $route_match) {
+  public function getOptions(RouteMatchInterface $route_match): array {
     return (array) $this->pluginDefinition['options'];
   }
 

@@ -59,7 +59,7 @@ class ClaroFormHooks {
       // does, move it to the bottom and remove the second bulk operations
       // submit.
       foreach (Element::children($form['header']) as $key) {
-        if (str_contains($key, '_bulk_form')) {
+        if (str_contains((string) $key, '_bulk_form')) {
           // Move the bulk actions form from the header to its own container.
           $form['bulk_actions_container'] = $form['header'][$key];
           unset($form['header'][$key]);

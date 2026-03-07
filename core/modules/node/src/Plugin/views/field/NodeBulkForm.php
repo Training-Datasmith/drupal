@@ -14,7 +14,7 @@ class NodeBulkForm extends BulkForm {
   /**
    * {@inheritdoc}
    */
-  protected function emptySelectedMessage() {
+  protected function emptySelectedMessage(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('No content selected.');
   }
 

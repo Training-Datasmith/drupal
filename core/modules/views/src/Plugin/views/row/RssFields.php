@@ -44,7 +44,7 @@ class RssFields extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $initial_labels = ['' => $this->t('- None -')];
@@ -134,7 +134,7 @@ class RssFields extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($row) {
+  public function render($row): array {
     static $row_index;
     if (!isset($row_index)) {
       $row_index = 0;
@@ -178,15 +178,13 @@ class RssFields extends RowPluginBase {
       }
     }
 
-    $build = [
+    return [
       '#theme' => $this->themeFunctions(),
       '#view' => $this->view,
       '#options' => $this->options,
       '#row' => $item,
       '#field_alias' => $this->field_alias ?? '',
     ];
-
-    return $build;
   }
 
   /**
@@ -218,7 +216,7 @@ class RssFields extends RowPluginBase {
    * @return string
    *   A string with an absolute URL.
    */
-  protected function getAbsoluteUrl($url_string) {
+  protected function getAbsoluteUrl(string $url_string) {
     // If the given URL already starts with a leading slash, it's been processed
     // and we need to simply make it an absolute path by prepending the host.
     if (str_starts_with($url_string, '/')) {
@@ -227,12 +225,7 @@ class RssFields extends RowPluginBase {
       // @see https://www.drupal.org/node/2423913
       return $host . $url_string;
     }
-    // Otherwise, this is an unprocessed path (e.g. node/123) and we need to run
-    // it through a Url object to allow outbound path processors to run (path
-    // aliases, language prefixes, etc).
-    else {
-      return Url::fromUserInput('/' . $url_string)->setAbsolute()->toString();
-    }
+    return Url::fromUserInput('/' . $url_string)->setAbsolute()->toString();
   }
 
 }

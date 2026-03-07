@@ -130,7 +130,7 @@ abstract class ViewsFormBase extends FormBase implements ViewsFormInterface {
       unset($view->form_cache);
     }
 
-    $form_class = get_class($form_state->getFormObject());
+    $form_class = $form_state->getFormObject()::class;
     $response = $this->ajaxFormWrapper($form_class, $form_state);
 
     // If the form has not been submitted, or was not set for rerendering, stop.
@@ -146,7 +146,7 @@ abstract class ViewsFormBase extends FormBase implements ViewsFormInterface {
       // Build the new form state for the next form in the stack.
       $reflection = new \ReflectionClass($view::$forms[$top[1]]);
       $form_state = $reflection->newInstanceArgs(array_slice($top, 3, 2))->getFormState($view, $top[2], $form_state->get('ajax'));
-      $form_class = get_class($form_state->getFormObject());
+      $form_class = $form_state->getFormObject()::class;
 
       $form_state->setUserInput([]);
       $form_url = views_ui_build_form_url($form_state);
@@ -283,7 +283,7 @@ abstract class ViewsFormBase extends FormBase implements ViewsFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
   }
 
   /**

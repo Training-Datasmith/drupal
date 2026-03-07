@@ -57,7 +57,7 @@ class AnnouncementsFeedToolbarHooks {
     // render callback to remove the #attributes property. We start by adding
     // the defaults, and then we append our own pre render callback.
     $items['announcement'] += $this->elementInfoManager->getInfo('toolbar_item');
-    $items['announcement']['#pre_render'][] = [RenderCallbacks::class, 'removeTabAttributes'];
+    $items['announcement']['#pre_render'][] = RenderCallbacks::removeTabAttributes(...);
     return $items;
   }
 
@@ -65,11 +65,11 @@ class AnnouncementsFeedToolbarHooks {
    * Implements hook_toolbar_alter().
    */
   #[Hook('toolbar_alter')]
-  public function toolbarAlter(&$items): void {
+  public function toolbarAlter(array &$items): void {
     // As the "Announcements" link is shown already in the top toolbar bar, we
     // don't need it again in the administration menu tray, so hide it.
     if (!empty($items['administration']['tray'])) {
-      $callable = function (array $element) {
+      $callable = function (array $element): array {
         unset($element['administration_menu']['#items']['announcements_feed.announcement']);
         return $element;
       };

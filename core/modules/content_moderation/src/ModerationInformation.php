@@ -19,30 +19,15 @@ class ModerationInformation implements ModerationInformationInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The bundle information service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $bundleInfo;
-
-  /**
    * Creates a new ModerationInformation instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo
    *   The bundle information service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $bundle_info) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->bundleInfo = $bundle_info;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo)
+  {
   }
 
   /**
@@ -61,7 +46,7 @@ class ModerationInformation implements ModerationInformationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isModeratedEntityType(EntityTypeInterface $entity_type) {
+  public function isModeratedEntityType(EntityTypeInterface $entity_type): bool {
     $bundles = $this->bundleInfo->getBundleInfo($entity_type->id());
     return !empty(array_column($bundles, 'workflow'));
   }
@@ -137,7 +122,7 @@ class ModerationInformation implements ModerationInformationInterface {
   /**
    * {@inheritdoc}
    */
-  public function isLiveRevision(ContentEntityInterface $entity) {
+  public function isLiveRevision(ContentEntityInterface $entity): bool {
     $workflow = $this->getWorkflowForEntity($entity);
     return $entity->isLatestRevision()
       && $entity->isDefaultRevision()
@@ -198,8 +183,9 @@ class ModerationInformation implements ModerationInformationInterface {
 
   /**
    * {@inheritdoc}
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
    */
-  public function getUnsupportedFeatures(EntityTypeInterface $entity_type) {
+  public function getUnsupportedFeatures(EntityTypeInterface $entity_type): array {
     $features = [];
     // Test if entity is publishable.
     if (!$entity_type->entityClassImplements(EntityPublishedInterface::class)) {
@@ -241,7 +227,7 @@ class ModerationInformation implements ModerationInformationInterface {
    * @return bool
    *   TRUE if this is the entity's first time being moderated, FALSE otherwise.
    */
-  protected function isFirstTimeModeration(ContentEntityInterface $entity) {
+  protected function isFirstTimeModeration(ContentEntityInterface $entity): bool {
     /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
     $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
     $original_entity = $storage->loadRevision($storage->getLatestRevisionId($entity->id()));

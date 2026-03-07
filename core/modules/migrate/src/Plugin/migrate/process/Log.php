@@ -53,7 +53,7 @@ class Log extends ProcessPluginBase {
     }
 
     $class_name = $export !== NULL && $is_object
-      ? $class_name = get_class($value) . ":\n"
+      ? $class_name = $value::class . ":\n"
       : '';
 
     $message = $export === NULL

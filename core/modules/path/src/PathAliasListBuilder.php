@@ -29,27 +29,6 @@ class PathAliasListBuilder extends EntityListBuilder {
   protected $currentRequest;
 
   /**
-   * The form builder.
-   *
-   * @var \Drupal\Core\Form\FormBuilderInterface
-   */
-  protected $formBuilder;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The path alias manager.
-   *
-   * @var \Drupal\path_alias\AliasManagerInterface
-   */
-  protected $aliasManager;
-
-  /**
    * Constructs a new PathAliasListBuilder object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -58,26 +37,23 @@ class PathAliasListBuilder extends EntityListBuilder {
    *   The entity storage class.
    * @param \Symfony\Component\HttpFoundation\Request $current_request
    *   The current request.
-   * @param \Drupal\Core\Form\FormBuilderInterface $form_builder
+   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    *   The form builder.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\path_alias\AliasManagerInterface $alias_manager
+   * @param \Drupal\path_alias\AliasManagerInterface $aliasManager
    *   The path alias manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, Request $current_request, FormBuilderInterface $form_builder, LanguageManagerInterface $language_manager, AliasManagerInterface $alias_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, Request $current_request, protected \Drupal\Core\Form\FormBuilderInterface $formBuilder, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\path_alias\AliasManagerInterface $aliasManager) {
     parent::__construct($entity_type, $storage);
 
     $this->currentRequest = $current_request;
-    $this->formBuilder = $form_builder;
-    $this->languageManager = $language_manager;
-    $this->aliasManager = $alias_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -114,7 +90,7 @@ class PathAliasListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $keys = $this->currentRequest->query->get('search');
     $build['path_admin_filter_form'] = $this->formBuilder->getForm(PathFilterForm::class, $keys);
     $build += parent::render();
@@ -158,7 +134,7 @@ class PathAliasListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildRow(EntityInterface $entity) {
+  public function buildRow(EntityInterface $entity): array {
     /** @var \Drupal\Core\Path\Entity\PathAlias $entity */
     $langcode = $entity->language()->getId();
     $alias = $entity->getAlias();

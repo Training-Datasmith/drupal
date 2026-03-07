@@ -23,8 +23,6 @@ class ConfigExistsConstraint extends SymfonyConstraint {
    * Every config entity type can have multiple instances, all with unique IDs
    * but the same config prefix. When config refers to a config entity,
    * typically only the ID is stored, not the prefix.
-   *
-   * @var string
    */
   public string $prefix = '';
 

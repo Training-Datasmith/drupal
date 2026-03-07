@@ -29,7 +29,7 @@ class MachineName extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getValueOptions() {
+  public function getValueOptions(): void {
     if (isset($this->valueOptions)) {
       return;
     }
@@ -60,7 +60,7 @@ class MachineName extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['machine_name'] = [
@@ -74,7 +74,7 @@ class MachineName extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender(&$values) {
+  public function preRender(&$values): void {
     $this->getValueOptions();
   }
 
@@ -84,13 +84,10 @@ class MachineName extends FieldPluginBase {
   public function render(ResultRow $values) {
     $value = $values->{$this->field_alias};
     if (!empty($this->options['machine_name']) || !isset($this->valueOptions[$value])) {
-      $result = $this->sanitizeValue($value);
-    }
-    else {
-      $result = $this->valueOptions[$value];
+      return $this->sanitizeValue($value);
     }
 
-    return $result;
+    return $this->valueOptions[$value];
   }
 
 }

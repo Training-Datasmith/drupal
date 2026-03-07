@@ -15,26 +15,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class VocabularyResetForm extends EntityConfirmFormBase {
 
   /**
-   * The term storage.
-   *
-   * @var \Drupal\taxonomy\TermStorageInterface
-   */
-  protected $termStorage;
-
-  /**
    * Constructs a new VocabularyResetForm object.
    *
-   * @param \Drupal\taxonomy\TermStorageInterface $term_storage
+   * @param \Drupal\taxonomy\TermStorageInterface $termStorage
    *   The term storage.
    */
-  public function __construct(TermStorageInterface $term_storage) {
-    $this->termStorage = $term_storage;
+  public function __construct(protected \Drupal\taxonomy\TermStorageInterface $termStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('taxonomy_term')
     );
@@ -43,14 +36,14 @@ class VocabularyResetForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'taxonomy_vocabulary_confirm_reset_alphabetical';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to reset the vocabulary %title to alphabetical order?', ['%title' => $this->entity->label()]);
   }
 
@@ -64,21 +57,21 @@ class VocabularyResetForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Resetting a vocabulary will discard all custom ordering and sort items alphabetically.');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Reset to alphabetical');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
     $this->termStorage->resetWeights($this->entity->id());
 

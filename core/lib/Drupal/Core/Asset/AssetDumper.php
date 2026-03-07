@@ -13,20 +13,13 @@ use Drupal\Core\File\FileSystemInterface;
 class AssetDumper implements AssetDumperUriInterface {
 
   /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * AssetDumper constructor.
    *
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file handler.
    */
-  public function __construct(FileSystemInterface $file_system) {
-    $this->fileSystem = $file_system;
+  public function __construct(protected \Drupal\Core\File\FileSystemInterface $fileSystem)
+  {
   }
 
   /**
@@ -36,7 +29,7 @@ class AssetDumper implements AssetDumperUriInterface {
    * the aggregated contents of the files in $data. This forces proxies and
    * browsers to download new CSS when the CSS changes.
    */
-  public function dump($data, $file_extension) {
+  public function dump($data, $file_extension): string {
     $path = 'assets://' . $file_extension;
     // Prefix filename to prevent blocking by firewalls which reject files
     // starting with "ad*".

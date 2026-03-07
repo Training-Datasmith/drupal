@@ -25,20 +25,6 @@ use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 class ImageStyleDownloadController extends FileDownloadController {
 
   /**
-   * The lock backend.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected $lock;
-
-  /**
-   * The image factory.
-   *
-   * @var \Drupal\Core\Image\ImageFactory
-   */
-  protected $imageFactory;
-
-  /**
    * A logger instance.
    *
    * @var \Psr\Log\LoggerInterface
@@ -46,36 +32,26 @@ class ImageStyleDownloadController extends FileDownloadController {
   protected $logger;
 
   /**
-   * File system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Constructs an ImageStyleDownloadController object.
    *
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend.
-   * @param \Drupal\Core\Image\ImageFactory $image_factory
+   * @param \Drupal\Core\Image\ImageFactory $imageFactory
    *   The image factory.
    * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager
    *   The stream wrapper manager.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The system service.
    */
   public function __construct(
     #[Autowire(service: 'lock')]
-    LockBackendInterface $lock,
-    ImageFactory $image_factory,
+    protected \Drupal\Core\Lock\LockBackendInterface $lock,
+    protected \Drupal\Core\Image\ImageFactory $imageFactory,
     StreamWrapperManagerInterface $stream_wrapper_manager,
-    FileSystemInterface $file_system,
+    protected \Drupal\Core\File\FileSystemInterface $fileSystem,
   ) {
     parent::__construct($stream_wrapper_manager);
-    $this->lock = $lock;
-    $this->imageFactory = $image_factory;
     $this->logger = $this->getLogger('image');
-    $this->fileSystem = $file_system;
   }
 
   /**
@@ -102,7 +78,7 @@ class ImageStyleDownloadController extends FileDownloadController {
    * @throws \Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException
    *   Thrown when the file is still being generated.
    */
-  public function deliver(Request $request, $scheme, ImageStyleInterface $image_style, string $required_derivative_scheme) {
+  public function deliver(Request $request, string $scheme, ImageStyleInterface $image_style, string $required_derivative_scheme): \Symfony\Component\HttpFoundation\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse {
     $target = $request->query->get('file');
     $image_uri = $scheme . '://' . $target;
     $image_uri = $this->streamWrapperManager->normalizeUri($image_uri);
@@ -136,7 +112,7 @@ class ImageStyleDownloadController extends FileDownloadController {
     $token = $request->query->get(IMAGE_DERIVATIVE_TOKEN, '');
     $token_is_valid = hash_equals($image_style->getPathToken($image_uri), $token)
       || hash_equals($image_style->getPathToken($scheme . '://' . $target), $token);
-    if (!$this->config('image.settings')->get('allow_insecure_derivatives') || str_starts_with(ltrim($target, '\/'), 'styles/')) {
+    if (!$this->config('image.settings')->get('allow_insecure_derivatives') || str_starts_with(ltrim((string) $target, '\/'), 'styles/')) {
       $valid = $valid && $token_is_valid;
     }
 
@@ -237,10 +213,8 @@ class ImageStyleDownloadController extends FileDownloadController {
       // Cache-Control header to "public".
       return new BinaryFileResponse($uri, 200, $headers, $is_public);
     }
-    else {
-      $this->logger->notice('Unable to generate the derived image located at %path.', ['%path' => $derivative_uri]);
-      return new Response($this->t('Error generating image.'), 500);
-    }
+    $this->logger->notice('Unable to generate the derived image located at %path.', ['%path' => $derivative_uri]);
+    return new Response($this->t('Error generating image.'), 500);
   }
 
   /**

@@ -22,13 +22,6 @@ class FileCache implements FileCacheInterface {
   protected static $cached = [];
 
   /**
-   * The collection identifier of this cache.
-   *
-   * @var string
-   */
-  protected $collection;
-
-  /**
    * The cache backend backing this FileCache object.
    *
    * @var \Drupal\Component\FileCache\FileCacheBackendInterface
@@ -48,14 +41,16 @@ class FileCache implements FileCacheInterface {
    * @param array $cache_backend_configuration
    *   (optional) The configuration for the backend class.
    */
-  public function __construct($prefix, $collection, $cache_backend_class = NULL, array $cache_backend_configuration = []) {
+  public function __construct($prefix, /**
+   * The collection identifier of this cache.
+   */
+  protected $collection, $cache_backend_class = NULL, array $cache_backend_configuration = []) {
 
     if (empty($prefix)) {
       throw new \InvalidArgumentException('Required prefix configuration is missing');
     }
 
     $this->prefix = $prefix;
-    $this->collection = $collection;
 
     if (isset($cache_backend_class)) {
       $this->cache = new $cache_backend_class($cache_backend_configuration);
@@ -73,8 +68,9 @@ class FileCache implements FileCacheInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(array $filepaths) {
+  public function getMultiple(array $filepaths): array {
     $file_data = [];
     $remaining_cids = [];
 
@@ -120,7 +116,7 @@ class FileCache implements FileCacheInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($filepath, $data) {
+  public function set($filepath, $data): void {
     $realpath = realpath($filepath);
     $cached = [
       'mtime' => filemtime($filepath),
@@ -138,7 +134,7 @@ class FileCache implements FileCacheInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($filepath) {
+  public function delete($filepath): void {
     $realpath = realpath($filepath);
     $cid = $this->prefix . ':' . $this->collection . ':' . $realpath;
 
@@ -153,7 +149,7 @@ class FileCache implements FileCacheInterface {
    *
    * @todo Replace this once https://www.drupal.org/node/2260187 is in.
    */
-  public static function reset() {
+  public static function reset(): void {
     static::$cached = [];
   }
 

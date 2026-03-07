@@ -67,7 +67,7 @@ class EntityFieldStorageConfig extends EntityConfigBase {
   /**
    * {@inheritdoc}
    */
-  public function rollback(array $destination_identifier) {
+  public function rollback(array $destination_identifier): void {
     if ($this->isTranslationDestination()) {
       $language = $destination_identifier['langcode'];
       unset($destination_identifier['langcode']);

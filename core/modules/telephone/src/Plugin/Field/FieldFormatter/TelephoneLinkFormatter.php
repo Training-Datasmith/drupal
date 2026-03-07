@@ -45,8 +45,9 @@ class TelephoneLinkFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
     $settings = $this->getSettings();
 
@@ -62,8 +63,9 @@ class TelephoneLinkFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#type': 'link', '#title': mixed, '#url': mixed, '#options': array{attributes?: array, external: true}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $element = [];
     $title_setting = $this->getSetting('title');
 
@@ -78,7 +80,7 @@ class TelephoneLinkFormatter extends FormatterBase {
       // number greater than 65535 will cause parse_url() to return FALSE so
       // we need the work around on any 5 digit (or less) number.
       // First we strip whitespace so we're counting actual digits.
-      $phone_number = preg_replace('/\s+/', '', $item->value);
+      $phone_number = preg_replace('/\s+/', '', (string) $item->value);
       if (strlen($phone_number) <= 5) {
         $phone_number = substr_replace($phone_number, '-', 1, 0);
       }

@@ -168,7 +168,7 @@ class Block extends ConfigEntityBase implements BlockInterface, EntityWithPlugin
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return [
       'settings' => $this->getPluginCollection(),
       'visibility' => $this->getVisibilityConditions(),
@@ -211,16 +211,14 @@ class Block extends ConfigEntityBase implements BlockInterface, EntityWithPlugin
     if ($settings['label']) {
       return $settings['label'];
     }
-    else {
-      $definition = $this->getPlugin()->getPluginDefinition();
-      return $definition['admin_label'];
-    }
+    $definition = $this->getPlugin()->getPluginDefinition();
+    return $definition['admin_label'];
   }
 
   /**
    * Sorts active blocks by weight; sorts inactive blocks by name.
    */
-  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b) {
+  public static function sort(ConfigEntityInterface $a, ConfigEntityInterface $b): int|float {
     // Separate enabled from disabled.
     $status = (int) $b->status() - (int) $a->status();
     if ($status !== 0) {
@@ -240,7 +238,7 @@ class Block extends ConfigEntityBase implements BlockInterface, EntityWithPlugin
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
     $this->addDependency('theme', $this->theme);
     return $this;
@@ -266,7 +264,7 @@ class Block extends ConfigEntityBase implements BlockInterface, EntityWithPlugin
   /**
    * {@inheritdoc}
    */
-  public function setVisibilityConfig($instance_id, array $configuration) {
+  public function setVisibilityConfig($instance_id, array $configuration): static {
     $conditions = $this->getVisibilityConditions();
     if (!$conditions->has($instance_id)) {
       $configuration['id'] = $instance_id;
@@ -312,7 +310,7 @@ class Block extends ConfigEntityBase implements BlockInterface, EntityWithPlugin
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Set block region'), pluralize: FALSE)]
-  public function setRegion($region) {
+  public function setRegion($region): static {
     $this->region = $region;
     return $this;
   }
@@ -321,7 +319,7 @@ class Block extends ConfigEntityBase implements BlockInterface, EntityWithPlugin
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Set block weight'), pluralize: FALSE)]
-  public function setWeight($weight) {
+  public function setWeight($weight): static {
     $this->weight = (int) $weight;
     return $this;
   }
@@ -343,7 +341,7 @@ class Block extends ConfigEntityBase implements BlockInterface, EntityWithPlugin
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // Ensure the region is valid to mirror the behavior of block_rebuild().

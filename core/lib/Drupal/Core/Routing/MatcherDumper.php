@@ -59,7 +59,7 @@ class MatcherDumper implements MatcherDumperInterface {
   /**
    * {@inheritdoc}
    */
-  public function addRoutes(RouteCollection $routes) {
+  public function addRoutes(RouteCollection $routes): void {
     if (empty($this->routes)) {
       $this->routes = $routes;
     }
@@ -194,7 +194,7 @@ class MatcherDumper implements MatcherDumperInterface {
    * @return bool
    *   TRUE if the table was created, FALSE otherwise.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $this->connection->schema()->createTable($this->tableName, $this->schemaDefinition());
     }
@@ -217,8 +217,8 @@ class MatcherDumper implements MatcherDumperInterface {
    *
    * @internal
    */
-  protected function schemaDefinition() {
-    $schema = [
+  protected function schemaDefinition(): array {
+    return [
       'description' => 'Maps paths to various callbacks (access, page and title)',
       'fields' => [
         'name' => [
@@ -272,8 +272,6 @@ class MatcherDumper implements MatcherDumperInterface {
       ],
       'primary key' => ['name'],
     ];
-
-    return $schema;
   }
 
 }

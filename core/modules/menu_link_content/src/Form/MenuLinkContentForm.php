@@ -53,7 +53,7 @@ class MenuLinkContentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity.repository'),
       $container->get('menu.parent_form_selector'),
@@ -66,7 +66,7 @@ class MenuLinkContentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $parent_id = $this->entity->getParentId() ?: $this->getRequest()->query->get('parent');
@@ -104,11 +104,11 @@ class MenuLinkContentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     /** @var \Drupal\menu_link_content\MenuLinkContentInterface $entity */
     $entity = parent::buildEntity($form, $form_state);
 
-    [$menu_name, $parent] = explode(':', $form_state->getValue('menu_parent'), 2);
+    [$menu_name, $parent] = explode(':', (string) $form_state->getValue('menu_parent'), 2);
 
     $entity->parent->value = $parent;
     $entity->menu_name->value = $menu_name;
@@ -121,7 +121,7 @@ class MenuLinkContentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     // The entity is rebuilt in parent::submit().
     $menu_link = $this->entity;
     $menu_link->save();

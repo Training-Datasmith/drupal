@@ -49,7 +49,7 @@ class DrupalAspectsOfCKEditor5Plugin extends Plugin {
    *
    * @var string|null
    */
-  public $deriver = NULL;
+  public $deriver;
 
   /**
    * The library this plugin requires.

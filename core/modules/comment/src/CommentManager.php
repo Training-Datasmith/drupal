@@ -26,27 +26,6 @@ class CommentManager implements CommentManagerInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Whether the \Drupal\user\RoleInterface::AUTHENTICATED_ID can post comments.
    *
    * @var bool
@@ -61,45 +40,26 @@ class CommentManager implements CommentManagerInterface {
   protected $userConfig;
 
   /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * Construct the CommentManager object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager service.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, TranslationInterface $string_translation, ModuleHandlerInterface $module_handler, AccountInterface $current_user, EntityFieldManagerInterface $entity_field_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config_factory, TranslationInterface $string_translation, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
     $this->userConfig = $config_factory->get('user.settings');
     $this->stringTranslation = $string_translation;
-    $this->moduleHandler = $module_handler;
-    $this->currentUser = $current_user;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
@@ -118,7 +78,7 @@ class CommentManager implements CommentManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function addBodyField($comment_type_id) {
+  public function addBodyField($comment_type_id): void {
     if (!FieldConfig::loadByName('comment', $comment_type_id, 'comment_body')) {
       // Attaches the body field by default.
       $field = $this->entityTypeManager->getStorage('field_config')->create([
@@ -150,7 +110,7 @@ class CommentManager implements CommentManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function forbiddenMessage(EntityInterface $entity, $field_name) {
+  public function forbiddenMessage(EntityInterface $entity, $field_name): \Drupal\Core\StringTranslation\TranslatableMarkup|string {
     if (!isset($this->authenticatedCanPostComments)) {
       // We only output a link if we are certain that users will get the
       // permission to post comments by logging in.
@@ -182,12 +142,10 @@ class CommentManager implements CommentManagerInterface {
           ':register' => Url::fromRoute('user.register', [], ['query' => $destination])->toString(),
         ]);
       }
-      else {
-        // Only admins can add new users, no public registration.
-        return $this->t('<a href=":login">Log in</a> to post comments', [
-          ':login' => Url::fromRoute('user.login', [], ['query' => $destination])->toString(),
-        ]);
-      }
+      // Only admins can add new users, no public registration.
+      return $this->t('<a href=":login">Log in</a> to post comments', [
+        ':login' => Url::fromRoute('user.login', [], ['query' => $destination])->toString(),
+      ]);
     }
     return '';
   }

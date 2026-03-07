@@ -44,7 +44,7 @@ class LocalActionManager extends DefaultPluginManager implements LocalActionMana
     // The route names where this local action appears.
     'appears_on' => [],
     // Default class for local action implementations.
-    'class' => 'Drupal\Core\Menu\LocalActionDefault',
+    'class' => \Drupal\Core\Menu\LocalActionDefault::class,
   ];
 
   /**
@@ -62,41 +62,6 @@ class LocalActionManager extends DefaultPluginManager implements LocalActionMana
   protected $requestStack;
 
   /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
-   * The route provider to load routes by name.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected LanguageManagerInterface $languageManager;
-
-  /**
    * The plugin instances.
    *
    * @var \Drupal\Core\Menu\LocalActionInterface[]
@@ -110,35 +75,33 @@ class LocalActionManager extends DefaultPluginManager implements LocalActionMana
    *   An object to use in resolving route arguments.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   Cache backend instance to use.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
    */
-  public function __construct(ArgumentResolverInterface $argument_resolver, RequestStack $request_stack, RouteMatchInterface $route_match, RouteProviderInterface $route_provider, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend, LanguageManagerInterface $language_manager, AccessManagerInterface $access_manager, AccountInterface $account) {
+  public function __construct(ArgumentResolverInterface $argument_resolver, RequestStack $request_stack, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch, protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend, /**
+   * The language manager.
+   */
+  protected LanguageManagerInterface $languageManager, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $account) {
     // Skip calling the parent constructor, since that assumes annotation-based
     // discovery.
-    $this->factory = new ContainerFactory($this, 'Drupal\Core\Menu\LocalActionInterface');
+    $this->factory = new ContainerFactory($this, \Drupal\Core\Menu\LocalActionInterface::class);
     $this->argumentResolver = $argument_resolver;
     $this->requestStack = $request_stack;
-    $this->routeMatch = $route_match;
-    $this->routeProvider = $route_provider;
-    $this->accessManager = $access_manager;
     $this->moduleHandler = $module_handler;
-    $this->account = $account;
-    $this->languageManager = $language_manager;
     $this->alterInfo('menu_local_actions');
-    $this->setCacheBackend($cache_backend, 'local_action_plugins:' . $language_manager->getCurrentLanguage()->getId());
+    $this->setCacheBackend($cache_backend, 'local_action_plugins:' . $this->languageManager->getCurrentLanguage()->getId());
   }
 
   /**
@@ -156,16 +119,17 @@ class LocalActionManager extends DefaultPluginManager implements LocalActionMana
   /**
    * {@inheritdoc}
    */
-  public function getTitle(LocalActionInterface $local_action) {
-    $controller = [$local_action, 'getTitle'];
+  public function getTitle(LocalActionInterface $local_action): mixed {
+    $controller = $local_action->getTitle(...);
     $arguments = $this->argumentResolver->getArguments($this->requestStack->getCurrentRequest(), $controller);
     return call_user_func_array($controller, $arguments);
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getActionsForRoute($route_appears) {
+  public function getActionsForRoute($route_appears): array {
     if (!isset($this->instances[$route_appears])) {
       $route_names = [];
       $this->instances[$route_appears] = [];
@@ -211,7 +175,7 @@ class LocalActionManager extends DefaultPluginManager implements LocalActionMana
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     $cids = [];
     foreach ($this->languageManager->getLanguages() as $language) {
       $cids[] = 'local_action_plugins:' . $language->getId();

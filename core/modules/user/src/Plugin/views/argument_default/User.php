@@ -22,13 +22,6 @@ use Drupal\node\NodeInterface;
 class User extends ArgumentDefaultPluginBase implements CacheableDependencyInterface {
 
   /**
-   * The route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructs a new User instance.
    *
    * @param array $configuration
@@ -37,13 +30,11 @@ class User extends ArgumentDefaultPluginBase implements CacheableDependencyInter
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->routeMatch = $route_match;
   }
 
   /**
@@ -59,7 +50,7 @@ class User extends ArgumentDefaultPluginBase implements CacheableDependencyInter
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['user'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Also look for a node and use the node author'),
@@ -90,14 +81,14 @@ class User extends ArgumentDefaultPluginBase implements CacheableDependencyInter
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return ['url'];
   }
 

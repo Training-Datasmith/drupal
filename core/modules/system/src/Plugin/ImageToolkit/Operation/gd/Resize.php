@@ -20,7 +20,7 @@ class Resize extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     return [
       'width' => [
         'description' => 'The new width of the resized image, in pixels',
@@ -34,7 +34,7 @@ class Resize extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function validateArguments(array $arguments) {
+  protected function validateArguments(array $arguments): array {
     // Assure integers for all arguments.
     $arguments['width'] = (int) round($arguments['width']);
     $arguments['height'] = (int) round($arguments['height']);
@@ -53,7 +53,7 @@ class Resize extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function execute(array $arguments = []) {
+  protected function execute(array $arguments = []): bool {
     // Create a new image of the required dimensions, and copy and resize
     // the original image on it with resampling.
     $original_image = $this->getToolkit()->getImage();

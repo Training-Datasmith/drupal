@@ -42,7 +42,7 @@ class Button extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#name' => 'op',
@@ -64,7 +64,7 @@ class Button extends FormElementBase {
   /**
    * Processes a form button element.
    */
-  public static function processButton(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processButton(array &$element, FormStateInterface $form_state, &$complete_form): array {
     // If this is a button intentionally allowing incomplete form submission
     // (e.g., a "Previous" or "Add another item" button), then also skip
     // client-side validation.
@@ -87,7 +87,7 @@ class Button extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderButton($element) {
+  public static function preRenderButton(array $element): array {
     if ($element['#submit_button']) {
       $element['#attributes']['type'] = 'submit';
     }

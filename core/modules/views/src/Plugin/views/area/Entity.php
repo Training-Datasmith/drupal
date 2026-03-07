@@ -26,27 +26,6 @@ class Entity extends TokenizeAreaPluginBase {
   protected $entityType;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository service.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
    * Constructs a new Entity instance.
    *
    * @param array $configuration
@@ -55,25 +34,21 @@ class Entity extends TokenizeAreaPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityRepository = $entity_repository;
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
     $this->entityType = $this->definition['entity_type'];
   }
@@ -99,7 +74,7 @@ class Entity extends TokenizeAreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['view_mode'] = [
@@ -116,7 +91,7 @@ class Entity extends TokenizeAreaPluginBase {
     // display the entity ID to the admin form user.
     // @todo Use a method to check for tokens in
     //   https://www.drupal.org/node/2396607.
-    if (!str_contains($this->options['target'], '{{')) {
+    if (!str_contains((string) $this->options['target'], '{{')) {
       // @todo If the entity does not exist, this will show the config target
       //   identifier. Decide if this is the correct behavior in
       //   https://www.drupal.org/node/2415391.
@@ -141,7 +116,7 @@ class Entity extends TokenizeAreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::submitOptionsForm($form, $form_state);
 
     // Load the referenced entity and store its config target identifier if
@@ -149,7 +124,7 @@ class Entity extends TokenizeAreaPluginBase {
     // @todo Use a method to check for tokens in
     //   https://www.drupal.org/node/2396607.
     $options = $form_state->getValue('options');
-    if (!str_contains($options['target'], '{{')) {
+    if (!str_contains((string) $options['target'], '{{')) {
       if ($entity = $this->entityTypeManager->getStorage($this->entityType)->load($options['target'])) {
         $options['target'] = $entity->getConfigTarget();
       }
@@ -164,7 +139,7 @@ class Entity extends TokenizeAreaPluginBase {
     if (!$empty || !empty($this->options['empty'])) {
       // @todo Use a method to check for tokens in
       //   https://www.drupal.org/node/2396607.
-      if (str_contains($this->options['target'], '{{')) {
+      if (str_contains((string) $this->options['target'], '{{')) {
         // We cast as we need the integer/string value provided by the
         // ::tokenizeValue() call.
         $target_id = (string) $this->tokenizeValue($this->options['target']);
@@ -195,7 +170,7 @@ class Entity extends TokenizeAreaPluginBase {
     // Ensure that we don't add dependencies for placeholders.
     // @todo Use a method to check for tokens in
     //   https://www.drupal.org/node/2396607.
-    if (!str_contains($this->options['target'], '{{')) {
+    if (!str_contains((string) $this->options['target'], '{{')) {
       if ($entity = $this->entityRepository->loadEntityByConfigTarget($this->entityType, $this->options['target'])) {
         $dependencies[$this->entityTypeManager->getDefinition($this->entityType)->getConfigDependencyKey()][] = $entity->getConfigDependencyName();
       }

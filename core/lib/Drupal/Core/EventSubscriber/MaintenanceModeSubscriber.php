@@ -51,7 +51,7 @@ class MaintenanceModeSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The event to process.
    */
-  public function onKernelRequestMaintenance(RequestEvent $event) {
+  public function onKernelRequestMaintenance(RequestEvent $event): void {
     $request = $event->getRequest();
     $route_match = RouteMatch::createFromRequest($request);
     if ($this->maintenanceMode->applies($route_match)) {
@@ -92,7 +92,7 @@ class MaintenanceModeSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The event to process.
    */
-  public function onMaintenanceModeRequest(RequestEvent $event) {
+  public function onMaintenanceModeRequest(RequestEvent $event): void {
     $request = $event->getRequest();
     if ($request->getRequestFormat() !== 'html') {
       $response = new Response($this->maintenanceMode->getSiteMaintenanceMessage(), 503, ['Content-Type' => 'text/plain']);

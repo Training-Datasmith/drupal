@@ -31,27 +31,6 @@ use Drupal\Core\Render\RendererInterface;
 class BreakLockLink extends RenderElementBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The date formatter.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a new BreakLockLink.
    *
    * @param array $configuration
@@ -60,28 +39,24 @@ class BreakLockLink extends RenderElementBase implements ContainerFactoryPluginI
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, DateFormatterInterface $date_formatter, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Render\RendererInterface $renderer) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->dateFormatter = $date_formatter;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->renderer = $renderer;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
-        [$this, 'preRenderLock'],
+        $this->preRenderLock(...),
       ],
     ];
   }
@@ -98,7 +73,7 @@ class BreakLockLink extends RenderElementBase implements ContainerFactoryPluginI
    * @return array
    *   The passed-in element containing a rendered lock in '#markup'.
    */
-  public function preRenderLock($element) {
+  public function preRenderLock(array $element): array {
     if (isset($element['#lock']) && isset($element['#label']) && isset($element['#url'])) {
       /** @var \Drupal\Core\TempStore\Lock $lock */
       $lock = $element['#lock'];

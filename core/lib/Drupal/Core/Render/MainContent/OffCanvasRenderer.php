@@ -24,13 +24,6 @@ class OffCanvasRenderer extends DialogRenderer {
   protected $renderer;
 
   /**
-   * The position to render the off-canvas dialog.
-   *
-   * @var string
-   */
-  protected $position;
-
-  /**
    * Constructs a new OffCanvasRenderer.
    *
    * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver
@@ -40,16 +33,18 @@ class OffCanvasRenderer extends DialogRenderer {
    * @param string $position
    *   (optional) The position to render the off-canvas dialog.
    */
-  public function __construct(TitleResolverInterface $title_resolver, RendererInterface $renderer, $position = 'side') {
+  public function __construct(TitleResolverInterface $title_resolver, RendererInterface $renderer, /**
+   * The position to render the off-canvas dialog.
+   */
+  protected $position = 'side') {
     parent::__construct($title_resolver, $renderer);
     $this->renderer = $renderer;
-    $this->position = $position;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match) {
+  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match): \Drupal\Core\Ajax\AjaxResponse {
     $response = new AjaxResponse();
 
     // First render the main content, because it might provide a title.

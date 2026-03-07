@@ -16,36 +16,21 @@ use Symfony\Component\HttpFoundation\Request;
 class DialogRenderer implements MainContentRendererInterface {
 
   /**
-   * The title resolver.
-   *
-   * @var \Drupal\Core\Controller\TitleResolverInterface
-   */
-  protected $titleResolver;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a new DialogRenderer.
    *
-   * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver
+   * @param \Drupal\Core\Controller\TitleResolverInterface $titleResolver
    *   The title resolver.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
    */
-  public function __construct(TitleResolverInterface $title_resolver, RendererInterface $renderer) {
-    $this->titleResolver = $title_resolver;
-    $this->renderer = $renderer;
+  public function __construct(protected \Drupal\Core\Controller\TitleResolverInterface $titleResolver, protected \Drupal\Core\Render\RendererInterface $renderer)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match) {
+  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match): \Drupal\Core\Ajax\AjaxResponse {
     $response = new AjaxResponse();
 
     // First render the main content, because it might provide a title.
@@ -134,7 +119,7 @@ class DialogRenderer implements MainContentRendererInterface {
   protected function getTitleAsStringable(array $main_content, Request $request, RouteMatchInterface $route_match): \Stringable|string|null {
     $title = $main_content['#title'] ?? $this->titleResolver->getTitle($request, $route_match->getRouteObject());
     if (is_array($title)) {
-      $title = $this->renderer->renderInIsolation($title);
+      return $this->renderer->renderInIsolation($title);
     }
     return $title;
   }

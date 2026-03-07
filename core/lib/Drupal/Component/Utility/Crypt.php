@@ -21,7 +21,7 @@ class Crypt {
    *   A base-64 encoded sha-256 hmac, with + replaced with -, / with _ and
    *   any = padding characters removed.
    */
-  public static function hmacBase64($data, $key) {
+  public static function hmacBase64($data, $key): string {
     // $data and $key being strings here is necessary to avoid empty string
     // results of the hash function if they are not scalar values. As this
     // function is used in security-critical contexts like token validation it
@@ -45,7 +45,7 @@ class Crypt {
    *   A base-64 encoded sha-256 hash, with + replaced with -, / with _ and
    *   any = padding characters removed.
    */
-  public static function hashBase64($data) {
+  public static function hashBase64($data): string {
     $hash = base64_encode(hash('sha256', $data, TRUE));
     // Modify the hash so it's safe to use in URLs.
     return str_replace(['+', '/', '='], ['-', '_', ''], $hash);
@@ -61,7 +61,7 @@ class Crypt {
    *   A base-64 encoded string, with + replaced with -, / with _ and any =
    *   padding characters removed.
    */
-  public static function randomBytesBase64($count = 32) {
+  public static function randomBytesBase64($count = 32): string {
     return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode(random_bytes($count)));
   }
 

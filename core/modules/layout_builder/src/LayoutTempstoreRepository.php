@@ -10,13 +10,6 @@ use Drupal\Core\TempStore\SharedTempStoreFactory;
 class LayoutTempstoreRepository implements LayoutTempstoreRepositoryInterface {
 
   /**
-   * The shared tempstore factory.
-   *
-   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
-   */
-  protected $tempStoreFactory;
-
-  /**
    * The static cache of loaded values.
    *
    * @var \Drupal\layout_builder\SectionStorageInterface[]
@@ -26,11 +19,11 @@ class LayoutTempstoreRepository implements LayoutTempstoreRepositoryInterface {
   /**
    * LayoutTempstoreRepository constructor.
    *
-   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $temp_store_factory
+   * @param \Drupal\Core\TempStore\SharedTempStoreFactory $tempStoreFactory
    *   The shared tempstore factory.
    */
-  public function __construct(SharedTempStoreFactory $temp_store_factory) {
-    $this->tempStoreFactory = $temp_store_factory;
+  public function __construct(protected \Drupal\Core\TempStore\SharedTempStoreFactory $tempStoreFactory)
+  {
   }
 
   /**
@@ -77,7 +70,7 @@ class LayoutTempstoreRepository implements LayoutTempstoreRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function set(SectionStorageInterface $section_storage) {
+  public function set(SectionStorageInterface $section_storage): void {
     $key = $this->getKey($section_storage);
     $this->getTempstore($section_storage)->set($key, ['section_storage' => $section_storage]);
     // Update the storage in the static cache.
@@ -87,7 +80,7 @@ class LayoutTempstoreRepository implements LayoutTempstoreRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete(SectionStorageInterface $section_storage) {
+  public function delete(SectionStorageInterface $section_storage): void {
     $key = $this->getKey($section_storage);
     $this->getTempstore($section_storage)->delete($key);
     // Remove the storage from the static cache.
@@ -103,7 +96,7 @@ class LayoutTempstoreRepository implements LayoutTempstoreRepositoryInterface {
    * @return \Drupal\Core\TempStore\SharedTempStore
    *   The tempstore.
    */
-  protected function getTempstore(SectionStorageInterface $section_storage) {
+  protected function getTempstore(SectionStorageInterface $section_storage): \Drupal\Core\TempStore\SharedTempStore {
     $collection = 'layout_builder.section_storage.' . $section_storage->getStorageType();
     return $this->tempStoreFactory->get($collection);
   }

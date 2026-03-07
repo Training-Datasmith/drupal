@@ -20,30 +20,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ModulesListNonStableConfirmForm extends ModulesListConfirmForm {
 
   /**
-   * Module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected ModuleExtensionList $moduleExtensionList;
-
-  /**
    * An array of module names to be enabled, keyed by lifecycle.
-   *
-   * @var array
    */
   protected array $groupedModuleInfo;
 
   /**
    * Boolean indicating a core deprecated module is being enabled.
-   *
-   * @var bool
    */
   protected bool $coreDeprecatedModules;
 
   /**
    * Boolean indicating a contrib deprecated module is being enabled.
-   *
-   * @var bool
    */
   protected bool $contribDeprecatedModules;
 
@@ -59,15 +46,17 @@ class ModulesListNonStableConfirmForm extends ModulesListConfirmForm {
    * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, KeyValueStoreExpirableInterface $key_value_expirable, ModuleExtensionList $moduleExtensionList) {
+  public function __construct(ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, KeyValueStoreExpirableInterface $key_value_expirable, /**
+   * Module extension list.
+   */
+  protected ModuleExtensionList $moduleExtensionList) {
     parent::__construct($module_handler, $module_installer, $key_value_expirable);
-    $this->moduleExtensionList = $moduleExtensionList;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('module_installer'),
@@ -107,7 +96,7 @@ class ModulesListNonStableConfirmForm extends ModulesListConfirmForm {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_modules_non_stable_confirm_form';
   }
 

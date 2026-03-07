@@ -17,13 +17,6 @@ class ShortcutLazyBuilders implements TrustedCallbackInterface {
   use StringTranslationTrait;
 
   /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a new ShortcutLazyBuilders object.
    *
    * @param \Drupal\Core\Render\RendererInterface $renderer
@@ -33,14 +26,14 @@ class ShortcutLazyBuilders implements TrustedCallbackInterface {
    * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(RendererInterface $renderer, protected EntityTypeManagerInterface $entityTypeManager, protected AccountInterface $currentUser) {
-    $this->renderer = $renderer;
+  public function __construct(protected \Drupal\Core\Render\RendererInterface $renderer, protected EntityTypeManagerInterface $entityTypeManager, protected AccountInterface $currentUser)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['lazyLinks'];
   }
 
@@ -55,7 +48,7 @@ class ShortcutLazyBuilders implements TrustedCallbackInterface {
    * @return array
    *   A renderable array of shortcut links.
    */
-  public function lazyLinks(bool $show_configure_link = TRUE) {
+  public function lazyLinks(bool $show_configure_link = TRUE): array {
     $shortcut_set = $this->entityTypeManager->getStorage('shortcut_set')
       ->getDisplayedToUser($this->currentUser);
 

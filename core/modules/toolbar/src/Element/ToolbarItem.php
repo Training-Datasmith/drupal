@@ -17,7 +17,7 @@ class ToolbarItem extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderToolbarItem'],
@@ -42,7 +42,7 @@ class ToolbarItem extends RenderElementBase {
    * @return array
    *   A renderable array.
    */
-  public static function preRenderToolbarItem($element) {
+  public static function preRenderToolbarItem(array $element): array {
     $id = $element['#id'];
 
     // Provide attributes for a toolbar item.

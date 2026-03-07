@@ -62,7 +62,7 @@ class DatabaseDriverList extends ExtensionList {
   /**
    * {@inheritdoc}
    */
-  protected function getExtensionDiscovery() {
+  protected function getExtensionDiscovery(): \Drupal\Core\Extension\ExtensionDiscovery {
     return new ExtensionDiscovery($this->root, FALSE);
   }
 
@@ -122,7 +122,7 @@ class DatabaseDriverList extends ExtensionList {
   /**
    * {@inheritdoc}
    */
-  public function getName($extension_name) {
+  public function getName($extension_name): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
@@ -139,84 +139,84 @@ class DatabaseDriverList extends ExtensionList {
   /**
    * {@inheritdoc}
    */
-  public function getExtensionInfo($extension_name) {
+  public function getExtensionInfo($extension_name): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAllAvailableInfo() {
+  public function getAllAvailableInfo(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getInstalledExtensionNames() {
+  protected function getInstalledExtensionNames(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAllInstalledInfo() {
+  public function getAllInstalledInfo(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function recalculateInfo() {
+  protected function recalculateInfo(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPathNames() {
+  public function getPathNames(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function recalculatePathNames() {
+  protected function recalculatePathNames(): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPathname($extension_name, $pathname) {
+  public function setPathname($extension_name, $pathname): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPathname($extension_name) {
+  public function getPathname($extension_name): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPath($extension_name) {
+  public function getPath($extension_name): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function createExtensionInfo(Extension $extension) {
+  protected function createExtensionInfo(Extension $extension): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function checkIncompatibility($name) {
+  public function checkIncompatibility($name): never {
     throw new \LogicException(__METHOD__ . '() is not implemented');
   }
 

@@ -11,7 +11,7 @@ trait RedundantEditableConfigNamesTrait {
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     // This form uses #config_target instead.
     return [];
   }

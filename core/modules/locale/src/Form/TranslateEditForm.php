@@ -17,14 +17,14 @@ class TranslateEditForm extends TranslateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'locale_translate_edit_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $filter_values = $this->translateFilterValues();
     $langcode = $filter_values['langcode'];
 
@@ -109,7 +109,7 @@ class TranslateEditForm extends TranslateFormBase {
           ];
         }
         // Approximate the number of rows to use in the default textarea.
-        $rows = min(ceil(str_word_count($source_array[0]) / 12), 10);
+        $rows = min(ceil(str_word_count((string) $source_array[0]) / 12), 10);
         if (!$plural) {
           $form['strings'][$string->lid]['translations'][0] = [
             '#type' => 'textarea',
@@ -154,7 +154,7 @@ class TranslateEditForm extends TranslateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $langcode = $form_state->getValue('langcode');
     foreach ($form_state->getValue('strings') as $lid => $translations) {
       foreach ($translations['translations'] as $key => $value) {
@@ -170,7 +170,7 @@ class TranslateEditForm extends TranslateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $langcode = $form_state->getValue('langcode');
     $updated = [];
 

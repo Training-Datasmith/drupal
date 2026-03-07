@@ -102,7 +102,7 @@ final class ComposerPluginsValidator implements EventSubscriberInterface {
     $settings = $config_factory->get('package_manager.settings');
     $this->additionalTrustedComposerPlugins = array_fill_keys(
       array_map(
-        [__CLASS__, 'normalizePackageName'],
+        [self::class, 'normalizePackageName'],
         $settings->get('additional_trusted_composer_plugins')
       ),
       // The additional_trusted_composer_plugins setting cannot specify a
@@ -164,7 +164,7 @@ final class ComposerPluginsValidator implements EventSubscriberInterface {
     // The keys are normalized package names, and the values are the original,
     // non-normalized package names.
     $allowed_plugins = array_combine(
-      array_map([__CLASS__, 'normalizePackageName'], $allowed_plugins),
+      array_map([self::class, 'normalizePackageName'], $allowed_plugins),
       $allowed_plugins
     );
 
@@ -191,7 +191,7 @@ final class ComposerPluginsValidator implements EventSubscriberInterface {
     $untrusted_plugins = array_diff_key($allowed_plugins, $trusted_plugins);
 
     $messages = array_map(
-      fn (string $raw_name) => $this->t('<code>@name</code>', ['@name' => $raw_name]),
+      fn (string $raw_name): \Drupal\Core\StringTranslation\TranslatableMarkup => $this->t('<code>@name</code>', ['@name' => $raw_name]),
       $untrusted_plugins
     );
     foreach ($unsupported_installed_versions as $name => $installed_version) {

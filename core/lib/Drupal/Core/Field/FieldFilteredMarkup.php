@@ -32,7 +32,7 @@ final class FieldFilteredMarkup implements MarkupInterface, \Countable {
    * @see \Drupal\Component\Utility\Xss::filter()
    * @see \Drupal\Component\Utility\Html::normalize()
    */
-  public static function create($string) {
+  public static function create($string): string|self {
     $string = (string) $string;
     if ($string === '') {
       return '';
@@ -55,7 +55,7 @@ final class FieldFilteredMarkup implements MarkupInterface, \Countable {
    * @return string[]
    *   A list of allowed tags.
    */
-  public static function allowedTags() {
+  public static function allowedTags(): array {
     return [
       'a',
       'b',
@@ -88,7 +88,7 @@ final class FieldFilteredMarkup implements MarkupInterface, \Countable {
    * @return string
    *   A human-readable list of allowed tags for display in help texts.
    */
-  public static function displayAllowedTags() {
+  public static function displayAllowedTags(): string {
     return '<' . implode('> <', static::allowedTags()) . '>';
   }
 

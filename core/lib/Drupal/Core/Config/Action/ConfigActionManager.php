@@ -240,7 +240,7 @@ class ConfigActionManager extends DefaultPluginManager {
     foreach ($this->getDefinitions() as $plugin_id => $definition) {
       if (in_array($entityType, $definition['entity_types'], TRUE) || in_array('*', $definition['entity_types'], TRUE)) {
         $regex = '/' . PluginBase::DERIVATIVE_SEPARATOR . '([^' . PluginBase::DERIVATIVE_SEPARATOR . ']*)$/';
-        $action_id = preg_match($regex, $plugin_id, $matches) ? $matches[1] : $plugin_id;
+        $action_id = preg_match($regex, (string) $plugin_id, $matches) ? $matches[1] : $plugin_id;
         if (isset($map[$action_id])) {
           throw new DuplicateConfigActionIdException(sprintf('The plugins \'%s\' and \'%s\' both resolve to the same shorthand action ID for the \'%s\' entity type', $plugin_id, $map[$action_id], $entityType));
         }

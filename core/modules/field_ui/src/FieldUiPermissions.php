@@ -15,26 +15,19 @@ class FieldUiPermissions implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new FieldUiPermissions instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static($container->get('entity_type.manager'));
   }
 
@@ -44,7 +37,7 @@ class FieldUiPermissions implements ContainerInjectionInterface {
    * @return array
    *   An array of field UI permissions keyed by permission name.
    */
-  public function fieldPermissions() {
+  public function fieldPermissions(): array {
     $permissions = [];
 
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {

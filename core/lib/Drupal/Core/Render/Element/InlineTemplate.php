@@ -29,7 +29,7 @@ class InlineTemplate extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderInlineTemplate'],
@@ -48,7 +48,7 @@ class InlineTemplate extends RenderElementBase {
    * @return array
    *   The modified element with the rendered #markup in it.
    */
-  public static function preRenderInlineTemplate($element) {
+  public static function preRenderInlineTemplate(array $element): array {
     /** @var \Drupal\Core\Template\TwigEnvironment $environment */
     $environment = \Drupal::service('twig');
     $markup = $environment->renderInline($element['#template'], $element['#context']);

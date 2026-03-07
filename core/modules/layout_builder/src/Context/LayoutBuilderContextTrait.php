@@ -43,9 +43,7 @@ trait LayoutBuilderContextTrait {
     // Get all known globally available contexts IDs.
     $available_context_ids = array_keys($this->contextRepository()->getAvailableContexts());
     // Filter to those that are populated.
-    $contexts = array_filter($this->contextRepository()->getRuntimeContexts($available_context_ids), function (ContextInterface $context) {
-      return $context->hasContextValue();
-    });
+    $contexts = array_filter($this->contextRepository()->getRuntimeContexts($available_context_ids), fn(ContextInterface $context) => $context->hasContextValue());
 
     // Add in the per-section_storage contexts.
     $contexts += $section_storage->getContextsDuringPreview();

@@ -18,21 +18,21 @@ class TranslationsStream extends LocalStream {
   /**
    * {@inheritdoc}
    */
-  public static function getType() {
+  public static function getType(): int {
     return StreamWrapperInterface::LOCAL_HIDDEN;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getName() {
+  public function getName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Translation files');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Translation files');
   }
 
@@ -50,7 +50,7 @@ class TranslationsStream extends LocalStream {
    * @throws \LogicException
    *   PO files URL should not be public.
    */
-  public function getExternalUrl() {
+  public function getExternalUrl(): never {
     throw new \LogicException('PO files URL should not be public.');
   }
 

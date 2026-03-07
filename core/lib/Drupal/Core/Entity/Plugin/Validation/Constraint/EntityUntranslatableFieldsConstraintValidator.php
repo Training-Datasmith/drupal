@@ -18,20 +18,13 @@ class EntityUntranslatableFieldsConstraintValidator extends ConstraintValidator 
   use EntityChangesDetectionTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs an EntityUntranslatableFieldsConstraintValidator object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -105,10 +98,15 @@ class EntityUntranslatableFieldsConstraintValidator extends ConstraintValidator 
     }
 
     foreach ($entity->getFieldDefinitions() as $field_name => $definition) {
-      if (in_array($field_name, $skip_fields, TRUE) || $definition->isTranslatable() || $definition->isComputed()) {
-        continue;
+      if (in_array($field_name, $skip_fields, TRUE)) {
+          continue;
       }
-
+      if ($definition->isTranslatable()) {
+          continue;
+      }
+      if ($definition->isComputed()) {
+          continue;
+      }
       $items = $entity->get($field_name)->filterEmptyItems();
       $original_items = $original->get($field_name)->filterEmptyItems();
       if ($items->hasAffectingChanges($original_items, $entity->getUntranslated()->language()->getId())) {

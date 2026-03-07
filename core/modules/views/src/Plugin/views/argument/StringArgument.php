@@ -31,7 +31,7 @@ class StringArgument extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     if (!empty($this->definition['many to one'])) {
@@ -67,7 +67,7 @@ class StringArgument extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['glossary'] = [
@@ -187,7 +187,7 @@ class StringArgument extends ArgumentPluginBase {
    *
    * $this->ensureMyTable() MUST have been called prior to this.
    */
-  public function getFormula() {
+  public function getFormula(): string {
     $formula = "SUBSTRING($this->tableAlias.$this->realField, 1, " . intval($this->options['limit']) . ")";
 
     if ($this->options['case'] != 'none') {
@@ -210,7 +210,7 @@ class StringArgument extends ArgumentPluginBase {
   /**
    * Build the query based upon the formula.
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $argument = $this->argument;
     if (!empty($this->options['transform_dash'])) {
       $argument = strtr($argument, '-', ' ');
@@ -228,7 +228,7 @@ class StringArgument extends ArgumentPluginBase {
     // converting the arguments to lowercase.
     if ($this->options['case'] != 'none' && Database::getConnection()->databaseType() == 'pgsql') {
       foreach ($this->value as $key => $value) {
-        $this->value[$key] = mb_strtolower($value);
+        $this->value[$key] = mb_strtolower((string) $value);
       }
     }
 
@@ -283,7 +283,7 @@ class StringArgument extends ArgumentPluginBase {
   public function summaryArgument($data) {
     $value = $this->caseTransform($data->{$this->base_alias}, $this->options['path_case']);
     if (!empty($this->options['transform_dash'])) {
-      $value = strtr($value, ' ', '-');
+      return strtr($value, ' ', '-');
     }
     return $value;
   }
@@ -291,7 +291,7 @@ class StringArgument extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getSortName() {
+  public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Alphabetical', [], ['context' => 'Sort order']);
   }
 

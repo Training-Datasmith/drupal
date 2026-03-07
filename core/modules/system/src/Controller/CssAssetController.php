@@ -28,7 +28,7 @@ class CssAssetController extends AssetControllerBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('stream_wrapper_manager'),
       $container->get('library.dependency_resolver'),

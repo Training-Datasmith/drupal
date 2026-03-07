@@ -32,7 +32,7 @@ class InputRequired extends ExposedFormPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['text_input_required'] = [
@@ -48,7 +48,7 @@ class InputRequired extends ExposedFormPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     $exposed_form_options = $form_state->getValue('exposed_form_options');
     $form_state->setValue(['exposed_form_options', 'text_input_required_format'], $exposed_form_options['text_input_required']['format']);
     $form_state->setValue(['exposed_form_options', 'text_input_required'], $exposed_form_options['text_input_required']['value']);
@@ -82,7 +82,7 @@ class InputRequired extends ExposedFormPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender($values) {
+  public function preRender($values): void {
     // Display the "text on demand" if needed. This is a site builder-defined
     // text to display instead of results until the user selects and applies
     // an exposed filter.
@@ -117,7 +117,7 @@ class InputRequired extends ExposedFormPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     if (!$this->exposedFilterApplied()) {
       // We return with no query; this will force the empty text.
       $this->view->built = TRUE;

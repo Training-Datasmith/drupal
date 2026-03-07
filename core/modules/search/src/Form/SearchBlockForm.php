@@ -19,13 +19,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class SearchBlockForm extends FormBase implements WorkspaceSafeFormInterface {
 
   /**
-   * The search page repository.
-   *
-   * @var \Drupal\search\SearchPageRepositoryInterface
-   */
-  protected $searchPageRepository;
-
-  /**
    * The config factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
@@ -33,32 +26,23 @@ class SearchBlockForm extends FormBase implements WorkspaceSafeFormInterface {
   protected $configFactory;
 
   /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a new SearchBlockForm.
    *
-   * @param \Drupal\search\SearchPageRepositoryInterface $search_page_repository
+   * @param \Drupal\search\SearchPageRepositoryInterface $searchPageRepository
    *   The search page repository.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
    */
-  public function __construct(SearchPageRepositoryInterface $search_page_repository, ConfigFactoryInterface $config_factory, RendererInterface $renderer) {
-    $this->searchPageRepository = $search_page_repository;
+  public function __construct(protected \Drupal\search\SearchPageRepositoryInterface $searchPageRepository, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Render\RendererInterface $renderer) {
     $this->configFactory = $config_factory;
-    $this->renderer = $renderer;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('search.search_page_repository'),
       $container->get('config.factory'),
@@ -69,14 +53,14 @@ class SearchBlockForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'search_block_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $entity_id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $entity_id = NULL): array {
     // Set up the form to submit using GET to the correct search page.
     if (!$entity_id) {
       $entity_id = $this->searchPageRepository->getDefaultSearchPage();
@@ -122,7 +106,7 @@ class SearchBlockForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // This form submits to the search page, so processing happens there.
   }
 

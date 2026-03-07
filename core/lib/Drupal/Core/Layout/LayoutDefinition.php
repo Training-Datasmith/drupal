@@ -161,12 +161,9 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    */
   public function get($property) {
     if (property_exists($this, $property)) {
-      $value = $this->{$property} ?? NULL;
+      return $this->{$property} ?? NULL;
     }
-    else {
-      $value = $this->additional[$property] ?? NULL;
-    }
-    return $value;
+    return $this->additional[$property] ?? NULL;
   }
 
   /**
@@ -179,7 +176,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function set($property, $value) {
+  public function set($property, $value): static {
     if (property_exists($this, $property)) {
       $this->{$property} = $value;
     }
@@ -207,7 +204,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setLabel($label) {
+  public function setLabel($label): static {
     $this->label = $label;
     return $this;
   }
@@ -230,7 +227,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setDescription($description) {
+  public function setDescription($description): static {
     $this->description = $description;
     return $this;
   }
@@ -253,7 +250,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setCategory($category) {
+  public function setCategory($category): static {
     $this->category = $category;
     return $this;
   }
@@ -276,7 +273,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setTemplate($template) {
+  public function setTemplate($template): static {
     $this->template = $template;
     return $this;
   }
@@ -299,7 +296,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setTemplatePath($template_path) {
+  public function setTemplatePath($template_path): static {
     $this->templatePath = $template_path;
     return $this;
   }
@@ -322,7 +319,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setThemeHook($theme_hook) {
+  public function setThemeHook($theme_hook): static {
     $this->theme_hook = $theme_hook;
     return $this;
   }
@@ -345,7 +342,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setPath($path) {
+  public function setPath($path): static {
     $this->path = $path;
     return $this;
   }
@@ -368,7 +365,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setLibrary($library) {
+  public function setLibrary($library): static {
     $this->library = $library;
     return $this;
   }
@@ -391,7 +388,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setIconPath($icon) {
+  public function setIconPath($icon): static {
     $this->icon = $icon;
     return $this;
   }
@@ -416,7 +413,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setIconMap($icon_map) {
+  public function setIconMap($icon_map): static {
     $this->icon_map = $icon_map;
     return $this;
   }
@@ -471,7 +468,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    * @return \Drupal\Core\Layout\Icon\IconBuilderInterface
    *   The icon builder.
    */
-  protected function getIconBuilder() {
+  protected function getIconBuilder(): object {
     return \Drupal::service('layout.icon_builder');
   }
 
@@ -497,7 +494,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setRegions(array $regions) {
+  public function setRegions(array $regions): static {
     $this->regions = $regions;
     return $this;
   }
@@ -508,7 +505,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    * @return string[]
    *   An array of machine-readable region names.
    */
-  public function getRegionNames() {
+  public function getRegionNames(): array {
     return array_keys($this->getRegions());
   }
 
@@ -518,7 +515,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    * @return string[]
    *   An array of human-readable region labels.
    */
-  public function getRegionLabels() {
+  public function getRegionLabels(): array {
     $regions = $this->getRegions();
     return array_combine(array_keys($regions), array_column($regions, 'label'));
   }
@@ -541,7 +538,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
    *
    * @return $this
    */
-  public function setDefaultRegion($default_region) {
+  public function setDefaultRegion($default_region): static {
     $this->default_region = $default_region;
     return $this;
   }
@@ -556,7 +553,7 @@ class LayoutDefinition extends PluginDefinition implements PluginDefinitionInter
   /**
    * {@inheritdoc}
    */
-  public function setDeriver($deriver) {
+  public function setDeriver($deriver): static {
     $this->deriver = $deriver;
     return $this;
   }

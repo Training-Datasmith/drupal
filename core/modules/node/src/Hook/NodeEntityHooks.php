@@ -25,7 +25,7 @@ class NodeEntityHooks {
    * Implements hook_entity_view_display_alter().
    */
   #[Hook('entity_view_display_alter')]
-  public function entityViewDisplayAlter(EntityViewDisplayInterface $display, $context): void {
+  public function entityViewDisplayAlter(EntityViewDisplayInterface $display, array $context): void {
     if ($context['entity_type'] == 'node') {
       // Hide field labels in search index.
       if ($context['view_mode'] == 'search_index') {

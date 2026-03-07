@@ -18,46 +18,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ConfigImportForm extends FormBase {
 
   /**
-   * The configuration storage.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  protected $configStorage;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
-   * The settings object.
-   *
-   * @var \Drupal\Core\Site\Settings
-   */
-  protected $settings;
-
-  /**
    * Constructs a new ConfigImportForm.
    *
-   * @param \Drupal\Core\Config\StorageInterface $config_storage
+   * @param \Drupal\Core\Config\StorageInterface $configStorage
    *   The configuration storage.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
    * @param \Drupal\Core\Site\Settings $settings
    *   The settings object.
    */
-  public function __construct(StorageInterface $config_storage, FileSystemInterface $file_system, Settings $settings) {
-    $this->configStorage = $config_storage;
-    $this->fileSystem = $file_system;
-    $this->settings = $settings;
+  public function __construct(protected \Drupal\Core\Config\StorageInterface $configStorage, protected \Drupal\Core\File\FileSystemInterface $fileSystem, protected \Drupal\Core\Site\Settings $settings)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.storage.sync'),
       $container->get('file_system'),
@@ -68,14 +45,14 @@ class ConfigImportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'config_import_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $directory = $this->settings->get('config_sync_directory');
     $directory_is_writable = is_writable($directory);
     if (!$directory_is_writable) {
@@ -98,7 +75,7 @@ class ConfigImportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $all_files = $this->getRequest()->files->get('files', []);
     if (!empty($all_files['import_tarball'])) {
       $file_upload = $all_files['import_tarball'];
@@ -114,14 +91,14 @@ class ConfigImportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     if ($path = $form_state->getValue('import_tarball')) {
       $this->configStorage->deleteAll();
       try {
         $archiver = new ArchiveTar($path, 'gz');
         $files = [];
         foreach ($archiver->listContent() as $file) {
-          if (str_ends_with($file['filename'], '.yml')) {
+          if (str_ends_with((string) $file['filename'], '.yml')) {
             $files[] = $file['filename'];
           }
         }

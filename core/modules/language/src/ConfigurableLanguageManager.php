@@ -21,27 +21,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class ConfigurableLanguageManager extends LanguageManager implements ConfigurableLanguageManagerInterface {
 
   /**
-   * The configuration storage service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The language configuration override service.
-   *
-   * @var \Drupal\language\Config\LanguageConfigFactoryOverrideInterface
-   */
-  protected $configFactoryOverride;
-
-  /**
    * The request object.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -100,7 +79,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public static function rebuildServices() {
+  public static function rebuildServices(): void {
     \Drupal::service('kernel')->invalidateContainer();
   }
 
@@ -109,29 +88,26 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
    *
    * @param \Drupal\Core\Language\LanguageDefault $default_language
    *   The default language service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
-   * @param \Drupal\language\Config\LanguageConfigFactoryOverrideInterface $config_override
+   * @param \Drupal\language\Config\LanguageConfigFactoryOverrideInterface $configFactoryOverride
    *   The language configuration override service.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack object.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cacheBackend
    *   The cache backend.
    */
-  public function __construct(LanguageDefault $default_language, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, LanguageConfigFactoryOverrideInterface $config_override, RequestStack $request_stack, protected CacheBackendInterface $cacheBackend) {
+  public function __construct(LanguageDefault $default_language, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\language\Config\LanguageConfigFactoryOverrideInterface $configFactoryOverride, RequestStack $request_stack, protected CacheBackendInterface $cacheBackend) {
     $this->defaultLanguage = $default_language;
-    $this->configFactory = $config_factory;
-    $this->moduleHandler = $module_handler;
-    $this->configFactoryOverride = $config_override;
     $this->requestStack = $request_stack;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init() {
+  public function init(): void {
     if (!$this->initialized) {
       foreach ($this->getDefinedLanguageTypes() as $type) {
         $this->getCurrentLanguage($type);
@@ -143,14 +119,14 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function isMultilingual() {
+  public function isMultilingual(): bool {
     return count($this->getLanguages(LanguageInterface::STATE_CONFIGURABLE)) > 1;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLanguageTypes() {
+  public function getLanguageTypes(): array {
     $this->loadLanguageTypesConfiguration();
     return $this->languageTypes['configurable'];
   }
@@ -179,7 +155,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function getDefinedLanguageTypesInfo() {
+  public function getDefinedLanguageTypesInfo(): array {
     if (!isset($this->languageTypesInfo)) {
       $defaults = parent::getDefinedLanguageTypesInfo();
 
@@ -196,7 +172,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function saveLanguageTypesConfiguration(array $values) {
+  public function saveLanguageTypesConfiguration(array $values): void {
     $config = $this->configFactory->getEditable('language.types');
     if (isset($values['configurable'])) {
       $config->set('configurable', $values['configurable']);
@@ -241,7 +217,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function reset($type = NULL) {
+  public function reset($type = NULL): static {
     if (!isset($type)) {
       $this->initialized = FALSE;
       $this->negotiatedLanguages = [];
@@ -271,7 +247,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function setNegotiator(LanguageNegotiatorInterface $negotiator) {
+  public function setNegotiator(LanguageNegotiatorInterface $negotiator): void {
     $this->negotiator = $negotiator;
     $this->initialized = FALSE;
     $this->negotiatedLanguages = [];
@@ -335,8 +311,9 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
 
   /**
    * {@inheritdoc}
+   * @return \Drupal\Core\Language\LanguageInterface[]
    */
-  public function getNativeLanguages() {
+  public function getNativeLanguages(): array {
     $languages = $this->getLanguages(LanguageInterface::STATE_CONFIGURABLE);
     $natives = [];
 
@@ -354,7 +331,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function updateLockedLanguageWeights() {
+  public function updateLockedLanguageWeights(): void {
     // Get the weight of the last configurable language.
     $configurable_languages = $this->getLanguages(LanguageInterface::STATE_CONFIGURABLE);
     $max_weight = end($configurable_languages)->getWeight();
@@ -376,7 +353,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function getFallbackCandidates(array $context = []) {
+  public function getFallbackCandidates(array $context = []): array {
     if ($this->isMultilingual()) {
       $candidates = [];
       if (empty($context['operation']) || $context['operation'] != 'locale_lookup') {
@@ -415,7 +392,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
   /**
    * {@inheritdoc}
    */
-  public function getLanguageSwitchLinks($type, Url $url) {
+  public function getLanguageSwitchLinks($type, Url $url): null {
     if ($this->negotiator) {
       foreach ($this->negotiator->getNegotiationMethods($type) as $method_id => $method) {
         if (is_subclass_of($method['class'], LanguageSwitcherInterface::class)) {
@@ -460,7 +437,7 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
    *
    * @return $this
    */
-  public function setConfigOverrideLanguage(?LanguageInterface $language = NULL) {
+  public function setConfigOverrideLanguage(?LanguageInterface $language = NULL): static {
     $this->configFactoryOverride->setLanguage($language);
     return $this;
   }
@@ -488,8 +465,9 @@ class ConfigurableLanguageManager extends LanguageManager implements Configurabl
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getStandardLanguageListWithoutConfigured() {
+  public function getStandardLanguageListWithoutConfigured(): array {
     $languages = $this->getLanguages();
     $predefined = $this->getStandardLanguageList();
     foreach ($predefined as $key => $value) {

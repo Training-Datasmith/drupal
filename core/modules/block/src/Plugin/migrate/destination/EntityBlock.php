@@ -17,7 +17,7 @@ class EntityBlock extends EntityConfigBase {
   /**
    * {@inheritdoc}
    */
-  protected function getEntityId(Row $row) {
+  protected function getEntityId(Row $row): int|string|false {
     // Try to find the block by its plugin ID and theme.
     $properties = [
       'plugin' => $row->getDestinationProperty('plugin'),

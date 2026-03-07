@@ -93,7 +93,7 @@ trait QueryConditionTrait {
   /**
    * {@inheritdoc}
    */
-  public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder) {
+  public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder): void {
     $this->condition->compile($connection, $queryPlaceholder);
   }
 

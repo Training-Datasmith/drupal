@@ -54,7 +54,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return static
    *   A new field definition object.
    */
-  public static function create($type) {
+  public static function create($type): static {
     $field_definition = new static([]);
     $field_definition->type = $type;
     $field_definition->itemDefinition = FieldItemDataDefinition::create($field_definition);
@@ -120,7 +120,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return static
    *   The object itself for chaining.
    */
-  public function setName($name) {
+  public function setName($name): static {
     $this->definition['field_name'] = $name;
     return $this;
   }
@@ -164,7 +164,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * For clarity, it is preferred to use setSetting() if not all available
    * settings are supplied.
    */
-  public function setSettings(array $settings) {
+  public function setSettings(array $settings): static {
     // Assign settings individually, in order to keep the current values
     // of settings not specified in $settings.
     foreach ($settings as $setting_name => $setting) {
@@ -183,7 +183,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function setSetting($setting_name, $value) {
+  public function setSetting($setting_name, $value): static {
     $this->getItemDefinition()->setSetting($setting_name, $value);
     return $this;
   }
@@ -203,7 +203,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setProvider($provider) {
+  public function setProvider($provider): static {
     $this->definition['provider'] = $provider;
     return $this;
   }
@@ -211,7 +211,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function isTranslatable() {
+  public function isTranslatable(): bool {
     return !empty($this->definition['translatable']);
   }
 
@@ -224,7 +224,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return $this
    *   The object itself for chaining.
    */
-  public function setTranslatable($translatable) {
+  public function setTranslatable($translatable): static {
     $this->definition['translatable'] = $translatable;
     return $this;
   }
@@ -232,7 +232,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function isRevisionable() {
+  public function isRevisionable(): bool {
     // Multi-valued base fields are always considered revisionable, just like
     // configurable fields.
     return !empty($this->definition['revisionable']) || $this->isMultiple();
@@ -247,7 +247,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return $this
    *   The object itself for chaining.
    */
-  public function setRevisionable($revisionable) {
+  public function setRevisionable($revisionable): static {
     $this->definition['revisionable'] = $revisionable;
     return $this;
   }
@@ -275,7 +275,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setCardinality($cardinality) {
+  public function setCardinality($cardinality): static {
     $this->definition['cardinality'] = $cardinality;
     return $this;
   }
@@ -283,7 +283,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function isMultiple() {
+  public function isMultiple(): bool {
     $cardinality = $this->getCardinality();
     return ($cardinality == static::CARDINALITY_UNLIMITED) || ($cardinality > 1);
   }
@@ -303,7 +303,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return static
    *   The object itself for chaining.
    */
-  public function setPropertyConstraints($name, array $constraints) {
+  public function setPropertyConstraints($name, array $constraints): static {
     $item_constraints = $this->getItemDefinition()->getConstraints();
     $item_constraints['ComplexData']['properties'][$name] = $constraints;
     $this->getItemDefinition()->setConstraints($item_constraints);
@@ -342,7 +342,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @see \Drupal\Core\Field\BaseFieldDefinition::addConstraint()
    */
-  public function addPropertyConstraints($name, array $constraints) {
+  public function addPropertyConstraints($name, array $constraints): static {
     $item_constraints = $this->getItemDefinition()->getConstraint('ComplexData')['properties'] ?? [];
     if (isset($item_constraints[$name])) {
       // Add the new property constraints, overwriting as required.
@@ -378,7 +378,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return static
    *   The object itself for chaining.
    */
-  public function setDisplayOptions($display_context, array $options) {
+  public function setDisplayOptions($display_context, array $options): static {
     $this->definition['display'][$display_context]['options'] = $options;
     return $this;
   }
@@ -396,7 +396,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return static
    *   The object itself for chaining.
    */
-  public function setDisplayConfigurable($display_context, $configurable) {
+  public function setDisplayConfigurable($display_context, $configurable): static {
     // If no explicit display options have been specified, default to 'hidden'.
     if (empty($this->definition['display'][$display_context])) {
       $this->definition['display'][$display_context]['options'] = ['region' => 'hidden'];
@@ -470,7 +470,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @see \Drupal\Core\Field\BaseFieldDefinition::setDefaultValueCallback()
    */
-  public function setDefaultValue($value) {
+  public function setDefaultValue($value): static {
     if ($value === NULL) {
       $value = [];
     }
@@ -507,7 +507,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setDefaultValueCallback($callback) {
+  public function setDefaultValueCallback($callback): static {
     if (isset($callback) && !is_string($callback)) {
       throw new \InvalidArgumentException('Default value callback must be a string, like "function_name" or "ClassName::methodName"');
     }
@@ -542,7 +542,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setInitialValue($value) {
+  public function setInitialValue($value): static {
     // @todo Implement initial value support for multi-value fields in
     //   https://www.drupal.org/node/2883851.
     if ($this->isMultiple()) {
@@ -583,7 +583,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setInitialValueFromField($field_name, $default_value = NULL) {
+  public function setInitialValueFromField($field_name, $default_value = NULL): static {
     $this->definition['initial_value_from_field'] = $field_name;
     $this->setInitialValue($default_value);
     return $this;
@@ -630,7 +630,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function getPropertyNames() {
+  public function getPropertyNames(): array {
     return array_keys($this->getPropertyDefinitions());
   }
 
@@ -667,7 +667,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setTargetEntityTypeId($entity_type_id) {
+  public function setTargetEntityTypeId($entity_type_id): static {
     $this->definition['entity_type'] = $entity_type_id;
     return $this;
   }
@@ -687,7 +687,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setTargetBundle($bundle) {
+  public function setTargetBundle($bundle): static {
     $this->definition['bundle'] = $bundle;
     return $this;
   }
@@ -730,14 +730,14 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function hasCustomStorage() {
+  public function hasCustomStorage(): bool {
     return !empty($this->definition['custom_storage']) || $this->isComputed();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isBaseField() {
+  public function isBaseField(): bool {
     return TRUE;
   }
 
@@ -753,7 +753,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @throws \LogicException
    *   Thrown if custom storage is to be set to FALSE for a computed field.
    */
-  public function setCustomStorage($custom_storage) {
+  public function setCustomStorage($custom_storage): static {
     if (!$custom_storage && $this->isComputed()) {
       throw new \LogicException("Entity storage cannot store a computed field.");
     }
@@ -764,14 +764,14 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function getFieldStorageDefinition() {
+  public function getFieldStorageDefinition(): static {
     return $this;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getUniqueStorageIdentifier() {
+  public function getUniqueStorageIdentifier(): string {
     return $this->getTargetEntityTypeId() . '-' . $this->getName();
   }
 
@@ -791,7 +791,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function isDeleted() {
+  public function isDeleted(): bool {
     return !empty($this->definition['deleted']);
   }
 
@@ -803,7 +803,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    *
    * @return $this
    */
-  public function setDeleted($deleted) {
+  public function setDeleted($deleted): static {
     $this->definition['deleted'] = $deleted;
     return $this;
   }
@@ -840,7 +840,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
    * @return static
    *   The object itself for chaining.
    */
-  public function setStorageRequired($required) {
+  public function setStorageRequired($required): static {
     $this->definition['storage_required'] = $required;
     return $this;
   }
@@ -865,7 +865,7 @@ class BaseFieldDefinition extends ListDataDefinition implements FieldDefinitionI
   /**
    * {@inheritdoc}
    */
-  public function isInternal() {
+  public function isInternal(): bool {
     // All fields are not internal unless explicitly set.
     return !empty($this->definition['internal']);
   }

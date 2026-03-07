@@ -136,15 +136,21 @@ class ViewsThemeHooks {
       foreach ($info as $def) {
         // Not all plugins have theme functions, and they can also explicitly
         // prevent a theme function from being registered automatically.
-        if (!isset($def['theme']) || empty($def['register_theme'])) {
-          continue;
+        if (!isset($def['theme'])) {
+            continue;
+        }
+        if (empty($def['register_theme'])) {
+            continue;
         }
         // For each theme registration, we have a base directory to check for
         // the templates folder. This will be relative to the root of the given
         // module folder, so we always need a module definition.
         // @todo Watchdog or exception?
-        if (!isset($def['provider']) || !$this->moduleHandler->moduleExists($def['provider'])) {
-          continue;
+        if (!isset($def['provider'])) {
+            continue;
+        }
+        if (!$this->moduleHandler->moduleExists($def['provider'])) {
+            continue;
         }
         $hooks[$def['theme']] = ['variables' => $variables[$type]];
         // We always use the module directory as base dir.
@@ -190,7 +196,7 @@ class ViewsThemeHooks {
    * Allows view-based node templates if called from a view.
    */
   #[Hook('preprocess_node')]
-  public function preprocessNode(&$variables): void {
+  public function preprocessNode(array &$variables): void {
     // The 'view' attribute of the node is added in
     // \Drupal\views\Plugin\views\row\EntityRow::preRender().
     if (!empty($variables['node']->view) && $variables['node']->view->storage->id()) {
@@ -218,7 +224,7 @@ class ViewsThemeHooks {
    * Allows view-based comment templates if called from a view.
    */
   #[Hook('preprocess_comment')]
-  public function preprocessComment(&$variables): void {
+  public function preprocessComment(array &$variables): void {
     // The view data is added to the comment in
     // \Drupal\views\Plugin\views\row\EntityRow::preRender().
     if (!empty($variables['comment']->view) && $variables['comment']->view->storage->id()) {
@@ -253,7 +259,7 @@ class ViewsThemeHooks {
 
     $css_class = $view->display_handler->getOption('css_class');
     if (!empty($css_class)) {
-      $sanitized_classes = array_map('\Drupal\Component\Utility\Html::cleanCssIdentifier', explode(' ', $css_class));
+      $sanitized_classes = array_map(\Drupal\Component\Utility\Html::cleanCssIdentifier(...), explode(' ', $css_class));
       // Merge the view display classes into any existing classes if they exist.
       $variables['attributes']['class'] = !empty($variables['attributes']['class']) ? array_merge($variables['attributes']['class'], $sanitized_classes) : $sanitized_classes;
       $variables['css_class'] = implode(' ', $sanitized_classes);
@@ -802,7 +808,7 @@ class ViewsThemeHooks {
 
           // Only bother with separators and stuff if the field shows up.
           // Place the field into the column, along with an optional separator.
-          if (trim($field_output) != '') {
+          if (trim((string) $field_output) != '') {
             if (!empty($column_reference['content']) && !empty($options['info'][$column]['separator'])) {
               $column_reference['content'][] = [
                 'separator' => ['#markup' => $options['info'][$column]['separator']],
@@ -825,12 +831,10 @@ class ViewsThemeHooks {
         foreach ($variables['rows'] as $columns) {
           $empty &= empty($columns['columns'][$column]['content']);
         }
-        if ($empty) {
-          foreach ($variables['rows'] as &$column_items) {
-            unset($column_items['columns'][$column]);
-          }
-          unset($variables['header'][$column]);
+        foreach ($variables['rows'] as &$column_items) {
+          unset($column_items['columns'][$column]);
         }
+        unset($variables['header'][$column]);
       }
     }
 
@@ -914,8 +918,8 @@ class ViewsThemeHooks {
 
     // Fetch classes from handler options.
     if ($handler->options['class']) {
-      $class = explode(' ', $handler->options['class']);
-      $variables['attributes']['class'] = array_map('\Drupal\Component\Utility\Html::cleanCssIdentifier', $class);
+      $class = explode(' ', (string) $handler->options['class']);
+      $variables['attributes']['class'] = array_map(\Drupal\Component\Utility\Html::cleanCssIdentifier(...), $class);
     }
   }
 
@@ -954,7 +958,7 @@ class ViewsThemeHooks {
       if (!$horizontal || ($horizontal && empty($items[$row]['attributes']))) {
         $row_attributes = ['class' => []];
         // Add custom row classes.
-        $row_class = array_filter(explode(' ', $variables['view']->style_plugin->getCustomClass($result_index, 'row')));
+        $row_class = array_filter(explode(' ', (string) $variables['view']->style_plugin->getCustomClass($result_index, 'row')));
         if (!empty($row_class)) {
           $row_attributes['class'] = array_merge($row_attributes['class'], $row_class);
         }
@@ -972,7 +976,7 @@ class ViewsThemeHooks {
         $col_attributes = ['class' => []];
         // Add default views column classes.
         // Add custom column classes.
-        $col_class = array_filter(explode(' ', $variables['view']->style_plugin->getCustomClass($result_index, 'col')));
+        $col_class = array_filter(explode(' ', (string) $variables['view']->style_plugin->getCustomClass($result_index, 'col')));
         if (!empty($col_class)) {
           $col_attributes['class'] = array_merge($col_attributes['class'], $col_class);
         }
@@ -1093,8 +1097,8 @@ class ViewsThemeHooks {
     // Fetch classes from handler options.
     $variables['list']['attributes'] = new Attribute();
     if ($handler->options['class']) {
-      $class = explode(' ', $handler->options['class']);
-      $class = array_map('\Drupal\Component\Utility\Html::cleanCssIdentifier', $class);
+      $class = explode(' ', (string) $handler->options['class']);
+      $class = array_map(\Drupal\Component\Utility\Html::cleanCssIdentifier(...), $class);
 
       // Initialize a new attribute class for $class.
       $variables['list']['attributes']->addClass($class);
@@ -1109,8 +1113,8 @@ class ViewsThemeHooks {
 
     // Fetch wrapper classes from handler options.
     if ($handler->options['wrapper_class']) {
-      $wrapper_class = explode(' ', $handler->options['wrapper_class']);
-      $variables['attributes']['class'] = array_map('\Drupal\Component\Utility\Html::cleanCssIdentifier', $wrapper_class);
+      $wrapper_class = explode(' ', (string) $handler->options['wrapper_class']);
+      $variables['attributes']['class'] = array_map(\Drupal\Component\Utility\Html::cleanCssIdentifier(...), $wrapper_class);
     }
 
     $variables['list']['type'] = $type;
@@ -1138,7 +1142,7 @@ class ViewsThemeHooks {
     // The RSS 2.0 "spec" doesn't indicate HTML can be used in the description.
     // We strip all HTML tags, but need to prevent double encoding from properly
     // escaped source data (such as &amp becoming &amp;amp;).
-    $variables['description'] = Html::decodeEntities(strip_tags($style->getDescription()));
+    $variables['description'] = Html::decodeEntities(strip_tags((string) $style->getDescription()));
 
     if ($view->display_handler->getOption('sitename_title')) {
       $title = $config->get('name');

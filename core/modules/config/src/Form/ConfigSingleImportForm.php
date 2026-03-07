@@ -63,7 +63,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('config.storage'),
@@ -75,21 +75,21 @@ class ConfigSingleImportForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'config_single_import_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('config.import_single');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     if ($this->data['config_type'] === 'system.simple') {
       $name = $this->data['config_name'];
       $type = $this->t('simple configuration');
@@ -105,12 +105,9 @@ class ConfigSingleImportForm extends ConfirmFormBase {
       '@type' => strtolower($type),
     ];
     if ($this->configExists) {
-      $question = $this->t('Are you sure you want to update the %name @type?', $args);
+      return $this->t('Are you sure you want to update the %name @type?', $args);
     }
-    else {
-      $question = $this->t('Are you sure you want to create a new %name @type?', $args);
-    }
-    return $question;
+    return $this->t('Are you sure you want to create a new %name @type?', $args);
   }
 
   /**
@@ -129,7 +126,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
       }
     }
     // Sort the entity types by label, then add the simple config to the top.
-    uasort($entity_types, 'strnatcasecmp');
+    uasort($entity_types, strnatcasecmp(...));
     $config_types = [
       'system.simple' => $this->t('Simple configuration'),
     ] + $entity_types;
@@ -179,7 +176,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // The confirmation step needs no additional validation.
     if ($this->data) {
       return;
@@ -274,7 +271,7 @@ class ConfigSingleImportForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // If this form has not yet been confirmed, store the values and rebuild.
     if (!$this->data) {
       $form_state->setRebuild();
@@ -292,12 +289,12 @@ class ConfigSingleImportForm extends ConfirmFormBase {
         $sync_steps = $config_importer->initialize();
         $batch_builder = (new BatchBuilder())
           ->setTitle($this->t('Importing configuration'))
-          ->setFinishCallback([ConfigImporterBatch::class, 'finish'])
+          ->setFinishCallback(ConfigImporterBatch::finish(...))
           ->setInitMessage($this->t('Starting configuration import.'))
           ->setProgressMessage($this->t('Completed @current step of @total.'))
           ->setErrorMessage($this->t('Configuration import has encountered an error.'));
         foreach ($sync_steps as $sync_step) {
-          $batch_builder->addOperation([ConfigImporterBatch::class, 'process'], [$config_importer, $sync_step]);
+          $batch_builder->addOperation(ConfigImporterBatch::process(...), [$config_importer, $sync_step]);
         }
         batch_set($batch_builder->toArray());
       }

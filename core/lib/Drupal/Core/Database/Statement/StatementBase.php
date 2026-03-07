@@ -41,7 +41,7 @@ abstract class StatementBase implements \Iterator, StatementInterface {
    *
    * For a \PDO client connection, this will be a \PDOStatement object.
    */
-  protected ?object $clientStatement;
+  protected ?object $clientStatement = null;
 
   /**
    * The results of a data query language (DQL) statement.
@@ -190,7 +190,7 @@ abstract class StatementBase implements \Iterator, StatementInterface {
         $startEvent->args,
         $startEvent->caller,
         $startEvent->time,
-        get_class($e),
+        $e::class,
         $e->getCode(),
         $e->getMessage(),
       ));
@@ -364,9 +364,7 @@ abstract class StatementBase implements \Iterator, StatementInterface {
     if ($this->rowCountEnabled) {
       return $this->result->rowCount();
     }
-    else {
-      throw new RowCountException();
-    }
+    throw new RowCountException();
   }
 
 }

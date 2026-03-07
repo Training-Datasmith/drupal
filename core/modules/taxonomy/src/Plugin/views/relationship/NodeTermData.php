@@ -18,13 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class NodeTermData extends RelationshipPluginBase {
 
   /**
-   * The vocabulary storage.
-   *
-   * @var \Drupal\taxonomy\VocabularyStorageInterface
-   */
-  protected $vocabularyStorage;
-
-  /**
    * Constructs a NodeTermData object.
    *
    * @param array $configuration
@@ -33,18 +26,17 @@ class NodeTermData extends RelationshipPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabulary_storage
+   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage
    *   The vocabulary storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, VocabularyStorageInterface $vocabulary_storage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->vocabularyStorage = $vocabulary_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -65,7 +57,7 @@ class NodeTermData extends RelationshipPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $vocabularies = $this->vocabularyStorage->loadMultiple();
     $options = [];
     foreach ($vocabularies as $voc) {
@@ -85,7 +77,7 @@ class NodeTermData extends RelationshipPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     // Transform the #type = checkboxes value to a numerically indexed array,
     // because the config schema expects a sequence, not a mapping.
     $vids = $form_state->getValue(['options', 'vids']);
@@ -95,7 +87,7 @@ class NodeTermData extends RelationshipPluginBase {
   /**
    * Called to implement a relationship in a query.
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
 
     $def = $this->definition;

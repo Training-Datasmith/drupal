@@ -114,7 +114,7 @@ class Table extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#header' => [],
       '#rows' => [],
@@ -163,9 +163,7 @@ class Table extends FormElementBase {
         $value = array_keys(array_filter($element['#default_value']));
         return array_combine($value, $value);
       }
-      else {
-        return is_array($input) ? array_combine($input, $input) : [];
-      }
+      return is_array($input) ? array_combine($input, $input) : [];
     }
   }
 
@@ -185,7 +183,7 @@ class Table extends FormElementBase {
    * @return array
    *   The processed element.
    */
-  public static function processTable(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processTable(array &$element, FormStateInterface $form_state, &$complete_form): array {
     if ($element['#tableselect']) {
       if ($element['#multiple']) {
         $value = is_array($element['#value']) ? $element['#value'] : [];
@@ -311,7 +309,7 @@ class Table extends FormElementBase {
    * @param array $complete_form
    *   The complete form structure.
    */
-  public static function validateTable(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function validateTable(array &$element, FormStateInterface $form_state, &$complete_form): void {
     // Skip this validation if the button to submit the form does not require
     // selected table row data.
     $triggering_element = $form_state->getTriggeringElement();
@@ -398,7 +396,7 @@ class Table extends FormElementBase {
    * @see \Drupal\Core\Render\AttachmentsResponseProcessorInterface::processAttachments()
    * @see drupal_attach_tabledrag()
    */
-  public static function preRenderTable($element) {
+  public static function preRenderTable(array $element): array {
     foreach (Element::children($element) as $first) {
       $row = ['data' => []];
       // Apply attributes of first-level elements as table row attributes.

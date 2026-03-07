@@ -47,7 +47,7 @@ class LanguageDefault {
    * @param \Drupal\Core\Language\LanguageInterface $language
    *   The default language.
    */
-  public function set(LanguageInterface $language) {
+  public function set(LanguageInterface $language): void {
     $this->language = $language;
   }
 

@@ -124,7 +124,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function load($name) {
+  public function load($name): bool {
     if (isset($this->loadedFiles[$name])) {
       return TRUE;
     }
@@ -140,7 +140,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function loadAll() {
+  public function loadAll(): void {
     if (!$this->loaded) {
       foreach ($this->moduleList as $name => $module) {
         $this->load($name);
@@ -152,7 +152,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function reload() {
+  public function reload(): void {
     $this->loaded = FALSE;
     $this->loadAll();
   }
@@ -184,7 +184,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setModuleList(array $module_list = []) {
+  public function setModuleList(array $module_list = []): void {
     $this->moduleList = $module_list;
     // Reset the implementations, so a new call triggers a reloading of the
     // available hooks.
@@ -194,7 +194,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildModuleDependencies(array $modules) {
+  public function buildModuleDependencies(array $modules): array {
     foreach ($modules as $module) {
       $graph[$module->getName()]['edges'] = [];
       if (isset($module->info['dependencies']) && is_array($module->info['dependencies'])) {
@@ -217,14 +217,14 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function moduleExists($module) {
+  public function moduleExists($module): bool {
     return isset($this->moduleList[$module]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function loadAllIncludes($type, $name = NULL) {
+  public function loadAllIncludes($type, $name = NULL): void {
     @trigger_error("ModuleHandler::loadAllIncludes() is deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. There is no replacement. See https://www.drupal.org/node/3536432", E_USER_DEPRECATED);
     foreach ($this->moduleList as $module => $filename) {
       $this->loadInclude($module, $type, $name);
@@ -252,9 +252,7 @@ class ModuleHandler implements ModuleHandlerInterface {
         $this->includeFileKeys[$key] = $file;
         return $file;
       }
-      else {
-        $this->includeFileKeys[$key] = FALSE;
-      }
+      $this->includeFileKeys[$key] = FALSE;
     }
     return FALSE;
   }
@@ -262,7 +260,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function resetImplementations() {
+  public function resetImplementations(): void {
     $this->alterHookListeners = [];
     $this->hookImplementationLists = [];
   }
@@ -317,7 +315,7 @@ class ModuleHandler implements ModuleHandlerInterface {
    * @return mixed
    *   The return value of the hook implementation.
    */
-  protected function legacyInvoke($module, $hook, array $args = []) {
+  protected function legacyInvoke(string $module, string $hook, array $args = []) {
     $this->load($module);
     $function = $module . '_' . $hook;
     if (function_exists($function) && !(new \ReflectionFunction($function))->getAttributes(LegacyHook::class)) {
@@ -329,10 +327,11 @@ class ModuleHandler implements ModuleHandlerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function invokeAll($hook, array $args = []) {
+  public function invokeAll($hook, array $args = []): array {
     $return = [];
-    $this->invokeAllWith($hook, function (callable $hook, string $module) use ($args, &$return) {
+    $this->invokeAllWith($hook, function (callable $hook, string $module) use ($args, &$return): void {
       $result = call_user_func_array($hook, $args);
       if (isset($result) && is_array($result)) {
         $return = NestedArray::mergeDeep($return, $result);
@@ -370,7 +369,7 @@ class ModuleHandler implements ModuleHandlerInterface {
    * @param string $hook
    *   The name of the hook.
    */
-  private function triggerDeprecationError($description, $hook) {
+  private function triggerDeprecationError(string $description, string $hook): void {
     $list = $this->getHookImplementationList($hook);
     $modules = array_unique($list->modules);
     if (!empty($modules)) {
@@ -382,7 +381,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function alter($type, &$data, &$context1 = NULL, &$context2 = NULL) {
+  public function alter($type, &$data, &$context1 = NULL, &$context2 = NULL): void {
     // Most of the time, $type is passed as a string, so for performance,
     // normalize it to that. When passed as an array, usually the first item in
     // the array is a generic type, and additional items in the array are more
@@ -399,7 +398,7 @@ class ModuleHandler implements ModuleHandlerInterface {
     // quickly.
     if (!isset($this->alterHookListeners[$cid])) {
       $hooks = is_array($type)
-        ? array_map(static fn (string $type) => $type . '_alter', $type)
+        ? array_map(static fn (string $type): string => $type . '_alter', $type)
         : [$type . '_alter'];
       $this->alterHookListeners[$cid] = $this->getCombinedListeners($hooks);
     }
@@ -423,7 +422,7 @@ class ModuleHandler implements ModuleHandlerInterface {
     $lists = array_map($this->getHookImplementationList(...), $hooks);
     // Remove empty lists.
     /** @var array<int, \Drupal\Core\Hook\ImplementationList> $lists */
-    $lists = array_filter($lists, fn (ImplementationList $list) => $list->hasImplementations());
+    $lists = array_filter($lists, fn (ImplementationList $list): bool => $list->hasImplementations());
     if (!$lists) {
       // No implementations exist.
       return [];
@@ -439,7 +438,7 @@ class ModuleHandler implements ModuleHandlerInterface {
     foreach ($lists as $list) {
       foreach ($list->iterateByModule() as $module => $listener) {
         $identifier = is_array($listener)
-          ? get_class($listener[0]) . '::' . $listener[1]
+          ? $listener[0]::class . '::' . $listener[1]
           : $listener;
         $other_module = $modules_by_identifier[$identifier] ?? NULL;
         if ($other_module !== NULL) {
@@ -466,7 +465,7 @@ class ModuleHandler implements ModuleHandlerInterface {
     $modules = array_intersect(array_keys($this->moduleList), $modules);
     // Create a flat list of identifiers.
     $identifiers = array_merge(...array_map(
-      fn (string $module) => $identifiers_by_module[$module],
+      fn (string $module): array => $identifiers_by_module[$module],
       $modules,
     ));
     foreach ($hooks as $hook) {
@@ -558,7 +557,7 @@ class ModuleHandler implements ModuleHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function alterDeprecated($description, $type, &$data, &$context1 = NULL, &$context2 = NULL) {
+  public function alterDeprecated($description, $type, &$data, &$context1 = NULL, &$context2 = NULL): void {
     // Invoke the alter hook. This has the side effect of populating
     // $this->alterHookListeners.
     $this->alter($type, $data, $context1, $context2);
@@ -578,7 +577,7 @@ class ModuleHandler implements ModuleHandlerInterface {
           $functions[] = $listener;
         }
         else {
-          $functions[] = get_class($listener[0]) . '::' . $listener[1];
+          $functions[] = $listener[0]::class . '::' . $listener[1];
         }
       }
       $message = 'The deprecated alter hook hook_' . $type . '_alter() is implemented in these locations: ' . implode(', ', $functions) . '.';
@@ -588,8 +587,9 @@ class ModuleHandler implements ModuleHandlerInterface {
 
   /**
    * {@inheritdoc}
+   * @return non-falsy-string[]
    */
-  public function getModuleDirectories() {
+  public function getModuleDirectories(): array {
     $dirs = [];
     foreach ($this->getModuleList() as $name => $module) {
       $dirs[$name] = $this->root . '/' . $module->getPath();

@@ -18,24 +18,16 @@ namespace Drupal\Core\Cache;
 class NullBackend implements CacheBackendInterface {
 
   /**
-   * Constructs a NullBackend object.
-   *
-   * @param string $bin
-   *   The cache bin for which the object is created.
-   */
-  public function __construct($bin) {}
-
-  /**
    * {@inheritdoc}
    */
-  public function get($cid, $allow_invalid = FALSE) {
+  public function get($cid, $allow_invalid = FALSE): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
     return [];
   }
 

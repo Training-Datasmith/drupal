@@ -14,20 +14,6 @@ use Drupal\Core\Serialization\Yaml;
 class FileStorage implements StorageInterface {
 
   /**
-   * The storage collection.
-   *
-   * @var string
-   */
-  protected $collection;
-
-  /**
-   * The filesystem path for configuration objects.
-   *
-   * @var string
-   */
-  protected $directory = '';
-
-  /**
    * The file cache object.
    *
    * @var \Drupal\Component\FileCache\FileCacheInterface
@@ -43,9 +29,13 @@ class FileStorage implements StorageInterface {
    *   (optional) The collection to store configuration in. Defaults to the
    *   default collection.
    */
-  public function __construct($directory, $collection = StorageInterface::DEFAULT_COLLECTION) {
-    $this->directory = $directory;
-    $this->collection = $collection;
+  public function __construct(/**
+   * The filesystem path for configuration objects.
+   */
+  protected $directory, /**
+   * The storage collection.
+   */
+  protected $collection = StorageInterface::DEFAULT_COLLECTION) {
     // Use a NULL File Cache backend by default. This will ensure only the
     // internal static caching of FileCache is used and thus avoids blowing up
     // the APCu cache.
@@ -58,7 +48,7 @@ class FileStorage implements StorageInterface {
    * @return string
    *   The path to the configuration file.
    */
-  public function getFilePath($name) {
+  public function getFilePath(string $name): string {
     return $this->getCollectionDirectory() . '/' . $name . '.' . static::getFileExtension();
   }
 
@@ -68,14 +58,14 @@ class FileStorage implements StorageInterface {
    * @return string
    *   The file extension.
    */
-  public static function getFileExtension() {
+  public static function getFileExtension(): string {
     return 'yml';
   }
 
   /**
    * Check if the directory exists and create it if not.
    */
-  protected function ensureStorage() {
+  protected function ensureStorage(): static {
     $dir = $this->getCollectionDirectory();
     $success = $this->getFileSystem()->prepareDirectory($dir, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
     // Only create .htaccess file in root directory.
@@ -91,7 +81,7 @@ class FileStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function exists($name) {
+  public function exists($name): bool {
     return file_exists($this->getFilePath($name));
   }
 
@@ -124,8 +114,9 @@ class FileStorage implements StorageInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function readMultiple(array $names) {
+  public function readMultiple(array $names): array {
     $list = [];
     foreach ($names as $name) {
       if ($data = $this->read($name)) {
@@ -138,7 +129,7 @@ class FileStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function write($name, array $data) {
+  public function write($name, array $data): bool {
     try {
       $encoded_data = $this->encode($data);
     }
@@ -176,7 +167,7 @@ class FileStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function rename($name, $new_name) {
+  public function rename($name, $new_name): bool {
     $status = @rename($this->getFilePath($name), $this->getFilePath($new_name));
     if ($status === FALSE) {
       return FALSE;
@@ -196,7 +187,7 @@ class FileStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function decode($raw) {
+  public function decode($raw): false|array {
     $data = Yaml::decode($raw);
     // A simple string is valid YAML for any reason.
     if (!is_array($data)) {
@@ -207,8 +198,9 @@ class FileStorage implements StorageInterface {
 
   /**
    * {@inheritdoc}
+   * @return string[]
    */
-  public function listAll($prefix = '') {
+  public function listAll($prefix = ''): array {
     $dir = $this->getCollectionDirectory();
     if (!is_dir($dir)) {
       return [];
@@ -255,7 +247,7 @@ class FileStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function createCollection($collection) {
+  public function createCollection($collection): static {
     return new static(
       $this->directory,
       $collection
@@ -308,9 +300,9 @@ class FileStorage implements StorageInterface {
    * @return array
    *   A list of collection names contained within the provided directory.
    */
-  protected function getAllCollectionNamesHelper($directory) {
+  protected function getAllCollectionNamesHelper(string $directory): array {
     $collections = [];
-    $pattern = '/\.' . preg_quote($this->getFileExtension(), '/') . '$/';
+    $pattern = '/\.' . preg_quote(static::getFileExtension(), '/') . '$/';
     foreach (new \DirectoryIterator($directory) as $fileinfo) {
       if ($fileinfo->isDir() && !$fileinfo->isDot()) {
         $collection = $fileinfo->getFilename();
@@ -348,12 +340,9 @@ class FileStorage implements StorageInterface {
    */
   protected function getCollectionDirectory() {
     if ($this->collection == StorageInterface::DEFAULT_COLLECTION) {
-      $dir = $this->directory;
+      return $this->directory;
     }
-    else {
-      $dir = $this->directory . '/' . str_replace('.', '/', $this->collection);
-    }
-    return $dir;
+    return $this->directory . '/' . str_replace('.', '/', $this->collection);
   }
 
   /**
@@ -362,7 +351,7 @@ class FileStorage implements StorageInterface {
    * @return \Drupal\Core\File\FileSystemInterface
    *   The file system service.
    */
-  private function getFileSystem() {
+  private function getFileSystem(): object {
     return \Drupal::service('file_system');
   }
 

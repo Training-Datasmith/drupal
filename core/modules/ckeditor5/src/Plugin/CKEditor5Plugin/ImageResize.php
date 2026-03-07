@@ -22,14 +22,14 @@ class ImageResize extends CKEditor5PluginDefault implements CKEditor5PluginConfi
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return ['allow_resize' => TRUE];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['allow_resize'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow the user to resize images'),
@@ -42,7 +42,7 @@ class ImageResize extends CKEditor5PluginDefault implements CKEditor5PluginConfi
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Match the config schema structure at
     // ckeditor5.plugin.ckeditor5_imageResize.
     $form_value = $form_state->getValue('allow_resize');
@@ -52,7 +52,7 @@ class ImageResize extends CKEditor5PluginDefault implements CKEditor5PluginConfi
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['allow_resize'] = $form_state->getValue('allow_resize');
   }
 

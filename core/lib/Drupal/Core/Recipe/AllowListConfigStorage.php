@@ -12,7 +12,7 @@ use Drupal\Core\Config\StorageInterface;
  * @internal
  *   This API is experimental.
  */
-final class AllowListConfigStorage implements StorageInterface {
+final readonly class AllowListConfigStorage implements StorageInterface {
 
   /**
    * @param \Drupal\Core\Config\StorageInterface $decorated
@@ -22,8 +22,8 @@ final class AllowListConfigStorage implements StorageInterface {
    *   by this storage. Cannot be empty.
    */
   public function __construct(
-    private readonly StorageInterface $decorated,
-    private readonly array $allowList,
+    private StorageInterface $decorated,
+    private array $allowList,
   ) {
     if (empty($allowList)) {
       throw new \LogicException('AllowListConfigStorage cannot be constructed with an empty allow list.');

@@ -42,8 +42,8 @@ final class ComponentsTwigExtension extends AbstractExtension {
    */
   public function getFunctions(): array {
     return [
-      new TwigFunction('add_component_context', [$this, 'addAdditionalContext'], ['needs_context' => TRUE]),
-      new TwigFunction('validate_component_props', [$this, 'validateProps'], ['needs_context' => TRUE]),
+      new TwigFunction('add_component_context', $this->addAdditionalContext(...), ['needs_context' => TRUE]),
+      new TwigFunction('validate_component_props', $this->validateProps(...), ['needs_context' => TRUE]),
     ];
   }
 

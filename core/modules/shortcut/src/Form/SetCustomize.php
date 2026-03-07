@@ -24,7 +24,7 @@ class SetCustomize extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
     $form['shortcuts'] = [
       '#tree' => TRUE,
@@ -87,7 +87,7 @@ class SetCustomize extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     // Only includes a Save action for the entity, no direct Delete button.
     return [
       'submit' => [
@@ -102,7 +102,7 @@ class SetCustomize extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     foreach ($this->entity->getShortcuts() as $shortcut) {
       $weight = $form_state->getValue(['shortcuts', 'links', $shortcut->id(), 'weight']);
       $shortcut->setWeight($weight);

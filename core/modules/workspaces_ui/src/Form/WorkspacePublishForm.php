@@ -28,36 +28,21 @@ class WorkspacePublishForm extends ConfirmFormBase implements ContainerInjection
   protected $workspace;
 
   /**
-   * The workspace operation factory.
-   *
-   * @var \Drupal\workspaces\WorkspaceOperationFactory
-   */
-  protected $workspaceOperationFactory;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new WorkspacePublishForm.
    *
-   * @param \Drupal\workspaces\WorkspaceOperationFactory $workspace_operation_factory
+   * @param \Drupal\workspaces\WorkspaceOperationFactory $workspaceOperationFactory
    *   The workspace operation factory service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(WorkspaceOperationFactory $workspace_operation_factory, EntityTypeManagerInterface $entity_type_manager) {
-    $this->workspaceOperationFactory = $workspace_operation_factory;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\workspaces\WorkspaceOperationFactory $workspaceOperationFactory, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('workspaces.operation_factory'),
       $container->get('entity_type.manager')
@@ -67,7 +52,7 @@ class WorkspacePublishForm extends ConfirmFormBase implements ContainerInjection
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'workspace_publish_form';
   }
 
@@ -119,7 +104,7 @@ class WorkspacePublishForm extends ConfirmFormBase implements ContainerInjection
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Would you like to publish the contents of the %label workspace?', [
       '%label' => $this->workspace->label(),
     ]);
@@ -128,21 +113,21 @@ class WorkspacePublishForm extends ConfirmFormBase implements ContainerInjection
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Publish workspace contents.');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return Url::fromRoute('entity.workspace.collection', [], ['query' => $this->getDestinationArray()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $workspace = $this->workspace;
 
     try {

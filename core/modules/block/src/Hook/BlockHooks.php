@@ -46,15 +46,13 @@ class BlockHooks {
         $output .= '<dd>' . $this->t('You can control the visibility of a block by restricting it to specific pages, content types, and/or roles by setting the appropriate options under <em>Visibility settings</em> of the block configuration.') . '</dd>';
         $output .= '<dt>' . $this->t('Adding content blocks') . '</dt>';
         $output .= '<dd>' . $this->t('You can add content blocks, if the <em>Block Content</em> module is installed. For more information, see the <a href=":blockcontent-help">Block Content help page</a>.', [':blockcontent-help' => $block_content]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     if ($route_name == 'block.admin_display' || $route_name == 'block.admin_display_theme') {
       $demo_theme = $route_match->getParameter('theme') ?: \Drupal::config('system.theme')->get('default');
       $themes = \Drupal::service('theme_handler')->listInfo();
       $output = '<p>' . $this->t('Block placement is specific to each theme on your site. Changes will not be saved until you click <em>Save blocks</em> at the bottom of the page.') . '</p>';
-      $output .= '<p>' . Link::fromTextAndUrl($this->t('Demonstrate block regions (@theme)', ['@theme' => $themes[$demo_theme]->info['name']]), Url::fromRoute('block.admin_demo', ['theme' => $demo_theme]))->toString() . '</p>';
-      return $output;
+      return $output . ('<p>' . Link::fromTextAndUrl($this->t('Demonstrate block regions (@theme)', ['@theme' => $themes[$demo_theme]->info['name']]), Url::fromRoute('block.admin_demo', ['theme' => $demo_theme]))->toString() . '</p>');
     }
     return NULL;
   }
@@ -92,7 +90,7 @@ class BlockHooks {
    *     element. Properties used: #block, #configuration, #children,
    *     and #plugin_id.
    */
-  public function preprocessBlock(&$variables): void {
+  public function preprocessBlock(array &$variables): void {
     $variables['configuration'] = $variables['elements']['#configuration'];
     $variables['plugin_id'] = $variables['elements']['#plugin_id'];
     $variables['base_plugin_id'] = $variables['elements']['#base_plugin_id'];
@@ -326,7 +324,7 @@ class BlockHooks {
       $default_theme_blocks = $storage->loadByProperties(['theme' => $default_theme]);
       $block_repository = \Drupal::service('block.repository');
       foreach ($default_theme_blocks as $default_theme_block_id => $default_theme_block) {
-        if (str_starts_with($default_theme_block_id, $default_theme . '_')) {
+        if (str_starts_with((string) $default_theme_block_id, $default_theme . '_')) {
           $id = str_replace($default_theme . '_', '', $default_theme_block_id);
         }
         else {

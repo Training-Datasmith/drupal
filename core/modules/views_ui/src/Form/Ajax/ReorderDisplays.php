@@ -16,21 +16,21 @@ class ReorderDisplays extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'reorder-displays';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_reorder_displays_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     /** @var \Drupal\views\ViewEntityInterface $view */
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
@@ -51,9 +51,7 @@ class ReorderDisplays extends ViewsFormBase {
     $count = count($displays);
 
     // Sort the displays.
-    uasort($displays, function ($display1, $display2) {
-      return $display1['position'] <=> $display2['position'];
-    });
+    uasort($displays, fn($display1, $display2) => $display1['position'] <=> $display2['position']);
 
     $form['displays'] = [
       '#type' => 'table',
@@ -145,7 +143,7 @@ class ReorderDisplays extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\views_ui\ViewUI $view */
     $view = $form_state->get('view');
     $order = [];

@@ -9,8 +9,9 @@ class LogMessageParser implements LogMessageParserInterface {
 
   /**
    * {@inheritdoc}
+   * @return bool[]|float[]|int[]|string[]|\Stringable[]|null[]
    */
-  public function parseMessagePlaceholders(&$message, array &$context) {
+  public function parseMessagePlaceholders(&$message, array &$context): array {
     $variables = [];
     $has_psr3 = FALSE;
     if (($start = strpos($message, '{')) !== FALSE && strpos($message, '}') > $start) {
@@ -25,7 +26,7 @@ class LogMessageParser implements LogMessageParserInterface {
         // Keys are not prefixed with anything according to PSR3 specs.
         // If the message is "User {username} created" the variable key will be
         // just "username".
-        if (str_contains($message, '@' . $key)) {
+        if (str_contains((string) $message, '@' . $key)) {
           $key = '@' . $key;
         }
       }

@@ -40,7 +40,7 @@ class Date extends ArgumentDefaultPluginBase implements CacheableDependencyInter
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -67,14 +67,14 @@ class Date extends ArgumentDefaultPluginBase implements CacheableDependencyInter
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return 0;
   }
 

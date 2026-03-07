@@ -14,39 +14,24 @@ class ModuleRequiredByThemesUninstallValidator implements ConfigImportModuleUnin
   use StringTranslationTrait;
 
   /**
-   * The module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
-
-  /**
-   * The theme extension list.
-   *
-   * @var \Drupal\Core\Extension\ThemeExtensionList
-   */
-  protected $themeExtensionList;
-
-  /**
    * Constructs a new ModuleRequiredByThemesUninstallValidator.
    *
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
-   * @param \Drupal\Core\Extension\ThemeExtensionList $extension_list_theme
+   * @param \Drupal\Core\Extension\ThemeExtensionList $themeExtensionList
    *   The theme extension list.
    */
-  public function __construct(TranslationInterface $string_translation, ModuleExtensionList $extension_list_module, ThemeExtensionList $extension_list_theme) {
+  public function __construct(TranslationInterface $string_translation, protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList, protected \Drupal\Core\Extension\ThemeExtensionList $themeExtensionList) {
     $this->stringTranslation = $string_translation;
-    $this->moduleExtensionList = $extension_list_module;
-    $this->themeExtensionList = $extension_list_theme;
   }
 
   /**
    * {@inheritdoc}
+   * @return list
    */
-  public function validate($module) {
+  public function validate($module): array {
     $reasons = [];
 
     $themes_depending_on_module = $this->getThemesDependingOnModule($module);
@@ -93,9 +78,9 @@ class ModuleRequiredByThemesUninstallValidator implements ConfigImportModuleUnin
    *   An array of the names of themes that depend on $module keyed by the
    *   theme's machine name.
    */
-  protected function getThemesDependingOnModule($module) {
+  protected function getThemesDependingOnModule($module): array {
     $installed_themes = $this->themeExtensionList->getAllInstalledInfo();
-    $themes_depending_on_module = array_map(function ($theme) use ($module) {
+    $themes_depending_on_module = array_map(function (array $theme) use ($module) {
       if (in_array($module, $theme['dependencies'])) {
         return $theme['name'];
       }

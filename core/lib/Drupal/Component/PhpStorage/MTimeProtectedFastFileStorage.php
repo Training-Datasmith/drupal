@@ -125,7 +125,7 @@ class MTimeProtectedFastFileStorage extends FileStorage {
    * @return string
    *   The full path where the file is or should be stored.
    */
-  public function getFullPath($name, &$directory = NULL, &$directory_mtime = NULL) {
+  public function getFullPath($name, &$directory = NULL, &$directory_mtime = NULL): string {
     if (!isset($directory)) {
       $directory = $this->getContainingDirectoryFullPath($name);
     }
@@ -149,7 +149,7 @@ class MTimeProtectedFastFileStorage extends FileStorage {
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     $flags = \FilesystemIterator::CURRENT_AS_FILEINFO;
     $flags += \FilesystemIterator::SKIP_DOTS;
 
@@ -209,7 +209,7 @@ class MTimeProtectedFastFileStorage extends FileStorage {
   /**
    * Clears PHP's stat cache and returns the directory's mtime.
    */
-  protected function getUncachedMTime($directory) {
+  protected function getUncachedMTime($directory): int|false {
     clearstatcache(TRUE, $directory);
     return filemtime($directory);
   }
@@ -225,7 +225,7 @@ class MTimeProtectedFastFileStorage extends FileStorage {
    * @return string
    *   Returns the new temporary filename (with path), or FALSE on failure.
    */
-  protected function tempnam($directory, $prefix) {
+  protected function tempnam(string $directory, string $prefix): string {
     do {
       $path = $directory . '/' . $prefix . Crypt::randomBytesBase64(20);
     } while (file_exists($path));

@@ -15,21 +15,21 @@ class DeleteMultiple extends EntityDeleteMultipleForm {
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('system.admin_content');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDeletedMessage($count) {
+  protected function getDeletedMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     return $this->formatPlural($count, 'Deleted @count content item.', 'Deleted @count content items.');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getInaccessibleMessage($count) {
+  protected function getInaccessibleMessage($count): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     return $this->formatPlural($count, "@count content item has not been deleted because you do not have the necessary permissions.", "@count content items have not been deleted because you do not have the necessary permissions.");
   }
 

@@ -15,7 +15,7 @@ class ModalRenderer extends DialogRenderer {
   /**
    * {@inheritdoc}
    */
-  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match) {
+  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match): \Drupal\Core\Ajax\AjaxResponse {
     $response = new AjaxResponse();
 
     // First render the main content, because it might provide a title.

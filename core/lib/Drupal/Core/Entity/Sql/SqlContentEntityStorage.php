@@ -108,32 +108,11 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   protected $revisionDataTable;
 
   /**
-   * Active database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * The entity type's storage schema object.
    *
    * @var \Drupal\Core\Entity\Schema\EntityStorageSchemaInterface
    */
   protected $storageSchema;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
 
   /**
    * Whether this storage should use the temporary table mapping.
@@ -145,7 +124,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('database'),
@@ -169,20 +148,17 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    *   The entity field manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend to be used.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Cache\MemoryCache\MemoryCacheInterface $memory_cache
    *   The memory cache backend to be used.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle info.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, MemoryCacheInterface $memory_cache, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Core\Database\Connection $database, EntityFieldManagerInterface $entity_field_manager, CacheBackendInterface $cache, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, MemoryCacheInterface $memory_cache, EntityTypeBundleInfoInterface $entity_type_bundle_info, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager) {
     parent::__construct($entity_type, $entity_field_manager, $cache, $memory_cache, $entity_type_bundle_info);
-    $this->database = $database;
-    $this->languageManager = $language_manager;
-    $this->entityTypeManager = $entity_type_manager;
     $this->entityType = $this->entityTypeManager->getActiveDefinition($entity_type->id());
     $this->fieldStorageDefinitions = $this->entityFieldManager->getActiveFieldStorageDefinitions($entity_type->id());
 
@@ -267,7 +243,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    */
   protected function getStorageSchema() {
     if (!isset($this->storageSchema)) {
-      $class = $this->entityType->getHandlerClass('storage_schema') ?: 'Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema';
+      $class = $this->entityType->getHandlerClass('storage_schema') ?: \Drupal\Core\Entity\Sql\SqlContentEntityStorageSchema::class;
       $this->storageSchema = new $class($this->entityTypeManager, $this->entityType, $this, $this->database, $this->entityFieldManager);
     }
     return $this->storageSchema;
@@ -282,7 +258,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    * @internal Only to be used internally by Entity API. Expected to be
    *   removed by https://www.drupal.org/node/2274017.
    */
-  public function setEntityType(EntityTypeInterface $entity_type) {
+  public function setEntityType(EntityTypeInterface $entity_type): void {
     if ($this->entityType->id() == $entity_type->id()) {
       $this->entityType = $entity_type;
       $this->initTableLayout();
@@ -300,7 +276,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    *
    * @internal Only to be used internally by Entity API.
    */
-  public function setFieldStorageDefinitions(array $field_storage_definitions) {
+  public function setFieldStorageDefinitions(array $field_storage_definitions): void {
     foreach ($field_storage_definitions as $field_storage_definition) {
       if ($field_storage_definition->getTargetEntityTypeId() !== $this->entityType->id()) {
         throw new EntityStorageException("Unsupported entity type {$field_storage_definition->getTargetEntityTypeId()}");
@@ -319,7 +295,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    * @internal Only to be used internally by Entity API. Expected to be removed
    *   by https://www.drupal.org/node/2554235.
    */
-  public function setTableMapping(TableMappingInterface $table_mapping) {
+  public function setTableMapping(TableMappingInterface $table_mapping): void {
     $this->tableMapping = $table_mapping;
 
     $this->baseTable = $table_mapping->getBaseTable();
@@ -336,7 +312,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    *
    * @internal Only to be used internally by Entity API.
    */
-  public function setTemporary($temporary) {
+  public function setTemporary($temporary): void {
     $this->temporary = $temporary;
   }
 
@@ -445,7 +421,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    * @return array
    *   An array of entity objects implementing the EntityInterface.
    */
-  protected function mapFromStorageRecords(array $records, $load_from_revision = FALSE) {
+  protected function mapFromStorageRecords(array $records, $load_from_revision = FALSE): array {
     if (!$records) {
       return [];
     }
@@ -742,7 +718,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function delete(array $entities) {
+  public function delete(array $entities): void {
     if (!$entities) {
       // If no IDs or invalid IDs were passed, do nothing.
       return;
@@ -819,7 +795,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function restore(EntityInterface $entity) {
+  public function restore(EntityInterface $entity): void {
     try {
       $transaction = $this->database->startTransaction();
       // Insert the entity data in the base and data tables only for default
@@ -972,7 +948,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  protected function has($id, EntityInterface $entity) {
+  protected function has($id, EntityInterface $entity): bool {
     return !$entity->isNew();
   }
 
@@ -1030,7 +1006,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
    * @return object
    *   The record to store.
    */
-  protected function mapToStorageRecord(ContentEntityInterface $entity, $table_name = NULL) {
+  protected function mapToStorageRecord(ContentEntityInterface $entity, $table_name = NULL): \stdClass {
     if (!isset($table_name)) {
       $table_name = $this->baseTable;
     }
@@ -1095,17 +1071,11 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   protected function isColumnSerial($table_name, $schema_name) {
     $result = FALSE;
 
-    switch ($table_name) {
-      case $this->baseTable:
-        $result = $schema_name == $this->idKey;
-        break;
-
-      case $this->revisionTable:
-        $result = $schema_name == $this->revisionKey;
-        break;
-    }
-
-    return $result;
+    return match ($table_name) {
+        $this->baseTable => $schema_name == $this->idKey,
+        $this->revisionTable => $schema_name == $this->revisionKey,
+        default => $result,
+    };
   }
 
   /**
@@ -1123,8 +1093,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
     if (!isset($table_name)) {
       $table_name = $this->dataTable;
     }
-    $record = $this->mapToStorageRecord($entity, $table_name);
-    return $record;
+    return $this->mapToStorageRecord($entity, $table_name);
   }
 
   /**
@@ -1177,7 +1146,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  protected function getQueryServiceName() {
+  protected function getQueryServiceName(): string {
     return 'entity.query.sql';
   }
 
@@ -1275,7 +1244,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
 
       $results = $query->execute();
 
-      $is_not_null = fn($value) => !is_null($value);
+      $is_not_null = fn($value): bool => !is_null($value);
       foreach ($results as $row) {
         $row = (array) $row;
         $value_key = $row[$base_id_key];
@@ -1616,8 +1585,8 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {
-    $this->wrapSchemaException(function () use ($entity_type) {
+  public function onEntityTypeCreate(EntityTypeInterface $entity_type): void {
+    $this->wrapSchemaException(function () use ($entity_type): void {
       $this->getStorageSchema()->onEntityTypeCreate($entity_type);
     });
   }
@@ -1625,14 +1594,14 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original): void {
     // Ensure we have an updated entity type definition.
     $this->entityType = $entity_type;
     // The table layout may have changed depending on the new entity type
     // definition.
     $this->initTableLayout();
     // Let the schema handler adapt to possible table layout changes.
-    $this->wrapSchemaException(function () use ($entity_type, $original) {
+    $this->wrapSchemaException(function () use ($entity_type, $original): void {
       $this->getStorageSchema()->onEntityTypeUpdate($entity_type, $original);
     });
   }
@@ -1640,8 +1609,8 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
-    $this->wrapSchemaException(function () use ($entity_type) {
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type): void {
+    $this->wrapSchemaException(function () use ($entity_type): void {
       $this->getStorageSchema()->onEntityTypeDelete($entity_type);
     });
   }
@@ -1649,8 +1618,8 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
-    $this->wrapSchemaException(function () use ($entity_type, $field_storage_definitions) {
+  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions): void {
+    $this->wrapSchemaException(function () use ($entity_type, $field_storage_definitions): void {
       $this->getStorageSchema()->onFieldableEntityTypeCreate($entity_type, $field_storage_definitions);
     });
   }
@@ -1658,8 +1627,8 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL) {
-    $this->wrapSchemaException(function () use ($entity_type, $original, $field_storage_definitions, $original_field_storage_definitions, &$sandbox) {
+  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL): void {
+    $this->wrapSchemaException(function () use ($entity_type, $original, $field_storage_definitions, $original_field_storage_definitions, &$sandbox): void {
       $this->getStorageSchema()->onFieldableEntityTypeUpdate($entity_type, $original, $field_storage_definitions, $original_field_storage_definitions, $sandbox);
     });
   }
@@ -1667,8 +1636,8 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onFieldStorageDefinitionCreate(FieldStorageDefinitionInterface $storage_definition) {
-    $this->wrapSchemaException(function () use ($storage_definition) {
+  public function onFieldStorageDefinitionCreate(FieldStorageDefinitionInterface $storage_definition): void {
+    $this->wrapSchemaException(function () use ($storage_definition): void {
       $this->getStorageSchema()->onFieldStorageDefinitionCreate($storage_definition);
       $this->fieldStorageDefinitions[$storage_definition->getName()] = $storage_definition;
       $this->tableMapping = NULL;
@@ -1678,8 +1647,8 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onFieldStorageDefinitionUpdate(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original) {
-    $this->wrapSchemaException(function () use ($storage_definition, $original) {
+  public function onFieldStorageDefinitionUpdate(FieldStorageDefinitionInterface $storage_definition, FieldStorageDefinitionInterface $original): void {
+    $this->wrapSchemaException(function () use ($storage_definition, $original): void {
       $this->getStorageSchema()->onFieldStorageDefinitionUpdate($storage_definition, $original);
       $this->fieldStorageDefinitions[$storage_definition->getName()] = $storage_definition;
       $this->tableMapping = NULL;
@@ -1689,7 +1658,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onFieldStorageDefinitionDelete(FieldStorageDefinitionInterface $storage_definition) {
+  public function onFieldStorageDefinitionDelete(FieldStorageDefinitionInterface $storage_definition): void {
     $table_mapping = $this->getTableMapping();
     if ($table_mapping->requiresDedicatedTableStorage($storage_definition)) {
       // Mark all data associated with the field for deletion.
@@ -1706,7 +1675,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
     }
 
     // Update the field schema.
-    $this->wrapSchemaException(function () use ($storage_definition) {
+    $this->wrapSchemaException(function () use ($storage_definition): void {
       $this->getStorageSchema()->onFieldStorageDefinitionDelete($storage_definition);
       unset($this->fieldStorageDefinitions[$storage_definition->getName()]);
       $this->tableMapping = NULL;
@@ -1727,11 +1696,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
     try {
       $callback();
     }
-    catch (SchemaException $e) {
-      $message .= ' ' . $e->getMessage();
-      throw new EntityStorageException($message, 0, $e);
-    }
-    catch (DatabaseExceptionWrapper $e) {
+    catch (SchemaException|DatabaseExceptionWrapper $e) {
       $message .= ' ' . $e->getMessage();
       throw new EntityStorageException($message, 0, $e);
     }
@@ -1740,7 +1705,7 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function onFieldDefinitionDelete(FieldDefinitionInterface $field_definition) {
+  public function onFieldDefinitionDelete(FieldDefinitionInterface $field_definition): void {
     $table_mapping = $this->getTableMapping();
     $storage_definition = $field_definition->getFieldStorageDefinition();
     // Mark field data as deleted.
@@ -1772,8 +1737,9 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  protected function readFieldItemsToPurge(FieldDefinitionInterface $field_definition, $batch_size) {
+  protected function readFieldItemsToPurge(FieldDefinitionInterface $field_definition, $batch_size): array {
     // Check whether the whole field storage definition is gone, or just some
     // bundle fields.
     $storage_definition = $field_definition->getFieldStorageDefinition();
@@ -1856,14 +1822,14 @@ class SqlContentEntityStorage extends ContentEntityStorageBase implements SqlEnt
   /**
    * {@inheritdoc}
    */
-  public function finalizePurge(FieldStorageDefinitionInterface $storage_definition) {
+  public function finalizePurge(FieldStorageDefinitionInterface $storage_definition): void {
     $this->getStorageSchema()->finalizePurge($storage_definition);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function countFieldData($storage_definition, $as_bool = FALSE) {
+  public function countFieldData($storage_definition, $as_bool = FALSE): bool|int {
     // Ensure that the table mapping is instantiated with the passed-in field
     // storage definition.
     $storage_definitions = $this->fieldStorageDefinitions;

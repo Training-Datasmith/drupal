@@ -21,14 +21,14 @@ class IsSuperUserCacheContext extends UserCacheContextBase implements CacheConte
   /**
    * {@inheritdoc}
    */
-  public function getContext() {
+  public function getContext(): string {
     return ((int) $this->user->id()) === 1 ? '1' : '0';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

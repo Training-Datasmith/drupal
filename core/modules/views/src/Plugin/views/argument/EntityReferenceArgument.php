@@ -36,8 +36,9 @@ class EntityReferenceArgument extends NumericArgument implements ContainerFactor
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function titleQuery() {
+  public function titleQuery(): array {
     $titles = [];
 
     $entities = $this->entityTypeManager->getStorage($this->definition['target_entity_type_id'])->loadMultiple($this->value);

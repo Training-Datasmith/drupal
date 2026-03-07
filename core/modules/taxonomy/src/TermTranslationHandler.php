@@ -14,12 +14,12 @@ class TermTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    */
-  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity) {
+  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity): void {
     parent::entityFormAlter($form, $form_state, $entity);
 
     $form['content_translation']['status']['#access'] = !isset($form['content_translation']);
 
-    $form['actions']['submit']['#submit'][] = [$this, 'entityFormSave'];
+    $form['actions']['submit']['#submit'][] = $this->entityFormSave(...);
   }
 
   /**
@@ -29,7 +29,7 @@ class TermTranslationHandler extends ContentTranslationHandler {
    *
    * @see \Drupal\Core\Entity\EntityForm::build()
    */
-  public function entityFormSave(array $form, FormStateInterface $form_state) {
+  public function entityFormSave(array $form, FormStateInterface $form_state): void {
     if ($this->getSourceLangcode($form_state)) {
       $entity = $form_state->getFormObject()->getEntity();
       // We need a redirect here, otherwise we would get an access denied page,
@@ -42,7 +42,7 @@ class TermTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    */
-  public function entityFormEntityBuild($entity_type, EntityInterface $entity, array $form, FormStateInterface $form_state) {
+  public function entityFormEntityBuild($entity_type, EntityInterface $entity, array $form, FormStateInterface $form_state): void {
     if ($form_state->hasValue('content_translation')) {
       $translation = &$form_state->getValue('content_translation');
       $translation['status'] = $entity->isPublished();

@@ -17,7 +17,7 @@ class MemoryStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function has($key) {
+  public function has($key): bool {
     return array_key_exists($key, $this->data);
   }
 
@@ -31,7 +31,7 @@ class MemoryStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function getMultiple(array $keys) {
+  public function getMultiple(array $keys): array {
     return array_intersect_key($this->data, array_flip($keys));
   }
 
@@ -45,14 +45,14 @@ class MemoryStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function set($key, $value) {
+  public function set($key, $value): void {
     $this->data[$key] = $value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setIfNotExists($key, $value) {
+  public function setIfNotExists($key, $value): bool {
     if (!isset($this->data[$key])) {
       $this->data[$key] = $value;
       return TRUE;
@@ -63,14 +63,14 @@ class MemoryStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $data) {
+  public function setMultiple(array $data): void {
     $this->data = $data + $this->data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function rename($key, $new_key) {
+  public function rename($key, $new_key): void {
     if ($key !== $new_key) {
       $this->data[$new_key] = $this->data[$key];
       unset($this->data[$key]);
@@ -80,14 +80,14 @@ class MemoryStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function delete($key) {
+  public function delete($key): void {
     unset($this->data[$key]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $keys) {
+  public function deleteMultiple(array $keys): void {
     foreach ($keys as $key) {
       unset($this->data[$key]);
     }
@@ -96,7 +96,7 @@ class MemoryStorage extends StorageBase {
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     $this->data = [];
   }
 

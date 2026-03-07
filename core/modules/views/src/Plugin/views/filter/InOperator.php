@@ -34,7 +34,7 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
    * @var array
    * Stores all operations which are available on the form.
    */
-  protected $valueOptions = NULL;
+  protected $valueOptions;
 
   /**
    * The filter title.
@@ -46,7 +46,7 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->valueTitle = $this->t('Options');
@@ -89,7 +89,7 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
   /**
    * {@inheritdoc}
    */
-  public function defaultExposeOptions() {
+  public function defaultExposeOptions(): void {
     parent::defaultExposeOptions();
     $this->options['expose']['reduce'] = FALSE;
   }
@@ -97,7 +97,7 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildExposeForm(&$form, FormStateInterface $form_state) {
+  public function buildExposeForm(&$form, FormStateInterface $form_state): void {
     parent::buildExposeForm($form, $form_state);
     $form['expose']['reduce'] = [
       '#type' => 'checkbox',
@@ -123,8 +123,9 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
 
   /**
    * {@inheritdoc}
+   * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opEmpty', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 0}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, short: Drupal\Core\StringTranslation\TranslatableMarkup, short_single: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opSimple', values: 1}[]
    */
-  public function operators() {
+  public function operators(): array {
     $operators = [
       'in' => [
         'title' => $this->t('Is one of'),
@@ -164,8 +165,9 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
 
   /**
    * Build strings from the operators() for 'select' options.
+   * @return mixed[]
    */
-  public function operatorOptions($which = 'title') {
+  public function operatorOptions($which = 'title'): array {
     $options = [];
     foreach ($this->operators() as $id => $info) {
       $options[$id] = $info[$which];
@@ -176,8 +178,9 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
 
   /**
    * Gets the operators that have a given number of values.
+   * @return mixed[]
    */
-  protected function operatorValues($values = 1) {
+  protected function operatorValues($values = 1): array {
     $options = [];
     foreach ($this->operators() as $id => $info) {
       if (isset($info['values']) && $info['values'] == $values) {
@@ -281,8 +284,9 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
    *
    * @param array $input
    *   (optional) Associative array containing the exposed data for this view.
+   * @return mixed[]
    */
-  public function reduceValueOptions($input = NULL) {
+  public function reduceValueOptions($input = NULL): array {
     if (!isset($input)) {
       $input = $this->valueOptions;
     }
@@ -293,17 +297,16 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
     $options = [];
     foreach ($input as $id => $option) {
       if (is_array($option)) {
-        $options[$id] = $this->reduceValueOptions($option);
-        continue;
+          $options[$id] = $this->reduceValueOptions($option);
+          continue;
       }
-      elseif (is_object($option) && !$option instanceof MarkupInterface) {
-        $keys = array_keys($option->option);
-        $key = array_shift($keys);
-        if (isset($this->options['value'][$key])) {
-          $options[$id] = $option;
-        }
-      }
-      elseif (isset($this->options['value'][$id])) {
+      if (is_object($option) && !$option instanceof MarkupInterface) {
+          $keys = array_keys($option->option);
+          $key = array_shift($keys);
+          if (isset($this->options['value'][$key])) {
+            $options[$id] = $option;
+          }
+      } elseif (isset($this->options['value'][$id])) {
         $options[$id] = $option;
       }
     }
@@ -417,7 +420,7 @@ class InOperator extends FilterPluginBase implements FilterOperatorsInterface {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $info = $this->operators();
     if (!empty($info[$this->operator]['method'])) {
       $this->{$info[$this->operator]['method']}();

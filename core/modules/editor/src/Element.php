@@ -30,14 +30,15 @@ class Element implements TrustedCallbackInterface {
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['preRenderTextFormat'];
   }
 
   /**
    * Additional #pre_render callback for 'text_format' elements.
+   * @return mixed[]
    */
-  public function preRenderTextFormat(array $element) {
+  public function preRenderTextFormat(array $element): array {
     // Allow modules to programmatically enforce no client-side editor by
     // setting the #editor property to FALSE.
     if (isset($element['#editor']) && !$element['#editor']) {
@@ -175,18 +176,9 @@ class Element implements TrustedCallbackInterface {
       if ($original_format === NULL) {
         return FALSE;
       }
-      // Unless we are switching from another text format, in which case we must
-      // first check whether a filter preventing XSS attacks is used in that
-      // text format, and if so, we must still apply XSS filtering. E.g., an
-      // anonymous user creates content in Restricted HTML, an admin user edits
-      // it (then no XSS filtering is applied because no text editor is used),
-      // and switches to Full HTML (for which a text editor is used). Then we
-      // must apply XSS filtering to protect the admin user.
-      else {
-        $original_filter_types = $original_format->getFilterTypes();
-        if (!in_array(FilterInterface::TYPE_HTML_RESTRICTOR, $original_filter_types, TRUE)) {
-          return FALSE;
-        }
+      $original_filter_types = $original_format->getFilterTypes();
+      if (!in_array(FilterInterface::TYPE_HTML_RESTRICTOR, $original_filter_types, TRUE)) {
+        return FALSE;
       }
     }
 

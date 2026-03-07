@@ -13,25 +13,11 @@ use Drupal\Core\Site\Settings;
 class DatabaseBackendFactory implements CacheFactoryInterface {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The cache tags checksum provider.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsChecksumInterface
-   */
-  protected $checksumProvider;
-
-  /**
    * Constructs the DatabaseBackendFactory object.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   Database connection.
-   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksum_provider
+   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider
    *   The cache tags checksum provider.
    * @param \Drupal\Core\Site\Settings $settings
    *   (optional) The site settings.
@@ -42,15 +28,8 @@ class DatabaseBackendFactory implements CacheFactoryInterface {
    *
    * @throws \BadMethodCallException
    */
-  public function __construct(
-    Connection $connection,
-    CacheTagsChecksumInterface $checksum_provider,
-    protected Settings $settings,
-    protected ObjectAwareSerializationInterface $serializer,
-    protected TimeInterface $time,
-  ) {
-    $this->connection = $connection;
-    $this->checksumProvider = $checksum_provider;
+  public function __construct(protected \Drupal\Core\Database\Connection $connection, protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider, protected Settings $settings, protected ObjectAwareSerializationInterface $serializer, protected TimeInterface $time)
+  {
   }
 
   /**
@@ -62,7 +41,7 @@ class DatabaseBackendFactory implements CacheFactoryInterface {
    * @return \Drupal\Core\Cache\DatabaseBackend
    *   The cache backend object for the specified cache bin.
    */
-  public function get($bin) {
+  public function get($bin): \Drupal\Core\Cache\DatabaseBackend {
     $max_rows = $this->getMaxRowsForBin($bin);
     return new DatabaseBackend($this->connection, $this->checksumProvider, $bin, $this->serializer, $this->time, $max_rows);
   }

@@ -13,20 +13,13 @@ use Drupal\Core\Cache\Context\CacheContextInterface;
 class WorkspaceCacheContext implements CacheContextInterface {
 
   /**
-   * The workspace manager.
-   *
-   * @var \Drupal\workspaces\WorkspaceManagerInterface
-   */
-  protected $workspaceManager;
-
-  /**
    * Constructs a new WorkspaceCacheContext service.
    *
-   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager
    *   The workspace manager.
    */
-  public function __construct(WorkspaceManagerInterface $workspace_manager) {
-    $this->workspaceManager = $workspace_manager;
+  public function __construct(protected \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager)
+  {
   }
 
   /**
@@ -46,7 +39,7 @@ class WorkspaceCacheContext implements CacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($type = NULL) {
+  public function getCacheableMetadata($type = NULL): \Drupal\Core\Cache\CacheableMetadata {
     // The active workspace will always be stored in the user's session.
     $cacheability = new CacheableMetadata();
     $cacheability->addCacheContexts(['session']);

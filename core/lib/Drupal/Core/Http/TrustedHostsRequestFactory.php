@@ -21,10 +21,8 @@ class TrustedHostsRequestFactory {
 
   /**
    * The host of the main request.
-   *
-   * @var string
    */
-  protected $host;
+  protected string $host;
 
   /**
    * Creates a new TrustedHostsRequestFactory.

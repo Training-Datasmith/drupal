@@ -153,7 +153,7 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
   public function getAllComponents(): array {
     $plugin_ids = array_keys($this->getDefinitions());
     return array_values(array_filter(array_map(
-      [$this, 'createInstance'],
+      $this->createInstance(...),
       $plugin_ids
     )));
   }
@@ -237,8 +237,12 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
   /**
    * {@inheritdoc}
    */
-  protected function providerExists($provider) {
-    return $this->moduleHandler->moduleExists($provider) || $this->themeHandler->themeExists($provider);
+  protected function providerExists($provider): bool
+  {
+      if ($this->moduleHandler->moduleExists($provider)) {
+          return true;
+      }
+      return $this->themeHandler->themeExists($provider);
   }
 
   /**
@@ -252,7 +256,7 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
   /**
    * {@inheritdoc}
    */
-  protected function processDefinitionCategory(&$definition): void {
+  protected function processDefinitionCategory(array &$definition): void {
     $definition['category'] = $definition['group'] ?? $this->t('Other');
   }
 
@@ -263,11 +267,11 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
     // Save in the definition whether this is a module or a theme. This is
     // important because when creating the plugin instance (the Component
     // object) we'll need to negotiate based on the active theme.
-    $definitions = array_map([$this, 'alterDefinition'], $definitions);
+    $definitions = array_map($this->alterDefinition(...), $definitions);
     // Validate the definition after alterations.
     assert(
       Inspector::assertAll(
-        fn(array $definition) => $this->isValidDefinition($definition),
+        fn(array $definition): bool => $this->isValidDefinition($definition),
         $definitions
       )
     );
@@ -276,9 +280,9 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
     // Finally, validate replacements.
     $replacing_definitions = array_filter(
       $definitions,
-      static fn(array $definition) => ($definition['replaces'] ?? NULL) && ($definitions[$definition['replaces']] ?? NULL)
+      static fn(array $definition): bool => ($definition['replaces'] ?? NULL) && ($definitions[$definition['replaces']] ?? NULL)
     );
-    $validation_errors = array_reduce($replacing_definitions, function (array $errors, array $new_definition) use ($definitions) {
+    $validation_errors = array_reduce($replacing_definitions, function (array $errors, array $new_definition) use ($definitions): array {
       $original_definition = $definitions[$new_definition['replaces']];
       $original_schemas = $original_definition['props'] ?? NULL;
       $new_schemas = $new_definition['props'] ?? NULL;
@@ -316,7 +320,7 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
     // \Drupal\Core\Theme\ComponentNegotiator::maybeNegotiateByTheme() as their
     // order can vary based on the active theme.
     $module_list = $this->getModuleExtensionList()->getList();
-    $sort_by_module_weight_and_name = static function (array $definition_a, array $definition_b) use ($module_list) {
+    $sort_by_module_weight_and_name = static function (array $definition_a, array $definition_b) use ($module_list): int {
       $a_weight = $module_list[$definition_a['provider']]?->weight ?? -999;
       $b_weight = $module_list[$definition_b['provider']]?->weight ?? -999;
       return $a_weight !== $b_weight
@@ -342,7 +346,7 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
     $metadata_path = $definition[YamlDirectoryDiscovery::FILE_KEY];
     $component_directory = $this->fileSystem->dirname($metadata_path);
     $definition['path'] = $component_directory;
-    [, $machine_name] = explode(':', $definition['id']);
+    [, $machine_name] = explode(':', (string) $definition['id']);
     $definition['machineName'] = $machine_name;
     $definition['library'] = $this->libraryFromDefinition($definition);
     // Discover the template.
@@ -351,7 +355,7 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
       $definition['machineName'],
       'twig'
     );
-    $definition['template'] = basename($template);
+    $definition['template'] = basename((string) $template);
     $definition['documentation'] = 'No documentation found. Add a README.md in your component directory.';
     $documentation_path = sprintf('%s/README.md', $this->fileSystem->dirname($metadata_path));
     if (file_exists($documentation_path)) {
@@ -390,7 +394,7 @@ class ComponentPluginManager extends DefaultPluginManager implements Categorizin
       ...$this->themeHandler->getThemeDirectories(),
     ];
     return array_map(
-      static fn(string $path) => rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'components',
+      static fn(string $path): string => rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'components',
       $extension_directories
     );
   }

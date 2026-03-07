@@ -23,7 +23,7 @@ class MapItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
+  public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition): array {
     // The properties are dynamic and can not be defined statically.
     return [];
   }
@@ -31,7 +31,7 @@ class MapItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -55,7 +55,7 @@ class MapItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     $this->values = [];
     if (!isset($values)) {
       return;
@@ -104,7 +104,7 @@ class MapItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName() {
+  public static function mainPropertyName(): null {
     // A map item has no main property.
     return NULL;
   }
@@ -112,7 +112,7 @@ class MapItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     return empty($this->values);
   }
 

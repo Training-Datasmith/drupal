@@ -30,30 +30,15 @@ class EntityRevisionParamConverter implements ParamConverterInterface {
   use DynamicEntityTypeParamConverterTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
    * Creates a new EntityRevisionParamConverter instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityRepositoryInterface $entity_repository) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityRepository = $entity_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository)
+  {
   }
 
   /**
@@ -68,7 +53,7 @@ class EntityRevisionParamConverter implements ParamConverterInterface {
     // If the entity type is translatable, ensure we return the proper
     // translation object for the current context.
     if ($entity instanceof EntityInterface && $entity instanceof TranslatableInterface) {
-      $entity = $this->entityRepository->getTranslationFromContext($entity, NULL, ['operation' => 'entity_upcast']);
+      return $this->entityRepository->getTranslationFromContext($entity, NULL, ['operation' => 'entity_upcast']);
     }
 
     return $entity;
@@ -77,7 +62,7 @@ class EntityRevisionParamConverter implements ParamConverterInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies($definition, $name, Route $route) {
+  public function applies($definition, $name, Route $route): bool {
     return isset($definition['type']) && str_contains($definition['type'], 'entity_revision:');
   }
 

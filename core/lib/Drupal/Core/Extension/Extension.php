@@ -14,27 +14,11 @@ namespace Drupal\Core\Extension;
 class Extension {
 
   /**
-   * The type of the extension (e.g., 'module').
-   *
-   * @var string
-   */
-  protected $type;
-
-  /**
    * The relative pathname of the extension.
    *
    * An example relative pathname is 'core/modules/node/node.info.yml'.
-   *
-   * @var string
    */
-  protected $pathname;
-
-  /**
-   * The filename of the main extension file (e.g., 'node.module').
-   *
-   * @var string|null
-   */
-  protected $filename;
+  protected string $pathname;
 
   /**
    * An SplFileInfo instance for the extension's info file.
@@ -47,10 +31,8 @@ class Extension {
 
   /**
    * The app root.
-   *
-   * @var string
    */
-  protected $root;
+  protected string $root;
 
   /**
    * The extension info array.
@@ -70,13 +52,17 @@ class Extension {
    * @param string $filename
    *   (optional) The filename of the main extension file; e.g., 'node.module'.
    */
-  public function __construct($root, $type, $pathname, $filename = NULL) {
+  public function __construct(string $root, /**
+   * The type of the extension (e.g., 'module').
+   */
+  protected $type, string $pathname, /**
+   * The filename of the main extension file (e.g., 'node.module').
+   */
+  protected $filename = NULL) {
     // @see \Drupal\Core\Theme\ThemeInitialization::getActiveThemeByName()
     assert($pathname === 'core/core.info.yml' || ($pathname[0] !== '/' && file_exists($root . '/' . $pathname)), sprintf('The file specified by the given app root, relative path and file name (%s) do not exist.', $root . '/' . $pathname));
     $this->root = $root;
-    $this->type = $type;
     $this->pathname = $pathname;
-    $this->filename = $filename;
   }
 
   /**
@@ -95,7 +81,7 @@ class Extension {
    * @return string
    *   The machine name of the extension.
    */
-  public function getName() {
+  public function getName(): string {
     return basename($this->pathname, '.info.yml');
   }
 
@@ -105,7 +91,7 @@ class Extension {
    * @return string
    *   The relative path of the extension.
    */
-  public function getPath() {
+  public function getPath(): string {
     return dirname($this->pathname);
   }
 
@@ -125,7 +111,7 @@ class Extension {
    * @return string
    *   The base name of the extension .info file.
    */
-  public function getFilename() {
+  public function getFilename(): string {
     return basename($this->pathname);
   }
 
@@ -157,7 +143,7 @@ class Extension {
    * @return bool
    *   TRUE if this extension has a main extension file, FALSE otherwise.
    */
-  public function load() {
+  public function load(): bool {
     if ($this->filename) {
       include_once $this->root . '/' . $this->getPath() . '/' . $this->filename;
       return TRUE;

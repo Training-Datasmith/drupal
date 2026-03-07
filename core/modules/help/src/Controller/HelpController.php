@@ -51,7 +51,7 @@ class HelpController extends ControllerBase {
    * @return array
    *   A render array for the help page.
    */
-  public function helpMain() {
+  public function helpMain(): array {
     $output = [];
 
     // We are checking permissions, so add the user.permissions cache context.
@@ -104,7 +104,7 @@ class HelpController extends ControllerBase {
    *
    * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
    */
-  public function helpPage($name) {
+  public function helpPage($name): array {
     $build = [];
     if ($this->moduleHandler()->hasImplementations('help', $name)) {
       $module_name = $this->moduleExtensionList->getName($name);
@@ -150,9 +150,7 @@ class HelpController extends ControllerBase {
       }
       return $build;
     }
-    else {
-      throw new NotFoundHttpException();
-    }
+    throw new NotFoundHttpException();
   }
 
 }

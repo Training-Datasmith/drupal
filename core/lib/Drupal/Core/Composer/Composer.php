@@ -20,7 +20,7 @@ class Composer {
    *
    * @internal
    */
-  public static function upgradePHPUnit(Event $event) {
+  public static function upgradePHPUnit(Event $event): void {
     $repository = $event->getComposer()->getRepositoryManager()->getLocalRepository();
     // This is, essentially, a null constraint. We only care whether the package
     // is present in the vendor directory yet, but findPackage() requires it.
@@ -55,7 +55,7 @@ class Composer {
    *
    * @internal
    */
-  public static function upgradePHPUnitCheck($phpunit_version) {
+  public static function upgradePHPUnitCheck($phpunit_version): bool {
     return !(version_compare(PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION, '8.4') >= 0 && version_compare($phpunit_version, '11.0') < 0);
   }
 

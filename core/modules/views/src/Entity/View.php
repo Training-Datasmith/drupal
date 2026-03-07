@@ -60,7 +60,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
    *
    * @var string
    */
-  protected $id = NULL;
+  protected $id;
 
   /**
    * The label of the view.
@@ -206,7 +206,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
    * @return string
    *   The generated display ID.
    */
-  protected function generateDisplayId($plugin_id) {
+  protected function generateDisplayId($plugin_id): string {
     // 'default' is singular and is unique, so just go with 'default'
     // for it. For all others, start counting.
     if ($plugin_id == 'default') {
@@ -268,7 +268,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
 
     // Ensure that the view is dependant on the module that implements the view.
@@ -289,7 +289,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     $displays = $this->get('display');
@@ -345,7 +345,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     // @todo Remove if views implements a view_builder controller.
@@ -361,7 +361,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
+  public static function postLoad(EntityStorageInterface $storage, array &$entities): void {
     parent::postLoad($storage, $entities);
     foreach ($entities as $entity) {
       $entity->mergeDefaultDisplaysOptions();
@@ -371,7 +371,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     parent::preCreate($storage, $values);
 
     // If there is no information about displays available add at least the
@@ -392,7 +392,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function postCreate(EntityStorageInterface $storage) {
+  public function postCreate(EntityStorageInterface $storage): void {
     parent::postCreate($storage);
 
     $this->mergeDefaultDisplaysOptions();
@@ -401,7 +401,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     // Call the remove() hook on the individual displays.
@@ -418,7 +418,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     $tempstore = \Drupal::service('tempstore.shared')->get('views');
@@ -432,7 +432,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function mergeDefaultDisplaysOptions() {
+  public function mergeDefaultDisplaysOptions(): void {
     $displays = [];
     foreach ($this->get('display') as $key => $options) {
       $options += [
@@ -451,7 +451,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function isInstallable() {
+  public function isInstallable(): bool {
     $table_definition = \Drupal::service('views.views_data')->get($this->base_table);
     // Check whether the base table definition exists and contains a base table
     // definition. For example, taxonomy_views_data_alter() defines
@@ -471,7 +471,7 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
   /**
    * Invalidates cache tags.
    */
-  public function invalidateCaches() {
+  public function invalidateCaches(): void {
     // Invalidate cache tags for cached rows.
     $tags = $this->getCacheTags();
     \Drupal::service('cache_tags.invalidator')->invalidateTags($tags);
@@ -509,13 +509,15 @@ class View extends ConfigEntityBase implements ViewEntityInterface {
       foreach (array_keys($handler_types) as $handler_type) {
         $handlers = $display->getHandlers($handler_type);
         foreach ($handlers as $handler_id => $handler) {
-          if ($handler instanceof DependentWithRemovalPluginInterface) {
-            if ($handler->onDependencyRemoval($dependencies)) {
-              // Remove the handler and indicate we made changes.
-              unset($this->display[$display_id]['display_options'][$handler_types[$handler_type]['plural']][$handler_id]);
-              $changed = TRUE;
+            if (!$handler instanceof DependentWithRemovalPluginInterface) {
+                continue;
             }
-          }
+            if (!$handler->onDependencyRemoval($dependencies)) {
+                continue;
+            }
+            // Remove the handler and indicate we made changes.
+            unset($this->display[$display_id]['display_options'][$handler_types[$handler_type]['plural']][$handler_id]);
+            $changed = TRUE;
         }
       }
     }

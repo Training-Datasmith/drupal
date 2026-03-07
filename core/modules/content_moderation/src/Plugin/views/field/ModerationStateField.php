@@ -19,7 +19,7 @@ class ModerationStateField extends EntityField {
   /**
    * {@inheritdoc}
    */
-  public function clickSort($order) {
+  public function clickSort($order): void {
     $this->ensureMyTable();
 
     // This could be derived from the content_moderation_state entity table

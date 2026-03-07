@@ -14,13 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class RestPermissions implements ContainerInjectionInterface {
 
   /**
-   * The rest resource plugin manager.
-   *
-   * @var \Drupal\rest\Plugin\Type\ResourcePluginManager
-   */
-  protected $restPluginManager;
-
-  /**
    * The REST resource config storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -30,20 +23,19 @@ class RestPermissions implements ContainerInjectionInterface {
   /**
    * Constructs a new RestPermissions instance.
    *
-   * @param \Drupal\rest\Plugin\Type\ResourcePluginManager $rest_plugin_manager
+   * @param \Drupal\rest\Plugin\Type\ResourcePluginManager $restPluginManager
    *   The rest resource plugin manager.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(ResourcePluginManager $rest_plugin_manager, EntityTypeManagerInterface $entity_type_manager) {
-    $this->restPluginManager = $rest_plugin_manager;
+  public function __construct(protected \Drupal\rest\Plugin\Type\ResourcePluginManager $restPluginManager, EntityTypeManagerInterface $entity_type_manager) {
     $this->resourceConfigStorage = $entity_type_manager->getStorage('rest_resource_config');
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static($container->get('plugin.manager.rest'), $container->get('entity_type.manager'));
   }
 
@@ -53,7 +45,7 @@ class RestPermissions implements ContainerInjectionInterface {
    * @return array
    *   An array of permissions keyed by permission name.
    */
-  public function permissions() {
+  public function permissions(): array {
     $permissions = [];
     /** @var \Drupal\rest\RestResourceConfigInterface[] $resource_configs */
     $resource_configs = $this->resourceConfigStorage->loadMultiple();

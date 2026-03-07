@@ -23,8 +23,6 @@ class ValidSequenceKeysConstraint extends Existence implements ContainerFactoryP
 
   /**
    * The error message if a sequence key is invalid.
-   *
-   * @var string
    */
   public string $message = 'The keys of the sequence do not match the given constraints.';
 

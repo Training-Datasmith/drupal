@@ -23,7 +23,7 @@ class SystemCompactLink extends Link {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderCompactLink'],
@@ -56,7 +56,7 @@ class SystemCompactLink extends Link {
    * @return array
    *   The passed-in element containing the system compact link default values.
    */
-  public static function preRenderCompactLink($element) {
+  public static function preRenderCompactLink(array $element): array {
     // By default, link options to pass to l() are normally set in #options.
     $element += ['#options' => []];
 

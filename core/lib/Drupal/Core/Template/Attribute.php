@@ -130,7 +130,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
     // If the value is already an AttributeValueBase object,
     // return a new instance of the same class, but with the new name.
     if ($value instanceof AttributeValueBase) {
-      $class = get_class($value);
+      $class = $value::class;
       return new $class($name, $value->value());
     }
     // An array value or 'class' attribute name are forced to always be an
@@ -183,7 +183,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    *
    * @return $this
    */
-  public function addClass(...$args) {
+  public function addClass(...$args): static {
     if ($args) {
       $classes = [];
       foreach ($args as $arg) {
@@ -218,7 +218,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    *
    * @return $this
    */
-  public function setAttribute($attribute, $value) {
+  public function setAttribute($attribute, $value): static {
     $this->offsetSet($attribute, $value);
 
     return $this;
@@ -233,7 +233,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    * @return bool
    *   Returns TRUE if the attribute exists, or FALSE otherwise.
    */
-  public function hasAttribute($name) {
+  public function hasAttribute($name): bool {
     return array_key_exists($name, $this->storage);
   }
 
@@ -245,7 +245,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    *
    * @return $this
    */
-  public function removeAttribute(...$args) {
+  public function removeAttribute(...$args): static {
     foreach ($args as $arg) {
       // Support arrays or multiple arguments.
       if (is_array($arg)) {
@@ -269,7 +269,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    *
    * @return $this
    */
-  public function removeClass(...$args) {
+  public function removeClass(...$args): static {
     // With no class attribute, there is no need to remove.
     if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
       $classes = [];
@@ -299,7 +299,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    *
    * @see twig_get_attribute()
    */
-  public function getClass() {
+  public function getClass(): mixed {
     return $this->offsetGet('class');
   }
 
@@ -316,16 +316,14 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
     if (isset($this->storage['class']) && $this->storage['class'] instanceof AttributeArray) {
       return in_array($class, $this->storage['class']->value());
     }
-    else {
-      return FALSE;
-    }
+    return FALSE;
   }
 
   /**
    * Implements the magic __toString() method.
    */
   #[JsonSchema(['type' => 'string', 'description' => 'Rendered HTML element attributes'])]
-  public function __toString() {
+  public function __toString(): string {
     $return = '';
     /** @var \Drupal\Core\Template\AttributeValueBase $value */
     foreach ($this->storage as $value) {
@@ -343,7 +341,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    * @return array
    *   An associative array of attributes.
    */
-  public function toArray() {
+  public function toArray(): array {
     $return = [];
     foreach ($this->storage as $name => $value) {
       $return[$name] = $value->value();
@@ -396,7 +394,7 @@ class Attribute implements \ArrayAccess, \IteratorAggregate, MarkupInterface {
    *
    * @return $this
    */
-  public function merge(Attribute $collection) {
+  public function merge(Attribute $collection): static {
     $merged_attributes = NestedArray::mergeDeep($this->toArray(), $collection->toArray());
     foreach ($merged_attributes as $name => $value) {
       $this->storage[$name] = $this->createAttributeValue($name, $value);

@@ -38,7 +38,7 @@ abstract class QueryPluginBase extends PluginBase implements CacheableDependency
    *
    * @var \Drupal\views\Plugin\views\pager\PagerPluginBase|null
    */
-  public $pager = NULL;
+  public $pager;
 
   /**
    * Stores the limit of items that should be requested in the query.
@@ -150,14 +150,14 @@ abstract class QueryPluginBase extends PluginBase implements CacheableDependency
   /**
    * Set a LIMIT on the query, specifying a maximum number of results.
    */
-  public function setLimit($limit) {
+  public function setLimit($limit): void {
     $this->limit = $limit;
   }
 
   /**
    * Set an OFFSET on the query, specifying a number of results to skip.
    */
-  public function setOffset($offset) {
+  public function setOffset(int $offset): void {
     $this->offset = $offset;
   }
 
@@ -205,7 +205,7 @@ abstract class QueryPluginBase extends PluginBase implements CacheableDependency
    * @param string $type
    *   Either 'AND' or 'OR'.
    */
-  public function setGroupOperator($type = 'AND') {
+  public function setGroupOperator($type = 'AND'): void {
     $this->groupOperator = strtoupper($type);
   }
 
@@ -384,7 +384,7 @@ abstract class QueryPluginBase extends PluginBase implements CacheableDependency
    * @param int $offset
    *   The timezone offset to apply to the field.
    */
-  public function setFieldTimezoneOffset(&$field, $offset) {
+  public function setFieldTimezoneOffset(&$field, $offset): void {
     // No-op. Timezone offsets are implementation-specific and should implement
     // this method as needed.
   }

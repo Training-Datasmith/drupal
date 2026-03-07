@@ -24,13 +24,6 @@ class View extends AreaPluginBase {
   protected $isEmpty;
 
   /**
-   * The view storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $viewStorage;
-
-  /**
    * Constructs a View object.
    *
    * @param array $configuration
@@ -39,19 +32,17 @@ class View extends AreaPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $view_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
    *   The view storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityStorageInterface $view_storage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->viewStorage = $view_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -74,7 +65,7 @@ class View extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $view_display = $this->view->storage->id() . ':' . $this->view->current_display;
@@ -102,7 +93,7 @@ class View extends AreaPluginBase {
    */
   public function render($empty = FALSE) {
     if (!empty($this->options['view_to_insert'])) {
-      [$view_name, $display_id] = explode(':', $this->options['view_to_insert']);
+      [$view_name, $display_id] = explode(':', (string) $this->options['view_to_insert']);
 
       $view = $this->viewStorage->load($view_name)->getExecutable();
 
@@ -142,12 +133,7 @@ class View extends AreaPluginBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-    if (isset($this->isEmpty)) {
-      return $this->isEmpty;
-    }
-    else {
-      return parent::isEmpty();
-    }
+    return $this->isEmpty ?? parent::isEmpty();
   }
 
   /**
@@ -156,7 +142,7 @@ class View extends AreaPluginBase {
   public function calculateDependencies() {
     $dependencies = parent::calculateDependencies();
 
-    [$view_id] = explode(':', $this->options['view_to_insert'], 2);
+    [$view_id] = explode(':', (string) $this->options['view_to_insert'], 2);
     // Don't call the current view, as it would result into an infinite
     // recursion.
     if ($view_id && $this->view->storage->id() != $view_id) {

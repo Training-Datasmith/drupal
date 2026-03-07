@@ -11,10 +11,8 @@ class SessionConfiguration implements SessionConfigurationInterface {
 
   /**
    * An associative array of session ini settings.
-   *
-   * @var array
    */
-  protected $options;
+  protected array $options;
 
   /**
    * Constructs a new session configuration instance.
@@ -69,7 +67,7 @@ class SessionConfiguration implements SessionConfigurationInterface {
    * @return string
    *   The name of the session cookie.
    */
-  protected function getName(Request $request) {
+  protected function getName(Request $request): string {
     // To prevent session cookies from being hijacked, a user can configure the
     // SSL version of their website to only transfer session cookies via SSL by
     // using PHP's session.cookie_secure setting. The browser will then use two
@@ -89,7 +87,7 @@ class SessionConfiguration implements SessionConfigurationInterface {
    * @return string
    *   The session name without the prefix (SESS/SSESS).
    */
-  protected function getUnprefixedName(Request $request) {
+  protected function getUnprefixedName(Request $request): string {
     if ($test_prefix = $this->drupalValidTestUa()) {
       $session_name = $test_prefix;
     }
@@ -106,7 +104,7 @@ class SessionConfiguration implements SessionConfigurationInterface {
       $session_name = preg_replace('#/core$#', '', $session_name);
     }
 
-    return substr(hash('sha256', $session_name), 0, 32);
+    return substr(hash('sha256', (string) $session_name), 0, 32);
   }
 
   /**
@@ -141,7 +139,7 @@ class SessionConfiguration implements SessionConfigurationInterface {
     // for top-level domains. Also IP addresses may not be used in the domain
     // attribute of a Set-Cookie header. IPv6 addresses will not pass the first
     // test, so it's acceptable to bias the second test to IPv4.
-    if (count(explode('.', $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
+    if (count(explode('.', (string) $cookie_domain)) > 2 && !is_numeric(str_replace('.', '', $cookie_domain))) {
       return $cookie_domain;
     }
   }

@@ -111,7 +111,7 @@ class DateFormatter implements DateFormatterInterface {
   public function formatInterval($interval, $granularity = 2, $langcode = NULL) {
     $output = '';
     foreach ($this->units as $key => $value) {
-      $key = explode('|', $key);
+      $key = explode('|', (string) $key);
       if ($interval >= $value) {
         $output .= ($output ? ' ' : '') . $this->formatPlural(floor($interval / $value), $key[0], $key[1], [], ['langcode' => $langcode]);
         $interval %= $value;
@@ -134,15 +134,13 @@ class DateFormatter implements DateFormatterInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSampleDateFormats($langcode = NULL, $timestamp = NULL, $timezone = NULL) {
+  public function getSampleDateFormats($langcode = NULL, $timestamp = NULL, $timezone = NULL): array {
     $timestamp = $timestamp ?: time();
     // All date format characters for the PHP date() function.
     // cspell:disable-next-line
     $date_chars = str_split('dDjlNSwzWFmMntLoYyaABgGhHisueIOPTZcrU');
     $date_elements = array_combine($date_chars, $date_chars);
-    return array_map(function ($character) use ($timestamp, $timezone, $langcode) {
-      return $this->format($timestamp, 'custom', $character, $timezone, $langcode);
-    }, $date_elements);
+    return array_map(fn(string $character) => $this->format($timestamp, 'custom', $character, $timezone, $langcode), $date_elements);
   }
 
   /**

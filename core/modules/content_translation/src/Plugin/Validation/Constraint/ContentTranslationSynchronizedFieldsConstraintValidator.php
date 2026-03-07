@@ -35,40 +35,17 @@ use Symfony\Component\Validator\ConstraintValidator;
 class ContentTranslationSynchronizedFieldsConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The content translation manager.
-   *
-   * @var \Drupal\content_translation\ContentTranslationManagerInterface
-   */
-  protected $contentTranslationManager;
-
-  /**
-   * The field translation synchronizer.
-   *
-   * @var \Drupal\content_translation\FieldTranslationSynchronizerInterface
-   */
-  protected $synchronizer;
-
-  /**
    * ContentTranslationSynchronizedFieldsConstraintValidator constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\content_translation\ContentTranslationManagerInterface $content_translation_manager
+   * @param \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager
    *   The content translation manager.
    * @param \Drupal\content_translation\FieldTranslationSynchronizerInterface $synchronizer
    *   The field translation synchronizer.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ContentTranslationManagerInterface $content_translation_manager, FieldTranslationSynchronizerInterface $synchronizer) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->contentTranslationManager = $content_translation_manager;
-    $this->synchronizer = $synchronizer;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager, protected \Drupal\content_translation\FieldTranslationSynchronizerInterface $synchronizer)
+  {
   }
 
   /**
@@ -172,12 +149,9 @@ class ContentTranslationSynchronizedFieldsConstraintValidator extends Constraint
     if (!$entity->getOriginal()) {
       /** @var \Drupal\Core\Entity\RevisionableStorageInterface $storage */
       $storage = $this->entityTypeManager->getStorage($entity->getEntityTypeId());
-      $original = $entity->wasDefaultRevision() ? $storage->loadUnchanged($entity->id()) : $storage->loadRevision($entity->getLoadedRevisionId());
+      return $entity->wasDefaultRevision() ? $storage->loadUnchanged($entity->id()) : $storage->loadRevision($entity->getLoadedRevisionId());
     }
-    else {
-      $original = $entity->getOriginal();
-    }
-    return $original;
+    return $entity->getOriginal();
   }
 
   /**
@@ -221,13 +195,10 @@ class ContentTranslationSynchronizedFieldsConstraintValidator extends Constraint
    */
   public function getSynchronizedPropertiesByField(array $field_definitions) {
     $synchronizer = $this->synchronizer;
-    $synchronized_properties = array_filter(array_map(
-      function (FieldDefinitionInterface $field_definition) use ($synchronizer) {
-        return $synchronizer->getFieldSynchronizedProperties($field_definition);
-      },
+    return array_filter(array_map(
+      fn(FieldDefinitionInterface $field_definition) => $synchronizer->getFieldSynchronizedProperties($field_definition),
       $field_definitions
     ));
-    return $synchronized_properties;
   }
 
 }

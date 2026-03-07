@@ -24,18 +24,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   entity_types: ['user_role'],
   deriver: PermissionsPerBundleDeriver::class,
 )]
-final class PermissionsPerBundle implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class PermissionsPerBundle implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigManagerInterface $configManager,
-    private readonly EntityTypeBundleInfoInterface $entityTypeBundleInfo,
-    private readonly string $targetEntityType,
+    private ConfigManagerInterface $configManager,
+    private EntityTypeBundleInfoInterface $entityTypeBundleInfo,
+    private string $targetEntityType,
   ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     assert(is_array($plugin_definition));
     $target_entity_type = $plugin_definition['target_entity_type'];
 

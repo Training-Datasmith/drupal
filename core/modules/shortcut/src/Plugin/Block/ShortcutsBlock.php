@@ -21,7 +21,7 @@ class ShortcutsBlock extends BlockBase {
   /**
    * {@inheritdoc}
    */
-  public function build() {
+  public function build(): array {
     return [
       '#lazy_builder' => ['shortcut.lazy_builders:lazyLinks', [FALSE]],
       '#create_placeholder' => TRUE,

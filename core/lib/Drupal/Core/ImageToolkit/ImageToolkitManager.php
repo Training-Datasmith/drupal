@@ -19,13 +19,6 @@ use Drupal\Core\Plugin\DefaultPluginManager;
 class ImageToolkitManager extends DefaultPluginManager {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * Constructs the ImageToolkitManager object.
    *
    * @param \Traversable $namespaces
@@ -35,14 +28,14 @@ class ImageToolkitManager extends DefaultPluginManager {
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    */
   public function __construct(
     \Traversable $namespaces,
     CacheBackendInterface $cache_backend,
     ModuleHandlerInterface $module_handler,
-    ConfigFactoryInterface $config_factory,
+    protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory,
   ) {
     parent::__construct(
       'Plugin/ImageToolkit',
@@ -50,11 +43,10 @@ class ImageToolkitManager extends DefaultPluginManager {
       $module_handler,
       ImageToolkitInterface::class,
       ImageToolkit::class,
-      'Drupal\Core\ImageToolkit\Annotation\ImageToolkit',
+      \Drupal\Core\ImageToolkit\Annotation\ImageToolkit::class,
     );
 
     $this->setCacheBackend($cache_backend, 'image_toolkit_plugins');
-    $this->configFactory = $config_factory;
   }
 
   /**
@@ -70,7 +62,7 @@ class ImageToolkitManager extends DefaultPluginManager {
     if (!isset($toolkits[$toolkit_id]) || !class_exists($toolkits[$toolkit_id]['class'])) {
       // The selected toolkit isn't available so return the first one found. If
       // none are available this will return FALSE.
-      $toolkit_id = array_key_first($toolkits);
+      return array_key_first($toolkits);
     }
 
     return $toolkit_id;
@@ -95,7 +87,7 @@ class ImageToolkitManager extends DefaultPluginManager {
    * @return array
    *   An array with the toolkit names as keys and the descriptions as values.
    */
-  public function getAvailableToolkits() {
+  public function getAvailableToolkits(): array {
     // Use plugin system to get list of available toolkits.
     $toolkits = $this->getDefinitions();
 

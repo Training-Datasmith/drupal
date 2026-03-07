@@ -28,7 +28,7 @@ class Insert extends Query implements \Countable {
    * @param array $options
    *   Array of database options.
    */
-  public function __construct($connection, $table, array $options = []) {
+  public function __construct(\Drupal\Core\Database\Connection $connection, $table, array $options = []) {
     parent::__construct($connection, $options);
     $this->table = $table;
   }
@@ -42,7 +42,7 @@ class Insert extends Query implements \Countable {
    * @return $this
    *   The called object.
    */
-  public function from(SelectInterface $query) {
+  public function from(SelectInterface $query): static {
     $this->fromQuery = $query;
     return $this;
   }
@@ -108,7 +108,7 @@ class Insert extends Query implements \Countable {
    * @return string
    *   The prepared statement.
    */
-  public function __toString() {
+  public function __toString(): string {
     // Create a sanitized comment string to prepend to the query.
     $comments = $this->connection->makeComment($this->comments);
 
@@ -138,7 +138,7 @@ class Insert extends Query implements \Countable {
    * @throws \Drupal\Core\Database\Query\FieldsOverlapException
    * @throws \Drupal\Core\Database\Query\NoFieldsException
    */
-  protected function preExecute() {
+  protected function preExecute(): bool {
     // Confirm that the user did not try to specify an identical
     // field and default field.
     if (array_intersect($this->insertFields, $this->defaultFields)) {

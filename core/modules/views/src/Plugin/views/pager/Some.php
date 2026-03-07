@@ -22,7 +22,7 @@ class Some extends PagerPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): \Drupal\Core\StringTranslation\PluralTranslatableMarkup {
     if (!empty($this->options['offset'])) {
       return $this->formatPlural($this->options['items_per_page'],
         '@count item, skip @skip',
@@ -49,7 +49,7 @@ class Some extends PagerPluginBase {
   /**
    * Provide the default form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $pager_text = $this->displayHandler->getPagerText();
     $form['items_per_page'] = [
@@ -72,21 +72,21 @@ class Some extends PagerPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usePager() {
+  public function usePager(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function useCountQuery() {
+  public function useCountQuery(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->view->query->setLimit($this->options['items_per_page']);
     $this->view->query->setOffset($this->options['offset']);
   }

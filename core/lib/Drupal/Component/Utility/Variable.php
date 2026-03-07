@@ -20,20 +20,18 @@ class Variable {
    */
   public static function callableToString($callable): string {
     if ($callable instanceof \Closure) {
-      return '[closure]';
+        return '[closure]';
     }
-    elseif (is_array($callable) && $callable) {
-      if (is_object($callable[0])) {
-        $callable[0] = get_class($callable[0]);
-      }
-      return implode('::', $callable);
+    if (is_array($callable) && $callable) {
+        if (is_object($callable[0])) {
+          $callable[0] = $callable[0]::class;
+        }
+        return implode('::', $callable);
     }
-    elseif (is_string($callable)) {
-      return $callable;
+    if (is_string($callable)) {
+        return $callable;
     }
-    else {
-      return '[unknown]';
-    }
+    return '[unknown]';
   }
 
   /**
@@ -48,7 +46,7 @@ class Variable {
    * @return string
    *   The variable exported in a way compatible to Drupal's coding standards.
    */
-  public static function export($var, $prefix = '') {
+  public static function export($var, $prefix = ''): string|array|null {
     if (is_array($var)) {
       if (empty($var)) {
         $output = '[]';
@@ -78,7 +76,7 @@ class Variable {
         $output = "'" . $var . "'";
       }
     }
-    elseif (is_object($var) && get_class($var) === 'stdClass') {
+    elseif (is_object($var) && $var::class === 'stdClass') {
       // var_export() will export stdClass objects using an undefined
       // magic method __set_state() leaving the export broken. This
       // workaround avoids this by casting the object as an array for
@@ -92,7 +90,7 @@ class Variable {
     }
 
     if ($prefix) {
-      $output = str_replace("\n", "\n$prefix", $output);
+      return str_replace("\n", "\n$prefix", $output);
     }
 
     return $output;

@@ -53,7 +53,7 @@ final class NamedPlaceholderConverter {
   /**
    * The combined regex pattern for parsing.
    */
-  private string $sqlPattern;
+  private readonly string $sqlPattern;
 
   /**
    * The list of original named arguments.
@@ -136,7 +136,7 @@ final class NamedPlaceholderConverter {
         $this->addNamedParameter($sql);
       },
       self::POSITIONAL_PARAMETER => function (string $sql): void {
-        $this->addPositionalParameter($sql);
+        $this->addPositionalParameter();
       },
       $this->sqlPattern => function (string $sql): void {
         $this->addOther($sql);
@@ -183,21 +183,16 @@ final class NamedPlaceholderConverter {
    *
    * Normally Drupal does not produce SQL with positional placeholders, but
    * this is to manage the edge case.
-   *
-   * @param string $sql
-   *   The SQL part.
    */
-  private function addPositionalParameter(string $sql): void {
-    $index = $this->originalParameterIndex;
-
-    if (!array_key_exists($index, $this->originalParameters)) {
-      throw new \RuntimeException('Missing Positional Parameter ' . $index);
-    }
-
-    $this->convertedSQL[] = '?';
-    $this->convertedParameters[] = $this->originalParameters[$index];
-
-    $this->originalParameterIndex++;
+  private function addPositionalParameter(): void
+  {
+      $index = $this->originalParameterIndex;
+      if (!array_key_exists($index, $this->originalParameters)) {
+        throw new \RuntimeException('Missing Positional Parameter ' . $index);
+      }
+      $this->convertedSQL[] = '?';
+      $this->convertedParameters[] = $this->originalParameters[$index];
+      $this->originalParameterIndex++;
   }
 
   /**

@@ -22,48 +22,6 @@ class ConfigManager implements ConfigManagerInterface {
   use StorageCopyTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The typed config manager.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected $typedConfigManager;
-
-  /**
-   * The active configuration storage.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  protected $activeStorage;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * The configuration collection info.
    *
    * @var \Drupal\Core\Config\ConfigCollectionInfo
@@ -78,41 +36,27 @@ class ConfigManager implements ConfigManagerInterface {
   protected $storages;
 
   /**
-   * The extension path resolver.
-   *
-   * @var \Drupal\Core\Extension\ExtensionPathResolver
-   */
-  protected $extensionPathResolver;
-
-  /**
    * Creates ConfigManager objects.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
-   * @param \Drupal\Core\Config\StorageInterface $active_storage
+   * @param \Drupal\Core\Config\StorageInterface $activeStorage
    *   The active configuration storage.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\Core\Extension\ExtensionPathResolver $extension_path_resolver
+   * @param \Drupal\Core\Extension\ExtensionPathResolver $extensionPathResolver
    *   The extension path resolver.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typed_config_manager, TranslationInterface $string_translation, StorageInterface $active_storage, EventDispatcherInterface $event_dispatcher, EntityRepositoryInterface $entity_repository, ExtensionPathResolver $extension_path_resolver) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->configFactory = $config_factory;
-    $this->typedConfigManager = $typed_config_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager, TranslationInterface $string_translation, protected \Drupal\Core\Config\StorageInterface $activeStorage, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Extension\ExtensionPathResolver $extensionPathResolver) {
     $this->stringTranslation = $string_translation;
-    $this->activeStorage = $active_storage;
-    $this->eventDispatcher = $event_dispatcher;
-    $this->entityRepository = $entity_repository;
-    $this->extensionPathResolver = $extension_path_resolver;
   }
 
   /**
@@ -135,7 +79,7 @@ class ConfigManager implements ConfigManagerInterface {
     $entity_type_id = $this->getEntityTypeIdByName($name);
     if ($entity_type_id) {
       $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-      $id = substr($name, strlen($entity_type->getConfigPrefix()) + 1);
+      $id = substr($name, strlen((string) $entity_type->getConfigPrefix()) + 1);
       return $this->entityTypeManager->getStorage($entity_type_id)->load($id);
     }
     return NULL;
@@ -158,7 +102,7 @@ class ConfigManager implements ConfigManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function diff(StorageInterface $source_storage, StorageInterface $target_storage, $source_name, $target_name = NULL, $collection = StorageInterface::DEFAULT_COLLECTION) {
+  public function diff(StorageInterface $source_storage, StorageInterface $target_storage, $source_name, $target_name = NULL, $collection = StorageInterface::DEFAULT_COLLECTION): \Drupal\Component\Diff\Diff {
     if ($collection != StorageInterface::DEFAULT_COLLECTION) {
       $source_storage = $source_storage->createCollection($collection);
       $target_storage = $target_storage->createCollection($collection);
@@ -193,14 +137,14 @@ class ConfigManager implements ConfigManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function createSnapshot(StorageInterface $source_storage, StorageInterface $snapshot_storage) {
+  public function createSnapshot(StorageInterface $source_storage, StorageInterface $snapshot_storage): void {
     self::replaceStorageContents($source_storage, $snapshot_storage);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function uninstall($type, $name) {
+  public function uninstall($type, $name): void {
     $entities = $this->getConfigEntitiesToChangeOnDependencyRemoval($type, [$name], FALSE);
     // Fix all dependent configuration entities.
     /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
@@ -245,7 +189,7 @@ class ConfigManager implements ConfigManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfigDependencyManager() {
+  public function getConfigDependencyManager(): \Drupal\Core\Config\Entity\ConfigDependencyManager {
     $dependency_manager = new ConfigDependencyManager();
     // Read all configuration using the factory. This ensures that multiple
     // deletes during the same request benefit from the static cache. Using the
@@ -253,7 +197,7 @@ class ConfigManager implements ConfigManagerInterface {
     // dependencies on the config entity classes. Assume data with UUID is a
     // config entity. Only configuration entities can be depended on so we can
     // ignore everything else.
-    $data = array_map(function ($config) {
+    $data = array_map(function (\Drupal\Core\Config\ImmutableConfig $config) {
       $data = $config->get();
       if (isset($data['uuid'])) {
         return $data;
@@ -267,7 +211,7 @@ class ConfigManager implements ConfigManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function findConfigEntityDependencies($type, array $names, ?ConfigDependencyManager $dependency_manager = NULL) {
+  public function findConfigEntityDependencies($type, array $names, ?ConfigDependencyManager $dependency_manager = NULL): array {
     if (!$dependency_manager) {
       $dependency_manager = $this->getConfigDependencyManager();
     }
@@ -281,7 +225,7 @@ class ConfigManager implements ConfigManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function findConfigEntityDependenciesAsEntities($type, array $names, ?ConfigDependencyManager $dependency_manager = NULL) {
+  public function findConfigEntityDependenciesAsEntities($type, array $names, ?ConfigDependencyManager $dependency_manager = NULL): array {
     $dependencies = $this->findConfigEntityDependencies($type, $names, $dependency_manager);
     $entities = [];
     $definitions = $this->entityTypeManager->getDefinitions();
@@ -294,7 +238,7 @@ class ConfigManager implements ConfigManagerInterface {
       // dependents of the system module are calculated since system.site has
       // a UUID key.
       if ($entity_type_id) {
-        $id = substr($config_name, strlen($definitions[$entity_type_id]->getConfigPrefix()) + 1);
+        $id = substr((string) $config_name, strlen((string) $definitions[$entity_type_id]->getConfigPrefix()) + 1);
         $entities[$entity_type_id][$config_name] = $id;
       }
     }
@@ -315,7 +259,7 @@ class ConfigManager implements ConfigManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfigEntitiesToChangeOnDependencyRemoval($type, array $names, $dry_run = TRUE) {
+  public function getConfigEntitiesToChangeOnDependencyRemoval($type, array $names, $dry_run = TRUE): array {
     $dependency_manager = $this->getConfigDependencyManager();
 
     // Store the list of dependents in three separate variables. This allows us
@@ -365,9 +309,7 @@ class ConfigManager implements ConfigManagerInterface {
         // Rebuild the list of entities that we need to process using the new
         // list of current dependents and removing any entities that we've
         // already processed.
-        $dependents_to_process = array_filter($current_dependents, function ($current_dependent) use ($affected_uuids) {
-          return !in_array($current_dependent->uuid(), $affected_uuids);
-        });
+        $dependents_to_process = array_filter($current_dependents, fn(\Drupal\Core\Config\Entity\ConfigEntityInterface $current_dependent) => !in_array($current_dependent->uuid(), $affected_uuids));
         // Ensure that the dependent has actually been fixed. It is possible
         // that other dependencies cause it to still be in the list.
         $fixed = TRUE;
@@ -393,9 +335,7 @@ class ConfigManager implements ConfigManagerInterface {
     }
     // Use the list of affected UUIDs to filter the original list to work out
     // which configuration entities are unchanged.
-    $return['unchanged'] = array_filter($original_dependents, function ($dependent) use ($affected_uuids) {
-      return !(in_array($dependent->uuid(), $affected_uuids));
-    });
+    $return['unchanged'] = array_filter($original_dependents, fn(\Drupal\Core\Config\Entity\ConfigEntityInterface $dependent) => !(in_array($dependent->uuid(), $affected_uuids)));
 
     return $return;
   }
@@ -461,11 +401,9 @@ class ConfigManager implements ConfigManagerInterface {
           if ($type == 'config') {
             return $this->loadConfigEntityByName($name);
           }
-          else {
-            // Ignore the bundle.
-            [$entity_type_id,, $uuid] = explode(':', $name);
-            return $this->entityRepository->loadEntityByConfigTarget($entity_type_id, $uuid);
-          }
+          // Ignore the bundle.
+          [$entity_type_id,, $uuid] = explode(':', $name);
+          return $this->entityRepository->loadEntityByConfigTarget($entity_type_id, $uuid);
         }, $affected_dependencies[$type]);
       }
     }
@@ -483,9 +421,7 @@ class ConfigManager implements ConfigManagerInterface {
     // Key the entity arrays by config dependency name to make searching easy.
     foreach (['config', 'content'] as $dependency_type) {
       $affected_dependencies[$dependency_type] = array_combine(
-        array_map(function ($entity) {
-          return $entity->getConfigDependencyName();
-        }, $affected_dependencies[$dependency_type]),
+        array_map(fn($entity) => $entity->getConfigDependencyName(), $affected_dependencies[$dependency_type]),
         $affected_dependencies[$dependency_type]
       );
     }
@@ -496,8 +432,9 @@ class ConfigManager implements ConfigManagerInterface {
 
   /**
    * {@inheritdoc}
+   * @return array{entity_type: string, bundle: string, uuid: string}[]
    */
-  public function findMissingContentDependencies() {
+  public function findMissingContentDependencies(): array {
     $content_dependencies = [];
     $missing_dependencies = [];
     foreach ($this->activeStorage->readMultiple($this->activeStorage->listAll()) as $config_data) {
@@ -511,7 +448,7 @@ class ConfigManager implements ConfigManagerInterface {
     $unique_content_dependencies = array_unique(array_merge(...$content_dependencies));
     foreach ($unique_content_dependencies as $content_dependency) {
       // Format of the dependency is entity_type:bundle:uuid.
-      [$entity_type, $bundle, $uuid] = explode(':', $content_dependency, 3);
+      [$entity_type, $bundle, $uuid] = explode(':', (string) $content_dependency, 3);
       if (!$this->entityRepository->loadEntityByUuid($entity_type, $uuid)) {
         $missing_dependencies[$uuid] = [
           'entity_type' => $entity_type,

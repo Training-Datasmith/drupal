@@ -194,7 +194,7 @@ class SessionManager extends NativeSessionStorage implements SessionManagerInter
   /**
    * {@inheritdoc}
    */
-  public function delete($uid) {
+  public function delete($uid): void {
     // Nothing to do if we are not allowed to change the session.
     if (!$this->writeSafeHandler->isSessionWritable() || $this->isCli()) {
       return;
@@ -212,7 +212,7 @@ class SessionManager extends NativeSessionStorage implements SessionManagerInter
   /**
    * {@inheritdoc}
    */
-  public function destroy() {
+  public function destroy(): void {
     if ($this->isCli()) {
       return;
     }
@@ -231,7 +231,7 @@ class SessionManager extends NativeSessionStorage implements SessionManagerInter
     // setcookie() can only be called when headers are not yet sent.
     if ($cookies->has($session_name) && !headers_sent()) {
       $params = session_get_cookie_params();
-      setcookie($session_name, '', $this->time->getRequestTime() - 3600, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+      setcookie($session_name, '', ['expires' => $this->time->getRequestTime() - 3600, 'path' => $params['path'], 'domain' => $params['domain'], 'secure' => $params['secure'], 'httponly' => $params['httponly']]);
       $cookies->remove($session_name);
     }
   }
@@ -239,7 +239,7 @@ class SessionManager extends NativeSessionStorage implements SessionManagerInter
   /**
    * {@inheritdoc}
    */
-  public function setWriteSafeHandler(WriteSafeSessionHandlerInterface $handler) {
+  public function setWriteSafeHandler(WriteSafeSessionHandlerInterface $handler): void {
     $this->writeSafeHandler = $handler;
   }
 

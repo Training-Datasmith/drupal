@@ -30,7 +30,7 @@ class FileExtensionConstraintValidator extends BaseFileConstraintValidator {
     // in case of temporary files; and use the file system file name in case of
     // permanent files.
     $subject = $file->isTemporary() ? $file->getFilename() : $file->getFileUri();
-    if (!preg_match($regex, $subject)) {
+    if (!preg_match($regex, (string) $subject)) {
       $this->context->addViolation($constraint->message, ['%files-allowed' => $extensions]);
     }
   }

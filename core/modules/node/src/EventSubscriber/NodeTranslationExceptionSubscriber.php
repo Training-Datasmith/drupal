@@ -31,50 +31,19 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class NodeTranslationExceptionSubscriber implements EventSubscriberInterface {
 
   /**
-   * The key value factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
-   */
-  protected $keyValue;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The URL generator.
-   *
-   * @var \Drupal\Core\Routing\UrlGeneratorInterface
-   */
-  protected $urlGenerator;
-
-  /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * Constructs the NodeTranslationExceptionSubscriber.
    *
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue
    *   The key value factory.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\Routing\UrlGeneratorInterface $url_generator
+   * @param \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator
    *   The URL generator.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
    */
-  public function __construct(KeyValueFactoryInterface $key_value, LanguageManagerInterface $language_manager, UrlGeneratorInterface $url_generator, StateInterface $state) {
-    $this->keyValue = $key_value;
-    $this->languageManager = $language_manager;
-    $this->urlGenerator = $url_generator;
-    $this->state = $state;
+  public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Routing\UrlGeneratorInterface $urlGenerator, protected \Drupal\Core\State\StateInterface $state)
+  {
   }
 
   /**
@@ -83,7 +52,7 @@ class NodeTranslationExceptionSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The exception event.
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
 
     // If this is not a 404, we don't need to check for a redirection.

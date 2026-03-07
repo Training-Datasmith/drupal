@@ -41,27 +41,6 @@ class DynamicPageCacheSubscriber implements EventSubscriberInterface {
   const HEADER = 'X-Drupal-Dynamic-Cache';
 
   /**
-   * A request policy rule determining the cacheability of a response.
-   *
-   * @var \Drupal\Core\PageCache\RequestPolicyInterface
-   */
-  protected $requestPolicy;
-
-  /**
-   * A response policy rule determining the cacheability of the response.
-   *
-   * @var \Drupal\Core\PageCache\ResponsePolicyInterface
-   */
-  protected $responsePolicy;
-
-  /**
-   * The variation cache.
-   *
-   * @var \Drupal\Core\Cache\VariationCacheInterface
-   */
-  protected $cache;
-
-  /**
    * The default cache contexts to vary every cache item by.
    *
    * @var string[]
@@ -78,46 +57,25 @@ class DynamicPageCacheSubscriber implements EventSubscriberInterface {
   ];
 
   /**
-   * The cache contexts manager service.
-   *
-   * @var \Drupal\Core\Cache\Context\CacheContextsManager
-   */
-  protected $cacheContextsManager;
-
-  /**
-   * The renderer configuration array.
-   *
-   * @var array
-   */
-  protected $rendererConfig;
-
-  /**
    * Internal cache of request policy results.
-   *
-   * @var \SplObjectStorage
    */
-  protected $requestPolicyResults;
+  protected \SplObjectStorage $requestPolicyResults;
 
   /**
    * Constructs a new DynamicPageCacheSubscriber object.
    *
-   * @param \Drupal\Core\PageCache\RequestPolicyInterface $request_policy
+   * @param \Drupal\Core\PageCache\RequestPolicyInterface $requestPolicy
    *   A policy rule determining the cacheability of a request.
-   * @param \Drupal\Core\PageCache\ResponsePolicyInterface $response_policy
+   * @param \Drupal\Core\PageCache\ResponsePolicyInterface $responsePolicy
    *   A policy rule determining the cacheability of the response.
    * @param \Drupal\Core\Cache\VariationCacheInterface $cache
    *   The variation cache.
-   * @param \Drupal\Core\Cache\Context\CacheContextsManager $cache_contexts_manager
+   * @param \Drupal\Core\Cache\Context\CacheContextsManager $cacheContextsManager
    *   The cache contexts manager service.
-   * @param array $renderer_config
+   * @param array $rendererConfig
    *   The renderer configuration array.
    */
-  public function __construct(RequestPolicyInterface $request_policy, ResponsePolicyInterface $response_policy, VariationCacheInterface $cache, CacheContextsManager $cache_contexts_manager, array $renderer_config) {
-    $this->requestPolicy = $request_policy;
-    $this->responsePolicy = $response_policy;
-    $this->cache = $cache;
-    $this->cacheContextsManager = $cache_contexts_manager;
-    $this->rendererConfig = $renderer_config;
+  public function __construct(protected \Drupal\Core\PageCache\RequestPolicyInterface $requestPolicy, protected \Drupal\Core\PageCache\ResponsePolicyInterface $responsePolicy, protected \Drupal\Core\Cache\VariationCacheInterface $cache, protected \Drupal\Core\Cache\Context\CacheContextsManager $cacheContextsManager, protected array $rendererConfig) {
     $this->requestPolicyResults = new \SplObjectStorage();
   }
 
@@ -127,7 +85,7 @@ class DynamicPageCacheSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The event to process.
    */
-  public function onRequest(RequestEvent $event) {
+  public function onRequest(RequestEvent $event): void {
     // Don't cache the response if the Dynamic Page Cache request policies are
     // not met. Store the result in a static keyed by current request, so that
     // onResponse() does not have to redo the request policy check.
@@ -153,7 +111,7 @@ class DynamicPageCacheSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onResponse(ResponseEvent $event) {
+  public function onResponse(ResponseEvent $event): void {
     $response = $event->getResponse();
 
     // Don't indicate non-cacheability on responses to uncacheable requests.
@@ -246,7 +204,7 @@ class DynamicPageCacheSubscriber implements EventSubscriberInterface {
    *
    * @see \Drupal\Core\Render\Renderer::shouldAutomaticallyPlaceholder()
    */
-  protected function shouldCacheResponse(CacheableResponseInterface $response) {
+  protected function shouldCacheResponse(CacheableResponseInterface $response): bool {
     $conditions = $this->rendererConfig['auto_placeholder_conditions'];
 
     // Create a new CacheableMetadata to avoid changing the response itself.

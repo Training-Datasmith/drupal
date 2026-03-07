@@ -93,7 +93,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     if ($this->isNew()) {
@@ -124,7 +124,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
           // Get the parent comment:
           $parent = $this->getParentComment();
           // Strip the "/" from the end of the parent thread.
-          $parent->setThread((string) rtrim((string) $parent->getThread(), '/'));
+          $parent->setThread(rtrim((string) $parent->getThread(), '/'));
           $prefix = $parent->getThread() . '.';
           // Get the max value in *this* thread.
           $max = $storage->getMaxThreadPerThread($this);
@@ -140,7 +140,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
             $max = rtrim($max, '/');
             // Get the value at the correct depth.
             $parts = explode('.', $max);
-            $parent_depth = count(explode('.', $parent->getThread()));
+            $parent_depth = count(explode('.', (string) $parent->getThread()));
             $n = Number::alphadecimalToInt($parts[$parent_depth]);
           }
         }
@@ -168,7 +168,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     // Always invalidate the cache tag for the commented entity.
@@ -194,7 +194,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     $child_cids = $storage->getChildCids($entities);
@@ -335,7 +335,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public static function bundleFieldDefinitions(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+  public static function bundleFieldDefinitions(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions): array {
     if ($comment_type = CommentType::load($bundle)) {
       $fields['entity_id'] = clone $base_field_definitions['entity_id'];
       $fields['entity_id']->setSetting('target_type', $comment_type->getTargetEntityTypeId());
@@ -347,7 +347,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasParentComment() {
+  public function hasParentComment(): bool {
     return (bool) $this->get('pid')->target_id;
   }
 
@@ -382,7 +382,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFieldName($field_name) {
+  public function setFieldName($field_name): static {
     $this->set('field_name', $field_name);
     return $this;
   }
@@ -404,7 +404,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSubject($subject) {
+  public function setSubject($subject): static {
     $this->set('subject', $subject);
     return $this;
   }
@@ -423,7 +423,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAuthorName($name) {
+  public function setAuthorName($name): static {
     $this->set('name', $name);
     return $this;
   }
@@ -432,13 +432,11 @@ class Comment extends ContentEntityBase implements CommentInterface {
    * {@inheritdoc}
    */
   public function getAuthorEmail() {
-    $mail = $this->get('mail')->value;
-
     if ($this->get('uid')->target_id != 0) {
-      $mail = $this->get('uid')->entity->getEmail();
+      return $this->get('uid')->entity->getEmail();
     }
 
-    return $mail;
+    return $this->get('mail')->value;
   }
 
   /**
@@ -451,7 +449,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function setHomepage($homepage) {
+  public function setHomepage($homepage): static {
     $this->set('homepage', $homepage);
     return $this;
   }
@@ -466,7 +464,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function setHostname($hostname) {
+  public function setHostname($hostname): static {
     $this->set('hostname', $hostname);
     return $this;
   }
@@ -475,16 +473,13 @@ class Comment extends ContentEntityBase implements CommentInterface {
    * {@inheritdoc}
    */
   public function getCreatedTime() {
-    if (isset($this->get('created')->value)) {
-      return $this->get('created')->value;
-    }
-    return NULL;
+    return $this->get('created')->value ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($created) {
+  public function setCreatedTime($created): static {
     $this->set('created', $created);
     return $this;
   }
@@ -502,7 +497,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public function setThread($thread) {
+  public function setThread($thread): static {
     $this->set('thread', $thread);
     return $this;
   }
@@ -510,7 +505,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     if (empty($values['comment_type']) && !empty($values['field_name']) && !empty($values['entity_type'])) {
       $fields = \Drupal::service('entity_field.manager')->getFieldStorageDefinitions($values['entity_type']);
       $values['comment_type'] = $fields[$values['field_name']]->getSetting('comment_type');
@@ -548,7 +543,7 @@ class Comment extends ContentEntityBase implements CommentInterface {
    * @return bool
    *   TRUE if the comment should be published, FALSE otherwise.
    */
-  public static function getDefaultStatus() {
+  public static function getDefaultStatus(): int {
     return \Drupal::currentUser()->hasPermission('skip comment approval') ? CommentInterface::PUBLISHED : CommentInterface::NOT_PUBLISHED;
   }
 

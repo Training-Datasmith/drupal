@@ -37,7 +37,7 @@ class HelpTopicTwig extends HelpTopicPluginBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function getBody() {
+  public function getBody(): array {
     return [
       '#markup' => $this->twig->load('@help_topics/' . $this->getPluginId() . '.html.twig')->render(),
     ];
@@ -46,21 +46,21 @@ class HelpTopicTwig extends HelpTopicPluginBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return ['core.extension'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 

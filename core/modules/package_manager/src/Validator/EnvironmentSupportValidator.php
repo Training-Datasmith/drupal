@@ -69,7 +69,7 @@ final class EnvironmentSupportValidator implements EventSubscriberInterface {
     // Set priority to run before BaseRequirementsFulfilledValidator, and even
     // before other base requirement validators.
     // @see \Drupal\package_manager\Validator\BaseRequirementsFulfilledValidator
-    return array_map(fn () => ['validate', BaseRequirementsFulfilledValidator::PRIORITY + 1000], static::getSubscribedEventsFromTrait());
+    return array_map(fn (): array => ['validate', BaseRequirementsFulfilledValidator::PRIORITY + 1000], static::getSubscribedEventsFromTrait());
   }
 
 }

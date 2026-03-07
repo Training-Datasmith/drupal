@@ -50,7 +50,7 @@ class FieldTypePluginManager extends DefaultPluginManager implements FieldTypePl
       $module_handler,
       FieldItemInterface::class,
       FieldType::class,
-      'Drupal\Core\Field\Annotation\FieldType',
+      \Drupal\Core\Field\Annotation\FieldType::class,
     );
 
     $this->alterInfo('field_info');
@@ -96,10 +96,10 @@ class FieldTypePluginManager extends DefaultPluginManager implements FieldTypePl
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     parent::processDefinition($definition, $plugin_id);
     if (!isset($definition['list_class'])) {
-      $definition['list_class'] = '\Drupal\Core\Field\FieldItemList';
+      $definition['list_class'] = \Drupal\Core\Field\FieldItemList::class;
     }
 
     if (empty($definition['category'])) {
@@ -173,7 +173,7 @@ class FieldTypePluginManager extends DefaultPluginManager implements FieldTypePl
    *   Keys are category names, and values are arrays of which the keys are
    *   plugin IDs and the values are plugin definitions.
    */
-  public function getGroupedDefinitions(?array $definitions = NULL, $label_key = 'label', $category_label_key = 'label') {
+  public function getGroupedDefinitions(?array $definitions = NULL, $label_key = 'label', $category_label_key = 'label'): array {
     $grouped_categories = $this->getGroupedDefinitionsTrait($definitions, $label_key);
     $category_info = $this->fieldTypeCategoryManager->getDefinitions();
 
@@ -204,13 +204,11 @@ class FieldTypePluginManager extends DefaultPluginManager implements FieldTypePl
     $definitions = $this->getDefinitions();
 
     // Filter out definitions that can not be configured in Field UI.
-    $definitions = array_filter($definitions, function ($definition) {
-      return empty($definition['no_ui']);
-    });
+    $definitions = array_filter($definitions, fn(array $definition) => empty($definition['no_ui']));
 
     // Add preconfigured definitions.
     foreach ($definitions as $id => $definition) {
-      if (is_subclass_of($definition['class'], '\Drupal\Core\Field\PreconfiguredFieldUiOptionsInterface')) {
+      if (is_subclass_of($definition['class'], \Drupal\Core\Field\PreconfiguredFieldUiOptionsInterface::class)) {
         foreach ($this->getPreconfiguredOptions($definition['id']) as $key => $option) {
           $definitions["field_ui:$id:$key"] = array_intersect_key(
             $option,
@@ -238,7 +236,7 @@ class FieldTypePluginManager extends DefaultPluginManager implements FieldTypePl
   public function getPreconfiguredOptions($field_type) {
     $options = [];
     $class = $this->getPluginClass($field_type);
-    if (is_subclass_of($class, '\Drupal\Core\Field\PreconfiguredFieldUiOptionsInterface')) {
+    if (is_subclass_of($class, \Drupal\Core\Field\PreconfiguredFieldUiOptionsInterface::class)) {
       $options = $class::getPreconfiguredOptions();
       $this->moduleHandler->alter('field_ui_preconfigured_options', $options, $field_type);
     }

@@ -23,21 +23,22 @@ class RearrangeFilter extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormKey() {
+  public function getFormKey(): string {
     return 'rearrange-filter';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_rearrange_filter_form';
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $view = $form_state->get('view');
     $display_id = $form_state->get('display_id');
     $type = 'filter';
@@ -225,7 +226,7 @@ class RearrangeFilter extends ViewsFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $types = ViewExecutable::getHandlerTypes();
     $view = $form_state->get('view');
     $display = &$view->getExecutable()->displayHandlers->get($form_state->get('display_id'));
@@ -341,7 +342,7 @@ class RearrangeFilter extends ViewsFormBase {
    * @return array
    *   The array with incremented keys.
    */
-  public static function arrayKeyPlus($array) {
+  public static function arrayKeyPlus(array $array): array {
     $keys = array_keys($array);
     // Sort the keys in reverse order so incrementing them doesn't overwrite any
     // existing keys.

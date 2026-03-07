@@ -30,7 +30,7 @@ class MemoryCache extends MemoryBackend implements MemoryCacheInterface {
    *   The item with data as appropriate or FALSE if there is no
    *   valid item to load.
    */
-  protected function prepareItem($cache, $allow_invalid = FALSE) {
+  protected function prepareItem($cache, $allow_invalid = FALSE): false|object {
     if (!isset($cache->data)) {
       return FALSE;
     }
@@ -47,7 +47,7 @@ class MemoryCache extends MemoryBackend implements MemoryCacheInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = MemoryCacheInterface::CACHE_PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = MemoryCacheInterface::CACHE_PERMANENT, array $tags = []): void {
     assert(Inspector::assertAllStrings($tags), 'Cache tags must be strings.');
     $tags = array_unique($tags);
 

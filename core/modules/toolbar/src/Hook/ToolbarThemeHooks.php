@@ -110,7 +110,7 @@ class ToolbarThemeHooks {
    * Implements hook_preprocess_HOOK() for HTML document templates.
    */
   #[Hook('preprocess_html')]
-  public function preprocessHtml(&$variables): void {
+  public function preprocessHtml(array &$variables): void {
     if (!\Drupal::currentUser()->hasPermission('access toolbar')) {
       return;
     }

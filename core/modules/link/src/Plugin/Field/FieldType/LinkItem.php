@@ -63,7 +63,7 @@ class LinkItem extends FieldItemBase implements LinkItemInterface {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'uri' => [
@@ -92,7 +92,7 @@ class LinkItem extends FieldItemBase implements LinkItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
     $element = [];
 
     $element['link_type'] = [
@@ -119,7 +119,7 @@ class LinkItem extends FieldItemBase implements LinkItemInterface {
   /**
    * {@inheritdoc}
    */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition): array {
     $random = new Random();
     if ($field_definition->getItemDefinition()->getSetting('link_type') & LinkItemInterface::LINK_EXTERNAL) {
       // Set of possible top-level domains.
@@ -146,7 +146,7 @@ class LinkItem extends FieldItemBase implements LinkItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $value = $this->get('uri')->getValue();
     return $value === NULL || $value === '';
   }
@@ -161,7 +161,7 @@ class LinkItem extends FieldItemBase implements LinkItemInterface {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName() {
+  public static function mainPropertyName(): string {
     return 'uri';
   }
 
@@ -182,7 +182,7 @@ class LinkItem extends FieldItemBase implements LinkItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     // Treat the values as property value of the main property, if no array is
     // given.
     if (isset($values) && !is_array($values)) {

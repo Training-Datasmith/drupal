@@ -35,7 +35,7 @@ abstract class Connection {
    *
    * @var string|null
    */
-  protected $target = NULL;
+  protected $target;
 
   /**
    * The key representing this connection.
@@ -46,14 +46,14 @@ abstract class Connection {
    *
    * @var string|null
    */
-  protected $key = NULL;
+  protected $key;
 
   /**
    * The current database logging object for this connection.
    *
    * @var \Drupal\Core\Database\Log|null
    */
-  protected $logger = NULL;
+  protected $logger;
 
   /**
    * Index of what driver-specific class to use for various operations.
@@ -67,7 +67,7 @@ abstract class Connection {
    *
    * @var string|null
    */
-  protected $statementWrapperClass = NULL;
+  protected $statementWrapperClass;
 
   /**
    * Whether this database connection supports transactional DDL.
@@ -87,10 +87,8 @@ abstract class Connection {
 
   /**
    * The connection information for this connection object.
-   *
-   * @var array
    */
-  protected $connectionOptions = [];
+  protected array $connectionOptions;
 
   /**
    * The schema object for this connection.
@@ -99,12 +97,10 @@ abstract class Connection {
    *
    * @var \Drupal\Core\Database\Schema|null
    */
-  protected $schema = NULL;
+  protected $schema;
 
   /**
    * The prefix used by this database connection.
-   *
-   * @var string
    */
   protected string $prefix;
 
@@ -181,7 +177,7 @@ abstract class Connection {
     assert(count($this->identifierQuotes) === 2 && Inspector::assertAllStrings($this->identifierQuotes), '\Drupal\Core\Database\Connection::$identifierQuotes must contain 2 string values');
 
     // Manage the table prefix.
-    $connection_options['prefix'] = $connection_options['prefix'] ?? '';
+    $connection_options['prefix'] ??= '';
     $this->setPrefix($connection_options['prefix']);
 
     // Work out the database driver namespace if none is provided. This normally
@@ -224,7 +220,7 @@ abstract class Connection {
    *   relying on object destruction order to commit transactions. Xdebug 3.3.0
    *   changes the order of object destruction when the develop mode is enabled.
    */
-  public function commitAll() {
+  public function commitAll(): void {
     $manager = $this->transactionManager();
     if ($manager->inTransaction() && method_exists($manager, 'commitAll')) {
       $this->transactionManager()->commitAll();
@@ -338,7 +334,7 @@ abstract class Connection {
    * @param string $prefix
    *   A single prefix.
    */
-  protected function setPrefix($prefix) {
+  protected function setPrefix(string $prefix) {
     assert(is_string($prefix), 'The \'$prefix\' argument to ' . __METHOD__ . '() must be a string');
     $this->prefix = $prefix;
     $this->tablePlaceholderReplacements = [
@@ -398,7 +394,7 @@ abstract class Connection {
    * @return string
    *   The fully qualified table name.
    */
-  public function getFullQualifiedTableName($table) {
+  public function getFullQualifiedTableName(string $table) {
     $options = $this->getConnectionOptions();
     $prefix = $this->getPrefix();
     return $options['database'] . '.' . $prefix . $table;
@@ -485,7 +481,7 @@ abstract class Connection {
     // Resolve {tables} and [identifiers] to the platform specific syntax.
     $query = $this->prefixTables($query);
     if (!($options['allow_square_brackets'] ?? FALSE)) {
-      $query = $this->quoteIdentifiers($query);
+      return $this->quoteIdentifiers($query);
     }
 
     return $query;
@@ -502,7 +498,7 @@ abstract class Connection {
    * @param string $target
    *   (optional) The target this connection is for.
    */
-  public function setTarget($target = NULL) {
+  public function setTarget($target = NULL): void {
     if (!isset($this->target)) {
       $this->target = $target;
     }
@@ -524,7 +520,7 @@ abstract class Connection {
    * @param string $key
    *   The key this connection is for.
    */
-  public function setKey($key) {
+  public function setKey($key): void {
     if (!isset($this->key)) {
       $this->key = $key;
     }
@@ -546,7 +542,7 @@ abstract class Connection {
    * @param \Drupal\Core\Database\Log $logger
    *   The logging object we want to use.
    */
-  public function setLogger(Log $logger) {
+  public function setLogger(Log $logger): void {
     $this->logger = $logger;
   }
 
@@ -647,7 +643,7 @@ abstract class Connection {
    *
    * @see \Drupal\Core\Database\Connection::defaultOptions()
    */
-  public function query($query, array $args = [], $options = []) {
+  public function query($query, array $args = [], array $options = []) {
     assert(is_string($query), 'The \'$query\' argument to ' . __METHOD__ . '() must be a string');
     assert(!isset($options['return']), 'Passing "return" option to query() has no effect. See https://www.drupal.org/node/3185520');
     assert(!isset($options['target']), 'Passing "target" option to query() has no effect. See https://www.drupal.org/node/2993033');
@@ -689,23 +685,23 @@ abstract class Connection {
    *   - A placeholder that does not end in [] is supplied, and the supplied
    *     value is an array.
    */
-  protected function expandArguments(&$query, &$args) {
+  protected function expandArguments(&$query, array &$args) {
     $modified = FALSE;
 
     // If the placeholder indicated the value to use is an array,  we need to
     // expand it out into a comma-delimited set of placeholders.
     foreach ($args as $key => $data) {
-      $is_bracket_placeholder = str_ends_with($key, '[]');
+      $is_bracket_placeholder = str_ends_with((string) $key, '[]');
       $is_array_data = is_array($data);
       if ($is_bracket_placeholder && !$is_array_data) {
-        throw new \InvalidArgumentException('Placeholders with a trailing [] can only be expanded with an array of values.');
+          throw new \InvalidArgumentException('Placeholders with a trailing [] can only be expanded with an array of values.');
       }
-      elseif (!$is_bracket_placeholder) {
-        if ($is_array_data) {
-          throw new \InvalidArgumentException('Placeholders must have a trailing [] if they are to be expanded with an array of values.');
-        }
-        // Scalar placeholder - does not need to be expanded.
-        continue;
+      if (!$is_bracket_placeholder) {
+          if ($is_array_data) {
+            throw new \InvalidArgumentException('Placeholders must have a trailing [] if they are to be expanded with an array of values.');
+          }
+          // Scalar placeholder - does not need to be expanded.
+          continue;
       }
       // Handle expansion of arrays.
       $key_name = str_replace('[]', '__', $key);
@@ -743,7 +739,7 @@ abstract class Connection {
    * @return string
    *   The name of the class that should be used for this driver.
    */
-  public function getDriverClass($class) {
+  public function getDriverClass(string $class) {
     match($class) {
       'Install\\Tasks',
       'ExceptionHandler',
@@ -1140,7 +1136,7 @@ abstract class Connection {
    *
    * @see \Drupal\Core\Database\Transaction
    */
-  public function startTransaction($name = '') {
+  public function startTransaction(string $name = '') {
     return $this->transactionManager()->push($name);
   }
 
@@ -1293,9 +1289,7 @@ abstract class Connection {
     if (preg_match('/^SQLSTATE\[(\w{5})\]/', $e->getMessage(), $matches)) {
       return $matches[1];
     }
-    else {
-      return $e->getCode();
-    }
+    return $e->getCode();
   }
 
   /**
@@ -1429,7 +1423,7 @@ abstract class Connection {
    *   "core" when the driver is not provided as part of a module.
    */
   public function getProvider(): string {
-    [$first, $second] = explode('\\', $this->connectionOptions['namespace'], 3);
+    [$first, $second] = explode('\\', (string) $this->connectionOptions['namespace'], 3);
 
     // The namespace for Drupal modules is Drupal\MODULE_NAME, and the module
     // name must be all lowercase. Second-level namespaces containing uppercase
@@ -1486,8 +1480,6 @@ abstract class Connection {
    *
    * @param string[] $eventNames
    *   A list of database events to be enabled.
-   *
-   * @return static
    */
   public function enableEvents(array $eventNames): static {
     foreach ($eventNames as $eventName) {
@@ -1502,8 +1494,6 @@ abstract class Connection {
    *
    * @param string[] $eventNames
    *   A list of database events to be disabled.
-   *
-   * @return static
    */
   public function disableEvents(array $eventNames): static {
     foreach ($eventNames as $eventName) {
@@ -1556,7 +1546,7 @@ abstract class Connection {
    *   database call itself.
    */
   public function findCallerFromDebugBacktrace(): array {
-    $stack = $this->removeDatabaseEntriesFromDebugBacktrace($this->getDebugBacktrace(), $this->getConnectionOptions()['namespace']);
+    $stack = static::removeDatabaseEntriesFromDebugBacktrace($this->getDebugBacktrace(), $this->getConnectionOptions()['namespace']);
     // Return the first function call whose stack entry has a 'file' key, that
     // is, it is not a callback or a closure.
     for ($i = 0; $i < count($stack); $i++) {

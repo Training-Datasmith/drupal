@@ -47,7 +47,7 @@ class InlineFormErrorsThemeHooks {
   /**
    * Populates form errors in the template.
    */
-  protected function setErrors(&$variables): void {
+  protected function setErrors(array &$variables): void {
     $element = $variables['element'];
     if (!empty($element['#errors']) && empty($element['#error_no_message'])) {
       $variables['errors'] = $element['#errors'];

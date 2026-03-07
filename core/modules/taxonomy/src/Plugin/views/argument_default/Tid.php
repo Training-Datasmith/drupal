@@ -24,20 +24,6 @@ use Drupal\taxonomy\VocabularyStorageInterface;
 class Tid extends ArgumentDefaultPluginBase implements CacheableDependencyInterface {
 
   /**
-   * The route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
-   * The vocabulary storage.
-   *
-   * @var \Drupal\taxonomy\VocabularyStorageInterface
-   */
-  protected $vocabularyStorage;
-
-  /**
    * Constructs a new Tid instance.
    *
    * @param array $configuration
@@ -46,22 +32,19 @@ class Tid extends ArgumentDefaultPluginBase implements CacheableDependencyInterf
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
-   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabulary_storage
+   * @param \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage
    *   The vocabulary storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteMatchInterface $route_match, VocabularyStorageInterface $vocabulary_storage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch, protected \Drupal\taxonomy\VocabularyStorageInterface $vocabularyStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->routeMatch = $route_match;
-    $this->vocabularyStorage = $vocabulary_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -89,7 +72,7 @@ class Tid extends ArgumentDefaultPluginBase implements CacheableDependencyInterf
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['term_page'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Load default filter from term page'),
@@ -150,7 +133,7 @@ class Tid extends ArgumentDefaultPluginBase implements CacheableDependencyInterf
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = []) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = []): void {
     // Filter unselected items so we don't unnecessarily store giant arrays.
     $options['vids'] = array_filter($options['vids']);
   }
@@ -189,10 +172,7 @@ class Tid extends ArgumentDefaultPluginBase implements CacheableDependencyInterf
           }
           return implode($this->options['anyall'], $tids);
         }
-        // Return all tids.
-        else {
-          return implode($this->options['anyall'], array_keys($taxonomy));
-        }
+        return implode($this->options['anyall'], array_keys($taxonomy));
       }
     }
   }
@@ -213,14 +193,14 @@ class Tid extends ArgumentDefaultPluginBase implements CacheableDependencyInterf
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return ['url'];
   }
 

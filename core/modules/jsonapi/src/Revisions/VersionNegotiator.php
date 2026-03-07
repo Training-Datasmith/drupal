@@ -42,8 +42,8 @@ class VersionNegotiator {
    * @param string $negotiator_name
    *   The name of the negotiation strategy used by the version negotiator.
    */
-  public function addVersionNegotiator(VersionNegotiatorInterface $version_negotiator, $negotiator_name) {
-    assert(str_starts_with(get_class($version_negotiator), 'Drupal\\jsonapi\\'), 'Version negotiators are not a public API.');
+  public function addVersionNegotiator(VersionNegotiatorInterface $version_negotiator, $negotiator_name): void {
+    assert(str_starts_with($version_negotiator::class, 'Drupal\\jsonapi\\'), 'Version negotiators are not a public API.');
     $this->negotiators[$negotiator_name] = $version_negotiator;
   }
 
@@ -89,7 +89,7 @@ class VersionNegotiator {
    *
    * @throws \Drupal\Core\Http\Exception\CacheableNotFoundHttpException
    */
-  protected static function throwNotFoundHttpException(EntityInterface $entity, $resource_version_identifier) {
+  protected static function throwNotFoundHttpException(EntityInterface $entity, string $resource_version_identifier): never {
     $cacheability = CacheableMetadata::createFromObject($entity)->addCacheContexts(['url.path', 'url.query_args:' . ResourceVersionRouteEnhancer::RESOURCE_VERSION_QUERY_PARAMETER]);
     $reason = sprintf('The requested version, identified by `%s`, could not be found.', $resource_version_identifier);
     throw new CacheableNotFoundHttpException($cacheability, $reason);
@@ -103,7 +103,7 @@ class VersionNegotiator {
    *
    * @throws \Drupal\Core\Http\Exception\CacheableBadRequestHttpException
    */
-  protected static function throwBadRequestHttpException($resource_version_identifier) {
+  protected static function throwBadRequestHttpException(string $resource_version_identifier): never {
     $cacheability = (new CacheableMetadata())->addCacheContexts(['url.query_args:' . ResourceVersionRouteEnhancer::RESOURCE_VERSION_QUERY_PARAMETER]);
     $message = sprintf('An invalid resource version identifier, `%s`, was provided.', $resource_version_identifier);
     throw new CacheableBadRequestHttpException($cacheability, $message);

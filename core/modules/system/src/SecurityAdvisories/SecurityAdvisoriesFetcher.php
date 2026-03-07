@@ -56,13 +56,6 @@ final class SecurityAdvisoriesFetcher {
   protected $extensionLists = [];
 
   /**
-   * The logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * Whether to fall back to HTTP if the HTTPS request fails.
    *
    * @var bool
@@ -89,14 +82,16 @@ final class SecurityAdvisoriesFetcher {
    * @param \Drupal\Core\Site\Settings $settings
    *   The settings instance.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyValueExpirableFactoryInterface $key_value_factory, ClientInterface $client, ModuleExtensionList $module_list, ThemeExtensionList $theme_list, ProfileExtensionList $profile_list, LoggerInterface $logger, Settings $settings) {
+  public function __construct(ConfigFactoryInterface $config_factory, KeyValueExpirableFactoryInterface $key_value_factory, ClientInterface $client, ModuleExtensionList $module_list, ThemeExtensionList $theme_list, ProfileExtensionList $profile_list, /**
+   * The logger.
+   */
+  protected LoggerInterface $logger, Settings $settings) {
     $this->config = $config_factory->get('system.advisories');
     $this->keyValueExpirable = $key_value_factory->get('system');
     $this->httpClient = $client;
     $this->extensionLists['module'] = $module_list;
     $this->extensionLists['theme'] = $theme_list;
     $this->extensionLists['profile'] = $profile_list;
-    $this->logger = $logger;
     $this->withHttpFallback = $settings->get('update_fetch_with_http_fallback', FALSE);
   }
 
@@ -289,11 +284,14 @@ final class SecurityAdvisoriesFetcher {
     // will always be in the codebase, and other projects are in the codebase if
     // ::getProjectInfo() finds a matching extension for the project name.
     if ($sa->isCoreAdvisory() || $this->getMatchingExtensionInfo($sa)) {
-      // Public service announcements are always applicable because they are not
-      // dependent on the version of the project that is currently present on
-      // the site. Other advisories are only applicable if they match the
-      // existing version.
-      return $sa->isPsa() || $this->matchesExistingVersion($sa);
+        // Public service announcements are always applicable because they are not
+        // dependent on the version of the project that is currently present on
+        // the site. Other advisories are only applicable if they match the
+        // existing version.
+        if ($sa->isPsa()) {
+            return true;
+        }
+        return $this->matchesExistingVersion($sa);
     }
     return FALSE;
   }

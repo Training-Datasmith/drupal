@@ -62,11 +62,13 @@ class EntityLinks extends FilterBase implements ContainerFactoryPluginInterface 
         // Load the appropriate translation of the linked entity.
         $entity_type = $element->getAttribute('data-entity-type');
         $uuid = $element->getAttribute('data-entity-uuid');
-
         // Skip empty attributes to prevent loading of non-existing
         // content type.
-        if ($entity_type === '' || $uuid === '') {
-          continue;
+        if ($entity_type === '') {
+            continue;
+        }
+        if ($uuid === '') {
+            continue;
         }
 
         $entity = $this->entityRepository->loadEntityByUuid($entity_type, $uuid);
@@ -76,7 +78,7 @@ class EntityLinks extends FilterBase implements ContainerFactoryPluginInterface 
             $entity = $entity->getTranslation($langcode);
           }
 
-          $url = $this->getUrl($entity);
+          $url = static::getUrl($entity);
 
           // Parse link href as URL, extract query and fragment from it.
           $href_url = parse_url($element->getAttribute('href'));

@@ -33,7 +33,7 @@ abstract class ConfigEntityBundleBase extends ConfigEntityBase {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     $entity_type_manager = $this->entityTypeManager();
@@ -56,7 +56,7 @@ abstract class ConfigEntityBundleBase extends ConfigEntityBase {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     foreach ($entities as $entity) {
@@ -79,7 +79,7 @@ abstract class ConfigEntityBundleBase extends ConfigEntityBase {
    * @throws \Drupal\Core\Config\ConfigNameException
    *   Thrown when attempting to rename a bundle entity.
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // Only handle renames, not creations.

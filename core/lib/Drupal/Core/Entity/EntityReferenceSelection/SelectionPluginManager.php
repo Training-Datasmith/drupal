@@ -26,7 +26,7 @@ class SelectionPluginManager extends DefaultPluginManager implements SelectionPl
     $this->alterInfo('entity_reference_selection');
     $this->setCacheBackend($cache_backend, 'entity_reference_selection_plugins');
 
-    parent::__construct('Plugin/EntityReferenceSelection', $namespaces, $module_handler, SelectionInterface::class, EntityReferenceSelection::class, 'Drupal\Core\Entity\Annotation\EntityReferenceSelection');
+    parent::__construct('Plugin/EntityReferenceSelection', $namespaces, $module_handler, SelectionInterface::class, EntityReferenceSelection::class, \Drupal\Core\Entity\Annotation\EntityReferenceSelection::class);
   }
 
   /**
@@ -43,7 +43,7 @@ class SelectionPluginManager extends DefaultPluginManager implements SelectionPl
     ];
 
     // A specific selection plugin ID was already specified.
-    if (str_contains($options['handler'], ':')) {
+    if (str_contains((string) $options['handler'], ':')) {
       $plugin_id = $options['handler'];
     }
     // Only a selection group name was specified.
@@ -58,21 +58,21 @@ class SelectionPluginManager extends DefaultPluginManager implements SelectionPl
   /**
    * {@inheritdoc}
    */
-  public function getPluginId($target_type, $base_plugin_id) {
+  public function getPluginId($target_type, $base_plugin_id): int|string|null {
     // Get all available selection plugins for this entity type.
     $selection_handler_groups = $this->getSelectionGroups($target_type);
 
     // Sort the selection plugins by weight and select the best match.
-    uasort($selection_handler_groups[$base_plugin_id], ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
-    $plugin_id = array_key_last($selection_handler_groups[$base_plugin_id]);
+    uasort($selection_handler_groups[$base_plugin_id], \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
 
-    return $plugin_id;
+    return array_key_last($selection_handler_groups[$base_plugin_id]);
   }
 
   /**
    * {@inheritdoc}
+   * @return non-empty-array<mixed>[]
    */
-  public function getSelectionGroups($entity_type_id) {
+  public function getSelectionGroups($entity_type_id): array {
     $plugins = [];
     $definitions = $this->getDefinitions();
 
@@ -104,7 +104,7 @@ class SelectionPluginManager extends DefaultPluginManager implements SelectionPl
   /**
    * {@inheritdoc}
    */
-  public function getFallbackPluginId($plugin_id, array $configuration = []) {
+  public function getFallbackPluginId($plugin_id, array $configuration = []): string {
     return 'broken';
   }
 

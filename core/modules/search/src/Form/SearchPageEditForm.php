@@ -23,7 +23,7 @@ class SearchPageEditForm extends SearchPageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     parent::save($form, $form_state);
 
     $this->messenger()->addStatus($this->t('The %label search page has been updated.', ['%label' => $this->entity->label()]));

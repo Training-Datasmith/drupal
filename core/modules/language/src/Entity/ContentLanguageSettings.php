@@ -116,7 +116,7 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
   /**
    * {@inheritdoc}
    */
-  public function id() {
+  public function id(): string {
     return $this->target_entity_type_id . '.' . $this->target_bundle;
   }
 
@@ -137,7 +137,7 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
   /**
    * {@inheritdoc}
    */
-  public function setTargetBundle($target_bundle) {
+  public function setTargetBundle($target_bundle): static {
     $this->target_bundle = $target_bundle;
 
     return $this;
@@ -146,7 +146,7 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
   /**
    * {@inheritdoc}
    */
-  public function setDefaultLangcode($default_langcode) {
+  public function setDefaultLangcode($default_langcode): static {
     $this->default_langcode = $default_langcode;
 
     return $this;
@@ -162,7 +162,7 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
   /**
    * {@inheritdoc}
    */
-  public function setLanguageAlterable($language_alterable) {
+  public function setLanguageAlterable($language_alterable): static {
     $this->language_alterable = $language_alterable;
 
     return $this;
@@ -178,7 +178,7 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     $this->id = $this->id();
     parent::preSave($storage);
   }
@@ -186,7 +186,7 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
   /**
    * {@inheritdoc}
    */
-  public function isDefaultConfiguration() {
+  public function isDefaultConfiguration(): bool {
     return (!$this->language_alterable && $this->default_langcode == LanguageInterface::LANGCODE_SITE_DEFAULT);
   }
 
@@ -202,13 +202,13 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
    *   The content language config entity if one exists. Otherwise, returns
    *   default values.
    */
-  public static function loadByEntityTypeBundle($entity_type_id, $bundle) {
+  public static function loadByEntityTypeBundle(?string $entity_type_id, ?string $bundle) {
     if ($entity_type_id == NULL || $bundle == NULL) {
       return NULL;
     }
     $config = \Drupal::entityTypeManager()->getStorage('language_content_settings')->load($entity_type_id . '.' . $bundle);
     if ($config == NULL) {
-      $config = ContentLanguageSettings::create(['target_entity_type_id' => $entity_type_id, 'target_bundle' => $bundle]);
+      return ContentLanguageSettings::create(['target_entity_type_id' => $entity_type_id, 'target_bundle' => $bundle]);
     }
     return $config;
   }
@@ -216,7 +216,7 @@ class ContentLanguageSettings extends ConfigEntityBase implements ContentLanguag
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
 
     // Create dependency on the bundle.

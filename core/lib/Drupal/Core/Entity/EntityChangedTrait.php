@@ -30,7 +30,7 @@ trait EntityChangedTrait {
    *   The timestamp of the last entity save operation. Some entities allow a
    *   NULL value indicating the changed time is unknown.
    */
-  public function getChangedTime() {
+  public function getChangedTime(): ?int {
     $value = $this->get('changed')->value;
     return isset($value) ? (int) $value : NULL;
   }

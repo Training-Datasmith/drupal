@@ -32,16 +32,13 @@ use ReflectionException;
 class StaticReflectionClass extends ReflectionClass
 {
 
-    /**
-     * The static reflection parser object.
-     *
-     * @var StaticReflectionParser
-     */
-    private $staticReflectionParser;
-
-    public function __construct(StaticReflectionParser $staticReflectionParser)
+    public function __construct(
+        /**
+         * The static reflection parser object.
+         */
+        private readonly StaticReflectionParser $staticReflectionParser
+    )
     {
-        $this->staticReflectionParser = $staticReflectionParser;
     }
 
     /**
@@ -80,10 +77,8 @@ class StaticReflectionClass extends ReflectionClass
      * Determines if the class has the provided class attribute.
      *
      * @param string $attribute The attribute to check for.
-     *
-     * @return bool
      */
-    public function hasClassAttribute(string $attribute)
+    public function hasClassAttribute(string $attribute): bool
     {
         return $this->staticReflectionParser->hasClassAttribute($attribute);
     }
@@ -107,7 +102,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public static function export($argument, $return = false)
+    public static function export($argument, $return = false): never
     {
         throw new ReflectionException('Method not implemented');
     }
@@ -443,7 +438,7 @@ class StaticReflectionClass extends ReflectionClass
     /**
      * {@inheritDoc}
      */
-    public function __toString()
+    public function __toString(): string
     {
         throw new ReflectionException('Method not implemented');
     }

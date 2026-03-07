@@ -44,10 +44,8 @@ class EntityAdapter extends TypedData implements \IteratorAggregate, ComplexData
    *
    * @param \Drupal\Core\Entity\EntityInterface|null $entity
    *   The entity object to wrap.
-   *
-   * @return static
    */
-  public static function createFromEntity(EntityInterface $entity) {
+  public static function createFromEntity(EntityInterface $entity): static {
     $definition = EntityDataDefinition::create()
       ->setEntityTypeId($entity->getEntityTypeId())
       ->setBundles([$entity->bundle()]);
@@ -66,7 +64,7 @@ class EntityAdapter extends TypedData implements \IteratorAggregate, ComplexData
   /**
    * {@inheritdoc}
    */
-  public function setValue($entity, $notify = TRUE) {
+  public function setValue($entity, $notify = TRUE): void {
     $this->entity = $entity;
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {
@@ -91,7 +89,7 @@ class EntityAdapter extends TypedData implements \IteratorAggregate, ComplexData
   /**
    * {@inheritdoc}
    */
-  public function set($property_name, $value, $notify = TRUE) {
+  public function set($property_name, $value, $notify = TRUE): static {
     if (!isset($this->entity)) {
       throw new MissingDataException("Unable to set property $property_name as no entity has been provided.");
     }
@@ -129,14 +127,14 @@ class EntityAdapter extends TypedData implements \IteratorAggregate, ComplexData
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     return !isset($this->entity);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function onChange($property_name) {
+  public function onChange($property_name): void {
     if (isset($this->entity) && $this->entity instanceof FieldableEntityInterface) {
       // Let the entity know of any changes.
       $this->entity->onChange($property_name);
@@ -153,7 +151,7 @@ class EntityAdapter extends TypedData implements \IteratorAggregate, ComplexData
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     // Apply the default value of all properties.
     foreach ($this->getProperties() as $property) {
       $property->applyDefaultValue(FALSE);

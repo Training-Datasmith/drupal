@@ -31,14 +31,14 @@ class SearchPageForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'search_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?SearchPageInterface $search_page = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?SearchPageInterface $search_page = NULL): array {
     $this->entity = $search_page;
 
     $plugin = $this->entity->getPlugin();
@@ -84,7 +84,7 @@ class SearchPageForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Redirect to the search page with keywords in the GET parameters.
     // Plugins with additional search parameters will need to provide their
     // own form submit handler to replace this, so they can put their values

@@ -18,7 +18,7 @@ trait EntityChangesDetectionTrait {
    * @return string[]
    *   An array of field names.
    */
-  protected function getFieldsToSkipFromTranslationChangesCheck(ContentEntityInterface $entity) {
+  protected function getFieldsToSkipFromTranslationChangesCheck(ContentEntityInterface $entity): array {
     /** @var \Drupal\Core\Entity\ContentEntityTypeInterface $entity_type */
     $entity_type = $entity->getEntityType();
 

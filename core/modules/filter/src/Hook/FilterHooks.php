@@ -45,8 +45,7 @@ class FilterHooks {
         $output .= '<dd>' . $this->t('Text fields that allow text formats are those with "formatted" in the description. These are <em>Text (formatted, long, with summary)</em>, <em>Text (formatted)</em>, and <em>Text (formatted, long)</em>. You cannot change the type of field once a field has been created.') . '</dd>';
         $output .= '<dt>' . $this->t('Choosing a text format') . '</dt>';
         $output .= '<dd>' . $this->t('When creating or editing data in a field that has text formats enabled, users can select the format under the field from the Text format select list.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'filter.admin_overview':
         $output = '<p>' . $this->t('Text formats define how text is filtered for output and how HTML tags and other text is displayed, replaced, or removed. <strong>Improper text format configuration is a security risk.</strong> Learn more on the <a href=":filter_help">Filter module help page</a>.', [
@@ -54,12 +53,10 @@ class FilterHooks {
             'name' => 'filter',
           ])->toString(),
         ]) . '</p>';
-        $output .= '<p>' . $this->t('Text formats are presented on content editing pages in the order defined on this page. The first format available to a user will be selected by default.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Text formats are presented on content editing pages in the order defined on this page. The first format available to a user will be selected by default.') . '</p>');
 
       case 'entity.filter_format.edit_form':
-        $output = '<p>' . $this->t('A text format contains filters that change the display of user input; for example, stripping out malicious HTML or making URLs clickable. Filters are executed from top to bottom and the order is important, since one filter may prevent another filter from doing its job. For example, when URLs are converted into links before disallowed HTML tags are removed, all links may be removed. When this happens, the order of filters may need to be rearranged.') . '</p>';
-        return $output;
+        return '<p>' . $this->t('A text format contains filters that change the display of user input; for example, stripping out malicious HTML or making URLs clickable. Filters are executed from top to bottom and the order is important, since one filter may prevent another filter from doing its job. For example, when URLs are converted into links before disallowed HTML tags are removed, all links may be removed. When this happens, the order of filters may need to be rearranged.') . '</p>';
     }
     return NULL;
   }
@@ -80,7 +77,7 @@ class FilterHooks {
     $image->setAttribute('height', '16');
     $image->setAttribute('width', '16');
     // Add a CSS class to aid in styling.
-    $class = $image->getAttribute('class') ? trim($image->getAttribute('class')) . ' ' : '';
+    $class = $image->getAttribute('class') ? trim((string) $image->getAttribute('class')) . ' ' : '';
     $class .= 'filter-image-invalid';
     $image->setAttribute('class', $class);
   }

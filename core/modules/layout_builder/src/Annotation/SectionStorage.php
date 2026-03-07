@@ -68,7 +68,6 @@ class SectionStorage extends Plugin {
    * not be possible to add new inline blocks from the Layout Builder UI.
    * Defaults to TRUE.
    *
-   * @var bool
    *
    * @see \Drupal\layout_builder\Controller\ChooseBlockController
    */
@@ -77,7 +76,7 @@ class SectionStorage extends Plugin {
   /**
    * {@inheritdoc}
    */
-  public function get() {
+  public function get(): \Drupal\layout_builder\SectionStorage\SectionStorageDefinition {
     return new SectionStorageDefinition($this->definition);
   }
 

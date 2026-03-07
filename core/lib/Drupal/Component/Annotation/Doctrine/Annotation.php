@@ -68,7 +68,7 @@ class Annotation
      *
      * @throws BadMethodCallException
      */
-    public function __set(string $name, $value)
+    public function __set(string $name, mixed $value)
     {
         throw new BadMethodCallException(
             sprintf("Unknown property '%s' on annotation '%s'.", $name, static::class)

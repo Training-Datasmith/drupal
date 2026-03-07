@@ -21,7 +21,7 @@ class ResizeImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
+  public function applyEffect(ImageInterface $image): bool {
     if (!$image->resize($this->configuration['width'], $this->configuration['height'])) {
       $this->logger->error('Image resize failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
         '%toolkit' => $image->getToolkitId(),
@@ -37,7 +37,7 @@ class ResizeImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function transformDimensions(array &$dimensions, $uri) {
+  public function transformDimensions(array &$dimensions, $uri): void {
     // The new image will have the exact dimensions defined for the effect.
     $dimensions['width'] = $this->configuration['width'];
     $dimensions['height'] = $this->configuration['height'];
@@ -51,15 +51,14 @@ class ResizeImageEffect extends ConfigurableImageEffectBase {
       '#theme' => 'image_resize_summary',
       '#data' => $this->configuration,
     ];
-    $summary += parent::getSummary();
 
-    return $summary;
+    return $summary + parent::getSummary();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'width' => NULL,
       'height' => NULL,
@@ -69,7 +68,7 @@ class ResizeImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['width'] = [
       '#type' => 'number',
       '#title' => $this->t('Width'),
@@ -92,7 +91,7 @@ class ResizeImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['height'] = $form_state->getValue('height');

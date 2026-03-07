@@ -17,13 +17,6 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 class ViewAddForm extends ViewFormBase {
 
   /**
-   * The wizard plugin manager.
-   *
-   * @var \Drupal\views\Plugin\ViewsPluginManager
-   */
-  protected $wizardManager;
-
-  /**
    * The module handler service.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -33,20 +26,19 @@ class ViewAddForm extends ViewFormBase {
   /**
    * Constructs a new ViewAddForm object.
    *
-   * @param \Drupal\views\Plugin\ViewsPluginManager $wizard_manager
+   * @param \Drupal\views\Plugin\ViewsPluginManager $wizardManager
    *   The wizard plugin manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
    */
-  public function __construct(ViewsPluginManager $wizard_manager, ModuleHandlerInterface $module_handler) {
-    $this->wizardManager = $wizard_manager;
+  public function __construct(protected \Drupal\views\Plugin\ViewsPluginManager $wizardManager, ModuleHandlerInterface $module_handler) {
     $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.views.wizard'),
       $container->get('module_handler')
@@ -63,7 +55,7 @@ class ViewAddForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form['#attached']['library'][] = 'views_ui/views_ui.admin';
     $form['#attributes']['class'] = ['views-admin'];
 
@@ -147,9 +139,8 @@ class ViewAddForm extends ViewFormBase {
     // Build the rest of the form based on the currently selected wizard plugin.
     $wizard_key = $show_form['wizard_key']['#default_value'];
     $wizard_instance = $this->wizardManager->createInstance($wizard_key);
-    $form = $wizard_instance->buildForm($form, $form_state);
 
-    return $form;
+    return $wizard_instance->buildForm($form, $form_state);
   }
 
   /**
@@ -159,7 +150,7 @@ class ViewAddForm extends ViewFormBase {
     $actions = parent::actions($form, $form_state);
     $actions['submit']['#value'] = $this->t('Save and edit');
     // Remove EntityFormController::save() form the submission handlers.
-    $actions['submit']['#submit'] = [[$this, 'submitForm']];
+    $actions['submit']['#submit'] = [$this->submitForm(...)];
     $actions['cancel'] = [
       '#type' => 'submit',
       '#value' => $this->t('Cancel'),
@@ -172,7 +163,7 @@ class ViewAddForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $wizard_type = $form_state->getValue(['show', 'wizard_key']);
     $wizard_instance = $this->wizardManager->createInstance($wizard_type);
     $form_state->set('wizard', $wizard_instance->getPluginDefinition());
@@ -182,7 +173,7 @@ class ViewAddForm extends ViewFormBase {
     if (!empty($path)) {
       // @todo https://www.drupal.org/node/2423913 Views should expect and store
       //   a leading /.
-      $path = ltrim($path, '/ ');
+      $path = ltrim((string) $path, '/ ');
     }
     $errors = $wizard_instance->validateView($form, $form_state);
 
@@ -196,7 +187,7 @@ class ViewAddForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     try {
       /** @var \Drupal\views\Plugin\views\wizard\WizardInterface $wizard */
       $wizard = $form_state->get('wizard_instance');
@@ -221,7 +212,7 @@ class ViewAddForm extends ViewFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function cancel(array $form, FormStateInterface $form_state) {
+  public function cancel(array $form, FormStateInterface $form_state): void {
     $form_state->setRedirect('entity.view.collection');
   }
 

@@ -221,7 +221,7 @@ final class PreprocessHooks implements TrustedCallbackInterface {
       ];
 
       foreach ($operation_labels as $regex => $label) {
-        if (preg_match($regex, $route_name)) {
+        if (preg_match($regex, (string) $route_name)) {
           $operation_label = $label;
           break;
         }
@@ -896,9 +896,7 @@ final class PreprocessHooks implements TrustedCallbackInterface {
     // Are we displaying an edit form?
     if (Helper::formActions()) {
       $classes = &$variables['link']['#options']['attributes']['class'];
-      $classes = array_filter($classes, static function ($e) {
-        return $e !== 'button--primary';
-      });
+      $classes = array_filter($classes, static fn($e) => $e !== 'button--primary');
     }
   }
 
@@ -1024,7 +1022,7 @@ final class PreprocessHooks implements TrustedCallbackInterface {
     // Expose Route name.
     $variables['route_name'] = $this->currentRouteMatch->getRouteName();
 
-    if (preg_match('#entity\.(?<entity_type_id>.+)\.canonical#', $variables['route_name'], $matches)) {
+    if (preg_match('#entity\.(?<entity_type_id>.+)\.canonical#', (string) $variables['route_name'], $matches)) {
       $entity = $this->requestStack->getCurrentRequest()->attributes->get($matches['entity_type_id']);
 
       if ($entity instanceof EntityInterface && $entity->hasLinkTemplate('edit-form') && $entity->access('update')) {
@@ -1059,7 +1057,7 @@ final class PreprocessHooks implements TrustedCallbackInterface {
    */
   #[Hook('preprocess_page_title')]
   public function pageTitle(array &$variables): void {
-    if (preg_match('/entity\.node\..*/', $this->currentRouteMatch->getRouteName(), $matches)) {
+    if (preg_match('/entity\.node\..*/', (string) $this->currentRouteMatch->getRouteName(), $matches)) {
       $node = $this->currentRouteMatch->getParameter('node');
       if ($node instanceof Node) {
         if ($node->isDefaultTranslation() && !in_array($matches[0], [
@@ -1228,7 +1226,7 @@ final class PreprocessHooks implements TrustedCallbackInterface {
     // we use a wrapper function to load the service with dependencies.
     // @see https://www.drupal.org/project/drupal/issues/3060638
     $variables['user_picture'] = [
-      '#lazy_builder' => [static::class . '::lazyToolbarUserPicture', []],
+      '#lazy_builder' => [self::class . '::lazyToolbarUserPicture', []],
       '#create_placeholder' => TRUE,
     ];
 

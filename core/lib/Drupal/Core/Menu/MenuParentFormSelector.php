@@ -17,39 +17,24 @@ class MenuParentFormSelector implements MenuParentFormSelectorInterface {
   use StringTranslationTrait;
 
   /**
-   * The menu link tree service.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkTreeInterface
-   */
-  protected $menuLinkTree;
-
-  /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a \Drupal\Core\Menu\MenuParentFormSelector.
    *
-   * @param \Drupal\Core\Menu\MenuLinkTreeInterface $menu_link_tree
+   * @param \Drupal\Core\Menu\MenuLinkTreeInterface $menuLinkTree
    *   The menu link tree service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
    */
-  public function __construct(MenuLinkTreeInterface $menu_link_tree, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation) {
-    $this->menuLinkTree = $menu_link_tree;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Menu\MenuLinkTreeInterface $menuLinkTree, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation) {
     $this->stringTranslation = $string_translation;
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getParentSelectOptions($id = '', ?array $menus = NULL, ?CacheableMetadata &$cacheability = NULL) {
+  public function getParentSelectOptions($id = '', ?array $menus = NULL, ?CacheableMetadata &$cacheability = NULL): array {
     if (!isset($menus)) {
       $menus = $this->getMenuOptions();
     }
@@ -76,7 +61,7 @@ class MenuParentFormSelector implements MenuParentFormSelectorInterface {
   /**
    * {@inheritdoc}
    */
-  public function parentSelectElement($menu_parent, $id = '', ?array $menus = NULL) {
+  public function parentSelectElement($menu_parent, $id = '', ?array $menus = NULL): array {
     $options_cacheability = new CacheableMetadata();
     $options = $this->getParentSelectOptions($id, $menus, $options_cacheability);
     // If no options were found, there is nothing to select.
@@ -110,14 +95,11 @@ class MenuParentFormSelector implements MenuParentFormSelectorInterface {
    * @return int
    *   The depth related to the depth of the given menu link.
    */
-  protected function getParentDepthLimit($id) {
+  protected function getParentDepthLimit($id): int|float {
     if ($id) {
-      $limit = $this->menuLinkTree->maxDepth() - $this->menuLinkTree->getSubtreeHeight($id);
+      return $this->menuLinkTree->maxDepth() - $this->menuLinkTree->getSubtreeHeight($id);
     }
-    else {
-      $limit = $this->menuLinkTree->maxDepth() - 1;
-    }
-    return $limit;
+    return $this->menuLinkTree->maxDepth() - 1;
   }
 
   /**
@@ -138,7 +120,7 @@ class MenuParentFormSelector implements MenuParentFormSelectorInterface {
    * @param \Drupal\Core\Cache\CacheableMetadata|null &$cacheability
    *   The object to add cacheability metadata to, if not NULL.
    */
-  protected function parentSelectOptionsTreeWalk(array $tree, $menu_name, $indent, array &$options, $exclude, $depth_limit, ?CacheableMetadata &$cacheability = NULL) {
+  protected function parentSelectOptionsTreeWalk(array $tree, string $menu_name, string $indent, array &$options, $exclude, $depth_limit, ?CacheableMetadata &$cacheability = NULL) {
     foreach ($tree as $element) {
       if ($element->depth > $depth_limit) {
         // Don't iterate through any links on this level.
@@ -181,7 +163,7 @@ class MenuParentFormSelector implements MenuParentFormSelectorInterface {
    * @return array
    *   Keys are menu names (ids) values are the menu labels.
    */
-  protected function getMenuOptions(?array $menu_names = NULL) {
+  protected function getMenuOptions(?array $menu_names = NULL): array {
     $menus = $this->entityTypeManager->getStorage('menu')->loadMultiple($menu_names);
     $options = [];
     /** @var \Drupal\system\MenuInterface[] $menus */

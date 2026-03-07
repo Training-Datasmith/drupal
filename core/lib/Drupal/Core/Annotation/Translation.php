@@ -54,10 +54,8 @@ class Translation extends AnnotationBase {
 
   /**
    * The string translation object.
-   *
-   * @var \Drupal\Core\StringTranslation\TranslatableMarkup
    */
-  protected $translation;
+  protected \Drupal\Core\StringTranslation\TranslatableMarkup $translation;
 
   /**
    * Constructs a new class instance.

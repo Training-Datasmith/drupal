@@ -18,13 +18,6 @@ class PostgresqlDateSql implements DateSqlInterface {
   use DependencySerializationTrait;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * An array of PHP-to-PostgreSQL replacement patterns.
    *
    * @var array
@@ -56,14 +49,14 @@ class PostgresqlDateSql implements DateSqlInterface {
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(Connection $database) {
-    $this->database = $database;
+  public function __construct(protected \Drupal\Core\Database\Connection $database)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDateField($field, $string_date) {
+  public function getDateField($field, $string_date): string {
     if ($string_date) {
       // Ensures compatibility with field offset operation below.
       return "TO_TIMESTAMP($field, 'YYYY-MM-DD\"T\"HH24:MI:SS')";
@@ -74,7 +67,7 @@ class PostgresqlDateSql implements DateSqlInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDateFormat($field, $format) {
+  public function getDateFormat($field, $format): string {
     $format = strtr($format, static::$replace);
     return "TO_CHAR($field, '$format')";
   }
@@ -82,14 +75,14 @@ class PostgresqlDateSql implements DateSqlInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFieldTimezoneOffset(&$field, $offset) {
+  public function setFieldTimezoneOffset(&$field, $offset): void {
     $field = "($field + INTERVAL '$offset SECONDS')";
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setTimezoneOffset($offset) {
+  public function setTimezoneOffset($offset): void {
     $this->database->query("SET TIME ZONE INTERVAL '$offset' HOUR TO MINUTE");
   }
 

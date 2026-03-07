@@ -18,29 +18,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ImageStyleEditForm extends ImageStyleFormBase {
 
   /**
-   * The image effect manager service.
-   *
-   * @var \Drupal\image\ImageEffectManager
-   */
-  protected $imageEffectManager;
-
-  /**
    * Constructs an ImageStyleEditForm object.
    *
    * @param \Drupal\Core\Entity\EntityStorageInterface $image_style_storage
    *   The storage.
-   * @param \Drupal\image\ImageEffectManager $image_effect_manager
+   * @param \Drupal\image\ImageEffectManager $imageEffectManager
    *   The image effect manager service.
    */
-  public function __construct(EntityStorageInterface $image_style_storage, ImageEffectManager $image_effect_manager) {
+  public function __construct(EntityStorageInterface $image_style_storage, protected \Drupal\image\ImageEffectManager $imageEffectManager) {
     parent::__construct($image_style_storage);
-    $this->imageEffectManager = $image_effect_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('image_style'),
       $container->get('plugin.manager.image.effect')
@@ -50,7 +42,7 @@ class ImageStyleEditForm extends ImageStyleFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $user_input = $form_state->getUserInput();
     $form['#title'] = $this->t('Edit style %name', ['%name' => $this->entity->label()]);
     $form['#tree'] = TRUE;
@@ -145,9 +137,7 @@ class ImageStyleEditForm extends ImageStyleFormBase {
     // Build the new image effect addition form and add it to the effect list.
     $new_effect_options = [];
     $effects = $this->imageEffectManager->getDefinitions();
-    uasort($effects, function ($a, $b) {
-      return Unicode::strcasecmp($a['label'], $b['label']);
-    });
+    uasort($effects, fn($a, $b) => Unicode::strcasecmp($a['label'], $b['label']));
     foreach ($effects as $effect => $definition) {
       $new_effect_options[$effect] = $definition['label'];
     }
@@ -195,7 +185,7 @@ class ImageStyleEditForm extends ImageStyleFormBase {
   /**
    * Validate handler for image effect.
    */
-  public function effectValidate($form, FormStateInterface $form_state) {
+  public function effectValidate($form, FormStateInterface $form_state): void {
     if (!$form_state->getValue('new')) {
       $form_state->setErrorByName('new', $this->t('Select an effect to add.'));
     }
@@ -204,14 +194,14 @@ class ImageStyleEditForm extends ImageStyleFormBase {
   /**
    * Submit handler for image effect.
    */
-  public function effectSave($form, FormStateInterface $form_state) {
+  public function effectSave(array $form, FormStateInterface $form_state): void {
     $this->save($form, $form_state);
 
     // Check if this field has any configuration options.
     $effect = $this->imageEffectManager->getDefinition($form_state->getValue('new'));
 
     // Load the configuration form for this option.
-    if (is_subclass_of($effect['class'], '\Drupal\image\ConfigurableImageEffectInterface')) {
+    if (is_subclass_of($effect['class'], \Drupal\image\ConfigurableImageEffectInterface::class)) {
       $form_state->setRedirect(
         'image.effect_add_form',
         [
@@ -240,7 +230,7 @@ class ImageStyleEditForm extends ImageStyleFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
 
     // Update image effect weights.
     if (!$form_state->isValueEmpty('effects')) {
@@ -253,7 +243,7 @@ class ImageStyleEditForm extends ImageStyleFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     parent::save($form, $form_state);
     $this->messenger()->addStatus($this->t('Changes to the style have been saved.'));
   }

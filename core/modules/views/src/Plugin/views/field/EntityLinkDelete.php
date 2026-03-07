@@ -16,7 +16,7 @@ class EntityLinkDelete extends EntityLink {
   /**
    * {@inheritdoc}
    */
-  protected function getEntityLinkTemplate() {
+  protected function getEntityLinkTemplate(): string {
     return 'delete-form';
   }
 
@@ -31,7 +31,7 @@ class EntityLinkDelete extends EntityLink {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultLabel() {
+  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('delete');
   }
 

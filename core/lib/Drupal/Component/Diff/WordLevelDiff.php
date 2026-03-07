@@ -20,7 +20,7 @@ class WordLevelDiff extends MappedDiff {
     parent::__construct($orig_words, $closing_words, $orig_stripped, $closing_stripped);
   }
 
-  protected function _split($lines) {
+  protected function _split($lines): array {
     $words = [];
     $stripped = [];
     $first = TRUE;
@@ -34,12 +34,12 @@ class WordLevelDiff extends MappedDiff {
         $words[] = "\n";
         $stripped[] = "\n";
       }
-      if (mb_strlen($line) > $this::MAX_LINE_LENGTH) {
+      if (mb_strlen((string) $line) > $this::MAX_LINE_LENGTH) {
         $words[] = $line;
         $stripped[] = $line;
       }
       else {
-        if (preg_match_all('/ ( [^\S\n]+ | [0-9_A-Za-z\x80-\xff]+ | . ) (?: (?!< \n) [^\S\n])? /xs', $line, $m)) {
+        if (preg_match_all('/ ( [^\S\n]+ | [0-9_A-Za-z\x80-\xff]+ | . ) (?: (?!< \n) [^\S\n])? /xs', (string) $line, $m)) {
           $words = array_merge($words, $m[0]);
           $stripped = array_merge($stripped, $m[1]);
         }
@@ -59,8 +59,7 @@ class WordLevelDiff extends MappedDiff {
         $orig->addWords($edit->orig, 'mark');
       }
     }
-    $lines = $orig->getLines();
-    return $lines;
+    return $orig->getLines();
   }
 
   public function closing() {
@@ -74,8 +73,7 @@ class WordLevelDiff extends MappedDiff {
         $closing->addWords($edit->closing, 'mark');
       }
     }
-    $lines = $closing->getLines();
-    return $lines;
+    return $closing->getLines();
   }
 
 }

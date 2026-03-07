@@ -29,9 +29,7 @@ trait PrecedingConstraintAwareValidatorTrait {
     $earlier_constraints = iterator_to_array($this->getPrecedingConstraints($current_constraint));
     $earlier_violations = array_filter(
       iterator_to_array($this->context->getViolations()),
-      function (ConstraintViolationInterface $violation) use ($earlier_constraints) {
-        return in_array($violation->getConstraint(), $earlier_constraints);
-      }
+      fn(ConstraintViolationInterface $violation) => in_array($violation->getConstraint(), $earlier_constraints)
     );
     return !empty($earlier_violations);
   }

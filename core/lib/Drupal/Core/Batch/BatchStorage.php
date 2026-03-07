@@ -65,7 +65,7 @@ class BatchStorage implements BatchStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($id) {
+  public function delete($id): void {
     try {
       $this->connection->delete('batch')
         ->condition('bid', $id)
@@ -79,7 +79,7 @@ class BatchStorage implements BatchStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function update(array $batch) {
+  public function update(array $batch): void {
     try {
       $this->connection->update('batch')
         ->fields(['batch' => serialize($batch)])
@@ -94,7 +94,7 @@ class BatchStorage implements BatchStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function cleanup() {
+  public function cleanup(): void {
     try {
       // Cleanup the batch table and the queue for failed batches.
       $this->connection->delete('batch')
@@ -109,7 +109,7 @@ class BatchStorage implements BatchStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function create(array $batch) {
+  public function create(array $batch): void {
     // Ensure that a session is started before using the CSRF token generator,
     // and update the database record.
     $this->session->start();
@@ -167,7 +167,7 @@ class BatchStorage implements BatchStorageInterface {
   /**
    * Check if the table exists and create it if not.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $database_schema = $this->connection->schema();
       $schema_definition = $this->schemaDefinition();
@@ -207,7 +207,7 @@ class BatchStorage implements BatchStorageInterface {
    *
    * @internal
    */
-  public function schemaDefinition() {
+  public function schemaDefinition(): array {
     return [
       'description' => 'Stores details about batches (processes that run in multiple HTTP requests).',
       'fields' => [

@@ -27,14 +27,14 @@ class Access extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function canExpose() {
+  public function canExpose(): bool {
     return FALSE;
   }
 
   /**
    * See _node_access_where_sql() for a non-views query based implementation.
    */
-  public function query() {
+  public function query(): void {
     $account = $this->view->getUser();
     if (!$account->hasPermission('bypass node access') && $this->moduleHandler->hasImplementations('node_grants')) {
       $table = $this->ensureMyTable();

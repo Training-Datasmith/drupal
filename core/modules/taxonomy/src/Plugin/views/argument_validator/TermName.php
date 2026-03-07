@@ -49,7 +49,7 @@ class TermName extends Entity {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['transform'] = [
@@ -62,7 +62,7 @@ class TermName extends Entity {
   /**
    * {@inheritdoc}
    */
-  public function validateArgument($argument) {
+  public function validateArgument($argument): bool {
     if ($this->options['transform']) {
       $argument = str_replace('-', ' ', $argument);
       $this->argument->argument = $argument;

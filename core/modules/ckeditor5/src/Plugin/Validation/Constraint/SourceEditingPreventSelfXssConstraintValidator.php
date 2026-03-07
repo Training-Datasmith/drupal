@@ -64,9 +64,7 @@ class SourceEditingPreventSelfXssConstraintValidator extends ConstraintValidator
     // @see \Drupal\filter\Plugin\Filter\FilterHtml::getHTMLRestrictions()
     $forbidden_attributes = [];
     if (array_key_exists('*', $text_format_allowed_elements)) {
-      $forbidden_attributes = array_keys(array_filter($text_format_allowed_elements['*'], function ($attribute_value_restriction, string $attribute_name) {
-        return $attribute_value_restriction === FALSE;
-      }, ARRAY_FILTER_USE_BOTH));
+      $forbidden_attributes = array_keys(array_filter($text_format_allowed_elements['*'], fn($attribute_value_restriction, string $attribute_name) => $attribute_value_restriction === FALSE, ARRAY_FILTER_USE_BOTH));
     }
 
     foreach ($forbidden_attributes as $forbidden_attribute_name) {

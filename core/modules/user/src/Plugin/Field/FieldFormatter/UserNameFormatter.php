@@ -49,8 +49,9 @@ class UserNameFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#markup': mixed, '#cache': array{tags: mixed}}[]|array{'#theme': 'username', '#account': mixed, '#link_options': array{attributes: array{rel: 'user'}}, '#cache': array{tags: mixed}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($items as $delta => $item) {
@@ -83,7 +84,7 @@ class UserNameFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     return $field_definition->getTargetEntityTypeId() === 'user' && $field_definition->getName() === 'name';
   }
 

@@ -93,14 +93,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
    *
    * @var string[]
    */
-  protected $authenticationProviderIds;
-
-  /**
-   * The serialization format providers, keyed by format.
-   *
-   * @var string[]
-   */
-  protected $formatProviders;
+  protected array $authenticationProviderIds;
 
   /**
    * Constructs a RestExport object.
@@ -119,10 +112,13 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
    *   The renderer.
    * @param string[] $authentication_providers
    *   The authentication providers, keyed by ID.
-   * @param string[] $serializer_format_providers
+   * @param string[] $formatProviders
    *   The serialization format providers, keyed by format.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteProviderInterface $route_provider, StateInterface $state, RendererInterface $renderer, array $authentication_providers, array $serializer_format_providers) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, RouteProviderInterface $route_provider, StateInterface $state, RendererInterface $renderer, array $authentication_providers, /**
+   * The serialization format providers, keyed by format.
+   */
+  protected array $formatProviders) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $route_provider, $state);
 
     $this->renderer = $renderer;
@@ -132,13 +128,12 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
     // basic_auth) as keys and modules providing those as values (user,
     // basic_auth).
     $this->authenticationProviderIds = array_keys($authentication_providers);
-    $this->formatProviders = $serializer_format_providers;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -154,7 +149,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function initDisplay(ViewExecutable $view, array &$display, ?array &$options = NULL) {
+  public function initDisplay(ViewExecutable $view, array &$display, ?array &$options = NULL): void {
     parent::initDisplay($view, $display, $options);
 
     // If the default 'json' format is not selected as a format option in the
@@ -178,21 +173,21 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function getType() {
+  public function getType(): string {
     return 'data';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function usesExposed() {
+  public function usesExposed(): bool {
     return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function displaysExposed() {
+  public function displaysExposed(): bool {
     return FALSE;
   }
 
@@ -202,7 +197,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
    * @param string $mime_type
    *   The response mime type. E.g. 'application/json'.
    */
-  public function setMimeType($mime_type) {
+  public function setMimeType($mime_type): void {
     $this->mimeType = $mime_type;
   }
 
@@ -225,7 +220,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
    * @param string $content_type
    *   The content type machine name. E.g. 'json'.
    */
-  public function setContentType($content_type) {
+  public function setContentType($content_type): void {
     $this->contentType = $content_type;
   }
 
@@ -245,7 +240,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
    * @return string[]
    *   An array to use as value for "#options" in the form element.
    */
-  public function getAuthOptions() {
+  public function getAuthOptions(): array {
     return array_combine($this->authenticationProviderIds, $this->authenticationProviderIds);
   }
 
@@ -276,7 +271,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     parent::optionsSummary($categories, $options);
 
     // Authentication.
@@ -312,7 +307,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     if ($form_state->get('section') === 'auth') {
       $form['#title'] .= $this->t('The supported authentication methods for this view');
@@ -329,7 +324,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::submitOptionsForm($form, $form_state);
 
     if ($form_state->get('section') == 'auth') {
@@ -340,7 +335,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public function collectRoutes(RouteCollection $collection) {
+  public function collectRoutes(RouteCollection $collection): void {
     parent::collectRoutes($collection);
     $view_id = $this->view->storage->id();
     $display_id = $this->display['id'];
@@ -385,7 +380,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
    * @return bool
    *   TRUE, when the view should override the given route.
    */
-  protected function overrideApplies($view_path, Route $view_route, Route $route) {
+  protected function overrideApplies($view_path, Route $view_route, Route $route): bool {
     $route_has_format = $route->hasRequirement('_format');
     $route_formats = $route_has_format ? explode('|', $route->getRequirement('_format')) : [];
     $view_route_formats = $view_route->hasRequirement('_format') ? explode('|', $view_route->getRequirement('_format')) : [];
@@ -396,7 +391,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
   /**
    * {@inheritdoc}
    */
-  public static function buildResponse($view_id, $display_id, array $args = []) {
+  public static function buildResponse($view_id, $display_id, array $args = []): \Drupal\Core\Cache\CacheableResponse {
     $build = static::buildBasicRenderable($view_id, $display_id, $args);
 
     // Setup an empty response so headers can be added as needed during views
@@ -429,12 +424,11 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function render() {
+  public function render(): array {
     $build = [];
-    $build['#markup'] = $this->renderer->executeInRenderContext(new RenderContext(), function () {
-      return $this->view->style_plugin->render();
-    });
+    $build['#markup'] = $this->renderer->executeInRenderContext(new RenderContext(), fn() => $this->view->style_plugin->render());
 
     $this->view->element['#content_type'] = $this->getMimeType();
     $this->view->element['#cache_properties'][] = '#content_type';
@@ -481,7 +475,7 @@ class RestExport extends PathPluginBase implements ResponseDisplayPluginInterfac
    * @return string[]
    *   An array of format options. Both key and value are the same.
    */
-  protected function getFormatOptions() {
+  protected function getFormatOptions(): array {
     $formats = array_keys($this->formatProviders);
     return array_combine($formats, $formats);
   }

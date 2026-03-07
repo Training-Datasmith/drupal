@@ -24,7 +24,7 @@ class RequestContext extends SymfonyRequestContext {
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The current request stack.
    */
-  public function fromRequestStack(RequestStack $request_stack) {
+  public function fromRequestStack(RequestStack $request_stack): void {
     $this->fromRequest($request_stack->getCurrentRequest());
   }
 
@@ -57,7 +57,7 @@ class RequestContext extends SymfonyRequestContext {
    * @param string $complete_base_url
    *   The complete base URL.
    */
-  public function setCompleteBaseUrl($complete_base_url) {
+  public function setCompleteBaseUrl($complete_base_url): void {
     $this->completeBaseUrl = $complete_base_url;
   }
 

@@ -51,7 +51,7 @@ class DecimalItem extends NumericItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -66,7 +66,7 @@ class DecimalItem extends NumericItemBase {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
     $element = [];
     $settings = $this->getSettings();
 
@@ -100,8 +100,8 @@ class DecimalItem extends NumericItemBase {
     $element = parent::fieldSettingsForm($form, $form_state);
     $settings = $this->getSettings();
 
-    $element['min']['#step'] = pow(0.1, $settings['scale']);
-    $element['max']['#step'] = pow(0.1, $settings['scale']);
+    $element['min']['#step'] = 0.1 ** $settings['scale'];
+    $element['max']['#step'] = 0.1 ** $settings['scale'];
 
     return $element;
   }
@@ -109,7 +109,7 @@ class DecimalItem extends NumericItemBase {
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     $this->value = round($this->value, $this->getSetting('scale'));
   }
 
@@ -124,15 +124,15 @@ class DecimalItem extends NumericItemBase {
     // point.
     // The maximum number you can get with 3 digits is 10^3 - 1 --> 999.
     // The minimum number you can get with 3 digits is -1 * (10^3 - 1).
-    $max = is_numeric($settings['max']) ? $settings['max'] : pow(10, ($precision - $scale)) - 1;
-    $min = is_numeric($settings['min']) ? $settings['min'] : -pow(10, ($precision - $scale)) + 1;
+    $max = is_numeric($settings['max']) ? $settings['max'] : 10 ** ($precision - $scale) - 1;
+    $min = is_numeric($settings['min']) ? $settings['min'] : -10 ** ($precision - $scale) + 1;
 
     // Get the number of decimal digits for the $max.
     $decimal_digits = self::getDecimalDigits($max);
     // Do the same for the min and keep the higher number of decimal digits.
     $decimal_digits = max(self::getDecimalDigits($min), $decimal_digits);
     // If $min = 1.234 and $max = 1.33 then $decimal_digits = 3.
-    $scale = rand($decimal_digits, $scale);
+    $scale = random_int($decimal_digits, $scale);
 
     // @see "Example #1 Calculate a random floating-point number" in
     // http://php.net/manual/function.mt-getrandmax.php
@@ -150,7 +150,7 @@ class DecimalItem extends NumericItemBase {
    * @return int
    *   The number of decimal digits.
    */
-  protected static function getDecimalDigits($decimal) {
+  protected static function getDecimalDigits($decimal): int {
     $digits = 0;
     while ($decimal - round($decimal)) {
       $decimal *= 10;

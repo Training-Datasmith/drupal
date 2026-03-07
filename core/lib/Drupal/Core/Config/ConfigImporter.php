@@ -46,41 +46,6 @@ class ConfigImporter {
   const LOCK_NAME = 'config_importer';
 
   /**
-   * The storage comparer used to discover configuration changes.
-   *
-   * @var \Drupal\Core\Config\StorageComparerInterface
-   */
-  protected $storageComparer;
-
-  /**
-   * The event dispatcher used to notify subscribers.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
-   * The configuration manager.
-   *
-   * @var \Drupal\Core\Config\ConfigManagerInterface
-   */
-  protected $configManager;
-
-  /**
-   * The used lock backend instance.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected $lock;
-
-  /**
-   * The typed config manager.
-   *
-   * @var \Drupal\Core\Config\TypedConfigManagerInterface
-   */
-  protected $typedConfigManager;
-
-  /**
    * List of configuration file changes processed by the import().
    *
    * @var array
@@ -107,20 +72,6 @@ class ConfigImporter {
    * @var bool
    */
   protected $validated;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
 
   /**
    * Indicates if a system theme is in processing theme install and uninstalls.
@@ -155,66 +106,35 @@ class ConfigImporter {
   protected $totalConfigurationToProcess = 0;
 
   /**
-   * The module installer.
-   *
-   * @var \Drupal\Core\Extension\ModuleInstallerInterface
-   */
-  protected $moduleInstaller;
-
-  /**
-   * The module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
-
-  /**
-   * The theme extension list.
-   *
-   * @var \Drupal\Core\Extension\ThemeExtensionList
-   */
-  protected $themeExtensionList;
-
-  /**
    * Constructs a configuration import object.
    *
-   * @param \Drupal\Core\Config\StorageComparerInterface $storage_comparer
+   * @param \Drupal\Core\Config\StorageComparerInterface $storageComparer
    *   A storage comparer object used to determine configuration changes and
    *   access the source and target storage objects.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher used to notify subscribers of config import events.
-   * @param \Drupal\Core\Config\ConfigManagerInterface $config_manager
+   * @param \Drupal\Core\Config\ConfigManagerInterface $configManager
    *   The configuration manager.
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend to ensure multiple imports do not occur at the same
    *   time.
-   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed configuration manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
+   * @param \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller
    *   The module installer.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
-   * @param \Drupal\Core\Extension\ThemeExtensionList $extension_list_theme
+   * @param \Drupal\Core\Extension\ThemeExtensionList $themeExtensionList
    *   The theme extension list.
    */
-  public function __construct(StorageComparerInterface $storage_comparer, EventDispatcherInterface $event_dispatcher, ConfigManagerInterface $config_manager, LockBackendInterface $lock, TypedConfigManagerInterface $typed_config, ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, ThemeHandlerInterface $theme_handler, TranslationInterface $string_translation, ModuleExtensionList $extension_list_module, ThemeExtensionList $extension_list_theme) {
-    $this->moduleExtensionList = $extension_list_module;
-    $this->storageComparer = $storage_comparer;
-    $this->eventDispatcher = $event_dispatcher;
-    $this->configManager = $config_manager;
-    $this->lock = $lock;
-    $this->typedConfigManager = $typed_config;
-    $this->moduleHandler = $module_handler;
-    $this->moduleInstaller = $module_installer;
-    $this->themeHandler = $theme_handler;
+  public function __construct(protected \Drupal\Core\Config\StorageComparerInterface $storageComparer, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher, protected \Drupal\Core\Config\ConfigManagerInterface $configManager, protected \Drupal\Core\Lock\LockBackendInterface $lock, protected \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler, TranslationInterface $string_translation, protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList, protected \Drupal\Core\Extension\ThemeExtensionList $themeExtensionList) {
     $this->stringTranslation = $string_translation;
-    $this->themeExtensionList = $extension_list_theme;
     foreach ($this->storageComparer->getAllCollectionNames() as $collection) {
       $this->processedConfiguration[$collection] = $this->storageComparer->getEmptyChangelist();
     }
@@ -227,7 +147,7 @@ class ConfigImporter {
    * @param string $message
    *   The message to log.
    */
-  public function logError($message) {
+  public function logError($message): void {
     $this->errors[] = $message;
   }
 
@@ -257,7 +177,7 @@ class ConfigImporter {
    * @return $this
    *   The ConfigImporter instance.
    */
-  public function reset() {
+  public function reset(): static {
     $this->storageComparer->reset();
     // Empty all the lists.
     foreach ($this->storageComparer->getAllCollectionNames() as $collection) {
@@ -276,7 +196,7 @@ class ConfigImporter {
    * @return array
    *   An empty list of extensions to process.
    */
-  protected function getEmptyExtensionsProcessedList() {
+  protected function getEmptyExtensionsProcessedList(): array {
     return [
       'module' => [
         'install' => [],
@@ -295,7 +215,7 @@ class ConfigImporter {
    * @return bool
    *   TRUE if there are changes to process and FALSE if not.
    */
-  public function hasUnprocessedConfigurationChanges() {
+  public function hasUnprocessedConfigurationChanges(): bool {
     foreach ($this->storageComparer->getAllCollectionNames() as $collection) {
       foreach (['delete', 'create', 'rename', 'update'] as $op) {
         if (count($this->getUnprocessedConfiguration($op, $collection))) {
@@ -347,7 +267,7 @@ class ConfigImporter {
    * @return array
    *   An array of configuration names.
    */
-  public function getUnprocessedConfiguration($op, $collection = StorageInterface::DEFAULT_COLLECTION) {
+  public function getUnprocessedConfiguration($op, $collection = StorageInterface::DEFAULT_COLLECTION): array {
     return array_diff($this->storageComparer->getChangelist($op, $collection), $this->processedConfiguration[$collection][$op]);
   }
 
@@ -400,9 +320,7 @@ class ConfigImporter {
     $module_data = $this->moduleExtensionList->getList();
     // Use the actual module weights.
     $module_list = array_combine(array_keys($module_data), array_keys($module_data));
-    $module_list = array_map(function ($module) use ($module_data) {
-      return $module_data[$module]->sort;
-    }, $module_list);
+    $module_list = array_map(fn(int|string $module) => $module_data[$module]->sort, $module_list);
 
     // Determine which modules to uninstall.
     $uninstall = array_keys(array_diff_key($current_extensions['module'], $new_extensions['module']));
@@ -472,9 +390,7 @@ class ConfigImporter {
     $theme_data = $this->themeExtensionList->getList();
     // Use the actual theme weights.
     $theme_list = array_combine(array_keys($theme_data), array_keys($theme_data));
-    $theme_list = array_map(function ($theme) use ($theme_data) {
-      return $theme_data[$theme]->sort;
-    }, $theme_list);
+    $theme_list = array_map(fn(int|string $theme) => $theme_data[$theme]->sort, $theme_list);
     array_multisort(array_values($theme_list), SORT_ASC, array_keys($theme_list), SORT_DESC, $theme_list);
 
     // Work out what themes to install and to uninstall.
@@ -516,7 +432,7 @@ class ConfigImporter {
    * @return array
    *   An array of extension names.
    */
-  protected function getUnprocessedExtensions($type) {
+  protected function getUnprocessedExtensions($type): array {
     $changelist = $this->getExtensionChangelist($type);
     return [
       'install' => array_diff($changelist['install'], $this->processedExtensions[$type]['install']),
@@ -532,7 +448,7 @@ class ConfigImporter {
    *
    * @throws \Drupal\Core\Config\ConfigException
    */
-  public function import() {
+  public function import(): static {
     if ($this->hasUnprocessedConfigurationChanges()) {
       $sync_steps = $this->initialize();
 
@@ -560,7 +476,7 @@ class ConfigImporter {
    * @throws \InvalidArgumentException
    *   Exception thrown if the $sync_step can not be called.
    */
-  public function doSyncStep($sync_step, &$context) {
+  public function doSyncStep($sync_step, &$context): void {
     if ($this->validated) {
       $this->storageComparer->writeMode();
     }
@@ -758,7 +674,7 @@ class ConfigImporter {
    *   An array containing the next operation and extension name to perform it
    *   on. If there is nothing left to do returns FALSE;
    */
-  protected function getNextExtensionOperation() {
+  protected function getNextExtensionOperation(): array|false {
     foreach (['uninstall', 'install'] as $op) {
       $types = $op === 'uninstall' ? ['theme', 'module'] : ['module', 'theme'];
       foreach ($types as $type) {
@@ -788,7 +704,7 @@ class ConfigImporter {
    *   An array containing the next operation and configuration name to perform
    *   it on. If there is nothing left to do returns FALSE;
    */
-  protected function getNextConfigurationOperation() {
+  protected function getNextConfigurationOperation(): array|false {
     // The order configuration operations is processed is important. Deletes
     // have to come first so that recreates can work.
     foreach ($this->storageComparer->getAllCollectionNames() as $collection) {
@@ -815,7 +731,7 @@ class ConfigImporter {
    * @throws \Drupal\Core\Config\ConfigImporterException
    *   Exception thrown if the validate event logged any errors.
    */
-  public function validate() {
+  public function validate(): static {
     if (!$this->validated) {
       $this->errors = [];
       // Create the list of installs and uninstalls.
@@ -846,9 +762,7 @@ class ConfigImporter {
         $errors = array_merge(['There were errors validating the config synchronization.'], $this->getErrors());
         throw new ConfigImporterException(implode(PHP_EOL, $errors));
       }
-      else {
-        $this->validated = TRUE;
-      }
+      $this->validated = TRUE;
     }
     return $this;
   }
@@ -953,7 +867,7 @@ class ConfigImporter {
    *
    * @throws \Drupal\Core\Config\ConfigImporterException
    */
-  protected function checkOp($collection, $op, $name) {
+  protected function checkOp($collection, $op, $name): bool {
     if ($op == 'rename') {
       $names = $this->storageComparer->extractRenameNames($name);
       $target_exists = $this->storageComparer->getTargetStorage($collection)->exists($names['new_name']);
@@ -1094,7 +1008,7 @@ class ConfigImporter {
       // Call to the configuration entity's storage to handle the configuration
       // change.
       if (!($entity_storage instanceof ImportableEntityStorageInterface)) {
-        throw new EntityStorageException(sprintf('The entity storage "%s" for the "%s" entity type does not support imports', get_class($entity_storage), $entity_type));
+        throw new EntityStorageException(sprintf('The entity storage "%s" for the "%s" entity type does not support imports', $entity_storage::class, $entity_type));
       }
       $entity_storage->$method($name, $new_config, $old_config);
       $this->setProcessedConfiguration($collection, $op, $name);
@@ -1122,7 +1036,7 @@ class ConfigImporter {
    *
    * @see \Drupal\Core\Config\ConfigImporter::createRenameName()
    */
-  protected function importInvokeRename($collection, $rename_name) {
+  protected function importInvokeRename($collection, $rename_name): bool {
     $names = $this->storageComparer->extractRenameNames($rename_name);
     $entity_type_id = $this->configManager->getEntityTypeIdByName($names['old_name']);
     $old_config = new Config($names['old_name'], $this->storageComparer->getTargetStorage($collection), $this->eventDispatcher, $this->typedConfigManager);
@@ -1140,7 +1054,7 @@ class ConfigImporter {
     // Call to the configuration entity's storage to handle the configuration
     // change.
     if (!($entity_storage instanceof ImportableEntityStorageInterface)) {
-      throw new EntityStorageException(sprintf("The entity storage '%s' for the '%s' entity type does not support imports", get_class($entity_storage), $entity_type_id));
+      throw new EntityStorageException(sprintf("The entity storage '%s' for the '%s' entity type does not support imports", $entity_storage::class, $entity_type_id));
     }
     $entity_storage->importRename($names['old_name'], $new_config, $old_config);
     $this->setProcessedConfiguration($collection, 'rename', $rename_name);
@@ -1153,7 +1067,7 @@ class ConfigImporter {
    * @return bool
    *   TRUE if an import is already running, FALSE if not.
    */
-  public function alreadyImporting() {
+  public function alreadyImporting(): bool {
     return !$this->lock->lockMayBeAvailable(static::LOCK_NAME);
   }
 

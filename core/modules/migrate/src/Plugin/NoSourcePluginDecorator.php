@@ -13,31 +13,22 @@ class NoSourcePluginDecorator implements DiscoveryInterface {
   use DiscoveryTrait;
 
   /**
-   * The Discovery object being decorated.
-   *
-   * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface
-   */
-  protected $decorated;
-
-  /**
    * Constructs a NoSourcePluginDecorator object.
    *
    * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
    *   The object implementing DiscoveryInterface that is being decorated.
    */
-  public function __construct(DiscoveryInterface $decorated) {
-    $this->decorated = $decorated;
+  public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDefinitions() {
+  public function getDefinitions(): array {
     /** @var \Drupal\Component\Plugin\PluginManagerInterface $source_plugin_manager */
     $source_plugin_manager = \Drupal::service('plugin.manager.migrate.source');
-    return array_filter($this->decorated->getDefinitions(), function (array $definition) use ($source_plugin_manager) {
-      return !empty($definition['source']['plugin']) && $source_plugin_manager->hasDefinition($definition['source']['plugin']);
-    });
+    return array_filter($this->decorated->getDefinitions(), fn(array $definition) => !empty($definition['source']['plugin']) && $source_plugin_manager->hasDefinition($definition['source']['plugin']));
   }
 
   /**
@@ -51,7 +42,7 @@ class NoSourcePluginDecorator implements DiscoveryInterface {
    * @return mixed
    *   The return value from the method on the decorated object.
    */
-  public function __call($method, array $args) {
+  public function __call(string $method, array $args) {
     return call_user_func_array([$this->decorated, $method], $args);
   }
 

@@ -38,27 +38,6 @@ class EntityReferenceEntityFormatter extends EntityReferenceFormatterBase {
   const RECURSIVE_RENDER_LIMIT = 20;
 
   /**
-   * The logger factory.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  protected $loggerFactory;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
    * An array of counters for the recursive rendering protection.
    *
    * @var array
@@ -94,18 +73,15 @@ class EntityReferenceEntityFormatter extends EntityReferenceFormatterBase {
    *   The view mode.
    * @param array $third_party_settings
    *   Any third party settings.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $logger_factory
+   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory
    *   The logger factory.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, LoggerChannelFactoryInterface $logger_factory, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, $label, $view_mode, array $third_party_settings, protected \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerFactory, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $label, $view_mode, $third_party_settings);
-    $this->loggerFactory = $logger_factory;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityDisplayRepository = $entity_display_repository;
   }
 
   /**
@@ -135,8 +111,9 @@ class EntityReferenceEntityFormatter extends EntityReferenceFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return list
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $view_modes = $this->entityDisplayRepository->getViewModeOptions($this->getFieldSetting('target_type'));
@@ -148,8 +125,9 @@ class EntityReferenceEntityFormatter extends EntityReferenceFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $view_mode = $this->getSetting('view_mode');
     $elements = [];
 

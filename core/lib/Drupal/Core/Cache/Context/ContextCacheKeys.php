@@ -14,7 +14,7 @@ class ContextCacheKeys extends CacheableMetadata {
    *
    * @var string[]
    */
-  protected $keys;
+  protected array $keys;
 
   /**
    * Constructs a ContextCacheKeys object.

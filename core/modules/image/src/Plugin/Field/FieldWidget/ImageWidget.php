@@ -30,7 +30,7 @@ class ImageWidget extends FileWidget {
    *
    * @var \Drupal\Core\Image\ImageFactory
    */
-  protected $imageFactory;
+  protected object $imageFactory;
 
   /**
    * Constructs an ImageWidget object.
@@ -68,7 +68,7 @@ class ImageWidget extends FileWidget {
   /**
    * {@inheritdoc}
    */
-  public function settingsForm(array $form, FormStateInterface $form_state) {
+  public function settingsForm(array $form, FormStateInterface $form_state): array {
     $element = parent::settingsForm($form, $form_state);
 
     $element['preview_image_style'] = [
@@ -87,7 +87,7 @@ class ImageWidget extends FileWidget {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = parent::settingsSummary();
 
     $image_styles = image_style_options(FALSE);
@@ -111,7 +111,7 @@ class ImageWidget extends FileWidget {
   /**
    * {@inheritdoc}
    */
-  protected function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state) {
+  protected function formMultipleElements(FieldItemListInterface $items, array &$form, FormStateInterface $form_state): array {
     $elements = parent::formMultipleElements($items, $form, $form_state);
 
     $cardinality = $this->fieldDefinition->getFieldStorageDefinition()->getCardinality();
@@ -138,7 +138,7 @@ class ImageWidget extends FileWidget {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
 
     $field_settings = $this->getFieldSettings();
@@ -194,7 +194,7 @@ class ImageWidget extends FileWidget {
    *
    * This method is assigned as a #process callback in formElement() method.
    */
-  public static function process($element, FormStateInterface $form_state, $form) {
+  public static function process(array $element, FormStateInterface $form_state, array $form): array {
     $item = $element['#value'];
     $item['fids'] = $element['fids']['#value'];
 
@@ -290,7 +290,7 @@ class ImageWidget extends FileWidget {
    * This is separated in a validate function instead of a #required flag to
    * avoid being validated on the process callback.
    */
-  public static function validateRequiredFields($element, FormStateInterface $form_state) {
+  public static function validateRequiredFields($element, FormStateInterface $form_state): void {
     // Only do validation if the function is triggered from other places than
     // the image process form.
     $triggering_element = $form_state->getTriggeringElement();

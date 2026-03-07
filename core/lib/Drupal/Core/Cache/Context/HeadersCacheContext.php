@@ -25,26 +25,26 @@ class HeadersCacheContext extends RequestStackCacheContextBase implements Calcul
    */
   public function getContext($header = NULL) {
     if ($header === NULL) {
-      $headers = $this->requestStack->getCurrentRequest()->headers->all();
-      // Order headers by name to have less cache variations.
-      ksort($headers);
-      $result = '';
-      foreach ($headers as $name => $value) {
-        if ($result) {
-          $result .= '&';
+        $headers = $this->requestStack->getCurrentRequest()->headers->all();
+        // Order headers by name to have less cache variations.
+        ksort($headers);
+        $result = '';
+        foreach ($headers as $name => $value) {
+          if ($result) {
+            $result .= '&';
+          }
+          // Sort values to minimize cache variations.
+          sort($value);
+          $result .= $name . '=' . implode(',', $value);
         }
-        // Sort values to minimize cache variations.
-        sort($value);
-        $result .= $name . '=' . implode(',', $value);
-      }
-      return $result;
+        return $result;
     }
-    elseif ($this->requestStack->getCurrentRequest()->headers->has($header)) {
-      $value = $this->requestStack->getCurrentRequest()->headers->get($header);
-      if ($value !== '') {
-        return $value;
-      }
-      return '?valueless?';
+    if ($this->requestStack->getCurrentRequest()->headers->has($header)) {
+        $value = $this->requestStack->getCurrentRequest()->headers->get($header);
+        if ($value !== '') {
+          return $value;
+        }
+        return '?valueless?';
     }
     return '';
   }
@@ -52,7 +52,7 @@ class HeadersCacheContext extends RequestStackCacheContextBase implements Calcul
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($header = NULL) {
+  public function getCacheableMetadata($header = NULL): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

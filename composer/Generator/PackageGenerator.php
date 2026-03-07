@@ -16,10 +16,8 @@ class PackageGenerator {
 
   /**
    * Base directory where generated projects are written.
-   *
-   * @var string
    */
-  protected $generatedProjectBaseDir;
+  protected string $generatedProjectBaseDir;
 
   /**
    * PackageGenerator constructor.
@@ -36,7 +34,7 @@ class PackageGenerator {
    * @param string $base_dir
    *   Directory where drupal/drupal repository is located.
    */
-  public function generate(IOInterface $io, $base_dir) {
+  public function generate(IOInterface $io, string $base_dir): void {
     // General information from drupal/drupal and drupal/core composer.json
     // and composer.lock files.
     $drupalCoreInfo = DrupalCoreComposer::createFromPath($base_dir);
@@ -66,7 +64,7 @@ class PackageGenerator {
    * @return BuilderInterface[]
    *   An array of BuilderInterface objects.
    */
-  protected function builders() {
+  protected function builders(): array {
     return [
       DrupalCoreRecommendedBuilder::class,
       DrupalDevDependenciesBuilder::class,
@@ -85,7 +83,7 @@ class PackageGenerator {
    * @return bool
    *   TRUE if the generated metapackage is different than what is on disk.
    */
-  protected function generateMetapackage(IOInterface $io, BuilderInterface $builder) {
+  protected function generateMetapackage(IOInterface $io, BuilderInterface $builder): bool {
 
     // Load the existing composer.json file for drupal/core-recommended.
     $relative_path = $builder->getPath() . '/composer.json';
@@ -121,7 +119,7 @@ class PackageGenerator {
    * @return string
    *   Encoded version of provided json data.
    */
-  public static function encode($composer_json_data) {
+  public static function encode($composer_json_data): string {
     return json_encode($composer_json_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n";
   }
 

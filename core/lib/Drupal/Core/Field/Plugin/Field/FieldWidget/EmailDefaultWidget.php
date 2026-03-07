@@ -52,7 +52,7 @@ class EmailDefaultWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $placeholder = $this->getSetting('placeholder');
@@ -70,7 +70,7 @@ class EmailDefaultWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element['value'] = $element + [
       '#type' => 'email',
       '#default_value' => $items[$delta]->value ?? NULL,

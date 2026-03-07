@@ -15,7 +15,7 @@ class Query extends QueryBase implements QueryInterface, QueryAggregateInterface
   /**
    * {@inheritdoc}
    */
-  public function execute() {
+  public function execute(): int|array {
     if ($this->count) {
       return 0;
     }
@@ -39,7 +39,7 @@ class Query extends QueryBase implements QueryInterface, QueryAggregateInterface
   /**
    * {@inheritdoc}
    */
-  public function conditionAggregateGroupFactory($conjunction = 'AND') {
+  public function conditionAggregateGroupFactory($conjunction = 'AND'): \Drupal\Core\Entity\Query\Sql\ConditionAggregate {
     return new ConditionAggregate($conjunction, $this);
   }
 

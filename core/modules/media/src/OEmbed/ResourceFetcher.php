@@ -59,7 +59,7 @@ class ResourceFetcher implements ResourceFetcherInterface {
     [$format] = $response->getHeader('Content-Type');
     $content = (string) $response->getBody();
 
-    if (strstr($format, 'text/xml') || strstr($format, 'application/xml')) {
+    if (strstr((string) $format, 'text/xml') || strstr((string) $format, 'application/xml')) {
       $data = $this->parseResourceXml($content, $url);
     }
     // By default, try to parse the resource data as JSON.
@@ -121,9 +121,8 @@ class ResourceFetcher implements ResourceFetcherInterface {
     // exception if anything looks wrong. For better debugging, catch those
     // exceptions and wrap them in a more specific and useful exception.
     try {
-      switch ($data['type']) {
-        case Resource::TYPE_LINK:
-          return Resource::link(
+      return match ($data['type']) {
+          Resource::TYPE_LINK => Resource::link(
             $data['url'],
             $provider,
             $data['title'],
@@ -133,10 +132,8 @@ class ResourceFetcher implements ResourceFetcherInterface {
             $data['thumbnail_url'],
             $data['thumbnail_width'],
             $data['thumbnail_height']
-          );
-
-        case Resource::TYPE_PHOTO:
-          return Resource::photo(
+          ),
+          Resource::TYPE_PHOTO => Resource::photo(
             $data['url'],
             $data['width'],
             $data['height'],
@@ -148,10 +145,8 @@ class ResourceFetcher implements ResourceFetcherInterface {
             $data['thumbnail_url'],
             $data['thumbnail_width'],
             $data['thumbnail_height']
-          );
-
-        case Resource::TYPE_RICH:
-          return Resource::rich(
+          ),
+          Resource::TYPE_RICH => Resource::rich(
             $data['html'],
             $data['width'],
             $data['height'],
@@ -163,10 +158,8 @@ class ResourceFetcher implements ResourceFetcherInterface {
             $data['thumbnail_url'],
             $data['thumbnail_width'],
             $data['thumbnail_height']
-          );
-
-        case Resource::TYPE_VIDEO:
-          return Resource::video(
+          ),
+          Resource::TYPE_VIDEO => Resource::video(
             $data['html'],
             $data['width'],
             $data['height'],
@@ -178,11 +171,9 @@ class ResourceFetcher implements ResourceFetcherInterface {
             $data['thumbnail_url'],
             $data['thumbnail_width'],
             $data['thumbnail_height']
-          );
-
-        default:
-          throw new ResourceException('Unknown resource type: ' . $data['type'], $url, $data);
-      }
+          ),
+          default => throw new ResourceException('Unknown resource type: ' . $data['type'], $url, $data),
+      };
     }
     catch (\InvalidArgumentException $e) {
       throw new ResourceException($e->getMessage(), $url, $data, $e);
@@ -203,7 +194,7 @@ class ResourceFetcher implements ResourceFetcherInterface {
    * @throws \Drupal\media\OEmbed\ResourceException
    *   If the resource data could not be parsed.
    */
-  protected function parseResourceXml($data, $url) {
+  protected function parseResourceXml($data, $url): mixed {
     // Enable userspace error handling.
     $was_using_internal_errors = libxml_use_internal_errors(TRUE);
     libxml_clear_errors();
@@ -214,11 +205,11 @@ class ResourceFetcher implements ResourceFetcherInterface {
 
     $error = libxml_get_last_error();
     if ($error) {
-      libxml_clear_errors();
-      throw new ResourceException($error->message, $url);
+        libxml_clear_errors();
+        throw new ResourceException($error->message, $url);
     }
-    elseif ($content === FALSE) {
-      throw new ResourceException('The fetched resource could not be parsed.', $url);
+    if ($content === FALSE) {
+        throw new ResourceException('The fetched resource could not be parsed.', $url);
     }
 
     // Convert XML to JSON so that the parsed resource has a consistent array

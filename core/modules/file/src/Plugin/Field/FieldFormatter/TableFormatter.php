@@ -21,8 +21,9 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return list<array{'#theme': 'table__file_formatter_table', '#header': array{Drupal\Core\StringTranslation\TranslatableMarkup, Drupal\Core\StringTranslation\TranslatableMarkup}, '#rows': non-empty-list<array{array{data: array{'#theme': 'file_link', '#file': mixed, '#description': mixed, '#with_size': false, '#cache': array{tags: mixed}}}, array{data: Drupal\Core\StringTranslation\TranslatableMarkup}}>}>
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     if ($files = $this->getEntitiesToView($items, $langcode)) {
@@ -48,13 +49,11 @@ class TableFormatter extends DescriptionAwareFileFormatterBase {
       }
 
       $elements[0] = [];
-      if (!empty($rows)) {
-        $elements[0] = [
-          '#theme' => 'table__file_formatter_table',
-          '#header' => $header,
-          '#rows' => $rows,
-        ];
-      }
+      $elements[0] = [
+        '#theme' => 'table__file_formatter_table',
+        '#header' => $header,
+        '#rows' => $rows,
+      ];
     }
 
     return $elements;

@@ -12,7 +12,7 @@ use Drupal\Core\Serialization\Yaml;
  * @internal
  *   This API is experimental.
  */
-final readonly class ExportResult {
+final readonly class ExportResult implements \Stringable {
 
   public function __construct(
     public array $data,
@@ -30,7 +30,7 @@ final readonly class ExportResult {
       '_meta' => $this->metadata->get(),
     ] + $this->data;
 
-    return Yaml::encode($data);
+    return (string) Yaml::encode($data);
   }
 
 }

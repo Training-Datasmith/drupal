@@ -16,7 +16,7 @@ class InstallerRouteBuilder extends RouteBuilder {
    *
    * @todo Convert installer steps into routes; add an installer.routing.yml.
    */
-  protected function getRouteDefinitions() {
+  protected function getRouteDefinitions(): array {
     return [];
   }
 

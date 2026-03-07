@@ -10,30 +10,24 @@ use Drupal\Component\EventDispatcher\Event;
 class LocaleEvent extends Event {
 
   /**
-   * The list of Language codes for updated translations.
-   *
-   * @var string[]
-   */
-  protected $langCodes;
-
-  /**
-   * List of string identifiers that have been updated / created.
-   *
-   * @var string[]
-   */
-  protected array $lids;
-
-  /**
    * Constructs a new LocaleEvent.
    *
-   * @param array $lang_codes
+   * @param array $langCodes
    *   Language codes for updated translations.
    * @param array $lids
    *   (optional) List of string identifiers that have been updated / created.
    */
-  public function __construct(array $lang_codes, array $lids = []) {
-    $this->langCodes = $lang_codes;
-    $this->lids = $lids;
+  public function __construct(
+      /**
+       * The list of Language codes for updated translations.
+       */
+      protected array $langCodes,
+      /**
+       * List of string identifiers that have been updated / created.
+       */
+      protected array $lids = []
+  )
+  {
   }
 
   /**
@@ -52,7 +46,7 @@ class LocaleEvent extends Event {
    * @return array
    *   $lids
    */
-  public function getLids() {
+  public function getLids(): array {
     return $this->lids;
   }
 

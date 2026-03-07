@@ -66,7 +66,7 @@ class ComponentLoader implements LoaderInterface {
    * {@inheritdoc}
    */
   public function exists($name): bool {
-    if (!preg_match('/^[a-zA-Z][a-zA-Z0-9:_-]*[a-zA-Z0-9]?$/', $name)) {
+    if (!preg_match('/^[a-zA-Z][a-zA-Z0-9:_-]*[a-zA-Z0-9]?$/', (string) $name)) {
       return FALSE;
     }
     try {
@@ -82,7 +82,7 @@ class ComponentLoader implements LoaderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSourceContext($name): Source {
+  public function getSourceContext(string $name): Source {
     try {
       $component = $this->pluginManager->find($name);
       $path = $component->getTemplatePath();
@@ -97,7 +97,7 @@ class ComponentLoader implements LoaderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheKey($name): string {
+  public function getCacheKey(string $name): string {
     try {
       $component = $this->pluginManager->find($name);
     }
@@ -115,7 +115,7 @@ class ComponentLoader implements LoaderInterface {
    * {@inheritdoc}
    */
   public function isFresh(string $name, int $time): bool {
-    $file_is_fresh = static fn(string $path) => filemtime($path) < $time;
+    $file_is_fresh = static fn(string $path): bool => filemtime($path) < $time;
     try {
       $component = $this->pluginManager->find($name);
     }

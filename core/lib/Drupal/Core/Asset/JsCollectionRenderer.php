@@ -36,8 +36,9 @@ class JsCollectionRenderer implements AssetCollectionRendererInterface {
    * group rather than by testing the site-wide aggregation setting. This allows
    * this class to work correctly even if modules have implemented custom
    * logic for grouping and aggregating files.
+   * @return array{'#type': 'html_tag', '#tag': 'script', '#value': mixed, '#attributes': non-empty-array}[]
    */
-  public function render(array $js_assets) {
+  public function render(array $js_assets): array {
     $elements = [];
 
     // Defaults for each SCRIPT element.
@@ -71,7 +72,7 @@ class JsCollectionRenderer implements AssetCollectionRendererInterface {
             // This query string is updated after each full cache clear or when
             // the library version changes.
             $query_string = $js_asset['version'] == -1 ? $this->assetQueryString->get() : 'v=' . $js_asset['version'];
-            $query_string_separator = str_contains($js_asset['data'], '?') ? '&' : '?';
+            $query_string_separator = str_contains((string) $js_asset['data'], '?') ? '&' : '?';
             $element['#attributes']['src'] .= $query_string_separator . ($js_asset['cache'] ? $query_string : $this->time->getRequestTime());
           }
           break;

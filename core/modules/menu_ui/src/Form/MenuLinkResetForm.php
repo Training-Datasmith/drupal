@@ -18,13 +18,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MenuLinkResetForm extends ConfirmFormBase {
 
   /**
-   * The menu link manager.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkManagerInterface
-   */
-  protected $menuLinkManager;
-
-  /**
    * The menu link.
    *
    * @var \Drupal\Core\Menu\MenuLinkInterface
@@ -34,17 +27,17 @@ class MenuLinkResetForm extends ConfirmFormBase {
   /**
    * Constructs a MenuLinkResetForm object.
    *
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
+   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
    *   The menu link manager.
    */
-  public function __construct(MenuLinkManagerInterface $menu_link_manager) {
-    $this->menuLinkManager = $menu_link_manager;
+  public function __construct(protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.menu.link')
     );
@@ -53,21 +46,21 @@ class MenuLinkResetForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'menu_link_reset_confirm';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to reset the link %item to its default values?', ['%item' => $this->link->getTitle()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('entity.menu.edit_form', [
       'menu' => $this->link->getMenuName(),
     ]);
@@ -76,14 +69,14 @@ class MenuLinkResetForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Any customizations will be lost. This action cannot be undone.');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Reset');
   }
 
@@ -92,15 +85,13 @@ class MenuLinkResetForm extends ConfirmFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state, ?MenuLinkInterface $menu_link_plugin = NULL) {
     $this->link = $menu_link_plugin;
-
-    $form = parent::buildForm($form, $form_state);
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->link = $this->menuLinkManager->resetLink($this->link->getPluginId());
     $this->messenger()->addStatus($this->t('The menu link was reset to its default settings.'));
     $form_state->setRedirectUrl($this->getCancelUrl());

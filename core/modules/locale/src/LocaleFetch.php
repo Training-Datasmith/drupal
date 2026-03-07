@@ -48,8 +48,8 @@ class LocaleFetch {
     $operations = _locale_translation_batch_status_operations($projects, $langcodes, $status_options);
     // Download and import translations.
     $operations = array_merge($operations, $this->fetchOperations($projects, $langcodes, $options));
-    array_walk($operations, function ($operation) use ($batch_builder) {
-      call_user_func_array([$batch_builder, 'addOperation'], $operation);
+    array_walk($operations, function ($operation) use ($batch_builder): void {
+      call_user_func_array($batch_builder->addOperation(...), $operation);
     });
 
     return $batch_builder->toArray();
@@ -79,8 +79,8 @@ class LocaleFetch {
       ->setFile($this->moduleExtensionList->getPath('locale') . '/locale.batch.inc')
       ->setFinishCallback('locale_translation_batch_fetch_finished');
     $operations = $this->fetchOperations($projects, $langcodes, $options);
-    array_walk($operations, function ($operation) use ($batch_builder) {
-      call_user_func_array([$batch_builder, 'addOperation'], $operation);
+    array_walk($operations, function ($operation) use ($batch_builder): void {
+      call_user_func_array($batch_builder->addOperation(...), $operation);
     });
     return $batch_builder->toArray();
   }

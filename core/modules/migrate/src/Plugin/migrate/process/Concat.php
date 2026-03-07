@@ -61,14 +61,12 @@ class Concat extends ProcessPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): string {
     if (is_array($value)) {
       $delimiter = $this->configuration['delimiter'] ?? '';
       return implode($delimiter, $value);
     }
-    else {
-      throw new MigrateException(sprintf('%s is not an array', var_export($value, TRUE)));
-    }
+    throw new MigrateException(sprintf('%s is not an array', var_export($value, TRUE)));
   }
 
 }

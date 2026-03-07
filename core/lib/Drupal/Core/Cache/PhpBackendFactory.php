@@ -10,22 +10,15 @@ use Drupal\Component\Datetime\TimeInterface;
 class PhpBackendFactory implements CacheFactoryInterface {
 
   /**
-   * The cache tags checksum provider.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsChecksumInterface
-   */
-  protected $checksumProvider;
-
-  /**
    * Constructs a PhpBackendFactory object.
    *
-   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksum_provider
+   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider
    *   The cache tags checksum provider.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct(CacheTagsChecksumInterface $checksum_provider, protected TimeInterface $time) {
-    $this->checksumProvider = $checksum_provider;
+  public function __construct(protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider, protected TimeInterface $time)
+  {
   }
 
   /**
@@ -37,7 +30,7 @@ class PhpBackendFactory implements CacheFactoryInterface {
    * @return \Drupal\Core\Cache\PhpBackend
    *   The cache backend object for the specified cache bin.
    */
-  public function get($bin) {
+  public function get($bin): \Drupal\Core\Cache\PhpBackend {
     return new PhpBackend($bin, $this->checksumProvider, $this->time);
   }
 

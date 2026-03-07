@@ -16,7 +16,7 @@ class ViewPreviewForm extends ViewFormBase implements WorkspaceSafeFormInterface
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $view = $this->entity;
 
     $form['#prefix'] = '<div id="views-preview-wrapper" class="views-preview-wrapper views-admin clearfix">';
@@ -51,7 +51,7 @@ class ViewPreviewForm extends ViewFormBase implements WorkspaceSafeFormInterface
 
     $args = [];
     if ($form_state->getValue('view_args', '') !== '') {
-      $args = explode('/', $form_state->getValue('view_args'));
+      $args = explode('/', (string) $form_state->getValue('view_args'));
     }
 
     $user_input = $form_state->getUserInput();
@@ -73,7 +73,7 @@ class ViewPreviewForm extends ViewFormBase implements WorkspaceSafeFormInterface
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     $view = $this->entity;
     return [
       '#attributes' => [
@@ -101,7 +101,7 @@ class ViewPreviewForm extends ViewFormBase implements WorkspaceSafeFormInterface
   /**
    * Form submission handler for the Preview button.
    */
-  public function submitPreview($form, FormStateInterface $form_state) {
+  public function submitPreview($form, FormStateInterface $form_state): void {
     $form_state->set('show_preview', TRUE);
     $form_state->setRebuild();
   }

@@ -19,7 +19,7 @@ class StatisticsLastCommentName extends FieldPluginBase {
    * The users table.
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected ?string $user_table;
+  protected ?string $user_table = null;
 
   /**
    * The user name field.
@@ -35,7 +35,7 @@ class StatisticsLastCommentName extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // last_comment_name only contains data if the user is anonymous. So we
     // have to join in a specially related user table.
     $this->ensureMyTable();
@@ -89,9 +89,7 @@ class StatisticsLastCommentName extends FieldPluginBase {
       ];
       return \Drupal::service('renderer')->render($username);
     }
-    else {
-      return $this->sanitizeValue($this->getValue($values));
-    }
+    return $this->sanitizeValue($this->getValue($values));
   }
 
 }

@@ -26,13 +26,6 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
   const CONFIG_LOOKUP_PREFIX = 'config.entity.key_store.';
 
   /**
-   * The config factory used by the config entity query.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The namespace of this class, the parent class etc.
    *
    * @var array
@@ -40,43 +33,30 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
   protected $namespaces;
 
   /**
-   * The key value factory.
-   */
-  protected KeyValueFactoryInterface $keyValueFactory;
-
-  /**
-   * The configuration manager.
-   */
-  protected ConfigManagerInterface $configManager;
-
-  /**
    * Constructs a QueryFactory object.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config storage used by the config entity query.
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
    *   The key value factory.
-   * @param \Drupal\Core\Config\ConfigManagerInterface $config_manager
+   * @param \Drupal\Core\Config\ConfigManagerInterface $configManager
    *   The configuration manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, KeyValueFactoryInterface $key_value, ConfigManagerInterface $config_manager) {
-    $this->configFactory = $config_factory;
-    $this->keyValueFactory = $key_value;
-    $this->configManager = $config_manager;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected KeyValueFactoryInterface $keyValueFactory, protected ConfigManagerInterface $configManager) {
     $this->namespaces = QueryBase::getNamespaces($this);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function get(EntityTypeInterface $entity_type, $conjunction) {
+  public function get(EntityTypeInterface $entity_type, $conjunction): \Drupal\Core\Config\Entity\Query\Query {
     return new Query($entity_type, $conjunction, $this->configFactory, $this->keyValueFactory, $this->namespaces);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
+  public function getAggregate(EntityTypeInterface $entity_type, $conjunction): never {
     throw new QueryException('Aggregation over configuration entities is not supported');
   }
 
@@ -161,7 +141,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    *   The provided $key cannot end with a wildcard. This makes no sense since
    *   you cannot do fast lookups against this.
    */
-  protected function getKeys(Config $config, $key, $get_method, ConfigEntityTypeInterface $entity_type) {
+  protected function getKeys(Config $config, $key, $get_method, ConfigEntityTypeInterface $entity_type): array {
     if (str_ends_with($key, '*')) {
       throw new InvalidLookupKeyException(strtr('%entity_type lookup key %key ends with a wildcard this can not be used as a lookup', [
         '%entity_type' => $entity_type->id(),
@@ -170,7 +150,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
     }
     $parts = explode('.*', $key);
     // Remove leading dots.
-    array_walk($parts, function (&$value) {
+    array_walk($parts, function (&$value): void {
       $value = trim($value, '.');
     });
 
@@ -179,7 +159,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
     $output = [];
     // Flatten the array to a single dimension and add the key to all the
     // values.
-    array_walk_recursive($values, function ($current) use (&$output, $key) {
+    array_walk_recursive($values, function ($current) use (&$output, $key): void {
       if (is_scalar($current)) {
         $current = $key . ':' . $current;
       }
@@ -207,7 +187,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    *   the configuration object does not have a value that corresponds to the
    *   key.
    */
-  protected function getValues(Config $config, $key, $get_method, array $parts, $start = 0) {
+  protected function getValues(Config $config, string $key, $get_method, array $parts, $start = 0) {
     $value = $config->$get_method($key);
     if (is_array($value)) {
       $new_value = [];
@@ -235,7 +215,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The configuration event.
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     $saved_config = $event->getConfig();
     $entity_type_id = $this->configManager->getEntityTypeIdByName($saved_config->getName());
     if ($entity_type_id) {
@@ -250,7 +230,7 @@ class QueryFactory implements QueryFactoryInterface, EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The configuration event.
    */
-  public function onConfigDelete(ConfigCrudEvent $event) {
+  public function onConfigDelete(ConfigCrudEvent $event): void {
     $saved_config = $event->getConfig();
     $entity_type_id = $this->configManager->getEntityTypeIdByName($saved_config->getName());
     if ($entity_type_id) {

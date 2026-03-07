@@ -74,7 +74,7 @@ class ShortcutSet extends ConfigEntityBundleBase implements ShortcutSetInterface
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     if (!$update && !$this->isSyncing()) {
@@ -95,7 +95,7 @@ class ShortcutSet extends ConfigEntityBundleBase implements ShortcutSetInterface
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     foreach ($entities as $entity) {
@@ -116,7 +116,7 @@ class ShortcutSet extends ConfigEntityBundleBase implements ShortcutSetInterface
   /**
    * {@inheritdoc}
    */
-  public function resetLinkWeights() {
+  public function resetLinkWeights(): static {
     $weight = -50;
     foreach ($this->getShortcuts() as $shortcut) {
       $shortcut->setWeight(++$weight);
@@ -131,7 +131,7 @@ class ShortcutSet extends ConfigEntityBundleBase implements ShortcutSetInterface
    */
   public function getShortcuts() {
     $shortcuts = \Drupal::entityTypeManager()->getStorage('shortcut')->loadByProperties(['shortcut_set' => $this->id()]);
-    uasort($shortcuts, ['\Drupal\shortcut\Entity\Shortcut', 'sort']);
+    uasort($shortcuts, [\Drupal\shortcut\Entity\Shortcut::class, 'sort']);
     return $shortcuts;
   }
 

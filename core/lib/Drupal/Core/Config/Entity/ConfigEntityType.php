@@ -71,7 +71,7 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface {
     $this->entity_keys['uuid'] = 'uuid';
     $this->entity_keys['langcode'] = 'langcode';
     $this->handlers += [
-      'storage' => 'Drupal\Core\Config\Entity\ConfigEntityStorage',
+      'storage' => \Drupal\Core\Config\Entity\ConfigEntityStorage::class,
     ];
     $this->lookup_keys[] = 'uuid';
   }
@@ -79,7 +79,7 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfigPrefix() {
+  public function getConfigPrefix(): string {
     // Ensure that all configuration entities are prefixed by the name of the
     // module that provides the configuration entity type.
     if (isset($this->config_prefix)) {
@@ -98,35 +98,35 @@ class ConfigEntityType extends EntityType implements ConfigEntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function getBaseTable() {
+  public function getBaseTable(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRevisionDataTable() {
+  public function getRevisionDataTable(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getRevisionTable() {
+  public function getRevisionTable(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataTable() {
+  public function getDataTable(): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfigDependencyKey() {
+  public function getConfigDependencyKey(): string {
     return 'config';
   }
 

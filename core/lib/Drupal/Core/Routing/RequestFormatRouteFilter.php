@@ -16,7 +16,7 @@ class RequestFormatRouteFilter implements FilterInterface {
   /**
    * {@inheritdoc}
    */
-  public function filter(RouteCollection $collection, Request $request) {
+  public function filter(RouteCollection $collection, Request $request): \Symfony\Component\Routing\RouteCollection {
     // Determine the request format.
     $default_format = static::getDefaultFormat($collection);
     // If the request does not specify a format then use the default.
@@ -37,15 +37,13 @@ class RequestFormatRouteFilter implements FilterInterface {
         $routes_without_requirement[$name] = $route;
         continue;
       }
-      else {
-        $routes_with_requirement[$name] = $route;
-      }
+      $routes_with_requirement[$name] = $route;
     }
 
     foreach ($routes_with_requirement as $name => $route) {
       // If the route has no _format specification, we move it to the end. If it
       // does, then no match means the route is removed entirely.
-      if (($supported_formats = array_filter(explode('|', $route->getRequirement('_format')))) && in_array($format, $supported_formats, TRUE)) {
+      if (($supported_formats = array_filter(explode('|', (string) $route->getRequirement('_format')))) && in_array($format, $supported_formats, TRUE)) {
         $result_collection->add($name, $route);
       }
     }
@@ -108,8 +106,8 @@ class RequestFormatRouteFilter implements FilterInterface {
    * @return string[]
    *   All available formats.
    */
-  protected static function getAvailableFormats(RouteCollection $collection) {
-    $all_formats = array_reduce($collection->all(), function (array $carry, Route $route) {
+  protected static function getAvailableFormats(RouteCollection $collection): array {
+    $all_formats = array_reduce($collection->all(), function (array $carry, Route $route): array {
       // Routes without a '_format' requirement are assumed to require HTML.
       $route_formats = !$route->hasRequirement('_format')
         ? ['html']

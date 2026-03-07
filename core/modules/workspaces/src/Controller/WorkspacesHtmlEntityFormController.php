@@ -54,9 +54,7 @@ class WorkspacesHtmlEntityFormController extends FormController {
 
       // Prevent entities from being edited if they're tracked in workspace.
       if ($operation !== 'delete') {
-        $constraints = array_values(array_filter($entity->getTypedData()->getConstraints(), function ($constraint) {
-          return $constraint instanceof EntityWorkspaceConflictConstraint;
-        }));
+        $constraints = array_values(array_filter($entity->getTypedData()->getConstraints(), fn($constraint) => $constraint instanceof EntityWorkspaceConflictConstraint));
 
         if (!empty($constraints)) {
           $violations = $this->typedDataManager->getValidator()->validate(

@@ -11,14 +11,7 @@ use Drupal\Core\Database\Connection;
  * Note that query builders use PHP's magic __toString() method to compile the
  * query object into a prepared statement.
  */
-abstract class Query implements PlaceholderInterface {
-
-  /**
-   * The connection object on which to run this query.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
+abstract class Query implements PlaceholderInterface, \Stringable {
 
   /**
    * The target of the connection object.
@@ -35,18 +28,9 @@ abstract class Query implements PlaceholderInterface {
   protected $connectionKey;
 
   /**
-   * The query options to pass on to the connection object.
-   *
-   * @var array
-   */
-  protected $queryOptions;
-
-  /**
    * A unique identifier for this query object.
-   *
-   * @var string
    */
-  protected $uniqueIdentifier;
+  protected string $uniqueIdentifier;
 
   /**
    * The placeholder counter.
@@ -67,17 +51,16 @@ abstract class Query implements PlaceholderInterface {
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   Database connection object.
-   * @param array $options
+   * @param array $queryOptions
    *   Array of query options.
    */
-  public function __construct(Connection $connection, $options) {
+  public function __construct(protected \Drupal\Core\Database\Connection $connection, /**
+   * The query options to pass on to the connection object.
+   */
+  protected $queryOptions) {
     $this->uniqueIdentifier = uniqid('', TRUE);
-
-    $this->connection = $connection;
     $this->connectionKey = $this->connection->getKey();
     $this->connectionTarget = $this->connection->getTarget();
-
-    $this->queryOptions = $options;
   }
 
   /**
@@ -124,7 +107,7 @@ abstract class Query implements PlaceholderInterface {
    *   Thrown when the operation is a Merge or the operation is not implemented,
    *   as in test.
    */
-  abstract public function __toString();
+  abstract public function __toString(): string;
 
   /**
    * Returns a unique identifier for this object.

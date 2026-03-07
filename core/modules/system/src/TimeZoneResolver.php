@@ -20,36 +20,27 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class TimeZoneResolver implements EventSubscriberInterface {
 
   /**
-   * The config.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  private $currentUser;
-
-  /**
    * TimeZoneResolver constructor.
    *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    */
-  public function __construct(AccountInterface $current_user, ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
-    $this->currentUser = $current_user;
+  public function __construct(
+      /**
+       * The current user.
+       */
+      private readonly AccountInterface $currentUser,
+      protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+  )
+  {
   }
 
   /**
    * Sets the default time zone.
    */
-  public function setDefaultTimeZone() {
+  public function setDefaultTimeZone(): void {
     if ($time_zone = $this->getTimeZone()) {
       date_default_timezone_set($time_zone);
     }
@@ -61,7 +52,7 @@ class TimeZoneResolver implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The config crud event.
    */
-  public function onConfigSave(ConfigCrudEvent $event) {
+  public function onConfigSave(ConfigCrudEvent $event): void {
     $saved_config = $event->getConfig();
     if ($saved_config->getName() === 'system.date' && ($event->isChanged('timezone.default') || $event->isChanged('timezone.user.configurable'))) {
       $this->setDefaultTimeZone();
@@ -89,10 +80,10 @@ class TimeZoneResolver implements EventSubscriberInterface {
   protected function getTimeZone() {
     $config = $this->configFactory->get('system.date');
     if ($config->get('timezone.user.configurable') && $this->currentUser->isAuthenticated() && $this->currentUser->getTimezone()) {
-      return $this->currentUser->getTimeZone();
+        return $this->currentUser->getTimeZone();
     }
-    elseif ($default_timezone = $config->get('timezone.default')) {
-      return $default_timezone;
+    if ($default_timezone = $config->get('timezone.default')) {
+        return $default_timezone;
     }
     return NULL;
   }

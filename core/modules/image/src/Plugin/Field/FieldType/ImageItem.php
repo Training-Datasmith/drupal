@@ -76,8 +76,9 @@ class ImageItem extends FileItem {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public static function defaultFieldSettings() {
+  public static function defaultFieldSettings(): array {
     $settings = [
       'file_extensions' => 'png gif jpg jpeg webp',
       'alt_field' => 1,
@@ -102,7 +103,7 @@ class ImageItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'target_id' => [
@@ -182,7 +183,7 @@ class ImageItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data) {
+  public function storageSettingsForm(array &$form, FormStateInterface $form_state, $has_data): array {
     $element = [];
 
     // We need the field-level 'default_image' setting, and $this->getSettings()
@@ -209,14 +210,14 @@ class ImageItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
     // Get base form from FileItem.
     $element = parent::fieldSettingsForm($form, $form_state);
 
     $settings = $this->getSettings();
 
     // Add maximum and minimum dimensions settings.
-    $max_resolution = explode('x', $settings['max_resolution']) + ['', ''];
+    $max_resolution = explode('x', (string) $settings['max_resolution']) + ['', ''];
     $element['max_resolution'] = [
       '#type' => 'item',
       '#title' => $this->t('Maximum image dimensions'),
@@ -243,7 +244,7 @@ class ImageItem extends FileItem {
       '#suffix' => '</div>',
     ];
 
-    $min_resolution = explode('x', $settings['min_resolution']) + ['', ''];
+    $min_resolution = explode('x', (string) $settings['min_resolution']) + ['', ''];
     $element['min_resolution'] = [
       '#type' => 'item',
       '#title' => $this->t('Minimum image dimensions'),
@@ -322,7 +323,7 @@ class ImageItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     parent::preSave();
 
     $width = $this->get('width')->getValue();
@@ -346,18 +347,18 @@ class ImageItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
+  public static function generateSampleValue(FieldDefinitionInterface $field_definition): array {
     $random = new Random();
     $settings = $field_definition->getSettings();
     static $images = [];
 
     $min_resolution = empty($settings['min_resolution']) ? '100x100' : $settings['min_resolution'];
     $max_resolution = empty($settings['max_resolution']) ? '600x600' : $settings['max_resolution'];
-    $extensions = array_intersect(explode(' ', $settings['file_extensions']), ['png', 'gif', 'jpg', 'jpeg']);
+    $extensions = array_intersect(explode(' ', (string) $settings['file_extensions']), ['png', 'gif', 'jpg', 'jpeg']);
     $extension = array_rand(array_combine($extensions, $extensions));
 
-    $min = explode('x', $min_resolution);
-    $max = explode('x', $max_resolution);
+    $min = explode('x', (string) $min_resolution);
+    $max = explode('x', (string) $max_resolution);
     if (intval($min[0]) > intval($max[0])) {
       $max[0] = $min[0];
     }
@@ -404,20 +405,19 @@ class ImageItem extends FileItem {
     }
 
     [$width, $height] = getimagesize($file->getFileUri());
-    $values = [
+    return [
       'target_id' => $file->id(),
       'alt' => $random->sentences(4),
       'title' => $random->sentences(4),
       'width' => $width,
       'height' => $height,
     ];
-    return $values;
   }
 
   /**
    * Element validate function for dimensions fields.
    */
-  public static function validateResolution($element, FormStateInterface $form_state) {
+  public static function validateResolution(array $element, FormStateInterface $form_state): void {
     if (!empty($element['x']['#value']) || !empty($element['y']['#value'])) {
       foreach (['x', 'y'] as $dimension) {
         if (!$element[$dimension]['#value']) {
@@ -503,7 +503,7 @@ class ImageItem extends FileItem {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function validateDefaultImageForm(array &$element, FormStateInterface $form_state) {
+  public static function validateDefaultImageForm(array &$element, FormStateInterface $form_state): void {
     // Consolidate the array value of this field to a single FID as #extended
     // for default image is not TRUE and this is a single value.
     if (isset($element['fids']['#value'][0])) {
@@ -522,7 +522,7 @@ class ImageItem extends FileItem {
   /**
    * {@inheritdoc}
    */
-  public function isDisplayed() {
+  public function isDisplayed(): bool {
     // Image items do not have per-item visibility settings.
     return TRUE;
   }

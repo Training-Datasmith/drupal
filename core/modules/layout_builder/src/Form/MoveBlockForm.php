@@ -56,26 +56,19 @@ class MoveBlockForm extends FormBase implements WorkspaceDynamicSafeFormInterfac
   protected $uuid;
 
   /**
-   * The Layout Tempstore.
-   *
-   * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
-   */
-  protected $layoutTempstore;
-
-  /**
    * Constructs a new MoveBlockForm.
    *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
+   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstore
    *   The layout tempstore.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository) {
-    $this->layoutTempstore = $layout_tempstore_repository;
+  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstore)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('layout_builder.tempstore_repository')
     );
@@ -84,7 +77,7 @@ class MoveBlockForm extends FormBase implements WorkspaceDynamicSafeFormInterfac
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'layout_builder_block_move';
   }
 
@@ -107,7 +100,7 @@ class MoveBlockForm extends FormBase implements WorkspaceDynamicSafeFormInterfac
    * @return array
    *   The form array.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL, $delta = NULL, $region = NULL, $uuid = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL, $delta = NULL, $region = NULL, $uuid = NULL): array {
     $parameters = array_slice(func_get_args(), 2);
     foreach ($parameters as $parameter) {
       if (is_null($parameter)) {
@@ -250,7 +243,7 @@ class MoveBlockForm extends FormBase implements WorkspaceDynamicSafeFormInterfac
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $region = $this->getSelectedRegion($form_state);
     $delta = $this->getSelectedDelta($form_state);
     $original_section = $this->sectionStorage->getSection($this->delta);
@@ -301,7 +294,7 @@ class MoveBlockForm extends FormBase implements WorkspaceDynamicSafeFormInterfac
    */
   protected function getSelectedRegion(FormStateInterface $form_state) {
     if ($form_state->hasValue('region')) {
-      return explode(':', $form_state->getValue('region'), 2)[1];
+      return explode(':', (string) $form_state->getValue('region'), 2)[1];
     }
     return $this->region;
   }
@@ -315,9 +308,9 @@ class MoveBlockForm extends FormBase implements WorkspaceDynamicSafeFormInterfac
    * @return int
    *   The section delta.
    */
-  protected function getSelectedDelta(FormStateInterface $form_state) {
+  protected function getSelectedDelta(FormStateInterface $form_state): int {
     if ($form_state->hasValue('region')) {
-      return (int) explode(':', $form_state->getValue('region'))[0];
+      return (int) explode(':', (string) $form_state->getValue('region'))[0];
     }
     return (int) $this->delta;
   }
@@ -335,7 +328,7 @@ class MoveBlockForm extends FormBase implements WorkspaceDynamicSafeFormInterfac
    * @return string
    *   The title for the move block form.
    */
-  public function title(SectionStorageInterface $section_storage, $delta, $uuid) {
+  public function title(SectionStorageInterface $section_storage, $delta, $uuid): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $block_label = $section_storage
       ->getSection($delta)
       ->getComponent($uuid)

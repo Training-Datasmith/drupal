@@ -57,13 +57,6 @@ class Merge extends Query implements ConditionInterface {
   const STATUS_UPDATE = 2;
 
   /**
-   * The table to be used for INSERT and UPDATE.
-   *
-   * @var string
-   */
-  protected $table;
-
-  /**
    * The table or subquery to be used for the condition.
    *
    * @var string
@@ -132,10 +125,12 @@ class Merge extends Query implements ConditionInterface {
    * @param array $options
    *   Array of database options.
    */
-  public function __construct(Connection $connection, $table, array $options = []) {
+  public function __construct(Connection $connection, /**
+   * The table to be used for INSERT and UPDATE.
+   */
+  protected $table, array $options = []) {
     parent::__construct($connection, $options);
-    $this->table = $table;
-    $this->conditionTable = $table;
+    $this->conditionTable = $this->table;
     $this->condition = $this->connection->condition('AND');
   }
 
@@ -149,7 +144,7 @@ class Merge extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  protected function conditionTable($table) {
+  protected function conditionTable($table): static {
     $this->conditionTable = $table;
     return $this;
   }
@@ -164,7 +159,7 @@ class Merge extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  public function updateFields(array $fields) {
+  public function updateFields(array $fields): static {
     $this->updateFields = $fields;
     $this->needsUpdate = TRUE;
     return $this;
@@ -189,7 +184,7 @@ class Merge extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  public function expression($field, $expression, ?array $arguments = NULL) {
+  public function expression($field, $expression, ?array $arguments = NULL): static {
     $this->expressionFields[$field] = [
       'expression' => $expression,
       'arguments' => $arguments,
@@ -214,7 +209,7 @@ class Merge extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  public function insertFields(array $fields, array $values = []) {
+  public function insertFields(array $fields, array $values = []): static {
     if ($values) {
       $fields = array_combine($fields, $values);
     }
@@ -241,7 +236,7 @@ class Merge extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  public function useDefaults(array $fields) {
+  public function useDefaults(array $fields): static {
     $this->defaultFields = $fields;
     return $this;
   }
@@ -267,7 +262,7 @@ class Merge extends Query implements ConditionInterface {
    * @return $this
    *   The called object.
    */
-  public function fields(array $fields, array $values = []) {
+  public function fields(array $fields, array $values = []): static {
     if ($values) {
       $fields = array_combine($fields, $values);
     }
@@ -300,7 +295,7 @@ class Merge extends Query implements ConditionInterface {
    *
    * @return $this
    */
-  public function keys(array $fields, array $values = []) {
+  public function keys(array $fields, array $values = []): static {
     if ($values) {
       $fields = array_combine($fields, $values);
     }
@@ -326,7 +321,7 @@ class Merge extends Query implements ConditionInterface {
    *
    * @see \Drupal\Core\Database\Query\Merge::keys()
    */
-  public function key($field, $value = NULL) {
+  public function key($field, $value = NULL): static {
     assert(is_string($field));
     $this->keys([$field => $value]);
     return $this;
@@ -335,7 +330,7 @@ class Merge extends Query implements ConditionInterface {
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     // In the degenerate case, there is no string-able query as this operation
     // is potentially two queries.
     throw new \BadMethodCallException('The merge query can not be converted to a string');
@@ -354,7 +349,7 @@ class Merge extends Query implements ConditionInterface {
    * @throws \Drupal\Core\Database\Query\InvalidMergeQueryException
    *   When there are no conditions found to merge.
    */
-  public function execute() {
+  public function execute(): ?int {
     if (!count($this->condition)) {
       throw new InvalidMergeQueryException('Invalid merge query: no conditions');
     }

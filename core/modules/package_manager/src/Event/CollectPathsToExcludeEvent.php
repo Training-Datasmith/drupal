@@ -120,7 +120,7 @@ final class CollectPathsToExcludeEvent extends SandboxEvent implements PathListI
     $directories_tree = new \RecursiveDirectoryIterator($this->pathLocator->getProjectRoot(), $flags);
     $filtered_directories = new \RecursiveIteratorIterator($directories_tree, \RecursiveIteratorIterator::SELF_FIRST);
     $matched_directories = new \CallbackFilterIterator($filtered_directories,
-      fn (\RecursiveDirectoryIterator $current) => $current->isDir() && $current->getFilename() === $directory_name
+      fn (\RecursiveDirectoryIterator $current): bool => $current->isDir() && $current->getFilename() === $directory_name
     );
     return array_keys(iterator_to_array($matched_directories));
   }

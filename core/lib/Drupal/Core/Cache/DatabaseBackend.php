@@ -53,27 +53,12 @@ class DatabaseBackend implements CacheBackendInterface {
    */
   protected $bin;
 
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The cache tags checksum provider.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsChecksumInterface
-   */
-  protected $checksumProvider;
-
   /**
    * Constructs a DatabaseBackend object.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
-   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksum_provider
+   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider
    *   The cache tags checksum provider.
    * @param string $bin
    *   The cache bin for which the object is created.
@@ -86,8 +71,8 @@ class DatabaseBackend implements CacheBackendInterface {
    *   table.
    */
   public function __construct(
-    Connection $connection,
-    CacheTagsChecksumInterface $checksum_provider,
+    protected \Drupal\Core\Database\Connection $connection,
+    protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider,
     $bin,
     protected ObjectAwareSerializationInterface $serializer,
     protected TimeInterface $time,
@@ -97,15 +82,13 @@ class DatabaseBackend implements CacheBackendInterface {
     $bin = 'cache_' . $bin;
 
     $this->bin = $bin;
-    $this->connection = $connection;
-    $this->checksumProvider = $checksum_provider;
     $this->maxRows = $max_rows ?? static::DEFAULT_MAX_ROWS;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function get($cid, $allow_invalid = FALSE) {
+  public function get($cid, $allow_invalid = FALSE): mixed {
     $cids = [$cid];
     $cache = $this->getMultiple($cids, $allow_invalid);
     return reset($cache);
@@ -113,8 +96,9 @@ class DatabaseBackend implements CacheBackendInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
     $cid_mapping = [];
     foreach ($cids as $cid) {
       $cid_mapping[$this->normalizeCid($cid)] = $cid;
@@ -140,7 +124,7 @@ class DatabaseBackend implements CacheBackendInterface {
       $tags_for_preload = [];
       foreach ($result as $item) {
         if ($item->tags) {
-          $tags_for_preload[] = explode(' ', $item->tags);
+          $tags_for_preload[] = explode(' ', (string) $item->tags);
         }
       }
       $this->checksumProvider->registerCacheTagsForPreload(array_merge(...$tags_for_preload));
@@ -173,7 +157,7 @@ class DatabaseBackend implements CacheBackendInterface {
    *   The item with data unserialized as appropriate and a property indicating
    *   whether the item is valid, or FALSE if there is no valid item to load.
    */
-  protected function prepareItem($cache, $allow_invalid) {
+  protected function prepareItem($cache, $allow_invalid): false|object {
     if (!isset($cache->data)) {
       return FALSE;
     }
@@ -203,7 +187,7 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
     $this->setMultiple([
       $cid => [
         'data' => $data,
@@ -216,7 +200,7 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $items) {
+  public function setMultiple(array $items): void {
     $try_again = FALSE;
     try {
       // The bin might not yet exist.
@@ -312,15 +296,15 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     $this->deleteMultiple([$cid]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $cids) {
-    $cids = array_values(array_map([$this, 'normalizeCid'], $cids));
+  public function deleteMultiple(array $cids): void {
+    $cids = array_values(array_map($this->normalizeCid(...), $cids));
     try {
       // Delete in chunks when a large array is passed.
       foreach (array_chunk($cids, 1000) as $cids_chunk) {
@@ -342,7 +326,7 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     try {
       $this->connection->truncate($this->bin)->execute();
     }
@@ -359,15 +343,15 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function invalidate($cid) {
+  public function invalidate($cid): void {
     $this->invalidateMultiple([$cid]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invalidateMultiple(array $cids) {
-    $cids = array_values(array_map([$this, 'normalizeCid'], $cids));
+  public function invalidateMultiple(array $cids): void {
+    $cids = array_values(array_map($this->normalizeCid(...), $cids));
     try {
       // Update in chunks when a large array is passed.
       $requestTime = $this->time->getRequestTime();
@@ -386,7 +370,7 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     try {
       // Bounded size cache bin, using FIFO.
       if ($this->maxRows !== static::MAXIMUM_NONE) {
@@ -419,7 +403,7 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeBin() {
+  public function removeBin(): void {
     try {
       $this->connection->schema()->dropTable($this->bin);
     }
@@ -431,7 +415,7 @@ class DatabaseBackend implements CacheBackendInterface {
   /**
    * Check if the cache bin exists and create it if not.
    */
-  protected function ensureBinExists() {
+  protected function ensureBinExists(): bool {
     try {
       $database_schema = $this->connection->schema();
       if (!$database_schema->tableExists($this->bin)) {
@@ -501,8 +485,8 @@ class DatabaseBackend implements CacheBackendInterface {
    *
    * @internal
    */
-  public function schemaDefinition() {
-    $schema = [
+  public function schemaDefinition(): array {
+    return [
       'description' => 'Storage for the cache API.',
       'fields' => [
         'cid' => [
@@ -560,7 +544,6 @@ class DatabaseBackend implements CacheBackendInterface {
       ],
       'primary key' => ['cid'],
     ];
-    return $schema;
   }
 
   /**

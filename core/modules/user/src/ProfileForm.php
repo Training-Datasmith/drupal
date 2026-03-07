@@ -41,7 +41,7 @@ class ProfileForm extends AccountForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $account = $this->entity;
     $account->save();
     $form_state->setValue('uid', $account->id());

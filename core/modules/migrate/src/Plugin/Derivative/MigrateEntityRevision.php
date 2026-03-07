@@ -18,26 +18,24 @@ class MigrateEntityRevision implements ContainerDeriverInterface {
   protected $derivatives = [];
 
   /**
-   * The entity definitions.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface[]
-   */
-  protected $entityDefinitions;
-
-  /**
    * Constructs a MigrateEntity object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface[] $entity_definitions
+   * @param \Drupal\Core\Entity\EntityTypeInterface[] $entityDefinitions
    *   A list of entity definition objects.
    */
-  public function __construct(array $entity_definitions) {
-    $this->entityDefinitions = $entity_definitions;
+  public function __construct(
+      /**
+       * The entity definitions.
+       */
+      protected array $entityDefinitions
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('entity_type.manager')->getDefinitions()
     );
@@ -62,7 +60,7 @@ class MigrateEntityRevision implements ContainerDeriverInterface {
       if ($entity_info->getKey('revision')) {
         $this->derivatives[$entity_type] = [
           'id' => "entity_revision:$entity_type",
-          'class' => 'Drupal\migrate\Plugin\migrate\destination\EntityRevision',
+          'class' => \Drupal\migrate\Plugin\migrate\destination\EntityRevision::class,
           'requirements_met' => 1,
           'provider' => $entity_info->getProvider(),
         ];

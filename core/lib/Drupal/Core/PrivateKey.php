@@ -11,20 +11,13 @@ use Drupal\Component\Utility\Crypt;
 class PrivateKey {
 
   /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * Constructs the private key object.
    *
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
    */
-  public function __construct(StateInterface $state) {
-    $this->state = $state;
+  public function __construct(protected \Drupal\Core\State\StateInterface $state)
+  {
   }
 
   /**
@@ -58,7 +51,7 @@ class PrivateKey {
    * @return string
    *   The private key.
    */
-  protected function create() {
+  protected function create(): string {
     return Crypt::randomBytesBase64(55);
   }
 

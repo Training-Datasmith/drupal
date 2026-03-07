@@ -14,14 +14,14 @@ class TranslateFilterForm extends TranslateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'locale_translate_filter_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $filters = $this->translateFilters();
     $filter_values = $this->translateFilterValues();
 
@@ -82,12 +82,12 @@ class TranslateFilterForm extends TranslateFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $filters = $this->translateFilters();
     $session_filters = $this->getRequest()->getSession()->get('locale_translate_filter', []);
     foreach ($filters as $name => $filter) {
       if ($form_state->hasValue($name)) {
-        $session_filters[$name] = trim($form_state->getValue($name));
+        $session_filters[$name] = trim((string) $form_state->getValue($name));
       }
     }
     $this->getRequest()->getSession()->set('locale_translate_filter', $session_filters);
@@ -97,7 +97,7 @@ class TranslateFilterForm extends TranslateFormBase {
   /**
    * Provides a submit handler for the reset button.
    */
-  public function resetForm(array &$form, FormStateInterface $form_state) {
+  public function resetForm(array &$form, FormStateInterface $form_state): void {
     $this->getRequest()->getSession()->remove('locale_translate_filter');
     $form_state->setRedirect('locale.translate_page');
   }

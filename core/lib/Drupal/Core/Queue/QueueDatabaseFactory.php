@@ -10,26 +10,19 @@ use Drupal\Core\Database\Connection;
 class QueueDatabaseFactory implements QueueFactoryInterface {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs this factory object.
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   The Connection object containing the queue table.
    */
-  public function __construct(Connection $connection) {
-    $this->connection = $connection;
+  public function __construct(protected \Drupal\Core\Database\Connection $connection)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function get($name) {
+  public function get($name): \Drupal\Core\Queue\DatabaseQueue {
     return new DatabaseQueue($name, $this->connection);
   }
 

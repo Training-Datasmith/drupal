@@ -32,15 +32,11 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
 
   /**
    * Cache status flag.
-   *
-   * @var bool
    */
   protected bool $all = FALSE;
 
   /**
    * Sorted status flag.
-   *
-   * @var bool
    */
   protected bool $sorted = FALSE;
 
@@ -60,8 +56,9 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(array $keys) {
+  public function getMultiple(array $keys): array {
     $values = [];
     $load = [];
     foreach ($keys as $key) {
@@ -96,14 +93,14 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($key, $value) {
+  public function set($key, $value): void {
     $this->setMultiple([$key => $value]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $data) {
+  public function setMultiple(array $data): void {
     foreach ($data as $key => $value) {
       $this->cache[$key] = $value;
     }
@@ -115,14 +112,14 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($key) {
+  public function delete($key): void {
     $this->deleteMultiple([$key]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $keys) {
+  public function deleteMultiple(array $keys): void {
     foreach ($keys as $key) {
       $this->cache[$key] = NULL;
     }
@@ -133,7 +130,7 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function resetCache() {
+  public function resetCache(): void {
     $this->cache = [];
     $this->projectCache = [];
     $this->sorted = $this->all = FALSE;
@@ -142,7 +139,7 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     $this->keyValueStore->deleteAll();
     $this->resetCache();
   }
@@ -150,7 +147,7 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function disableAll() {
+  public function disableAll(): void {
     $projects = $this->keyValueStore->getAll();
     foreach (array_keys($projects) as $key) {
       $projects[$key]['status'] = 0;
@@ -165,14 +162,14 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function countProjects() {
+  public function countProjects(): int {
     return count($this->getAll());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAll() {
+  public function getAll(): array {
     if (!$this->all) {
       $this->cache = $this->keyValueStore->getAll();
       $this->all = TRUE;
@@ -181,7 +178,7 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
       // Work around PHP 8.3.0 - 8.3.3 bug by assigning $this->cache to a local
       // variable, see https://github.com/php/php-src/pull/13285.
       $cache = $this->cache;
-      uksort($this->cache, function ($a, $b) use ($cache) {
+      uksort($this->cache, function ($a, $b) use ($cache): int {
         // Sort by weight, if available, and then by key. This allows locale
         // projects to set a weight, if required, and keeps the order consistent
         // regardless of whether the list is built from code or retrieve from
@@ -192,7 +189,7 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
       $this->sorted = TRUE;
     }
     // Remove any NULL values as these are not valid projects.
-    return array_filter($this->cache, fn ($value) => $value !== NULL);
+    return array_filter($this->cache, fn ($value): bool => $value !== NULL);
   }
 
   /**
@@ -211,7 +208,7 @@ class LocaleProjectStorage implements LocaleProjectStorageInterface {
         locale_translation_build_projects();
       }
       $this->projectCache = $this->getAll();
-      array_walk($this->projectCache, function (&$project) {
+      array_walk($this->projectCache, function (&$project): void {
         $project = (object) $project;
       });
     }

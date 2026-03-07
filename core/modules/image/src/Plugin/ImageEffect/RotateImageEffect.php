@@ -23,10 +23,10 @@ class RotateImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
+  public function applyEffect(ImageInterface $image): bool {
     if (!empty($this->configuration['random'])) {
       $degrees = abs((float) $this->configuration['degrees']);
-      $this->configuration['degrees'] = rand(-$degrees, $degrees);
+      $this->configuration['degrees'] = random_int(-$degrees, $degrees);
     }
 
     if (!$image->rotate($this->configuration['degrees'], $this->configuration['bgcolor'])) {
@@ -44,7 +44,7 @@ class RotateImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function transformDimensions(array &$dimensions, $uri) {
+  public function transformDimensions(array &$dimensions, $uri): void {
     // If the rotate is not random and current dimensions are set,
     // then the new dimensions can be determined.
     if (!$this->configuration['random'] && $dimensions['width'] && $dimensions['height']) {
@@ -66,15 +66,14 @@ class RotateImageEffect extends ConfigurableImageEffectBase {
       '#theme' => 'image_rotate_summary',
       '#data' => $this->configuration,
     ];
-    $summary += parent::getSummary();
 
-    return $summary;
+    return $summary + parent::getSummary();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'degrees' => 0,
       'bgcolor' => NULL,
@@ -85,7 +84,7 @@ class RotateImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['degrees'] = [
       '#type' => 'number',
       '#default_value' => $this->configuration['degrees'],
@@ -114,7 +113,7 @@ class RotateImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     if (!$form_state->isValueEmpty('bgcolor') && !Color::validateHex($form_state->getValue('bgcolor'))) {
       $form_state->setErrorByName('bgcolor', $this->t('Background color must be a hexadecimal color value.'));
     }
@@ -123,7 +122,7 @@ class RotateImageEffect extends ConfigurableImageEffectBase {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['degrees'] = $form_state->getValue('degrees');

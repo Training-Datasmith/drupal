@@ -14,7 +14,7 @@ class CommentTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    */
-  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity) {
+  public function entityFormAlter(array &$form, FormStateInterface $form_state, EntityInterface $entity): void {
     parent::entityFormAlter($form, $form_state, $entity);
 
     if (isset($form['content_translation'])) {
@@ -29,14 +29,14 @@ class CommentTranslationHandler extends ContentTranslationHandler {
   /**
    * {@inheritdoc}
    */
-  protected function entityFormTitle(EntityInterface $entity) {
+  protected function entityFormTitle(EntityInterface $entity): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Edit comment @subject', ['@subject' => $entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function entityFormEntityBuild($entity_type, EntityInterface $entity, array $form, FormStateInterface $form_state) {
+  public function entityFormEntityBuild($entity_type, EntityInterface $entity, array $form, FormStateInterface $form_state): void {
     if ($form_state->hasValue('content_translation')) {
       $translation = &$form_state->getValue('content_translation');
       /** @var \Drupal\comment\CommentInterface $entity */

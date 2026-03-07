@@ -52,7 +52,7 @@ class OverviewTerms extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('entity_type.manager'),
@@ -65,7 +65,7 @@ class OverviewTerms extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'taxonomy_overview_terms';
   }
 
@@ -85,7 +85,7 @@ class OverviewTerms extends EntityForm {
    * @return array
    *   The form structure.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?VocabularyInterface $taxonomy_vocabulary = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?VocabularyInterface $taxonomy_vocabulary = NULL): array {
     $form_state->set(['taxonomy', 'vocabulary'], $taxonomy_vocabulary);
     $vocabulary_hierarchy = $this->storageController->getVocabularyHierarchyType($taxonomy_vocabulary->id());
     $parent_fields = FALSE;
@@ -126,13 +126,13 @@ class OverviewTerms extends EntityForm {
       $delta++;
       // Count entries before the current page.
       if ($page && ($page * $page_increment) > $before_entries && !isset($back_step)) {
-        $before_entries++;
-        continue;
+          $before_entries++;
+          continue;
       }
-      // Count entries after the current page.
-      elseif ($page_entries > $page_increment && isset($complete_tree)) {
-        $after_entries++;
-        continue;
+      // Count entries before the current page.
+      if ($page_entries > $page_increment && isset($complete_tree)) {
+          $after_entries++;
+          continue;
       }
 
       // Do not let a term start the page that is not at the root.
@@ -149,7 +149,7 @@ class OverviewTerms extends EntityForm {
           }
         }
       }
-      $back_step = $back_step ?? 0;
+      $back_step ??= 0;
 
       // Continue rendering the tree until we reach the a new root item.
       if ($page_entries >= $page_increment + $back_step + 1 && $raw_term->depth == 0 && $root_entries > 1) {
@@ -182,7 +182,7 @@ class OverviewTerms extends EntityForm {
     // Load all the terms we're going to display and set the weight and parents
     // from the tree.
     $terms = $this->storageController->loadMultiple(array_keys($term_deltas));
-    $current_page = array_map(function ($raw_term) use ($terms) {
+    $current_page = array_map(function (object $raw_term) use ($terms) {
       $term = $terms[$raw_term->tid];
       $term->depth = $raw_term->depth;
       $term->parents = $raw_term->parents;
@@ -235,9 +235,7 @@ class OverviewTerms extends EntityForm {
 
     // Get the IDs of the terms edited on the current page which have pending
     // revisions.
-    $edited_term_ids = array_map(function ($item) {
-      return $item->id();
-    }, $current_page);
+    $edited_term_ids = array_map(fn(\Drupal\Core\Entity\EntityInterface|int $item) => $item->id(), $current_page);
     $pending_term_ids = array_intersect($this->storageController->getTermIdsWithPendingRevisions(), $edited_term_ids);
     if ($pending_term_ids) {
       $help_message = $this->formatPlural(
@@ -390,7 +388,7 @@ class OverviewTerms extends EntityForm {
 
       // Add an error class if this row contains a form error.
       foreach ($errors as $error_key => $error) {
-        if (str_starts_with($error_key, $key)) {
+        if (str_starts_with((string) $error_key, (string) $key)) {
           $form['terms'][$key]['#attributes']['class'][] = 'error';
         }
       }
@@ -463,9 +461,9 @@ class OverviewTerms extends EntityForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Sort term order based on weight.
-    uasort($form_state->getValue('terms'), ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+    uasort($form_state->getValue('terms'), \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
 
     $vocabulary = $form_state->get(['taxonomy', 'vocabulary']);
     $changed_terms = [];
@@ -557,7 +555,7 @@ class OverviewTerms extends EntityForm {
   /**
    * Redirects to confirmation form for the reset action.
    */
-  public function submitReset(array &$form, FormStateInterface $form_state) {
+  public function submitReset(array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\taxonomy\VocabularyInterface $vocabulary */
     $vocabulary = $form_state->get(['taxonomy', 'vocabulary']);
     $form_state->setRedirectUrl($vocabulary->toUrl('reset-form'));

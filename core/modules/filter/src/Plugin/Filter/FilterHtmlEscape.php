@@ -22,14 +22,14 @@ class FilterHtmlEscape extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     return new FilterProcessResult(_filter_html_escape($text));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getHTMLRestrictions() {
+  public function getHTMLRestrictions(): array {
     // Nothing is allowed.
     return ['allowed' => []];
   }
@@ -37,7 +37,7 @@ class FilterHtmlEscape extends FilterBase {
   /**
    * {@inheritdoc}
    */
-  public function tips($long = FALSE) {
+  public function tips($long = FALSE): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('No HTML tags allowed.');
   }
 

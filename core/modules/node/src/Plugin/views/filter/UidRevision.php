@@ -19,7 +19,7 @@ class UidRevision extends Name {
   /**
    * {@inheritdoc}
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $this->uidRevisionQuery($this->value, $this->options['group']);
   }
 

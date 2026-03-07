@@ -31,7 +31,7 @@ class Combine extends StringFilter {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $this->view->initStyle();
 
@@ -64,7 +64,7 @@ class Combine extends StringFilter {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->view->_build('field');
     $fields = [];
     // Only add the fields if they have a proper field and table alias.
@@ -150,7 +150,7 @@ class Combine extends StringFilter {
   /**
    * {@inheritdoc}
    */
-  public function opEqual($expression) {
+  public function opEqual($expression): void {
     // By default, things like opEqual uses add_where, that doesn't support
     // complex expressions, so override opEqual (and all operators below).
     $placeholder = $this->placeholder();

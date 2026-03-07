@@ -19,13 +19,6 @@ use Drupal\Core\Routing\RouteMatchInterface;
 class BreadcrumbManager implements ChainBreadcrumbBuilderInterface {
 
   /**
-   * The module handler to invoke the alter hook.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Holds arrays of breadcrumb builders, keyed by priority.
    *
    * @var array
@@ -44,17 +37,17 @@ class BreadcrumbManager implements ChainBreadcrumbBuilderInterface {
   /**
    * Constructs a \Drupal\Core\Breadcrumb\BreadcrumbManager object.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(ModuleHandlerInterface $module_handler) {
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addBuilder(BreadcrumbBuilderInterface $builder, $priority) {
+  public function addBuilder(BreadcrumbBuilderInterface $builder, $priority): void {
     $this->builders[$priority][] = $builder;
     // Force the builders to be re-sorted.
     $this->sortedBuilders = NULL;
@@ -63,7 +56,7 @@ class BreadcrumbManager implements ChainBreadcrumbBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata) {
+  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool {
     return TRUE;
   }
 
@@ -88,7 +81,7 @@ class BreadcrumbManager implements ChainBreadcrumbBuilderInterface {
         break;
       }
       else {
-        throw new \UnexpectedValueException('Invalid breadcrumb returned by ' . get_class($builder) . '::build().');
+        throw new \UnexpectedValueException('Invalid breadcrumb returned by ' . $builder::class . '::build().');
       }
     }
 

@@ -44,11 +44,11 @@ class TwigTransTokenParser extends AbstractTokenParser {
     }
     if (!$body) {
       $stream->expect(Token::BLOCK_END_TYPE);
-      $body = $this->parser->subparse([$this, 'decideForFork']);
+      $body = $this->parser->subparse($this->decideForFork(...));
       if ('plural' === $stream->next()->getValue()) {
         $count = $this->parser->parseExpression();
         $stream->expect(Token::BLOCK_END_TYPE);
-        $plural = $this->parser->subparse([$this, 'decideForEnd'], TRUE);
+        $plural = $this->parser->subparse($this->decideForEnd(...), TRUE);
       }
     }
 
@@ -56,9 +56,7 @@ class TwigTransTokenParser extends AbstractTokenParser {
 
     $this->checkTransString($body, $lineno);
 
-    $node = new TwigNodeTrans($body, $plural, $count, $options, $lineno);
-
-    return $node;
+    return new TwigNodeTrans($body, $plural, $count, $options, $lineno);
   }
 
   /**
@@ -94,16 +92,17 @@ class TwigTransTokenParser extends AbstractTokenParser {
    */
   protected function checkTransString(Node $body, $lineno) {
     foreach ($body as $node) {
-      if (
-        $node instanceof TextNode
-        ||
-        ($node instanceof PrintNode && $node->getNode('expr') instanceof NameExpression)
-        ||
-        ($node instanceof PrintNode && $node->getNode('expr') instanceof GetAttrExpression)
-        ||
-        ($node instanceof PrintNode && $node->getNode('expr') instanceof FilterExpression)
-      ) {
-        continue;
+      if ($node instanceof TextNode) {
+          continue;
+      }
+      if ($node instanceof PrintNode && $node->getNode('expr') instanceof NameExpression) {
+          continue;
+      }
+      if ($node instanceof PrintNode && $node->getNode('expr') instanceof GetAttrExpression) {
+          continue;
+      }
+      if ($node instanceof PrintNode && $node->getNode('expr') instanceof FilterExpression) {
+          continue;
       }
       throw new SyntaxError(sprintf('The text to be translated with "trans" can only contain references to simple variables'), $lineno);
     }

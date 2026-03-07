@@ -22,10 +22,9 @@ class PgsqlHooks {
       case 'help.page.pgsql':
         $output = '';
         $output .= '<h2>' . $this->t('About') . '</h2>';
-        $output .= '<p>' . $this->t('The PostgreSQL module provides the connection between Drupal and a PostgreSQL database. For more information, see the <a href=":pgsql">online documentation for the PostgreSQL module</a>.', [
+        return $output . ('<p>' . $this->t('The PostgreSQL module provides the connection between Drupal and a PostgreSQL database. For more information, see the <a href=":pgsql">online documentation for the PostgreSQL module</a>.', [
           ':pgsql' => 'https://www.drupal.org/docs/core-modules-and-themes/core-modules/postgresql-module',
-        ]) . '</p>';
-        return $output;
+        ]) . '</p>');
     }
     return NULL;
   }

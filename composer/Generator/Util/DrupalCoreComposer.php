@@ -11,20 +11,6 @@ namespace Drupal\Composer\Generator\Util;
 class DrupalCoreComposer {
 
   /**
-   * Cached composer.json data.
-   *
-   * @var array
-   */
-  protected $composerJson = [];
-
-  /**
-   * Cached composer.lock data.
-   *
-   * @var array
-   */
-  protected $composerLock = [];
-
-  /**
    * DrupalCoreComposer constructor.
    *
    * @param array $composerJson
@@ -32,9 +18,8 @@ class DrupalCoreComposer {
    * @param array $composerLock
    *   The composer.lock data.
    */
-  public function __construct(array $composerJson, array $composerLock) {
-    $this->composerJson = $composerJson;
-    $this->composerLock = $composerLock;
+  public function __construct(protected array $composerJson, protected array $composerLock)
+  {
   }
 
   /**
@@ -46,7 +31,7 @@ class DrupalCoreComposer {
    * @return static
    *   New DrupalCoreComposer object containing composer.json and lock data.
    */
-  public static function createFromPath(string $repositoryPath) {
+  public static function createFromPath(string $repositoryPath): self {
     $composerJson = static::loadJsonFromPath("$repositoryPath/composer.json");
     $composerLock = static::loadJsonFromPath("$repositoryPath/composer.lock");
     return new self($composerJson, $composerLock);

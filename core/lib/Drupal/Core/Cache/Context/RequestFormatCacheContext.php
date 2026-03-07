@@ -28,7 +28,7 @@ class RequestFormatCacheContext extends RequestStackCacheContextBase {
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

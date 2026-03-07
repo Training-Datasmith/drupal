@@ -9,7 +9,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *
  * @see module.api.php
  */
-final class EquivalentUpdate {
+final readonly class EquivalentUpdate {
 
   /**
    * Constructs a EquivalentUpdate object.
@@ -24,10 +24,10 @@ final class EquivalentUpdate {
    *   The future version that has the expected update.
    */
   public function __construct(
-    public readonly string $module,
-    public readonly int $future_update,
-    public readonly int $ran_update,
-    public readonly string $future_version,
+    public string $module,
+    public int $future_update,
+    public int $ran_update,
+    public string $future_version,
   ) {
   }
 

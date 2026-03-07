@@ -22,14 +22,14 @@ class Json implements SerializationInterface {
   /**
    * {@inheritdoc}
    */
-  public static function decode($string) {
+  public static function decode($string): mixed {
     return json_decode($string, TRUE);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function getFileExtension() {
+  public static function getFileExtension(): string {
     return 'json';
   }
 

@@ -39,7 +39,7 @@ class HookCollectorKeyValueWritePass implements CompilerPassInterface {
     // container.
     $parameters = $container->getParameterBag();
     foreach ($parameters->all() as $name => $value) {
-      if (str_ends_with($name, '.skip_procedural_hook_scan')) {
+      if (str_ends_with((string) $name, '.skip_procedural_hook_scan')) {
         $parameters->remove($name);
       }
     }

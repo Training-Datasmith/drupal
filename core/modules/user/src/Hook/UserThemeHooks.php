@@ -154,7 +154,7 @@ class UserThemeHooks {
    * Implements hook_preprocess_HOOK() for block templates.
    */
   #[Hook('preprocess_block')]
-  public function preprocessBlock(&$variables): void {
+  public function preprocessBlock(array &$variables): void {
     if ($variables['configuration']['provider'] == 'user') {
       switch ($variables['elements']['#plugin_id']) {
         case 'user_login_block':

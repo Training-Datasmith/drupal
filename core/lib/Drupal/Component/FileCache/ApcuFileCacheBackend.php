@@ -10,21 +10,21 @@ class ApcuFileCacheBackend implements FileCacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetch(array $cids) {
+  public function fetch(array $cids): mixed {
     return apcu_fetch($cids);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function store($cid, $data) {
+  public function store($cid, $data): void {
     apcu_store($cid, $data);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     apcu_delete($cid);
   }
 

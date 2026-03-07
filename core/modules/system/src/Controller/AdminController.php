@@ -28,7 +28,7 @@ class AdminController extends ControllerBase {
    * @return array
    *   A render array containing the listing.
    */
-  public function index() {
+  public function index(): array {
     $extensions = array_intersect_key($this->moduleExtensionList->getList(), $this->moduleHandler()->getModuleList());
 
     uasort($extensions, [ModuleExtensionList::class, 'sortByName']);
@@ -42,7 +42,7 @@ class AdminController extends ControllerBase {
       }
       if (!empty($admin_tasks)) {
         // Sort links by title.
-        uasort($admin_tasks, ['\Drupal\Component\Utility\SortArray', 'sortByTitleElement']);
+        uasort($admin_tasks, \Drupal\Component\Utility\SortArray::sortByTitleElement(...));
         // Move 'Configure permissions' links to the bottom of each section.
         $permission_key = "user.admin_permissions.$module";
         if (isset($admin_tasks[$permission_key])) {
@@ -55,12 +55,10 @@ class AdminController extends ControllerBase {
       }
     }
 
-    $output = [
+    return [
       '#theme' => 'system_admin_index',
       '#menu_items' => $menu_items,
     ];
-
-    return $output;
   }
 
 }

@@ -28,30 +28,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class CommentForm extends ContentEntityForm {
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * The entity field manager.
    *
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
    */
-  protected $entityFieldManager;
+  protected object $entityFieldManager;
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity.repository'),
       $container->get('current_user'),
@@ -67,7 +53,7 @@ class CommentForm extends ContentEntityForm {
    *
    * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
    *   The entity repository.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
@@ -80,22 +66,20 @@ class CommentForm extends ContentEntityForm {
    */
   public function __construct(
     EntityRepositoryInterface $entity_repository,
-    AccountInterface $current_user,
-    RendererInterface $renderer,
+    protected \Drupal\Core\Session\AccountInterface $currentUser,
+    protected \Drupal\Core\Render\RendererInterface $renderer,
     EntityTypeBundleInfoInterface $entity_type_bundle_info,
     TimeInterface $time,
     ?EntityFieldManagerInterface $entity_field_manager = NULL,
   ) {
     parent::__construct($entity_repository, $entity_type_bundle_info, $time);
-    $this->currentUser = $current_user;
-    $this->renderer = $renderer;
     $this->entityFieldManager = $entity_field_manager ?: \Drupal::service('entity_field.manager');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     /** @var \Drupal\comment\CommentInterface $comment */
     $comment = $this->entity;
     $entity = $this->entityTypeManager->getStorage($comment->getCommentedEntityTypeId())->load($comment->getCommentedEntityId());
@@ -279,7 +263,7 @@ class CommentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     /** @var \Drupal\comment\CommentInterface $comment */
     $comment = parent::buildEntity($form, $form_state);
     if (!$form_state->isValueEmpty('date') && $form_state->getValue('date') instanceof DrupalDateTime) {
@@ -319,7 +303,7 @@ class CommentForm extends ContentEntityForm {
         // 2) Strip out all HTML tags
         // 3) Convert entities back to plain-text.
         $comment_text = $comment->comment_body->processed;
-        $comment->setSubject(Unicode::truncate(trim(Html::decodeEntities(strip_tags($comment_text))), 29, TRUE, TRUE));
+        $comment->setSubject(Unicode::truncate(trim(Html::decodeEntities(strip_tags((string) $comment_text))), 29, TRUE, TRUE));
       }
       // Edge cases where the comment body is populated only by HTML tags will
       // require a default subject.
@@ -333,7 +317,7 @@ class CommentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function getEditedFieldNames(FormStateInterface $form_state) {
+  protected function getEditedFieldNames(FormStateInterface $form_state): array {
     return array_merge(['created', 'name'], parent::getEditedFieldNames($form_state));
   }
 
@@ -359,7 +343,7 @@ class CommentForm extends ContentEntityForm {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function preview(array &$form, FormStateInterface $form_state) {
+  public function preview(array &$form, FormStateInterface $form_state): void {
     $comment_preview = [];
     $comment = $this->entity;
 
@@ -410,7 +394,7 @@ class CommentForm extends ContentEntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $comment = $this->entity;
     $entity = $comment->getCommentedEntity();
     $is_new = $this->entity->isNew();

@@ -31,14 +31,14 @@ class QueryFactory implements QueryFactoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function get(EntityTypeInterface $entity_type, $conjunction) {
+  public function get(EntityTypeInterface $entity_type, $conjunction): \Drupal\Core\Entity\Query\Null\Query {
     return new Query($entity_type, $conjunction, $this->namespaces);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAggregate(EntityTypeInterface $entity_type, $conjunction) {
+  public function getAggregate(EntityTypeInterface $entity_type, $conjunction): \Drupal\Core\Entity\Query\Null\Query {
     return new Query($entity_type, $conjunction, $this->namespaces);
   }
 

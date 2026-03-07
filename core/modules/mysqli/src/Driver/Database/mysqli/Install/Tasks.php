@@ -14,14 +14,14 @@ class Tasks extends BaseInstallTasks {
   /**
    * {@inheritdoc}
    */
-  public function installable() {
+  public function installable(): bool {
     return extension_loaded('mysqli');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function name() {
+  public function name(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('@parent via mysqli (Experimental)', ['@parent' => parent::name()]);
   }
 

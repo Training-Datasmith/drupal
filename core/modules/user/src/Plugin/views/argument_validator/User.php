@@ -51,7 +51,7 @@ class User extends Entity {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $sanitized_id = ArgumentPluginBase::encodeValidatorId($this->definition['id']);
 
@@ -63,7 +63,7 @@ class User extends Entity {
 
     $roles = Role::loadMultiple();
     unset($roles[RoleInterface::ANONYMOUS_ID]);
-    $roles = array_map(fn(RoleInterface $role) => Html::escape($role->label()), $roles);
+    $roles = array_map(fn(RoleInterface $role): string => Html::escape($role->label()), $roles);
     $form['roles'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Restrict to the selected roles'),
@@ -81,7 +81,7 @@ class User extends Entity {
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = []) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state, &$options = []): void {
     // Filter trash out of the options so we don't store giant unnecessary
     // arrays.
     $options['roles'] = array_filter($options['roles']);
@@ -90,7 +90,7 @@ class User extends Entity {
   /**
    * {@inheritdoc}
    */
-  protected function validateEntity(EntityInterface $entity) {
+  protected function validateEntity(EntityInterface $entity): bool {
     /** @var \Drupal\user\UserInterface $entity */
     $role_check_success = TRUE;
     // See if we're filtering users based on roles.

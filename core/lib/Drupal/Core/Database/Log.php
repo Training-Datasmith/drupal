@@ -37,20 +37,18 @@ class Log {
   protected $queryLog = [];
 
   /**
-   * The connection key for which this object is logging.
-   *
-   * @var string
-   */
-  protected $connectionKey = 'default';
-
-  /**
    * Constructor.
    *
-   * @param string $key
+   * @param string $connectionKey
    *   The database connection key for which to enable logging.
    */
-  public function __construct($key = 'default') {
-    $this->connectionKey = $key;
+  public function __construct(
+      /**
+       * The connection key for which this object is logging.
+       */
+      protected $connectionKey = 'default'
+  )
+  {
   }
 
   /**
@@ -63,7 +61,7 @@ class Log {
    *   logging keys we are able to start and stop multiple logging runs
    *   simultaneously without them colliding.
    */
-  public function start($logging_key) {
+  public function start($logging_key): void {
     if (empty($this->queryLog[$logging_key])) {
       $this->clear($logging_key);
     }
@@ -91,7 +89,7 @@ class Log {
    * @param string $logging_key
    *   The logging key to empty.
    */
-  public function clear($logging_key) {
+  public function clear($logging_key): void {
     $this->queryLog[$logging_key] = [];
   }
 
@@ -101,7 +99,7 @@ class Log {
    * @param string $logging_key
    *   The logging key to stop.
    */
-  public function end($logging_key) {
+  public function end($logging_key): void {
     unset($this->queryLog[$logging_key]);
   }
 

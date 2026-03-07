@@ -20,23 +20,15 @@ class DatabaseLockBackend extends LockBackendAbstract {
   const TABLE_NAME = 'semaphore';
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * Constructs a new DatabaseLockBackend.
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
    */
-  public function __construct(Connection $database) {
+  public function __construct(protected \Drupal\Core\Database\Connection $database) {
     // __destruct() is causing problems with garbage collections, register a
     // shutdown function instead.
-    drupal_register_shutdown_function([$this, 'releaseAll']);
-    $this->database = $database;
+    drupal_register_shutdown_function($this->releaseAll(...));
   }
 
   /**
@@ -61,47 +53,45 @@ class DatabaseLockBackend extends LockBackendAbstract {
       }
       return $success;
     }
-    else {
-      // Optimistically try to acquire the lock, then retry once if it fails.
-      // The first time through the loop cannot be a retry.
-      $retry = FALSE;
-      // We always want to do this code at least once.
-      do {
-        try {
-          $this->database->insert('semaphore')
-            ->fields([
-              'name' => $name,
-              'value' => $this->getLockId(),
-              'expire' => $expire,
-            ])
-            ->execute();
-          // We track all acquired locks in the global variable.
-          $this->locks[$name] = TRUE;
-          // We never need to try again.
-          $retry = FALSE;
+    // Optimistically try to acquire the lock, then retry once if it fails.
+    // The first time through the loop cannot be a retry.
+    $retry = FALSE;
+    // We always want to do this code at least once.
+    do {
+      try {
+        $this->database->insert('semaphore')
+          ->fields([
+            'name' => $name,
+            'value' => $this->getLockId(),
+            'expire' => $expire,
+          ])
+          ->execute();
+        // We track all acquired locks in the global variable.
+        $this->locks[$name] = TRUE;
+        // We never need to try again.
+        $retry = FALSE;
+      }
+      catch (IntegrityConstraintViolationException) {
+        // Suppress the error. If this is our first pass through the loop,
+        // then $retry is FALSE. In this case, the insert failed because some
+        // other request acquired the lock but did not release it. We decide
+        // whether to retry by checking lockMayBeAvailable(). This will clear
+        // the offending row from the database table in case it has expired.
+        $retry = $retry ? FALSE : $this->lockMayBeAvailable($name);
+      }
+      catch (\Exception $e) {
+        // Create the semaphore table if it does not exist and retry.
+        if ($this->ensureTableExists()) {
+          // Retry only once.
+          $retry = !$retry;
         }
-        catch (IntegrityConstraintViolationException) {
-          // Suppress the error. If this is our first pass through the loop,
-          // then $retry is FALSE. In this case, the insert failed because some
-          // other request acquired the lock but did not release it. We decide
-          // whether to retry by checking lockMayBeAvailable(). This will clear
-          // the offending row from the database table in case it has expired.
-          $retry = $retry ? FALSE : $this->lockMayBeAvailable($name);
+        else {
+          throw $e;
         }
-        catch (\Exception $e) {
-          // Create the semaphore table if it does not exist and retry.
-          if ($this->ensureTableExists()) {
-            // Retry only once.
-            $retry = !$retry;
-          }
-          else {
-            throw $e;
-          }
-        }
-        // We only retry in case the first attempt failed, but we then broke
-        // an expired lock.
-      } while ($retry);
-    }
+      }
+      // We only retry in case the first attempt failed, but we then broke
+      // an expired lock.
+    } while ($retry);
     return isset($this->locks[$name]);
   }
 
@@ -140,7 +130,7 @@ class DatabaseLockBackend extends LockBackendAbstract {
   /**
    * {@inheritdoc}
    */
-  public function release($name) {
+  public function release($name): void {
     $name = $this->normalizeName($name);
 
     unset($this->locks[$name]);
@@ -158,7 +148,7 @@ class DatabaseLockBackend extends LockBackendAbstract {
   /**
    * {@inheritdoc}
    */
-  public function releaseAll($lock_id = NULL) {
+  public function releaseAll($lock_id = NULL): void {
     // Only attempt to release locks if any were acquired.
     if (!empty($this->locks)) {
       $this->locks = [];
@@ -181,7 +171,7 @@ class DatabaseLockBackend extends LockBackendAbstract {
   /**
    * Check if the semaphore table exists and create it if not.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $database_schema = $this->database->schema();
       $schema_definition = $this->schemaDefinition();
@@ -248,7 +238,7 @@ class DatabaseLockBackend extends LockBackendAbstract {
    *
    * @internal
    */
-  public function schemaDefinition() {
+  public function schemaDefinition(): array {
     return [
       'description' => 'Table for holding semaphores, locks, flags, etc. that cannot be stored as state since they must not be cached.',
       'fields' => [

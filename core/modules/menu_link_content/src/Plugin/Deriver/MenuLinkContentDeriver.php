@@ -17,36 +17,21 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MenuLinkContentDeriver extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The menu link manager.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkManagerInterface
-   */
-  protected $menuLinkManager;
-
-  /**
    * Constructs a MenuLinkContentDeriver instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
+   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
    *   The menu link manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MenuLinkManagerInterface $menu_link_manager) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->menuLinkManager = $menu_link_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('plugin.manager.menu.link')
@@ -55,8 +40,9 @@ class MenuLinkContentDeriver extends DeriverBase implements ContainerDeriverInte
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getDerivativeDefinitions($base_plugin_definition) {
+  public function getDerivativeDefinitions($base_plugin_definition): array {
     // Get all custom menu links which should be rediscovered.
     $entity_ids = $this->entityTypeManager->getStorage('menu_link_content')->getQuery()
       ->accessCheck(FALSE)

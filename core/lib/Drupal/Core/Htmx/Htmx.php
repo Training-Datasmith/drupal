@@ -121,9 +121,7 @@ class Htmx {
     $kebabParts = explode('-', $identifier);
     // If the number of lower case parts matches the number of parts, then
     // all the parts are lower case.
-    $isKebab = count($kebabParts) === count(array_filter($kebabParts, function ($part) {
-        return ctype_lower($part);
-    }));
+    $isKebab = count($kebabParts) === count(array_filter($kebabParts, fn($part) => ctype_lower((string) $part)));
     if ($isKebab) {
       return $identifier;
     }
@@ -228,7 +226,7 @@ class Htmx {
    *
    * @see core/misc/htmx/htmx-assets.js
    */
-  public function onlyMainContent(bool $toggle = TRUE) {
+  public function onlyMainContent(bool $toggle = TRUE): static {
     $this->createBooleanAttribute('hx-drupal-only-main-content', $toggle);
     return $this;
   }
@@ -1296,12 +1294,12 @@ class Htmx {
 
     // Consolidate headers.
     if ($this->headers->count() !== 0) {
-      $element['#attached']['http_header'] = $element['#attached']['http_header'] ?? [];
+      $element['#attached']['http_header'] ??= [];
       $element['#attached']['http_header'] = NestedArray::mergeDeep($element['#attached']['http_header'], $this->applyHeaders());
     }
     if (count($this->attributes->storage()) !== 0) {
       // Consolidate attributes.
-      $element[$attributeKey] = $element[$attributeKey] ?? [];
+      $element[$attributeKey] ??= [];
       $element[$attributeKey] = AttributeHelper::mergeCollections($element[$attributeKey], $this->attributes);
     }
     $this->cacheableMetadata->applyTo($element);
@@ -1324,14 +1322,12 @@ class Htmx {
     // Filter for HTMX values.
     $incomingAttributes = array_filter(
       $incomingAttributes,
-      function (string $key) {
-        return str_starts_with($key, 'data-hx-');
-      },
+      fn(string $key) => str_starts_with($key, 'data-hx-'),
       ARRAY_FILTER_USE_KEY,
     );
     $preparedHeaders = [];
     foreach ($incomingHeaders as $value) {
-      if (is_array($value) && str_starts_with($value[0], 'hx-')) {
+      if (is_array($value) && str_starts_with((string) $value[0], 'hx-')) {
         // Header value array may have 3 values, we want the first two.
         $preparedHeaders[$value[0]] = $value[1];
       }

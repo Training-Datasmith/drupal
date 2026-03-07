@@ -45,13 +45,6 @@ class Sort {
   const LANGUAGE_KEY = 'langcode';
 
   /**
-   * The fields on which to sort.
-   *
-   * @var array
-   */
-  protected $fields;
-
-  /**
    * Constructs a new Sort object.
    *
    * Takes an array of sort fields. Example:
@@ -70,8 +63,8 @@ class Sort {
    * @param array $fields
    *   The entity query sort fields.
    */
-  public function __construct(array $fields) {
-    $this->fields = $fields;
+  public function __construct(protected array $fields)
+  {
   }
 
   /**
@@ -90,7 +83,7 @@ class Sort {
    * @return self
    *   A Sort object with defaults.
    */
-  public static function createFromQueryParameter($parameter) {
+  public static function createFromQueryParameter($parameter): static {
     if (empty($parameter)) {
       $cacheability = (new CacheableMetadata())->addCacheContexts(['url.query_args:sort']);
       throw new CacheableBadRequestHttpException($cacheability, 'You need to provide a value for the sort parameter.');
@@ -119,8 +112,8 @@ class Sort {
    * @return array
    *   The expanded sort.
    */
-  protected static function expandFieldString($fields) {
-    return array_map(function ($field) {
+  protected static function expandFieldString($fields): array {
+    return array_map(function ($field): array {
       $sort = [];
 
       if ($field[0] == '-') {
@@ -145,7 +138,7 @@ class Sort {
    * @return array
    *   The expanded sort item.
    */
-  protected static function expandItem(array $sort_item) {
+  protected static function expandItem(array $sort_item): array {
     $cacheability = (new CacheableMetadata())->addCacheContexts(['url.query_args:sort']);
     $defaults = [
       static::DIRECTION_KEY => 'ASC',

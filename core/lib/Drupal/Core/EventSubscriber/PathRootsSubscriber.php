@@ -23,20 +23,13 @@ class PathRootsSubscriber implements EventSubscriberInterface {
   protected $pathRoots = [];
 
   /**
-   * The state key value store.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * Constructs a new PathRootsSubscriber instance.
    *
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key value store.
    */
-  public function __construct(StateInterface $state) {
-    $this->state = $state;
+  public function __construct(protected \Drupal\Core\State\StateInterface $state)
+  {
   }
 
   /**
@@ -45,10 +38,10 @@ class PathRootsSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The route build event.
    */
-  public function onRouteAlter(RouteBuildEvent $event) {
+  public function onRouteAlter(RouteBuildEvent $event): void {
     $collection = $event->getRouteCollection();
     foreach ($collection->all() as $route) {
-      $bits = explode('/', ltrim($route->getPath(), '/'));
+      $bits = explode('/', ltrim((string) $route->getPath(), '/'));
       $this->pathRoots[$bits[0]] = $bits[0];
     }
   }
@@ -56,7 +49,7 @@ class PathRootsSubscriber implements EventSubscriberInterface {
   /**
    * {@inheritdoc}
    */
-  public function onRouteFinished() {
+  public function onRouteFinished(): void {
     $this->state->set('router.path_roots', array_keys($this->pathRoots));
     $this->pathRoots = [];
   }

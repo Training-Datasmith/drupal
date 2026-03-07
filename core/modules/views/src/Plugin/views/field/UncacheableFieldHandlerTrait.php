@@ -23,7 +23,7 @@ trait UncacheableFieldHandlerTrait {
    *
    * @see \Drupal\views\Plugin\views\Field\FieldHandlerInterface::postRender()
    */
-  public function postRender(ResultRow $row, $output) {
+  public function postRender(ResultRow $row, $output): array {
     $placeholder = $this->getFieldTokenPlaceholder();
     $value = $this->doRender($row);
     $this->last_render = str_replace($placeholder, $value, $output);

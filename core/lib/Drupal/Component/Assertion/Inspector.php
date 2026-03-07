@@ -37,7 +37,7 @@ class Inspector {
    *
    * @see http://php.net/manual/language.types.callable.php
    */
-  public static function assertAll(callable $callable, $traversable) {
+  public static function assertAll(callable $callable, $traversable): bool {
     if (is_iterable($traversable)) {
       foreach ($traversable as $member) {
         if (!$callable($member)) {
@@ -75,7 +75,7 @@ class Inspector {
    *   TRUE if $traversable can be traversed and all members are strings or
    *   objects with __toString().
    */
-  public static function assertAllStringable($traversable) {
+  public static function assertAllStringable($traversable): bool {
     if (is_iterable($traversable)) {
       foreach ($traversable as $member) {
         if (!static::assertStringable($member)) {
@@ -99,7 +99,7 @@ class Inspector {
    * @return bool
    *   TRUE if $string is a string or an object castable to a string.
    */
-  public static function assertStringable($string) {
+  public static function assertStringable($string): bool {
     return is_string($string) || (is_object($string) && method_exists($string, '__toString'));
   }
 
@@ -132,7 +132,7 @@ class Inspector {
    *
    * @see http://php.net/manual/language.types.array.php
    */
-  public static function assertStrictArray($array) {
+  public static function assertStrictArray($array): bool {
     if (!is_array($array)) {
       return FALSE;
     }
@@ -159,7 +159,7 @@ class Inspector {
    * @see ::assertStrictArray
    */
   public static function assertAllStrictArrays($traversable) {
-    return static::assertAll([__CLASS__, 'assertStrictArray'], $traversable);
+    return static::assertAll(self::assertStrictArray(...), $traversable);
   }
 
   /**
@@ -190,7 +190,7 @@ class Inspector {
    * @return bool
    *   TRUE if $traversable can be traversed and all members have all keys.
    */
-  public static function assertAllHaveKey($traversable, string ...$keys) {
+  public static function assertAllHaveKey($traversable, string ...$keys): bool {
     if (is_iterable($traversable)) {
       foreach ($traversable as $member) {
         foreach ($keys as $key) {
@@ -253,7 +253,7 @@ class Inspector {
    * @return bool
    *   TRUE if $traversable can be traversed and all members not empty.
    */
-  public static function assertAllNotEmpty($traversable) {
+  public static function assertAllNotEmpty($traversable): bool {
     if (is_iterable($traversable)) {
       foreach ($traversable as $member) {
         if (empty($member)) {
@@ -294,7 +294,7 @@ class Inspector {
    *   TRUE if $traversable can be traversed and all members are strings
    *   containing $pattern.
    */
-  public static function assertAllMatch($pattern, $traversable, $case_sensitive = FALSE) {
+  public static function assertAllMatch($pattern, $traversable, $case_sensitive = FALSE): bool {
     if (is_iterable($traversable)) {
       if ($case_sensitive) {
         foreach ($traversable as $member) {
@@ -327,7 +327,7 @@ class Inspector {
    *   TRUE if $traversable can be traversed and all members are strings
    *   matching $pattern.
    */
-  public static function assertAllRegularExpressionMatch($pattern, $traversable) {
+  public static function assertAllRegularExpressionMatch($pattern, $traversable): bool {
     if (is_iterable($traversable)) {
       foreach ($traversable as $member) {
         if (!is_string($member)) {
@@ -374,21 +374,21 @@ class Inspector {
    *   TRUE if $traversable can be traversed and all members are objects with
    *   at least one of the listed classes or interfaces.
    */
-  public static function assertAllObjects($traversable, string ...$classes) {
+  public static function assertAllObjects($traversable, string ...$classes): bool {
     if (is_iterable($traversable)) {
       foreach ($traversable as $member) {
         if (count($classes) > 0) {
-          foreach ($classes as $instance) {
-            if ($member instanceof $instance) {
-              // We're continuing to the next member on the outer loop.
-              // @see http://php.net/continue
-              continue 2;
+            foreach ($classes as $instance) {
+              if ($member instanceof $instance) {
+                // We're continuing to the next member on the outer loop.
+                // @see http://php.net/continue
+                continue 2;
+              }
             }
-          }
-          return FALSE;
+            return FALSE;
         }
-        elseif (!is_object($member)) {
-          return FALSE;
+        if (!is_object($member)) {
+            return FALSE;
         }
       }
       return TRUE;

@@ -40,7 +40,7 @@ class NumericArgument extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     // Allow '+' for "or". Allow ',' for "and".
@@ -103,7 +103,7 @@ class NumericArgument extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $this->ensureMyTable();
 
     if (!empty($this->options['break_phrase'])) {
@@ -132,7 +132,7 @@ class NumericArgument extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getSortName() {
+  public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Numerical', [], ['context' => 'Sort order']);
   }
 

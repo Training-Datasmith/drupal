@@ -10,21 +10,21 @@ class PhpSerialize implements ObjectAwareSerializationInterface {
   /**
    * {@inheritdoc}
    */
-  public static function encode($data) {
+  public static function encode($data): string {
     return serialize($data);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function decode($raw) {
+  public static function decode($raw): mixed {
     return unserialize($raw);
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function getFileExtension() {
+  public static function getFileExtension(): string {
     return 'serialized';
   }
 

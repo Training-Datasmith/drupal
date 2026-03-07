@@ -29,33 +29,17 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
   protected $serializer;
 
   /**
-   * The renderer.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructs a ResourceResponseSubscriber object.
    *
    * @param \Symfony\Component\Serializer\SerializerInterface $serializer
    *   The serializer.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
    */
-  public function __construct(SerializerInterface $serializer, RendererInterface $renderer, RouteMatchInterface $route_match) {
+  public function __construct(SerializerInterface $serializer, protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch) {
     $this->serializer = $serializer;
-    $this->renderer = $renderer;
-    $this->routeMatch = $route_match;
   }
 
   /**
@@ -64,7 +48,7 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onResponse(ResponseEvent $event) {
+  public function onResponse(ResponseEvent $event): void {
     $response = $event->getResponse();
     if (!$response instanceof ResourceResponseInterface) {
       return;
@@ -93,10 +77,10 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
    * @return string
    *   The response format.
    */
-  public function getResponseFormat(RouteMatchInterface $route_match, Request $request) {
+  public function getResponseFormat(RouteMatchInterface $route_match, Request $request): ?string {
     $route = $route_match->getRouteObject();
-    $acceptable_response_formats = $route->hasRequirement('_format') ? explode('|', $route->getRequirement('_format')) : [];
-    $acceptable_request_formats = $route->hasRequirement('_content_type_format') ? explode('|', $route->getRequirement('_content_type_format')) : [];
+    $acceptable_response_formats = $route->hasRequirement('_format') ? explode('|', (string) $route->getRequirement('_format')) : [];
+    $acceptable_request_formats = $route->hasRequirement('_content_type_format') ? explode('|', (string) $route->getRequirement('_content_type_format')) : [];
     $acceptable_formats = $request->isMethodCacheable() ? $acceptable_response_formats : $acceptable_request_formats;
 
     $requested_format = $request->getRequestFormat();
@@ -181,7 +165,7 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
    * @return \Drupal\Core\Cache\CacheableResponse|\Symfony\Component\HttpFoundation\Response
    *   The flattened response.
    */
-  protected function flattenResponse(ResourceResponseInterface $response) {
+  protected function flattenResponse(ResourceResponseInterface $response): \Symfony\Component\HttpFoundation\Response|\Drupal\Core\Cache\CacheableResponse {
     $final_response = ($response instanceof CacheableResponseInterface) ? new CacheableResponse() : new Response();
     $final_response->setContent($response->getContent());
     $final_response->setStatusCode($response->getStatusCode());

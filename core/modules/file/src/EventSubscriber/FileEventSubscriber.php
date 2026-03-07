@@ -51,7 +51,7 @@ class FileEventSubscriber implements EventSubscriberInterface {
    *
    * @see file_form_system_file_system_settings_alter()
    */
-  public function sanitizeFilename(FileUploadSanitizeNameEvent $event) {
+  public function sanitizeFilename(FileUploadSanitizeNameEvent $event): void {
     $fileSettings = $this->configFactory->get('file.settings');
     $transliterate = $fileSettings->get('filename_sanitization.transliterate');
 
@@ -82,19 +82,19 @@ class FileEventSubscriber implements EventSubscriberInterface {
       }
     }
     if ($fileSettings->get('filename_sanitization.replace_whitespace')) {
-      $filename = preg_replace('/\s/u', $replacement, trim($filename));
+      $filename = preg_replace('/\s/u', (string) $replacement, trim($filename));
     }
     // Only honor replace_non_alphanumeric if transliterate is enabled.
     if ($transliterate && $alphanumeric) {
-      $filename = preg_replace('/[^0-9A-Za-z_.-]/u', $replacement, $filename);
+      $filename = preg_replace('/[^0-9A-Za-z_.-]/u', (string) $replacement, (string) $filename);
     }
     if ($fileSettings->get('filename_sanitization.deduplicate_separators')) {
-      $filename = preg_replace('/(_)_+|(\.)\.+|(-)-+/u', $replacement, $filename);
+      $filename = preg_replace('/(_)_+|(\.)\.+|(-)-+/u', (string) $replacement, (string) $filename);
       // Replace multiple separators with single one.
-      $filename = preg_replace('/(_|\.|\-)[(_|\.|\-)]+/u', $replacement, $filename);
-      $filename = preg_replace('/' . preg_quote($replacement, NULL) . '[' . preg_quote($replacement, NULL) . ']*/u', $replacement, $filename);
+      $filename = preg_replace('/(_|\.|\-)[(_|\.|\-)]+/u', (string) $replacement, (string) $filename);
+      $filename = preg_replace('/' . preg_quote((string) $replacement) . '[' . preg_quote((string) $replacement) . ']*/u', (string) $replacement, (string) $filename);
       // Remove replacement character from the end of the filename.
-      $filename = rtrim($filename, $replacement);
+      $filename = rtrim((string) $filename, $replacement);
 
       // If there is an extension remove dots from the end of the filename to
       // prevent duplicate dots.
@@ -104,7 +104,7 @@ class FileEventSubscriber implements EventSubscriberInterface {
     }
     if ($fileSettings->get('filename_sanitization.lowercase')) {
       // Force lowercase to prevent issues on case-insensitive file systems.
-      $filename = mb_strtolower($filename);
+      $filename = mb_strtolower((string) $filename);
     }
     $event->setFilename($filename . $extension);
   }

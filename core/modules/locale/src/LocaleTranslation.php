@@ -25,20 +25,6 @@ class LocaleTranslation implements TranslatorInterface, DestructableInterface {
   }
 
   /**
-   * Storage for strings.
-   *
-   * @var \Drupal\locale\StringStorageInterface
-   */
-  protected $storage;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * Cached translations.
    *
    * @var array
@@ -48,32 +34,11 @@ class LocaleTranslation implements TranslatorInterface, DestructableInterface {
   protected $translations = [];
 
   /**
-   * The cache backend that should be used.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * The lock backend that should be used.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected $lock;
-
-  /**
    * The translate english configuration value.
    *
    * @var bool
    */
   protected $translateEnglish;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
 
   /**
    * The request stack.
@@ -91,19 +56,14 @@ class LocaleTranslation implements TranslatorInterface, DestructableInterface {
    *   The cache backend.
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    */
-  public function __construct(StringStorageInterface $storage, CacheBackendInterface $cache, LockBackendInterface $lock, ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager, RequestStack $request_stack) {
-    $this->storage = $storage;
-    $this->cache = $cache;
-    $this->lock = $lock;
-    $this->configFactory = $config_factory;
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\locale\StringStorageInterface $storage, protected \Drupal\Core\Cache\CacheBackendInterface $cache, protected \Drupal\Core\Lock\LockBackendInterface $lock, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, RequestStack $request_stack) {
     $this->requestStack = $request_stack;
   }
 
@@ -145,7 +105,7 @@ class LocaleTranslation implements TranslatorInterface, DestructableInterface {
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): void {
     unset($this->translateEnglish);
     $this->translations = [];
   }
@@ -153,7 +113,7 @@ class LocaleTranslation implements TranslatorInterface, DestructableInterface {
   /**
    * {@inheritdoc}
    */
-  public function destruct() {
+  public function destruct(): void {
     foreach ($this->translations as $context) {
       foreach ($context as $lookup) {
         if ($lookup instanceof DestructableInterface) {

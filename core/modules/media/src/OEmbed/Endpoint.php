@@ -15,24 +15,8 @@ class Endpoint {
 
   /**
    * The endpoint's URL.
-   *
-   * @var string
    */
-  protected $url;
-
-  /**
-   * The provider this endpoint belongs to.
-   *
-   * @var \Drupal\media\OEmbed\Provider
-   */
-  protected $provider;
-
-  /**
-   * List of URL schemes supported by the provider.
-   *
-   * @var string[]
-   */
-  protected $schemes;
+  protected string $url;
 
   /**
    * List of supported formats. Only 'json' and 'xml' are allowed.
@@ -41,14 +25,12 @@ class Endpoint {
    *
    * @see https://oembed.com/#section2
    */
-  protected $formats;
+  protected array $formats;
 
   /**
    * Whether the provider supports oEmbed discovery.
-   *
-   * @var bool
    */
-  protected $supportsDiscovery;
+  protected bool $supportsDiscovery;
 
   /**
    * Endpoint constructor.
@@ -67,11 +49,11 @@ class Endpoint {
    * @throws \InvalidArgumentException
    *   If the endpoint URL is empty.
    */
-  public function __construct($url, Provider $provider, array $schemes = [], array $formats = [], $supports_discovery = FALSE) {
-    $this->provider = $provider;
-    $this->schemes = $schemes;
-
-    $this->formats = $formats = array_map('mb_strtolower', $formats);
+  public function __construct($url, protected \Drupal\media\OEmbed\Provider $provider, /**
+   * List of URL schemes supported by the provider.
+   */
+  protected array $schemes = [], array $formats = [], $supports_discovery = FALSE) {
+    $this->formats = $formats = array_map(mb_strtolower(...), $formats);
     // Assert that only the supported formats are present.
     assert(array_diff($formats, ['json', 'xml']) == []);
 
@@ -148,7 +130,7 @@ class Endpoint {
    * @return bool
    *   TRUE if the URL matches against the endpoint schemes, otherwise FALSE.
    */
-  public function matchUrl($url) {
+  public function matchUrl($url): bool {
     foreach ($this->getSchemes() as $scheme) {
       // Convert scheme into a valid regular expression.
       $regexp = str_replace(['.', '*', '?'], ['\.', '.*', '\?'], $scheme);
@@ -174,7 +156,7 @@ class Endpoint {
    *
    * @see \Drupal\media\OEmbed\UrlResolver::getResourceUrl()
    */
-  public function buildResourceUrl($url) {
+  public function buildResourceUrl($url): string {
     $query = ['url' => $url];
     return $this->getUrl() . '?' . UrlHelper::buildQuery($query);
   }

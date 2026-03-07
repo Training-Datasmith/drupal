@@ -14,40 +14,33 @@ use Drupal\Core\Cache\NullBackend;
 class UpdateBackend extends NullBackend {
 
   /**
-   * The regular runtime cache backend.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $backend;
-
-  /**
    * UpdateBackend constructor.
    *
    * @param \Drupal\Core\Cache\CacheBackendInterface $backend
    *   The regular runtime cache backend.
    */
-  public function __construct(CacheBackendInterface $backend) {
-    $this->backend = $backend;
+  public function __construct(protected \Drupal\Core\Cache\CacheBackendInterface $backend)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     $this->backend->delete($cid);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $cids) {
+  public function deleteMultiple(array $cids): void {
     $this->backend->deleteMultiple($cids);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     $this->backend->deleteAll();
   }
 

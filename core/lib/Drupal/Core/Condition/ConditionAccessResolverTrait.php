@@ -30,14 +30,14 @@ trait ConditionAccessResolverTrait {
         // fail.
         $pass = $condition->isNegated();
       }
-
       // If a condition fails and all conditions were needed, deny access.
       if (!$pass && $condition_logic == 'and') {
-        return FALSE;
+          return FALSE;
       }
-      // If a condition passes and only one condition was needed, grant access.
-      elseif ($pass && $condition_logic == 'or') {
-        return TRUE;
+
+      // If a condition fails and all conditions were needed, deny access.
+      if ($pass && $condition_logic == 'or') {
+          return TRUE;
       }
     }
 

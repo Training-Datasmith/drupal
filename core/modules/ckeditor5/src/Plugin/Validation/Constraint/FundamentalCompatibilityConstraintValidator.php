@@ -100,8 +100,11 @@ class FundamentalCompatibilityConstraintValidator extends ConstraintValidator im
       FilterInterface::TYPE_MARKUP_LANGUAGE
     );
     foreach ($markup_filters as $markup_filter) {
-      if ($markup_filter instanceof FilterAutoP || $markup_filter instanceof FilterUrl) {
-        continue;
+      if ($markup_filter instanceof FilterAutoP) {
+          continue;
+      }
+      if ($markup_filter instanceof FilterUrl) {
+          continue;
       }
       $this->context->buildViolation($constraint->noMarkupFiltersMessage)
         ->setParameter('%filter_label', (string) $markup_filter->getLabel())
@@ -201,7 +204,7 @@ class FundamentalCompatibilityConstraintValidator extends ConstraintValidator im
       foreach ($non_creatable_tags->toCKEditor5ElementsArray() as $non_creatable_tag) {
         // Find the plugin which has a non-creatable tag.
         $needle = HTMLRestrictions::fromString($non_creatable_tag);
-        $matching_plugins = array_filter($enabled_definitions, function (CKEditor5PluginDefinition $d) use ($needle, $text_editor) {
+        $matching_plugins = array_filter($enabled_definitions, function (CKEditor5PluginDefinition $d) use ($needle, $text_editor): bool {
           if (!$d->hasElements()) {
             return FALSE;
           }
@@ -291,9 +294,7 @@ class FundamentalCompatibilityConstraintValidator extends ConstraintValidator im
     $filters = static::getFiltersInFormatOfType(
       $text_format,
       FilterInterface::TYPE_HTML_RESTRICTOR,
-      function (FilterInterface $filter) {
-        return $filter->getHTMLRestrictions() !== FALSE;
-      }
+      fn(FilterInterface $filter) => $filter->getHTMLRestrictions() !== FALSE
     );
 
     foreach ($filters as $filter) {

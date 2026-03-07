@@ -21,8 +21,7 @@ class InstallerKernel extends DrupalKernel {
     $this->containerNeedsRebuild = TRUE;
     // Ensure the InstallerKernel's container is not dumped.
     $this->allowDumping = FALSE;
-    $container = parent::initializeContainer();
-    return $container;
+    return parent::initializeContainer();
   }
 
   /**
@@ -35,7 +34,7 @@ class InstallerKernel extends DrupalKernel {
    *
    * @see \Drupal\Core\Database\Install\Tasks::runTasks()
    */
-  public function resetConfigStorage() {
+  public function resetConfigStorage(): void {
     $this->configStorage = NULL;
   }
 
@@ -78,7 +77,7 @@ class InstallerKernel extends DrupalKernel {
    * @return bool
    *   TRUE if the installation is currently being attempted.
    */
-  public static function installationAttempted() {
+  public static function installationAttempted(): bool {
     // This cannot rely on the MAINTENANCE_MODE constant, since that would
     // prevent tests from using the non-interactive installer, in which case
     // Drupal only happens to be installed within the same request, but

@@ -28,20 +28,6 @@ use Drupal\Core\Theme\ThemeManagerInterface;
 class ThemeSettingsForm extends ConfigFormBase {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
    * The MIME type guesser.
    *
    * @var \Symfony\Component\Mime\MimeTypeGuesserInterface
@@ -56,35 +42,21 @@ class ThemeSettingsForm extends ConfigFormBase {
   protected $editableConfig = [];
 
   /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
-   * The file system.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Constructs a ThemeSettingsForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler instance to use.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    * @param \Symfony\Component\Mime\MimeTypeGuesserInterface $mime_type_guesser
    *   The MIME type guesser instance to use.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system.
    * @param \Drupal\Core\Extension\ThemeSettingsProvider|null $themeSettingsProvider
    *   The theme settings helper service.
@@ -92,26 +64,21 @@ class ThemeSettingsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $config_factory,
     TypedConfigManagerInterface $typedConfigManager,
-    ModuleHandlerInterface $module_handler,
-    ThemeHandlerInterface $theme_handler,
+    protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
+    protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler,
     $mime_type_guesser,
-    ThemeManagerInterface $theme_manager,
-    FileSystemInterface $file_system,
+    protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager,
+    protected \Drupal\Core\File\FileSystemInterface $fileSystem,
     protected ThemeSettingsProvider $themeSettingsProvider,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
-
-    $this->moduleHandler = $module_handler;
-    $this->themeHandler = $theme_handler;
     $this->mimeTypeGuesser = $mime_type_guesser;
-    $this->themeManager = $theme_manager;
-    $this->fileSystem = $file_system;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -127,7 +94,7 @@ class ThemeSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_theme_settings';
   }
 
@@ -410,7 +377,7 @@ class ThemeSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     if ($this->moduleHandler->moduleExists('file')) {
@@ -463,7 +430,7 @@ class ThemeSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     $config_key = $form_state->getValue('config_key');

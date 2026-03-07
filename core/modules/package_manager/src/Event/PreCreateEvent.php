@@ -15,8 +15,6 @@ final class PreCreateEvent extends SandboxValidationEvent {
 
   /**
    * The list of paths to exclude from the stage directory.
-   *
-   * @var \Drupal\package_manager\ImmutablePathList
    */
   public readonly ImmutablePathList $excludedPaths;
 

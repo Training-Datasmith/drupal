@@ -9,8 +9,6 @@ trait CalculatedPermissionsTrait {
 
   /**
    * A list of calculated permission items, keyed by scope and identifier.
-   *
-   * @var array
    */
   protected array $items = [];
 

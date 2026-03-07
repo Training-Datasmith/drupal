@@ -100,12 +100,12 @@ class EntityAutocomplete extends Textfield {
     // Process the #default_value property.
     if ($input === FALSE && isset($element['#default_value']) && $element['#process_default_value']) {
       if (is_array($element['#default_value']) && $element['#tags'] !== TRUE) {
-        throw new \InvalidArgumentException('The #default_value property is an array but the form element does not allow multiple values.');
+          throw new \InvalidArgumentException('The #default_value property is an array but the form element does not allow multiple values.');
       }
-      elseif (!empty($element['#default_value']) && !is_array($element['#default_value'])) {
-        // Convert the default value into an array for easier processing in
-        // static::getEntityLabels().
-        $element['#default_value'] = [$element['#default_value']];
+      if (!empty($element['#default_value']) && !is_array($element['#default_value'])) {
+          // Convert the default value into an array for easier processing in
+          // static::getEntityLabels().
+          $element['#default_value'] = [$element['#default_value']];
       }
 
       if ($element['#default_value']) {
@@ -122,9 +122,7 @@ class EntityAutocomplete extends Textfield {
     // Potentially the #value is set directly, so it contains the 'target_id'
     // array structure instead of a string.
     if ($input !== FALSE && is_array($input)) {
-      $entity_ids = array_map(function (array $item) {
-        return $item['target_id'];
-      }, $input);
+      $entity_ids = array_map(fn(array $item) => $item['target_id'], $input);
 
       $entities = \Drupal::entityTypeManager()->getStorage($element['#target_type'])->loadMultiple($entity_ids);
 
@@ -154,7 +152,7 @@ class EntityAutocomplete extends Textfield {
    *   Exception thrown when the #target_type or #autocreate['bundle'] are
    *   missing.
    */
-  public static function processEntityAutocomplete(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  public static function processEntityAutocomplete(array &$element, FormStateInterface $form_state, array &$complete_form): array {
     // Nothing to do if there is no target entity type.
     if (empty($element['#target_type'])) {
       throw new \InvalidArgumentException('Missing required #target_type parameter.');
@@ -166,7 +164,7 @@ class EntityAutocomplete extends Textfield {
         throw new \InvalidArgumentException("Missing required #autocreate['bundle'] parameter.");
       }
       // Default the autocreate user ID to the current user.
-      $element['#autocreate']['uid'] = $element['#autocreate']['uid'] ?? \Drupal::currentUser()->id();
+      $element['#autocreate']['uid'] ??= \Drupal::currentUser()->id();
     }
 
     // Store the selection settings in the key/value store and pass a hashed key
@@ -199,7 +197,7 @@ class EntityAutocomplete extends Textfield {
   /**
    * Form element validation handler for entity_autocomplete elements.
    */
-  public static function validateEntityAutocomplete(array &$element, FormStateInterface $form_state, array &$complete_form) {
+  public static function validateEntityAutocomplete(array &$element, FormStateInterface $form_state, array &$complete_form): void {
     $value = NULL;
 
     // Check the value for emptiness, but allow the use of (string) "0".
@@ -247,7 +245,7 @@ class EntityAutocomplete extends Textfield {
       // Check that the referenced entities are valid, if needed.
       if ($element['#validate_reference'] && !empty($value)) {
         // Validate existing entities.
-        $ids = array_reduce($value, function ($return, $item) {
+        $ids = array_reduce($value, function ($return, array $item) {
           if (isset($item['target_id'])) {
             $return[] = $item['target_id'];
           }
@@ -267,7 +265,7 @@ class EntityAutocomplete extends Textfield {
         }
 
         // Validate newly created entities.
-        $new_entities = array_reduce($value, function ($return, $item) {
+        $new_entities = array_reduce($value, function ($return, array $item) {
           if (isset($item['entity'])) {
             $return[] = $item['entity'];
           }
@@ -329,9 +327,7 @@ class EntityAutocomplete extends Textfield {
    */
   protected static function matchEntityByTitle(SelectionInterface $handler, $input, array &$element, FormStateInterface $form_state, $strict) {
     $entities_by_bundle = $handler->getReferenceableEntities($input, '=', 6);
-    $entities = array_reduce($entities_by_bundle, function ($flattened, $bundle_entities) {
-      return $flattened + $bundle_entities;
-    }, []);
+    $entities = array_reduce($entities_by_bundle, fn(array|float|int $flattened, $bundle_entities) => $flattened + $bundle_entities, []);
     $params = [
       '%value' => $input,
       '@value' => $input,
@@ -375,7 +371,7 @@ class EntityAutocomplete extends Textfield {
    * @return string
    *   A string of entity labels separated by commas.
    */
-  public static function getEntityLabels(array $entities) {
+  public static function getEntityLabels(array $entities): string {
     /** @var \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository */
     $entity_repository = \Drupal::service('entity.repository');
 
@@ -409,17 +405,15 @@ class EntityAutocomplete extends Textfield {
    * @return mixed|null
    *   An entity ID or NULL if the input does not contain one.
    */
-  public static function extractEntityIdFromAutocompleteInput($input) {
-    $match = NULL;
-
+  public static function extractEntityIdFromAutocompleteInput($input): ?string {
     // Take "label (entity id)', match the ID from inside the parentheses.
     // @todo Add support for entities containing parentheses in their ID.
     // @see https://www.drupal.org/node/2520416
     if (preg_match("/.+\s\(([^\)]+)\)/", $input, $matches)) {
-      $match = $matches[1];
+      return $matches[1];
     }
 
-    return $match;
+    return NULL;
   }
 
 }

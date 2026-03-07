@@ -21,7 +21,7 @@ class FinalMissingContentSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\Importer\MissingContentEvent $event
    *   The missing content event.
    */
-  public function onMissingContent(MissingContentEvent $event) {
+  public function onMissingContent(MissingContentEvent $event): void {
     foreach (array_keys($event->getMissingContent()) as $uuid) {
       $event->resolveMissingContent($uuid);
     }

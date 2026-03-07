@@ -51,7 +51,7 @@ class UriWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $summary[] = $this->t('URI field size: @size', ['@size' => $this->getSetting('size')]);
@@ -66,7 +66,7 @@ class UriWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element['value'] = $element + [
       '#type' => 'url',
       '#default_value' => $items[$delta]->value ?? NULL,

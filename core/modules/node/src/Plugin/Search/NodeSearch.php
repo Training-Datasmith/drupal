@@ -87,7 +87,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -141,7 +141,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function isSearchExecutable() {
+  public function isSearchExecutable(): bool {
     // Node search is executable if we have keywords or an advanced parameter.
     // At least, we should parse out the parameters and see if there are any
     // keyword matches in that case, rather than just printing out the
@@ -208,7 +208,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
       // separated by ':' like 'term:27'.
       $pattern = '/^(' . implode('|', array_keys($this->advanced)) . '):([^ ]*)/i';
       foreach ($parameters['f'] as $item) {
-        if (preg_match($pattern, $item, $m)) {
+        if (preg_match($pattern, (string) $item, $m)) {
           // Use the matched value as the array key to eliminate duplicates.
           $filters[$m[1]][$m[2]] = $m[2];
         }
@@ -273,7 +273,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
    * @return array
    *   Array of search result item render arrays (empty array if no results).
    */
-  protected function prepareResults(StatementInterface $found) {
+  protected function prepareResults(StatementInterface $found): array {
     $results = [];
 
     $node_storage = $this->entityTypeManager->getStorage('node');
@@ -290,7 +290,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
       $type = $this->entityTypeManager->getStorage('node_type')->load($node->bundle());
 
       unset($build['#theme']);
-      $build['#pre_render'][] = [$this, 'removeSubmittedInfo'];
+      $build['#pre_render'][] = $this->removeSubmittedInfo(...);
 
       // Fetch comments for snippet.
       $rendered = $this->renderer->renderInIsolation($build);
@@ -349,7 +349,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
    * @return array
    *   The modified build array.
    */
-  public function removeSubmittedInfo(array $build) {
+  public function removeSubmittedInfo(array $build): array {
     unset($build['created']);
     unset($build['uid']);
     return $build;
@@ -382,7 +382,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function updateIndex() {
+  public function updateIndex(): void {
     // Interpret the cron limit setting as the maximum number of nodes to index
     // per cron run.
     $limit = (int) $this->searchSettings->get('index.cron_limit');
@@ -429,7 +429,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
    * @return array
    *   An array of words to update after indexing.
    */
-  protected function indexNode(NodeInterface $node) {
+  protected function indexNode(NodeInterface $node): array {
     $words = [];
     $languages = $node->getTranslationLanguages();
     $node_render = $this->entityTypeManager->getViewBuilder('node');
@@ -465,7 +465,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function indexClear() {
+  public function indexClear(): void {
     // All NodeSearch pages share a common search index "type" equal to
     // the plugin ID.
     $this->searchIndex->clear($this->getPluginId());
@@ -474,7 +474,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function markForReindex() {
+  public function markForReindex(): void {
     // All NodeSearch pages share a common search index "type" equal to
     // the plugin ID.
     $this->searchIndex->markForReindex($this->getPluginId());
@@ -483,7 +483,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function indexStatus() {
+  public function indexStatus(): array {
     $total = $this->database->query('SELECT COUNT(*) FROM {node}')->fetchField();
     $remaining = $this->database->query("SELECT COUNT(DISTINCT [n].[nid]) FROM {node} [n] LEFT JOIN {search_dataset} [sd] ON [sd].[sid] = [n].[nid] AND [sd].[type] = :type WHERE [sd].[sid] IS NULL OR [sd].[reindex] <> 0", [':type' => $this->getPluginId()])->fetchField();
 
@@ -493,7 +493,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function searchFormAlter(array &$form, FormStateInterface $form_state) {
+  public function searchFormAlter(array &$form, FormStateInterface $form_state): void {
     $parameters = $this->getParameters();
     $keys = $this->getKeywords();
     $used_advanced = !empty($parameters[self::ADVANCED_FORM]);
@@ -550,7 +550,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
     ];
 
     // Add node types.
-    $types = array_map(['\Drupal\Component\Utility\Html', 'escape'], $this->entityTypeBundleInfo->getBundleLabels('node'));
+    $types = array_map(\Drupal\Component\Utility\Html::escape(...), $this->entityTypeBundleInfo->getBundleLabels('node'));
     $form['advanced']['types-fieldset'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Types'),
@@ -598,10 +598,10 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function buildSearchUrlQuery(FormStateInterface $form_state) {
+  public function buildSearchUrlQuery(FormStateInterface $form_state): array {
     // Read keyword and advanced search information from the form values,
     // and put these into the GET parameters.
-    $keys = trim($form_state->getValue('keys'));
+    $keys = trim((string) $form_state->getValue('keys'));
     $advanced = FALSE;
 
     // Collect extra filters.
@@ -678,12 +678,12 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
    *   Array of default form values for the advanced search form, including
    *   a modified 'keys' element for the bare search keywords.
    */
-  protected function parseAdvancedDefaults($f, $keys) {
+  protected function parseAdvancedDefaults($f, $keys): array {
     $defaults = [];
 
     // Split out the advanced search parameters.
     foreach ($f as $advanced) {
-      [$key, $value] = explode(':', $advanced, 2);
+      [$key, $value] = explode(':', (string) $advanced, 2);
       if (!isset($defaults[$key])) {
         $defaults[$key] = [];
       }
@@ -735,17 +735,16 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
-    $configuration = [
+  public function defaultConfiguration(): array {
+    return [
       'rankings' => [],
     ];
-    return $configuration;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     // Output form for defining rank factor weights.
     $form['content_ranking'] = [
       '#type' => 'details',
@@ -782,7 +781,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     foreach ($this->getRankings() as $var => $values) {
       if (!$form_state->isValueEmpty(['rankings', $var, 'value'])) {
         $this->configuration['rankings'][$var] = $form_state->getValue(['rankings', $var, 'value']);
@@ -796,7 +795,7 @@ class NodeSearch extends ConfigurableSearchPluginBase implements AccessibleInter
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['removeSubmittedInfo'];
   }
 

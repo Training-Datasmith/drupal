@@ -31,15 +31,13 @@ class EntityReferenceFieldNormalizer extends FieldNormalizer {
     assert($field instanceof EntityReferenceFieldItemListInterface);
     // Build the relationship object based on the Entity Reference and normalize
     // that object instead.
-    $resource_identifiers = array_filter(ResourceIdentifier::toResourceIdentifiers($field->filterEmptyItems()), function (ResourceIdentifierInterface $resource_identifier) {
-      return !$resource_identifier->getResourceType()->isInternal();
-    });
+    $resource_identifiers = array_filter(ResourceIdentifier::toResourceIdentifiers($field->filterEmptyItems()), fn(ResourceIdentifierInterface $resource_identifier) => !$resource_identifier->getResourceType()->isInternal());
     $normalized_items = CacheableNormalization::aggregate($this->serializer->normalize($resource_identifiers, $format, $context));
     assert($context['resource_object'] instanceof ResourceObject);
     $resource_relationship = $context['resource_object']->getResourceType()->getFieldByInternalName($field->getName());
     assert($resource_relationship instanceof ResourceTypeRelationship);
     $link_cacheability = new CacheableMetadata();
-    $links = array_map(function (Url $link) use ($link_cacheability) {
+    $links = array_map(function (Url $link) use ($link_cacheability): array {
       $href = $link->setAbsolute()->toString(TRUE);
       $link_cacheability->addCacheableDependency($href);
       return ['href' => $href->getGeneratedUrl()];
@@ -68,7 +66,7 @@ class EntityReferenceFieldNormalizer extends FieldNormalizer {
    * @return array
    *   The relationship's links.
    */
-  public static function getRelationshipLinks(ResourceObject $relationship_context, ResourceTypeRelationship $resource_relationship) {
+  public static function getRelationshipLinks(ResourceObject $relationship_context, ResourceTypeRelationship $resource_relationship): array {
     $resource_type = $relationship_context->getResourceType();
     if ($resource_type->isInternal() || !$resource_type->isLocatable()) {
       return [];
@@ -101,7 +99,7 @@ class EntityReferenceFieldNormalizer extends FieldNormalizer {
    * @return bool
    *   FALSE if every resource type is internal, TRUE otherwise.
    */
-  protected static function hasNonInternalResourceType(array $resource_types) {
+  protected static function hasNonInternalResourceType(array $resource_types): bool {
     foreach ($resource_types as $resource_type) {
       if (!$resource_type->isInternal()) {
         return TRUE;

@@ -11,13 +11,6 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 class SearchPageRepository implements SearchPageRepositoryInterface {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The search page storage.
    *
    * @var \Drupal\Core\Entity\EntityStorageInterface
@@ -27,13 +20,12 @@ class SearchPageRepository implements SearchPageRepositoryInterface {
   /**
    * Constructs a new SearchPageRepository.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManagerInterface $entity_type_manager) {
-    $this->configFactory = $config_factory;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, EntityTypeManagerInterface $entity_type_manager) {
     $this->storage = $entity_type_manager->getStorage('search_page');
   }
 
@@ -50,7 +42,7 @@ class SearchPageRepository implements SearchPageRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function isSearchActive() {
+  public function isSearchActive(): bool {
     return (bool) $this->getQuery()
       ->condition('status', TRUE)
       ->range(0, 1)
@@ -60,10 +52,8 @@ class SearchPageRepository implements SearchPageRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function getIndexableSearchPages() {
-    return array_filter($this->getActiveSearchPages(), function (SearchPageInterface $search) {
-      return $search->isIndexable();
-    });
+  public function getIndexableSearchPages(): array {
+    return array_filter($this->getActiveSearchPages(), fn(SearchPageInterface $search) => $search->isIndexable());
   }
 
   /**
@@ -77,25 +67,22 @@ class SearchPageRepository implements SearchPageRepositoryInterface {
 
     // If the default page is active, return it.
     $default = $this->configFactory->get('search.settings')->get('default_page');
-    if (isset($default, $search_pages[$default])) {
-      return $default;
-    }
 
     // Otherwise, use the first active search page.
-    return is_array($search_pages) ? reset($search_pages) : FALSE;
+    return $default ?? (is_array($search_pages) ? reset($search_pages) : FALSE);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearDefaultSearchPage() {
+  public function clearDefaultSearchPage(): void {
     $this->configFactory->getEditable('search.settings')->clear('default_page')->save();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setDefaultSearchPage(SearchPageInterface $search_page) {
+  public function setDefaultSearchPage(SearchPageInterface $search_page): void {
     $this->configFactory->getEditable('search.settings')->set('default_page', $search_page->id())->save();
     $search_page->enable()->save();
   }

@@ -82,32 +82,22 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MakeUniqueEntityField extends MakeUniqueBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The current migration.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The current migration.
+   */
+  protected \Drupal\migrate\Plugin\MigrationInterface $migration, /**
+   * The entity type manager.
+   */
+  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->migration = $migration;
-    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -139,10 +129,8 @@ class MakeUniqueEntityField extends MakeUniqueBase implements ContainerFactoryPl
       }
       return FALSE;
     }
-    else {
-      // Just check if any such entity exists.
-      return $query->count()->execute();
-    }
+    // Just check if any such entity exists.
+    return $query->count()->execute();
   }
 
 }

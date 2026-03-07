@@ -21,7 +21,7 @@ class GroupByNumeric extends SortPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     // Initialize the original handler.
@@ -32,7 +32,7 @@ class GroupByNumeric extends SortPluginBase {
   /**
    * Called to add the field to a query.
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
 
     $params = [

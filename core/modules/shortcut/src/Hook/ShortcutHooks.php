@@ -40,20 +40,18 @@ class ShortcutHooks {
             'name' => 'navigation',
           ])->toString() : '#',
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.shortcut_set.collection':
       case 'shortcut.set_add':
       case 'entity.shortcut_set.edit_form':
         $user = \Drupal::currentUser();
         if ($user->hasPermission('access shortcuts') && $user->hasPermission('switch shortcut sets')) {
-          $output = '<p>' . $this->t('Define which shortcut set you are using on the <a href=":shortcut-link">Shortcuts tab</a> of your account page.', [
+          return '<p>' . $this->t('Define which shortcut set you are using on the <a href=":shortcut-link">Shortcuts tab</a> of your account page.', [
             ':shortcut-link' => Url::fromRoute('shortcut.set_switch', [
               'user' => $user->id(),
             ])->toString(),
           ]) . '</p>';
-          return $output;
         }
     }
     return NULL;

@@ -19,13 +19,6 @@ use Drupal\views\Plugin\views\argument\ArgumentPluginBase;
 class UserUid extends ArgumentPluginBase {
 
   /**
-   * Database Service Object.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * Constructs a \Drupal\comment\Plugin\views\argument\UserUid object.
    *
    * @param array $configuration
@@ -37,10 +30,8 @@ class UserUid extends ArgumentPluginBase {
    * @param \Drupal\Core\Database\Connection $database
    *   Database Service Object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $database) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Database\Connection $database) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->database = $database;
   }
 
   /**
@@ -80,7 +71,7 @@ class UserUid extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $this->ensureMyTable();
 
     // Use the table definition to correctly add this user ID condition.
@@ -105,7 +96,7 @@ class UserUid extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getSortName() {
+  public function getSortName(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Numerical', [], ['context' => 'Sort order']);
   }
 

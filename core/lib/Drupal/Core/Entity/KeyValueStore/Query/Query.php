@@ -12,13 +12,6 @@ use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 class Query extends QueryBase {
 
   /**
-   * The key value factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
-   */
-  protected $keyValueFactory;
-
-  /**
    * Constructs a new Query.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -28,18 +21,17 @@ class Query extends QueryBase {
    *   - OR: at least one of the conditions on the query need to match.
    * @param array $namespaces
    *   List of potential namespaces of the classes belonging to this query.
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
    *   The key value factory.
    */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, array $namespaces, KeyValueFactoryInterface $key_value_factory) {
+  public function __construct(EntityTypeInterface $entity_type, $conjunction, array $namespaces, protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory) {
     parent::__construct($entity_type, $conjunction, $namespaces);
-    $this->keyValueFactory = $key_value_factory;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function execute() {
+  public function execute(): int|array {
     // Load the relevant records.
     $records = $this->keyValueFactory->get('entity_storage__' . $this->entityTypeId)->getAll();
 
@@ -50,9 +42,7 @@ class Query extends QueryBase {
     foreach ($this->sort as $sort) {
       $direction = $sort['direction'] == 'ASC' ? -1 : 1;
       $field = $sort['field'];
-      uasort($result, function ($a, $b) use ($field, $direction) {
-        return ($a[$field] <= $b[$field]) ? $direction : -$direction;
-      });
+      uasort($result, fn($a, $b) => ($a[$field] <= $b[$field]) ? $direction : -$direction);
     }
 
     // Let the pager do its work.

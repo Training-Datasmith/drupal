@@ -44,20 +44,6 @@ class Image extends File {
   const METADATA_ATTRIBUTE_HEIGHT = 'height';
 
   /**
-   * The image factory service.
-   *
-   * @var \Drupal\Core\Image\ImageFactory
-   */
-  protected $imageFactory;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Constructs a new class instance.
    *
    * @param array $configuration
@@ -74,16 +60,13 @@ class Image extends File {
    *   The field type plugin manager service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
-   * @param \Drupal\Core\Image\ImageFactory $image_factory
+   * @param \Drupal\Core\Image\ImageFactory $imageFactory
    *   The image factory.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ConfigFactoryInterface $config_factory, ImageFactory $image_factory, FileSystemInterface $file_system) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Image\ImageFactory $imageFactory, protected \Drupal\Core\File\FileSystemInterface $fileSystem) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $entity_field_manager, $field_type_manager, $config_factory);
-
-    $this->imageFactory = $image_factory;
-    $this->fileSystem = $file_system;
   }
 
   /**
@@ -92,12 +75,10 @@ class Image extends File {
   public function getMetadataAttributes() {
     $attributes = parent::getMetadataAttributes();
 
-    $attributes += [
+    return $attributes + [
       static::METADATA_ATTRIBUTE_WIDTH => $this->t('Width'),
       static::METADATA_ATTRIBUTE_HEIGHT => $this->t('Height'),
     ];
-
-    return $attributes;
   }
 
   /**
@@ -149,7 +130,7 @@ class Image extends File {
   /**
    * {@inheritdoc}
    */
-  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display) {
+  public function prepareViewDisplay(MediaTypeInterface $type, EntityViewDisplayInterface $display): void {
     parent::prepareViewDisplay($type, $display);
 
     // Use the `large` image style and do not link the image to anything.

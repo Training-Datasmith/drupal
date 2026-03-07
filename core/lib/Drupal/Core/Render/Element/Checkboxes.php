@@ -41,7 +41,7 @@ class Checkboxes extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#process' => [
@@ -57,7 +57,7 @@ class Checkboxes extends FormElementBase {
   /**
    * Processes a checkboxes form element.
    */
-  public static function processCheckboxes(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processCheckboxes(array &$element, FormStateInterface $form_state, &$complete_form): array {
     $value = is_array($element['#value']) ? $element['#value'] : [];
     $element['#tree'] = TRUE;
     if (count($element['#options']) > 0) {
@@ -112,44 +112,40 @@ class Checkboxes extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state): array {
     if ($input === FALSE) {
-      $value = [];
-      $element += ['#default_value' => []];
-      foreach ($element['#default_value'] as $key) {
-        $value[$key] = $key;
-      }
-      return $value;
-    }
-    elseif (is_array($input)) {
-      // Programmatic form submissions use NULL to indicate that a checkbox
-      // should be unchecked. We therefore remove all NULL elements from the
-      // array before constructing the return value, to simulate the behavior
-      // of web browsers (which do not send unchecked checkboxes to the server
-      // at all). This will not affect non-programmatic form submissions, since
-      // all values in \Drupal::request()->request are strings.
-      // @see \Drupal\Core\Form\FormBuilderInterface::submitForm()
-      foreach ($input as $key => $value) {
-        if (!isset($value)) {
-          unset($input[$key]);
-        }
-      }
-
-      // Because the disabled checkboxes don't receive their input from the
-      // form submission, we use their default value.
-      if (!empty($element['#default_value'])) {
+        $value = [];
+        $element += ['#default_value' => []];
         foreach ($element['#default_value'] as $key) {
-          if (!empty($element[$key]['#disabled'])) {
-            $input[$key] = $key;
+          $value[$key] = $key;
+        }
+        return $value;
+    }
+    if (is_array($input)) {
+        // Programmatic form submissions use NULL to indicate that a checkbox
+        // should be unchecked. We therefore remove all NULL elements from the
+        // array before constructing the return value, to simulate the behavior
+        // of web browsers (which do not send unchecked checkboxes to the server
+        // at all). This will not affect non-programmatic form submissions, since
+        // all values in \Drupal::request()->request are strings.
+        // @see \Drupal\Core\Form\FormBuilderInterface::submitForm()
+        foreach ($input as $key => $value) {
+          if (!isset($value)) {
+            unset($input[$key]);
           }
         }
-      }
-
-      return array_combine($input, $input);
+        // Because the disabled checkboxes don't receive their input from the
+        // form submission, we use their default value.
+        if (!empty($element['#default_value'])) {
+          foreach ($element['#default_value'] as $key) {
+            if (!empty($element[$key]['#disabled'])) {
+              $input[$key] = $key;
+            }
+          }
+        }
+        return array_combine($input, $input);
     }
-    else {
-      return [];
-    }
+    return [];
   }
 
   /**
@@ -161,7 +157,7 @@ class Checkboxes extends FormElementBase {
    * @return array
    *   An array of keys that were checked.
    */
-  public static function getCheckedCheckboxes(array $input) {
+  public static function getCheckedCheckboxes(array $input): array {
     // Browsers do not include unchecked options in a form submission. The
     // FormAPI tries to normalize this to keep checkboxes consistent with other
     // form elements. Checkboxes show up as an array in the form of option_id =>
@@ -169,9 +165,7 @@ class Checkboxes extends FormElementBase {
     //
     // @see \Drupal\Core\Render\Element\Checkboxes::valueCallback()
     // @see https://www.w3.org/TR/html401/interact/forms.html#checkbox
-    $checked = array_filter($input, function ($value) {
-      return $value !== 0;
-    });
+    $checked = array_filter($input, fn($value) => $value !== 0);
     return array_keys($checked);
   }
 
@@ -184,7 +178,7 @@ class Checkboxes extends FormElementBase {
    * @return bool
    *   TRUE if all options are unchecked. FALSE otherwise.
    */
-  public static function detectEmptyCheckboxes(array $input) {
+  public static function detectEmptyCheckboxes(array $input): bool {
     return empty(static::getCheckedCheckboxes($input));
   }
 

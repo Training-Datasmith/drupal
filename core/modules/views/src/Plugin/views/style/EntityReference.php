@@ -50,7 +50,7 @@ class EntityReference extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $options = $this->displayHandler->getFieldLabels(TRUE);
@@ -87,9 +87,7 @@ class EntityReference extends StylePluginBase {
       foreach ($records as $values) {
         $results[$values->{$id_field_alias}] = $this->view->rowPlugin->render($values);
         // Sanitize HTML, remove line breaks and extra whitespace.
-        $results[$values->{$id_field_alias}]['#post_render'][] = function ($html, array $elements) {
-          return Xss::filterAdmin(preg_replace('/\s\s+/', ' ', str_replace("\n", '', $html)));
-        };
+        $results[$values->{$id_field_alias}]['#post_render'][] = (fn($html, array $elements) => Xss::filterAdmin(preg_replace('/\s\s+/', ' ', str_replace("\n", '', $html))));
       }
     }
     return $results;
@@ -98,7 +96,7 @@ class EntityReference extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function evenEmpty() {
+  public function evenEmpty(): bool {
     return TRUE;
   }
 

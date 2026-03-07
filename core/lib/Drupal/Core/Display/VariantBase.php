@@ -52,7 +52,7 @@ abstract class VariantBase extends ConfigurablePluginBase implements VariantInte
   /**
    * {@inheritdoc}
    */
-  public function setWeight($weight) {
+  public function setWeight($weight): void {
     $this->configuration['weight'] = (int) $weight;
   }
 
@@ -106,7 +106,7 @@ abstract class VariantBase extends ConfigurablePluginBase implements VariantInte
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['label'] = $form_state->getValue('label');
   }
 

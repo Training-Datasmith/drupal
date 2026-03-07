@@ -17,12 +17,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * @internal
  *   Event subscribers are internal.
  */
-final class DefaultContentSubscriber implements EventSubscriberInterface {
+final readonly class DefaultContentSubscriber implements EventSubscriberInterface {
 
   public function __construct(
-    private readonly EntityRepositoryInterface $entityRepository,
+    private EntityRepositoryInterface $entityRepository,
     #[AutowireServiceClosure('logger.channel.default_content')]
-    private readonly \Closure $logger,
+    private \Closure $logger,
   ) {}
 
   /**

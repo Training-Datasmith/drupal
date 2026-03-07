@@ -16,7 +16,7 @@ class Score extends SortPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // Check to see if the search filter/argument added 'score' to the table.
     // Our filter stores it as $handler->search_score -- and we also
     // need to check its relationship to make sure that we're using the same

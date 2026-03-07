@@ -23,7 +23,7 @@ class RouteMethodSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The event containing the build routes.
    */
-  public function onRouteBuilding(RouteBuildEvent $event) {
+  public function onRouteBuilding(RouteBuildEvent $event): void {
     foreach ($event->getRouteCollection() as $route) {
       $methods = $route->getMethods();
       if (empty($methods)) {

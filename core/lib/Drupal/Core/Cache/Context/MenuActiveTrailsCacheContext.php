@@ -29,7 +29,7 @@ class MenuActiveTrailsCacheContext implements CalculatedCacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getContext($menu_name = NULL) {
+  public function getContext($menu_name = NULL): string {
     if (!$menu_name) {
       throw new \LogicException('No menu name provided for menu.active_trails cache context.');
     }

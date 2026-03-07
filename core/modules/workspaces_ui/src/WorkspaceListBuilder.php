@@ -28,51 +28,27 @@ class WorkspaceListBuilder extends EntityListBuilder {
   use AjaxHelperTrait;
 
   /**
-   * The workspace manager service.
-   *
-   * @var \Drupal\workspaces\WorkspaceManagerInterface
-   */
-  protected $workspaceManager;
-
-  /**
-   * The workspace repository service.
-   *
-   * @var \Drupal\workspaces\WorkspaceRepositoryInterface
-   */
-  protected $workspaceRepository;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
    * Constructs a new EntityListBuilder object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspace_manager
+   * @param \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager
    *   The workspace manager service.
-   * @param \Drupal\workspaces\WorkspaceRepositoryInterface $workspace_repository
+   * @param \Drupal\workspaces\WorkspaceRepositoryInterface $workspaceRepository
    *   The workspace repository service.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, WorkspaceManagerInterface $workspace_manager, WorkspaceRepositoryInterface $workspace_repository, RendererInterface $renderer) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\workspaces\WorkspaceManagerInterface $workspaceManager, protected \Drupal\workspaces\WorkspaceRepositoryInterface $workspaceRepository, protected \Drupal\Core\Render\RendererInterface $renderer) {
     parent::__construct($entity_type, $storage);
-    $this->workspaceManager = $workspace_manager;
-    $this->workspaceRepository = $workspace_repository;
-    $this->renderer = $renderer;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -84,8 +60,9 @@ class WorkspaceListBuilder extends EntityListBuilder {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function load() {
+  public function load(): array {
     // Get all the workspace entities and sort them in tree order.
     $workspace_tree = $this->workspaceRepository->loadTree();
     $loaded = $this->storage->loadMultiple($this->getEntityIds());
@@ -157,7 +134,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     /** @var \Drupal\workspaces\WorkspaceInterface $entity */
@@ -233,7 +210,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = parent::render();
     if ($this->isAjax()) {
       $this->offCanvasRender($build);
@@ -375,7 +352,7 @@ class WorkspaceListBuilder extends EntityListBuilder {
         $url = Url::fromRoute('entity.workspace.activate_form', ['workspace' => $id], ['query' => $this->getDestinationArray()]);
         $items[] = [
           '#type' => 'link',
-          '#title' => ltrim($row['data']['label']['data']['#title']),
+          '#title' => ltrim((string) $row['data']['label']['data']['#title']),
           '#url' => $url,
           '#attributes' => [
             'class' => ['use-ajax', 'workspaces__item', 'workspaces__item--not-default'],

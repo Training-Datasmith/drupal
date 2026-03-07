@@ -25,7 +25,7 @@ class Cache {
    * @return list<string>
    *   The merged list of cache contexts.
    */
-  public static function mergeContexts(array ...$cache_contexts) {
+  public static function mergeContexts(array ...$cache_contexts): array {
     $cache_contexts = array_values(array_unique(array_merge(...$cache_contexts)));
     assert(\Drupal::service('cache_contexts_manager')->assertValidTokens($cache_contexts), sprintf('Failed to assert that "%s" are valid cache contexts.', implode(', ', $cache_contexts)));
     return $cache_contexts;
@@ -48,7 +48,7 @@ class Cache {
    * @return list<string>
    *   The merged list of cache tags.
    */
-  public static function mergeTags(array ...$cache_tags) {
+  public static function mergeTags(array ...$cache_tags): array {
     $cache_tags = array_values(array_unique(array_merge(...$cache_tags)));
     assert(Inspector::assertAllStrings($cache_tags), 'Cache tags must be valid strings');
     return $cache_tags;
@@ -67,9 +67,7 @@ class Cache {
    */
   public static function mergeMaxAges(...$max_ages) {
     // Remove Cache::PERMANENT values to return the correct minimum value.
-    $max_ages = array_filter($max_ages, function ($max_age) {
-      return $max_age !== Cache::PERMANENT;
-    });
+    $max_ages = array_filter($max_ages, fn(int $max_age) => $max_age !== Cache::PERMANENT);
 
     // If there are no max ages left return Cache::PERMANENT, otherwise return
     // the minimum value.
@@ -92,7 +90,7 @@ class Cache {
    * @return list<string>
    *   A list of cache tags.
    */
-  public static function buildTags($prefix, array $suffixes, $glue = ':') {
+  public static function buildTags(string $prefix, array $suffixes, string $glue = ':'): array {
     $tags = [];
     foreach ($suffixes as $suffix) {
       $tags[] = $prefix . $glue . $suffix;
@@ -106,7 +104,7 @@ class Cache {
    * @param string[] $tags
    *   The list of tags to invalidate cache items for.
    */
-  public static function invalidateTags(array $tags) {
+  public static function invalidateTags(array $tags): void {
     \Drupal::service('cache_tags.invalidator')->invalidateTags($tags);
   }
 
@@ -116,7 +114,7 @@ class Cache {
    * @return \Drupal\Core\Cache\CacheBackendInterface[]
    *   An array of cache backend objects keyed by cache bins.
    */
-  public static function getBins() {
+  public static function getBins(): array {
     $bins = [];
     $container = \Drupal::getContainer();
     foreach ($container->getParameter('cache_bins') as $service_id => $bin) {

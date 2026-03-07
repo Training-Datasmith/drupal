@@ -39,8 +39,7 @@ class PageCacheHooks {
         $output .= '<dd>' . $this->t('On the <a href=":cache-settings">Performance page</a>, you can configure how long browsers and proxies may cache pages based on the Cache-Control header; this setting is ignored by the Internal Page Cache module, which caches pages permanently until invalidation, unless they carry an Expires header. There is no other configuration.', [
           ':cache-settings' => Url::fromRoute('system.performance_settings')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }

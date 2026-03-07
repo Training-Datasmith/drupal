@@ -16,8 +16,6 @@ final class Helper {
 
   /**
    * Flag if admin is active.
-   *
-   * @var bool|null
    */
   private static ?bool $active = NULL;
 
@@ -280,7 +278,7 @@ final class Helper {
       ];
       $form_ids_to_ignore = array_merge(\Drupal::moduleHandler()->invokeAll('admin_content_form_ignore_form_ids'), $form_ids_to_ignore);
       foreach ($form_ids_to_ignore as $form_id_to_ignore) {
-        if (str_contains($form_id, $form_id_to_ignore)) {
+        if (str_contains($form_id, (string) $form_id_to_ignore)) {
           return FALSE;
         }
       }

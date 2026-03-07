@@ -45,7 +45,7 @@ trait CacheTagsChecksumTrait {
    * @param bool $success
    *   Whether or not the transaction was successful.
    */
-  public function rootTransactionEndCallback($success) {
+  public function rootTransactionEndCallback($success): void {
     if ($success) {
       $this->doInvalidateTags($this->delayedTags);
     }
@@ -55,7 +55,7 @@ trait CacheTagsChecksumTrait {
   /**
    * {@inheritdoc}
    */
-  public function invalidateTags(array $tags) {
+  public function invalidateTags(array $tags): void {
     foreach ($tags as $key => $tag) {
       if (isset($this->invalidatedTags[$tag])) {
         unset($tags[$key]);
@@ -136,7 +136,7 @@ trait CacheTagsChecksumTrait {
    * @return int
    *   The calculated checksum.
    */
-  protected function calculateChecksum(array $tags) {
+  protected function calculateChecksum(array $tags): int|float {
     $checksum = 0;
 
     // If there are no cache tags, then there is no cache tag to checksum,
@@ -173,7 +173,7 @@ trait CacheTagsChecksumTrait {
   /**
    * Implements \Drupal\Core\Cache\CacheTagsChecksumInterface::reset()
    */
-  public function reset() {
+  public function reset(): void {
     $this->tagCache = [];
     $this->invalidatedTags = [];
   }

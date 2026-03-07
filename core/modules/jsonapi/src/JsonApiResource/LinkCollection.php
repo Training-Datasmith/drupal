@@ -22,7 +22,7 @@ final class LinkCollection implements \IteratorAggregate {
    *
    * @var array<string, \Drupal\jsonapi\JsonApiResource\Link>
    */
-  protected $links;
+  protected array $links;
 
   /**
    * The link context.
@@ -47,17 +47,11 @@ final class LinkCollection implements \IteratorAggregate {
    *   a LinkCollection is passed into a context object.
    */
   public function __construct(array $links, $context = NULL) {
-    assert(Inspector::assertAll(function ($key) {
-      return static::validKey($key);
-    }, array_keys($links)));
-    assert(Inspector::assertAll(function ($link) {
-      return $link instanceof Link || is_array($link) && Inspector::assertAllObjects($link, Link::class);
-    }, $links));
+    assert(Inspector::assertAll(fn($key) => static::validKey($key), array_keys($links)));
+    assert(Inspector::assertAll(fn($link) => $link instanceof Link || is_array($link) && Inspector::assertAllObjects($link, Link::class), $links));
     assert(is_null($context) || Inspector::assertAllObjects([$context], JsonApiDocumentTopLevel::class, ResourceObject::class, Relationship::class));
     ksort($links);
-    $this->links = array_map(function ($link) {
-      return is_array($link) ? $link : [$link];
-    }, $links);
+    $this->links = array_map(fn(\Drupal\jsonapi\JsonApiResource\Link $link) => is_array($link) ? $link : [$link], $links);
     $this->context = $context;
   }
 
@@ -86,7 +80,7 @@ final class LinkCollection implements \IteratorAggregate {
    *   A new LinkCollection with the given link inserted or merged with the
    *   current set of links.
    */
-  public function withLink($key, Link $new_link) {
+  public function withLink($key, Link $new_link): static {
     assert(static::validKey($key));
     $merged = $this->links;
     if (isset($merged[$key])) {
@@ -110,7 +104,7 @@ final class LinkCollection implements \IteratorAggregate {
    * @return bool
    *   TRUE if a link with the given key exist, FALSE otherwise.
    */
-  public function hasLinkWithKey($key) {
+  public function hasLinkWithKey($key): bool {
     return array_key_exists($key, $this->links);
   }
 
@@ -123,7 +117,7 @@ final class LinkCollection implements \IteratorAggregate {
    * @return static
    *   A new LinkCollection with the given context.
    */
-  public function withContext($context) {
+  public function withContext($context): static {
     return new static($this->links, $context);
   }
 
@@ -151,9 +145,9 @@ final class LinkCollection implements \IteratorAggregate {
    * @return \Drupal\jsonapi\JsonApiResource\LinkCollection
    *   A new, filtered LinkCollection.
    */
-  public function filter(callable $f) {
+  public function filter(callable $f): \Drupal\jsonapi\JsonApiResource\LinkCollection {
     $links = iterator_to_array($this);
-    $filtered = array_reduce(array_keys($links), function ($filtered, $key) use ($links, $f) {
+    $filtered = array_reduce(array_keys($links), function (array $filtered, string $key) use ($links, $f): array {
       if ($f($key, $links[$key], $this->context)) {
         $filtered[$key] = $links[$key];
       }
@@ -177,14 +171,10 @@ final class LinkCollection implements \IteratorAggregate {
     assert($a->getContext() === $b->getContext());
     $merged = new LinkCollection([], $a->getContext());
     foreach ($a as $key => $links) {
-      $merged = array_reduce($links, function (self $merged, Link $link) use ($key) {
-        return $merged->withLink($key, $link);
-      }, $merged);
+      $merged = array_reduce($links, fn(self $merged, Link $link) => $merged->withLink($key, $link), $merged);
     }
     foreach ($b as $key => $links) {
-      $merged = array_reduce($links, function (self $merged, Link $link) use ($key) {
-        return $merged->withLink($key, $link);
-      }, $merged);
+      $merged = array_reduce($links, fn(self $merged, Link $link) => $merged->withLink($key, $link), $merged);
     }
     return $merged;
   }
@@ -198,7 +188,7 @@ final class LinkCollection implements \IteratorAggregate {
    * @return bool
    *   TRUE if the key is valid, FALSE otherwise.
    */
-  protected static function validKey($key) {
+  protected static function validKey($key): bool {
     return is_string($key) && !is_numeric($key) && !str_contains($key, ':');
   }
 

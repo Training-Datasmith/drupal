@@ -21,13 +21,6 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
   use RedirectDestinationTrait;
 
   /**
-   * The entity storage class.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $storage;
-
-  /**
    * The entity type ID.
    *
    * @var string
@@ -36,10 +29,8 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
 
   /**
    * Information about the entity type.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
    */
-  protected $entityType;
+  protected \Drupal\Core\Entity\EntityTypeInterface $entityType;
 
   /**
    * The number of entities to list per page, or FALSE to list all entities.
@@ -62,7 +53,7 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id())
@@ -77,9 +68,8 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Core\Entity\EntityStorageInterface $storage) {
     $this->entityTypeId = $entity_type->id();
-    $this->storage = $storage;
     $this->entityType = $entity_type;
   }
 
@@ -135,7 +125,7 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
     $operations = $this->getDefaultOperations($entity, $cacheability);
     $operations += $this->moduleHandler()->invokeAll('entity_operation', [$entity, $cacheability]);
     $this->moduleHandler->alter('entity_operation', $operations, $entity, $cacheability);
-    uasort($operations, '\Drupal\Component\Utility\SortArray::sortByWeightElement');
+    uasort($operations, \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
 
     return $operations;
   }
@@ -157,7 +147,7 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
    *   The array structure is identical to the return value of
    *   self::getOperations().
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = [];
@@ -271,7 +261,7 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
    *
    * @see \Drupal\Core\Entity\EntityListBuilder::buildRow()
    */
-  public function buildOperations(EntityInterface $entity) {
+  public function buildOperations(EntityInterface $entity): array {
     $cacheability = new CacheableMetadata();
     $build = [
       '#type' => 'operations',
@@ -292,7 +282,7 @@ class EntityListBuilder extends EntityHandlerBase implements EntityListBuilderIn
    *
    * @todo Add a link to add a new item to the #empty text.
    */
-  public function render() {
+  public function render(): array {
     $build['table'] = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),

@@ -79,7 +79,7 @@ class TimestampFormatter extends FormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -283,8 +283,9 @@ class TimestampFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#theme': 'time', '#attributes': array{datetime: mixed, title?: mixed, data-drupal-time-diff?: mixed}, '#text': mixed, '#cache': array{contexts: array{'timezone'}}, '#attached'?: array{library: non-empty-list<'core/drupal.time-diff'>}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     $date_format = $this->getSetting('date_format');

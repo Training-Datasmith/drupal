@@ -31,7 +31,7 @@ class Result extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $item_list = [
       '#theme' => 'item_list',
@@ -59,16 +59,17 @@ class Result extends AreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
-    if (str_contains($this->options['content'], '@total')) {
+  public function query(): void {
+    if (str_contains((string) $this->options['content'], '@total')) {
       $this->view->get_total_rows = TRUE;
     }
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function render($empty = FALSE) {
+  public function render($empty = FALSE): array {
     // Must have options and does not work on summaries.
     if (!isset($this->options['content']) || $this->view->style_plugin instanceof DefaultSummary) {
       return [];

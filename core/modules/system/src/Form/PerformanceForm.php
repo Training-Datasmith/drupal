@@ -20,62 +20,29 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class PerformanceForm extends ConfigFormBase {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The CSS asset collection optimizer service.
-   *
-   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface
-   */
-  protected $cssCollectionOptimizer;
-
-  /**
-   * The JavaScript asset collection optimizer service.
-   *
-   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface
-   */
-  protected $jsCollectionOptimizer;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a PerformanceForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
-   * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $css_collection_optimizer
+   * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $cssCollectionOptimizer
    *   The CSS asset collection optimizer service.
-   * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $js_collection_optimizer
+   * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $jsCollectionOptimizer
    *   The JavaScript asset collection optimizer service.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, DateFormatterInterface $date_formatter, AssetCollectionOptimizerInterface $css_collection_optimizer, AssetCollectionOptimizerInterface $js_collection_optimizer, ModuleHandlerInterface $module_handler) {
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\Asset\AssetCollectionOptimizerInterface $cssCollectionOptimizer, protected \Drupal\Core\Asset\AssetCollectionOptimizerInterface $jsCollectionOptimizer, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler) {
     parent::__construct($config_factory, $typedConfigManager);
-
-    $this->dateFormatter = $date_formatter;
-    $this->cssCollectionOptimizer = $css_collection_optimizer;
-    $this->jsCollectionOptimizer = $js_collection_optimizer;
-    $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -89,14 +56,14 @@ class PerformanceForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_performance_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['system.performance'];
   }
 
@@ -114,7 +81,7 @@ class PerformanceForm extends ConfigFormBase {
     // Identical options to the ones for block caching.
     // @see \Drupal\Core\Block\BlockBase::buildConfigurationForm()
     $period = [0, 60, 180, 300, 600, 900, 1800, 2700, 3600, 10800, 21600, 32400, 43200, 86400];
-    $period = array_map([$this->dateFormatter, 'formatInterval'], array_combine($period, $period));
+    $period = array_map($this->dateFormatter->formatInterval(...), array_combine($period, $period));
     $period[0] = '<' . $this->t('no caching') . '>';
     $form['caching']['page_cache_maximum_age'] = [
       '#type' => 'select',
@@ -162,7 +129,7 @@ class PerformanceForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->cssCollectionOptimizer->deleteAll();
     $this->jsCollectionOptimizer->deleteAll();
 

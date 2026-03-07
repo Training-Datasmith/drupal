@@ -113,29 +113,17 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
   ];
 
   /**
-   * The bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $bundleInfoService;
-
-  /**
-   * The parent form selector service.
-   *
-   * @var \Drupal\Core\Menu\MenuParentFormSelectorInterface
-   */
-  protected $parentFormSelector;
-
-  /**
    * Constructs a WizardPluginBase object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeBundleInfoInterface $bundle_info_service, MenuParentFormSelectorInterface $parent_form_selector) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The bundle info service.
+   */
+  protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfoService, /**
+   * The parent form selector service.
+   */
+  protected \Drupal\Core\Menu\MenuParentFormSelectorInterface $parentFormSelector) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->bundleInfoService = $bundle_info_service;
     $this->base_table = $this->definition['base_table'];
-
-    $this->parentFormSelector = $parent_form_selector;
 
     $entity_types = \Drupal::entityTypeManager()->getDefinitions();
     foreach ($entity_types as $entity_type_id => $entity_type) {
@@ -521,7 +509,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
    *   feed it back into $element['#default_value'] so that the form will be
    *   rendered with the correct value selected.
    */
-  public static function getSelected(FormStateInterface $form_state, $parents, $default_value, $element) {
+  public static function getSelected(FormStateInterface $form_state, array $parents, $default_value, array $element) {
     // For now, don't trust this to work on anything but a #select element.
     if (!isset($element['#type']) || $element['#type'] != 'select' || !isset($element['#options'])) {
       return $default_value;
@@ -620,7 +608,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
    * By default, this adds "of type" and "tagged with" filters (when they are
    * available).
    */
-  protected function buildFilters(&$form, FormStateInterface $form_state) {
+  protected function buildFilters(array &$form, FormStateInterface $form_state) {
     \Drupal::moduleHandler()->loadInclude('views_ui', 'inc', 'admin');
 
     $bundles = isset($this->entityTypeId) ? $this->bundleInfoService->getBundleInfo($this->entityTypeId) : [];
@@ -651,7 +639,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
    *
    * By default, this adds a "sorted by [date]" filter (when it is available).
    */
-  protected function buildSorts(&$form, FormStateInterface $form_state) {
+  protected function buildSorts(array &$form, FormStateInterface $form_state) {
     $sorts = [
       'none' => $this->t('Unsorted'),
     ];
@@ -668,14 +656,12 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
     }
 
     // If there is no sorts option available continue.
-    if (!empty($sorts)) {
-      $form['displays']['show']['sort'] = [
-        '#type' => 'select',
-        '#title' => $this->t('sorted by'),
-        '#options' => $sorts,
-        '#default_value' => isset($created_column) ? $created_column . ':DESC' : 'none',
-      ];
-    }
+    $form['displays']['show']['sort'] = [
+      '#type' => 'select',
+      '#title' => $this->t('sorted by'),
+      '#options' => $sorts,
+      '#default_value' => isset($created_column) ? $created_column . ':DESC' : 'none',
+    ];
   }
 
   /**
@@ -763,7 +749,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
   /**
    * Adds the array of display options to the view, with appropriate overrides.
    */
-  protected function addDisplays(View $view, $display_options, $form, FormStateInterface $form_state) {
+  protected function addDisplays(View $view, array $display_options, $form, FormStateInterface $form_state) {
     // Initialize and store the view executable to get the display plugin
     // instances.
     $executable = $view->getExecutable();
@@ -858,7 +844,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
       }
     }
     else {
-      foreach ($data as $default_field => $field_data) {
+      foreach ($data as $field_data) {
         if (isset($field_data['field']['id'])) {
           break;
         }
@@ -893,7 +879,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
    *   An array of filter arrays keyed by ID. A sort array contains the options
    *   accepted by a filter handler.
    */
-  protected function defaultDisplayFilters($form, FormStateInterface $form_state) {
+  protected function defaultDisplayFilters(array $form, FormStateInterface $form_state) {
     $filters = [];
 
     // Add any filters provided by the plugin.
@@ -935,8 +921,8 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
       }
       else {
         foreach ($fields as $field_name => $value) {
-          if ($pos = strpos($field_name, '.' . $bundle_key)) {
-            $table = substr($field_name, 0, $pos);
+          if ($pos = strpos((string) $field_name, '.' . $bundle_key)) {
+            $table = substr((string) $field_name, 0, $pos);
             break;
           }
         }
@@ -951,7 +937,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
         $handler = $table_data[$bundle_key]['filter']['id'];
         $handler_definition = \Drupal::service('plugin.manager.views.filter')
           ->getDefinition($handler);
-        if ($handler == 'in_operator' || is_subclass_of($handler_definition['class'], 'Drupal\\views\\Plugin\\views\\filter\\InOperator')) {
+        if ($handler == 'in_operator' || is_subclass_of($handler_definition['class'], \Drupal\views\Plugin\views\filter\InOperator::class)) {
           $value = [$type => $type];
         }
         // Otherwise, use just a single value.
@@ -1021,7 +1007,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
     // Don't add a sort if there is no form value or the user set the sort to
     // 'none'.
     if (($sort_type = $form_state->getValue(['show', 'sort'])) && $sort_type != 'none') {
-      [$column, $sort] = explode(':', $sort_type);
+      [$column, $sort] = explode(':', (string) $sort_type);
       // Column either be a column-name or the table-column-name.
       $column = explode('-', $column);
       if (count($column) > 1) {
@@ -1095,7 +1081,7 @@ abstract class WizardPluginBase extends PluginBase implements WizardInterface {
     if (!empty($page['link'])) {
       $display_options['menu']['type'] = 'normal';
       $display_options['menu']['title'] = $page['link_properties']['title'];
-      [$display_options['menu']['menu_name'], $display_options['menu']['parent']] = explode(':', $page['link_properties']['parent'], 2);
+      [$display_options['menu']['menu_name'], $display_options['menu']['parent']] = explode(':', (string) $page['link_properties']['parent'], 2);
     }
     return $display_options;
   }

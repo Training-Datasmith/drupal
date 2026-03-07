@@ -21,7 +21,7 @@ class RenderContext extends \SplStack {
    *   frame for this element will be updated with the bubbleable rendering
    *   metadata of this element.
    */
-  public function update(&$element) {
+  public function update(array &$element): void {
     // The latest frame represents the bubbleable metadata for the subtree.
     $frame = $this->pop();
     // Update the frame, but also update the current element, to ensure it
@@ -38,7 +38,7 @@ class RenderContext extends \SplStack {
    * must be bubbled, to merge its rendering metadata with that of the parent
    * element.
    */
-  public function bubble() {
+  public function bubble(): void {
     // If there's only one frame on the stack, then this is the root call, and
     // we can't bubble up further. ::renderRoot() will reset the stack, but we
     // must not reset it here to allow users of ::executeInRenderContext() to

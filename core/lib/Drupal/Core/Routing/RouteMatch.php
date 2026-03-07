@@ -13,13 +13,6 @@ use Symfony\Component\Routing\Route;
 class RouteMatch implements RouteMatchInterface {
 
   /**
-   * The route name.
-   *
-   * @var string
-   */
-  protected $routeName;
-
-  /**
    * The route.
    *
    * @var \Symfony\Component\Routing\Route
@@ -43,7 +36,7 @@ class RouteMatch implements RouteMatchInterface {
   /**
    * Constructs a RouteMatch object.
    *
-   * @param string $route_name
+   * @param string $routeName
    *   The name of the route.
    * @param \Symfony\Component\Routing\Route $route
    *   The route.
@@ -52,8 +45,10 @@ class RouteMatch implements RouteMatchInterface {
    * @param array $raw_parameters
    *   The raw $parameters array.
    */
-  public function __construct($route_name, Route $route, array $parameters = [], array $raw_parameters = []) {
-    $this->routeName = $route_name;
+  public function __construct(/**
+   * The route name.
+   */
+  protected $routeName, Route $route, array $parameters = [], array $raw_parameters = []) {
     $this->route = $route;
 
     // Pre-filter parameters.
@@ -75,7 +70,7 @@ class RouteMatch implements RouteMatchInterface {
    *   A new NullRouteMatch object otherwise (e.g., on a 404 page or when
    *   invoked prior to routing).
    */
-  public static function createFromRequest(Request $request) {
+  public static function createFromRequest(Request $request): self|\Drupal\Core\Routing\NullRouteMatch {
     if ($request->attributes->get(RouteObjectInterface::ROUTE_OBJECT)) {
       $raw_variables = [];
       if ($raw = $request->attributes->get('_raw_variables')) {
@@ -87,9 +82,7 @@ class RouteMatch implements RouteMatchInterface {
         $request->attributes->all(),
         $raw_variables);
     }
-    else {
-      return new NullRouteMatch();
-    }
+    return new NullRouteMatch();
   }
 
   /**
@@ -140,7 +133,7 @@ class RouteMatch implements RouteMatchInterface {
    * @return array
    *   Route parameter names as both the keys and values.
    */
-  protected function getParameterNames() {
+  protected function getParameterNames(): array {
     $names = [];
     if ($route = $this->getRouteObject()) {
       // Variables defined in path and host patterns are route parameters.
@@ -149,7 +142,7 @@ class RouteMatch implements RouteMatchInterface {
       // Route defaults that do not start with a leading "_" are also
       // parameters, even if they are not included in path or host patterns.
       foreach ($route->getDefaults() as $name => $value) {
-        if (!isset($names[$name]) && !str_starts_with($name, '_')) {
+        if (!isset($names[$name]) && !str_starts_with((string) $name, '_')) {
           $names[$name] = $name;
         }
       }

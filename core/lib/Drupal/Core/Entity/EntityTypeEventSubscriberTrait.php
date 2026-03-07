@@ -21,7 +21,7 @@ trait EntityTypeEventSubscriberTrait {
    *
    * @see \Symfony\Component\EventDispatcher\EventSubscriberInterface::getSubscribedEvents()
    */
-  public static function getEntityTypeEvents() {
+  public static function getEntityTypeEvents(): array {
     $event = ['onEntityTypeEvent', 100];
     $events[EntityTypeEvents::CREATE][] = $event;
     $events[EntityTypeEvents::UPDATE][] = $event;
@@ -37,7 +37,7 @@ trait EntityTypeEventSubscriberTrait {
    * @param string $event_name
    *   The event name.
    */
-  public function onEntityTypeEvent(EntityTypeEvent $event, $event_name) {
+  public function onEntityTypeEvent(EntityTypeEvent $event, $event_name): void {
     switch ($event_name) {
       case EntityTypeEvents::CREATE:
         $this->onEntityTypeCreate($event->getEntityType());

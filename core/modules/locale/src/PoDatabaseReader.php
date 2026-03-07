@@ -22,10 +22,8 @@ class PoDatabaseReader implements PoReaderInterface {
    *
    * The three options define three distinct sets of strings, which combined
    * cover all strings.
-   *
-   * @var array
    */
-  private $options;
+  private array $options;
 
   /**
    * Language code of the language being read from the database.
@@ -58,7 +56,7 @@ class PoDatabaseReader implements PoReaderInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLangcode($langcode) {
+  public function setLangcode($langcode): void {
     $this->langcode = $langcode;
   }
 
@@ -72,7 +70,7 @@ class PoDatabaseReader implements PoReaderInterface {
   /**
    * Set the options for the current reader.
    */
-  public function setOptions(array $options) {
+  public function setOptions(array $options): void {
     $options += [
       'customized' => FALSE,
       'not_customized' => FALSE,
@@ -84,7 +82,7 @@ class PoDatabaseReader implements PoReaderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getHeader() {
+  public function getHeader(): \Drupal\Component\Gettext\PoHeader {
     return new PoHeader($this->getLangcode());
   }
 
@@ -94,7 +92,7 @@ class PoDatabaseReader implements PoReaderInterface {
    * @throws \Exception
    *   Always, because you cannot set the PO header of a reader.
    */
-  public function setHeader(PoHeader $header) {
+  public function setHeader(PoHeader $header): never {
     throw new \Exception('You cannot set the PO header in a reader.');
   }
 
@@ -140,16 +138,14 @@ class PoDatabaseReader implements PoReaderInterface {
       }
       return \Drupal::service('locale.storage')->getTranslations($conditions);
     }
-    else {
-      // If no language, we don't need any of the target fields.
-      return \Drupal::service('locale.storage')->getStrings($conditions);
-    }
+    // If no language, we don't need any of the target fields.
+    return \Drupal::service('locale.storage')->getStrings($conditions);
   }
 
   /**
    * Get the database result resource for the given language and options.
    */
-  private function readString() {
+  private function readString(): mixed {
     if (!isset($this->result)) {
       $this->result = $this->loadStrings();
     }

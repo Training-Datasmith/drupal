@@ -58,7 +58,7 @@ class EntityReference extends DataReferenceBase {
    * @return bool
    *   TRUE if the entity is new, FALSE otherwise.
    */
-  public function isTargetNew() {
+  public function isTargetNew(): bool {
     // If only an ID is given, the reference cannot be a new entity.
     return !isset($this->id) && isset($this->target) && $this->target->getValue()->isNew();
   }
@@ -82,17 +82,17 @@ class EntityReference extends DataReferenceBase {
    */
   public function getTargetIdentifier() {
     if (isset($this->id)) {
-      return $this->id;
+        return $this->id;
     }
-    elseif ($entity = $this->getValue()) {
-      return $entity->id();
+    if ($entity = $this->getValue()) {
+        return $entity->id();
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     unset($this->target);
     unset($this->id);
 

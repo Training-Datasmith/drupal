@@ -36,8 +36,7 @@ class UpdateHooks {
           ':update-report' => Url::fromRoute('update.status')->toString(),
           ':update-settings' => Url::fromRoute('update.settings')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'update.status':
         return '<p>' . $this->t('Here you can find information about available updates for your installed modules and themes. Note that each module or theme is part of a "project", which may or may not have the same name, and might include multiple modules or themes within it.') . '</p>';
@@ -196,7 +195,7 @@ class UpdateHooks {
    * @see \Drupal\update\UpdateManagerInterface
    */
   #[Hook('mail')]
-  public function mail($key, &$message, $params): void {
+  public function mail($key, array &$message, $params): void {
     $langcode = $message['langcode'];
     $language = \Drupal::languageManager()->getLanguage($langcode);
     $message['subject'] .= $this->t('New release(s) available for @site_name', ['@site_name' => \Drupal::config('system.site')->get('name')], ['langcode' => $langcode]);

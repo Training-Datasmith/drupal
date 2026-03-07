@@ -20,7 +20,7 @@ class CastedIntFieldJoin extends JoinPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildJoin($select_query, $table, $view_query) {
+  public function buildJoin($select_query, $table, $view_query): void {
     if (empty($this->configuration['table formula'])) {
       $right_table = $this->table;
     }

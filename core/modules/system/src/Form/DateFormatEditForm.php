@@ -39,7 +39,7 @@ class DateFormatEditForm extends DateFormatFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('date.formatter'),
       $container->get('entity_type.manager')->getStorage('date_format'),
@@ -50,7 +50,7 @@ class DateFormatEditForm extends DateFormatFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $now = $this->t('Displayed as %date', ['%date' => $this->dateFormatter->format($this->time->getRequestTime(), $this->entity->id())]);

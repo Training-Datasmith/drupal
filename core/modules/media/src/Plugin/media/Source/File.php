@@ -48,7 +48,7 @@ class File extends MediaSourceBase {
   /**
    * {@inheritdoc}
    */
-  public function getMetadataAttributes() {
+  public function getMetadataAttributes(): array {
     return [
       static::METADATA_ATTRIBUTE_NAME => $this->t('Name'),
       static::METADATA_ATTRIBUTE_MIME => $this->t('MIME type'),
@@ -104,7 +104,7 @@ class File extends MediaSourceBase {
    * @return string
    *   File URI of the thumbnail image or NULL if there is no specific icon.
    */
-  protected function getThumbnail(FileInterface $file) {
+  protected function getThumbnail(FileInterface $file): ?string {
     $icon_base = $this->configFactory->get('media.settings')->get('icon_base_uri');
 
     // We try to automatically use the most specific icon present in the
@@ -112,7 +112,7 @@ class File extends MediaSourceBase {
     // icon file named "pdf.png" is present, it will be used if the file
     // matches this MIME type.
     $mimetype = $file->getMimeType();
-    $mimetype = explode('/', $mimetype);
+    $mimetype = explode('/', (string) $mimetype);
 
     $icon_names = [
       $mimetype[0] . '--' . $mimetype[1],

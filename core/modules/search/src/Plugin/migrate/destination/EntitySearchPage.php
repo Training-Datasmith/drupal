@@ -23,13 +23,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntitySearchPage extends EntityConfigBase {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a new EntitySearchPage.
    *
    * @param array $configuration
@@ -48,18 +41,17 @@ class EntitySearchPage extends EntityConfigBase {
    *   The language manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, LanguageManagerInterface $language_manager, ConfigFactoryInterface $config_factory, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles, $language_manager, $config_factory);
-    $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     $entity_type_id = static::getEntityTypeId($plugin_id);
     return new static(
       $configuration,
@@ -82,7 +74,7 @@ class EntitySearchPage extends EntityConfigBase {
    *
    * @see https://www.drupal.org/node/3533565
    */
-  public function import(Row $row, array $old_destination_id_values = []) {
+  public function import(Row $row, array $old_destination_id_values = []): array {
     @trigger_error(__METHOD__ . '() is deprecated in drupal:11.3.0 and is removed from drupal:12.0.0. There is no replacement. See https://www.drupal.org/node/3533565', E_USER_DEPRECATED);
     // The search page settings may be for a module not enabled on the
     // destination so make sure it is enabled for updating search page settings.
@@ -96,7 +88,7 @@ class EntitySearchPage extends EntityConfigBase {
   /**
    * {@inheritdoc}
    */
-  protected function updateEntity(EntityInterface $entity, Row $row) {
+  protected function updateEntity(EntityInterface $entity, Row $row): \Drupal\Core\Entity\EntityInterface {
     parent::updateEntity($entity, $row);
     $entity->setPlugin($row->getDestinationProperty('plugin'));
     // The user_search plugin does not have a setConfiguration() method.

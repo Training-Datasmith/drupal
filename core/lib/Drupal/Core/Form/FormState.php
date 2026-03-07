@@ -141,8 +141,6 @@ class FormState implements FormStateInterface {
 
   /**
    * Used to ignore destination when redirecting.
-   *
-   * @var bool
    */
   protected bool $ignoreDestination = FALSE;
 
@@ -499,7 +497,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFormState(array $form_state_additions) {
+  public function setFormState(array $form_state_additions): static {
     foreach ($form_state_additions as $key => $value) {
       if (property_exists($this, $key)) {
         $this->{$key} = $value;
@@ -514,7 +512,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAlwaysProcess($always_process = TRUE) {
+  public function setAlwaysProcess($always_process = TRUE): static {
     $this->always_process = (bool) $always_process;
     return $this;
   }
@@ -529,7 +527,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setButtons(array $buttons) {
+  public function setButtons(array $buttons): static {
     $this->buttons = $buttons;
     return $this;
   }
@@ -544,7 +542,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCached($cache = TRUE) {
+  public function setCached($cache = TRUE): static {
     // Persisting $form_state is a side-effect disallowed during a "safe" HTTP
     // method.
     if ($cache && $this->isRequestMethodSafe()) {
@@ -558,14 +556,14 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function isCached() {
+  public function isCached(): bool {
     return empty($this->no_cache) && $this->cache;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function disableCache() {
+  public function disableCache(): static {
     $this->no_cache = TRUE;
     return $this;
   }
@@ -573,7 +571,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setExecuted() {
+  public function setExecuted(): static {
     $this->executed = TRUE;
     return $this;
   }
@@ -588,7 +586,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setGroups(array $groups) {
+  public function setGroups(array $groups): static {
     $this->groups = $groups;
     return $this;
   }
@@ -603,7 +601,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setHasFileElement($has_file_element = TRUE) {
+  public function setHasFileElement($has_file_element = TRUE): static {
     $this->has_file_element = (bool) $has_file_element;
     return $this;
   }
@@ -618,7 +616,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLimitValidationErrors($limit_validation_errors) {
+  public function setLimitValidationErrors($limit_validation_errors): static {
     $this->limit_validation_errors = $limit_validation_errors;
     return $this;
   }
@@ -633,7 +631,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMethod($method) {
+  public function setMethod($method): static {
     $this->method = strtoupper($method);
     return $this;
   }
@@ -641,14 +639,14 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function isMethodType($method_type) {
+  public function isMethodType($method_type): bool {
     return $this->method === strtoupper($method_type);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setRequestMethod($method) {
+  public function setRequestMethod($method): static {
     $this->requestMethod = strtoupper($method);
     return $this;
   }
@@ -666,14 +664,14 @@ class FormState implements FormStateInterface {
    * @see \Symfony\Component\HttpFoundation\Request::isMethodSafe()
    * @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.1.1
    */
-  protected function isRequestMethodSafe() {
+  protected function isRequestMethodSafe(): bool {
     return in_array($this->requestMethod, ['GET', 'HEAD']);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setValidationEnforced($must_validate = TRUE) {
+  public function setValidationEnforced($must_validate = TRUE): static {
     $this->must_validate = (bool) $must_validate;
     return $this;
   }
@@ -688,7 +686,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function disableRedirect($no_redirect = TRUE) {
+  public function disableRedirect($no_redirect = TRUE): static {
     $this->no_redirect = (bool) $no_redirect;
     return $this;
   }
@@ -703,7 +701,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProcessInput($process_input = TRUE) {
+  public function setProcessInput($process_input = TRUE): static {
     $this->process_input = (bool) $process_input;
     return $this;
   }
@@ -718,7 +716,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProgrammed($programmed = TRUE) {
+  public function setProgrammed($programmed = TRUE): static {
     $this->programmed = (bool) $programmed;
     return $this;
   }
@@ -733,7 +731,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProgrammedBypassAccessCheck($programmed_bypass_access_check = TRUE) {
+  public function setProgrammedBypassAccessCheck($programmed_bypass_access_check = TRUE): static {
     $this->programmed_bypass_access_check = (bool) $programmed_bypass_access_check;
     return $this;
   }
@@ -748,7 +746,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setRebuildInfo(array $rebuild_info) {
+  public function setRebuildInfo(array $rebuild_info): static {
     $this->rebuild_info = $rebuild_info;
     return $this;
   }
@@ -763,7 +761,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function addRebuildInfo($property, $value) {
+  public function addRebuildInfo($property, $value): static {
     $rebuild_info = $this->getRebuildInfo();
     $rebuild_info[$property] = $value;
     $this->setRebuildInfo($rebuild_info);
@@ -773,7 +771,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setStorage(array $storage) {
+  public function setStorage(array $storage): static {
     $this->storage = $storage;
     return $this;
   }
@@ -788,7 +786,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSubmitHandlers(array $submit_handlers) {
+  public function setSubmitHandlers(array $submit_handlers): static {
     $this->submit_handlers = $submit_handlers;
     return $this;
   }
@@ -803,7 +801,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSubmitted() {
+  public function setSubmitted(): static {
     $this->submitted = TRUE;
     return $this;
   }
@@ -818,7 +816,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTemporary(array $temporary) {
+  public function setTemporary(array $temporary): static {
     $this->temporary = $temporary;
     return $this;
   }
@@ -841,7 +839,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTemporaryValue($key, $value) {
+  public function setTemporaryValue($key, $value): static {
     NestedArray::setValue($this->temporary, (array) $key, $value, TRUE);
     return $this;
   }
@@ -849,7 +847,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasTemporaryValue($key) {
+  public function hasTemporaryValue($key): ?bool {
     $exists = NULL;
     NestedArray::getValue($this->temporary, (array) $key, $exists);
     return $exists;
@@ -858,7 +856,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTriggeringElement($triggering_element) {
+  public function setTriggeringElement($triggering_element): static {
     $this->triggering_element = $triggering_element;
     return $this;
   }
@@ -873,7 +871,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setValidateHandlers(array $validate_handlers) {
+  public function setValidateHandlers(array $validate_handlers): static {
     $this->validate_handlers = $validate_handlers;
     return $this;
   }
@@ -888,7 +886,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setValidationComplete($validation_complete = TRUE) {
+  public function setValidationComplete($validation_complete = TRUE): static {
     $this->validation_complete = (bool) $validation_complete;
     return $this;
   }
@@ -926,7 +924,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheableArray() {
+  public function getCacheableArray(): array {
     return [
       'build_info' => $this->getBuildInfo(),
       'response' => $this->getResponse(),
@@ -945,7 +943,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCompleteForm(array &$complete_form) {
+  public function setCompleteForm(array &$complete_form): static {
     $this->complete_form = &$complete_form;
     return $this;
   }
@@ -968,7 +966,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($property, $value) {
+  public function set($property, $value): static {
     NestedArray::setValue($this->storage, (array) $property, $value, TRUE);
     return $this;
   }
@@ -976,7 +974,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function has($property) {
+  public function has($property): ?bool {
     $exists = NULL;
     NestedArray::getValue($this->storage, (array) $property, $exists);
     return $exists;
@@ -985,7 +983,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setBuildInfo(array $build_info) {
+  public function setBuildInfo(array $build_info): static {
     $this->build_info = $build_info;
     return $this;
   }
@@ -1000,7 +998,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function addBuildInfo($property, $value) {
+  public function addBuildInfo($property, $value): static {
     $build_info = $this->getBuildInfo();
     $build_info[$property] = $value;
     $this->setBuildInfo($build_info);
@@ -1017,7 +1015,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setUserInput(array $user_input) {
+  public function setUserInput(array $user_input): static {
     $this->input = $user_input;
     return $this;
   }
@@ -1032,7 +1030,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setResponse(Response $response) {
+  public function setResponse(Response $response): static {
     $this->response = $response;
     return $this;
   }
@@ -1055,7 +1053,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setRedirectUrl(Url $url) {
+  public function setRedirectUrl(Url $url): static {
     $this->redirect = $url;
     return $this;
   }
@@ -1084,7 +1082,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setIgnoreDestination(bool $status = TRUE) {
+  public function setIgnoreDestination(bool $status = TRUE): static {
     $this->ignoreDestination = $status;
     return $this;
   }
@@ -1116,7 +1114,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setErrorByName($name, $message = '') {
+  public function setErrorByName($name, $message = ''): static {
     if ($this->isValidationComplete()) {
       throw new \LogicException('Form errors cannot be set after form validation has finished.');
     }
@@ -1135,7 +1133,7 @@ class FormState implements FormStateInterface {
           // valid, so errors for this element must be recorded. As the exploded
           // array will all be strings, we need to cast every value of the
           // section array to string.
-          if (array_slice(explode('][', $name), 0, count($section)) === array_map('strval', $section)) {
+          if (array_slice(explode('][', $name), 0, count($section)) === array_map(strval(...), $section)) {
             $record = TRUE;
             break;
           }
@@ -1154,7 +1152,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setError(array &$element, $message = '') {
+  public function setError(array &$element, $message = ''): static {
     $this->setErrorByName(implode('][', $element['#parents']), $message);
     return $this;
   }
@@ -1162,7 +1160,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearErrors() {
+  public function clearErrors(): void {
     $this->errors = [];
     static::setAnyErrors(FALSE);
   }
@@ -1193,7 +1191,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setRebuild($rebuild = TRUE) {
+  public function setRebuild($rebuild = TRUE): static {
     $this->rebuild = $rebuild;
     return $this;
   }
@@ -1210,7 +1208,7 @@ class FormState implements FormStateInterface {
    */
   public function prepareCallback($callback) {
     if (is_string($callback) && str_starts_with($callback, '::')) {
-      $callback = [$this->getFormObject(), substr($callback, 2)];
+      return [$this->getFormObject(), substr($callback, 2)];
     }
     return $callback;
   }
@@ -1218,7 +1216,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFormObject(FormInterface $form_object) {
+  public function setFormObject(FormInterface $form_object): static {
     $this->addBuildInfo('callback_object', $form_object);
     return $this;
   }
@@ -1240,7 +1238,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCleanValueKeys(array $cleanValueKeys) {
+  public function setCleanValueKeys(array $cleanValueKeys): static {
     $this->cleanValueKeys = $cleanValueKeys;
     return $this;
   }
@@ -1248,7 +1246,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function addCleanValueKey($cleanValueKey) {
+  public function addCleanValueKey($cleanValueKey): static {
     $keys = $this->getCleanValueKeys();
     $this->setCleanValueKeys(array_merge((array) $keys, [$cleanValueKey]));
     return $this;
@@ -1257,7 +1255,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function cleanValues() {
+  public function cleanValues(): static {
     foreach ($this->getCleanValueKeys() as $value) {
       $this->unsetValue($value);
     }
@@ -1303,7 +1301,7 @@ class FormState implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function setInvalidToken($invalid_token) {
+  public function setInvalidToken($invalid_token): static {
     $this->invalidToken = (bool) $invalid_token;
     return $this;
   }

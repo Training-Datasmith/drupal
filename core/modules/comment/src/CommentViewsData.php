@@ -197,8 +197,14 @@ class CommentViewsData extends EntityViewsData {
 
     // Provide a relationship for each entity type except comment.
     foreach ($entities_types as $type => $entity_type) {
-      if ($type == 'comment' || !$entity_type->entityClassImplements(ContentEntityInterface::class) || !$entity_type->getBaseTable()) {
-        continue;
+      if ($type == 'comment') {
+          continue;
+      }
+      if (!$entity_type->entityClassImplements(ContentEntityInterface::class)) {
+          continue;
+      }
+      if (!$entity_type->getBaseTable()) {
+          continue;
       }
       if (\Drupal::service('comment.manager')->getFields($type)) {
         $data['comment_field_data'][$type] = [
@@ -239,8 +245,14 @@ class CommentViewsData extends EntityViewsData {
 
     // Provide a relationship for each entity type except comment.
     foreach ($entities_types as $type => $entity_type) {
-      if ($type == 'comment' || !$entity_type->entityClassImplements(ContentEntityInterface::class) || !$entity_type->getBaseTable()) {
-        continue;
+      if ($type == 'comment') {
+          continue;
+      }
+      if (!$entity_type->entityClassImplements(ContentEntityInterface::class)) {
+          continue;
+      }
+      if (!$entity_type->getBaseTable()) {
+          continue;
       }
       // This relationship does not use the 'field id' column, if the entity has
       // multiple comment-fields, then this might introduce duplicates, in which

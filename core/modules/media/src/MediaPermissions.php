@@ -16,26 +16,19 @@ class MediaPermissions implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * MediaPermissions constructor.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static($container->get('entity_type.manager'));
   }
 
@@ -47,10 +40,10 @@ class MediaPermissions implements ContainerInjectionInterface {
    *
    * @see \Drupal\user\PermissionHandlerInterface::getPermissions()
    */
-  public function mediaTypePermissions() {
+  public function mediaTypePermissions(): array {
     // Generate media permissions for all media types.
     $media_types = $this->entityTypeManager->getStorage('media_type')->loadMultiple();
-    return $this->generatePermissions($media_types, [$this, 'buildPermissions']);
+    return $this->generatePermissions($media_types, $this->buildPermissions(...));
   }
 
   /**
@@ -62,7 +55,7 @@ class MediaPermissions implements ContainerInjectionInterface {
    * @return array
    *   An associative array of permission names and descriptions.
    */
-  protected function buildPermissions(MediaTypeInterface $type) {
+  protected function buildPermissions(MediaTypeInterface $type): array {
     $type_id = $type->id();
     $type_params = ['%type_name' => $type->label()];
 

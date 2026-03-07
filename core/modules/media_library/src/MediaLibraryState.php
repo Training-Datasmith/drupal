@@ -72,14 +72,13 @@ class MediaLibraryState extends ParameterBag implements CacheableDependencyInter
    *   A state object.
    */
   public static function create($opener_id, array $allowed_media_type_ids, $selected_type_id, $remaining_slots, array $opener_parameters = []) {
-    $state = new static([
+    return new static([
       'media_library_opener_id' => $opener_id,
       'media_library_allowed_types' => $allowed_media_type_ids,
       'media_library_selected_type' => $selected_type_id,
       'media_library_remaining' => $remaining_slots,
       'media_library_opener_parameters' => $opener_parameters,
     ]);
-    return $state;
   }
 
   /**

@@ -122,8 +122,6 @@ class Registry implements DestructableInterface {
    * List of all theme hooks.
    *
    * Used to build preprocess hooks defined in themes.
-   *
-   * @var array|null
    */
   protected ?array $themeHookList = NULL;
 
@@ -145,7 +143,7 @@ class Registry implements DestructableInterface {
    * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
    *   The theme manager.
    */
-  public function setThemeManager(ThemeManagerInterface $theme_manager) {
+  public function setThemeManager(ThemeManagerInterface $theme_manager): void {
     $this->themeManager = $theme_manager;
   }
 
@@ -220,11 +218,11 @@ class Registry implements DestructableInterface {
   protected function cacheGet(): ?array {
     $theme_name = $this->theme->getName();
     if (isset($this->registry[$theme_name])) {
-      return $this->registry[$theme_name];
+        return $this->registry[$theme_name];
     }
-    elseif ($cache = $this->cache->get('theme_registry:' . $theme_name)) {
-      $this->registry[$theme_name] = $cache->data;
-      return $this->registry[$theme_name];
+    if ($cache = $this->cache->get('theme_registry:' . $theme_name)) {
+        $this->registry[$theme_name] = $cache->data;
+        return $this->registry[$theme_name];
     }
     return NULL;
   }
@@ -328,7 +326,7 @@ class Registry implements DestructableInterface {
         $this->processExtension($cache, 'system', 'install', 'system', $this->moduleList->getPath('system'));
       }
       else {
-        $this->moduleHandler->invokeAllWith('theme', function (callable $callback, string $module) use (&$cache) {
+        $this->moduleHandler->invokeAllWith('theme', function (callable $callback, string $module) use (&$cache): void {
           $this->processExtension($cache, $module, 'module', $module, $this->moduleList->getPath($module));
         });
       }
@@ -422,7 +420,7 @@ class Registry implements DestructableInterface {
    *
    * @throws \BadFunctionCallException
    */
-  protected function processExtension(array &$cache, $name, $type, $theme, $path) {
+  protected function processExtension(array &$cache, string $name, $type, $theme, string $path) {
     $result = [];
 
     $hook_defaults = [
@@ -608,7 +606,7 @@ class Registry implements DestructableInterface {
    *   The theme registry, as documented in
    *   \Drupal\Core\Theme\Registry::processExtension().
    */
-  protected function mergePreprocessFunctions($destination_hook_name, $source_hook_name, $parent_hook, array &$cache) {
+  protected function mergePreprocessFunctions($destination_hook_name, $source_hook_name, array $parent_hook, array &$cache) {
     // If base hook exists clone of it for the preprocess function
     // without a template.
     // @see https://www.drupal.org/node/2457295
@@ -664,19 +662,21 @@ class Registry implements DestructableInterface {
       // of preprocess functions grouped by suggestion specificity if a matching
       // base hook is found.
       foreach ($grouped_functions[$first_prefix] as $candidate) {
-        if (preg_match("/^{$prefix}_preprocess_(((?:[^_]++|_(?!_))+)__.*)/", $candidate, $matches)) {
-          if (isset($cache[$matches[2]])) {
-            $level = substr_count($matches[1], '__');
-            $suggestion_level[$level][$candidate] = $matches[1];
-            $preprocess_function = $prefix . '_preprocess_' . $matches[1];
-            if (\array_key_exists($preprocess_function, $preprocess_extension_types)) {
-              $invokes[$candidate] = [
-                $preprocess_extension_types[$preprocess_function] => $prefix,
-                'hook' => 'preprocess_' . $matches[1],
-              ];
-            }
+          if (!preg_match("/^{$prefix}_preprocess_(((?:[^_]++|_(?!_))+)__.*)/", $candidate, $matches)) {
+              continue;
           }
-        }
+          if (!isset($cache[$matches[2]])) {
+              continue;
+          }
+          $level = substr_count($matches[1], '__');
+          $suggestion_level[$level][$candidate] = $matches[1];
+          $preprocess_function = $prefix . '_preprocess_' . $matches[1];
+          if (\array_key_exists($preprocess_function, $preprocess_extension_types)) {
+            $invokes[$candidate] = [
+              $preprocess_extension_types[$preprocess_function] => $prefix,
+              'hook' => 'preprocess_' . $matches[1],
+            ];
+          }
       }
     }
 
@@ -687,7 +687,7 @@ class Registry implements DestructableInterface {
     // modules or themes to have a variable process function based on a pattern
     // even if the hook does not exist.
     ksort($suggestion_level);
-    foreach ($suggestion_level as $level => $item) {
+    foreach ($suggestion_level as $item) {
       foreach ($item as $preprocessor => $hook) {
         if (isset($cache[$hook]['preprocess functions']) && !in_array($preprocessor, $cache[$hook]['preprocess functions'])) {
           // Add missing preprocessor to existing hook.
@@ -739,7 +739,7 @@ class Registry implements DestructableInterface {
    *
    * To be called when the list of enabled extensions is changed.
    */
-  public function reset() {
+  public function reset(): static {
     // Reset the runtime registry.
     foreach ($this->runtimeRegistry as $runtime_registry) {
       $runtime_registry->clear();
@@ -769,7 +769,7 @@ class Registry implements DestructableInterface {
   /**
    * {@inheritdoc}
    */
-  public function destruct() {
+  public function destruct(): void {
     foreach ($this->runtimeRegistry as $runtime_registry) {
       $runtime_registry->destruct();
     }
@@ -784,7 +784,7 @@ class Registry implements DestructableInterface {
    * @return array
    *   Functions grouped by the first prefix.
    */
-  public function getPrefixGroupedUserFunctions($prefixes = []) {
+  public function getPrefixGroupedUserFunctions($prefixes = []): array {
     $functions = get_defined_functions();
 
     // If a list of prefixes is supplied, trim down the list to those items
@@ -800,7 +800,7 @@ class Registry implements DestructableInterface {
     $grouped_functions = [];
     // Splitting user defined functions into groups by the first prefix.
     foreach ($theme_functions as $function) {
-      [$first_prefix] = explode('_', $function, 2);
+      [$first_prefix] = explode('_', (string) $function, 2);
       $grouped_functions[$first_prefix][] = $function;
     }
 
@@ -826,7 +826,7 @@ class Registry implements DestructableInterface {
     // functions so we only want to gather the ones that exist, but we do not
     // want to execute them. Callable is not used so that preprocess
     // implementations are not executed.
-    $this->moduleHandler->invokeAllWith($hook, function (callable $callable, string $module) use ($hook, &$cache, &$preprocess_functions) {
+    $this->moduleHandler->invokeAllWith($hook, function (callable $callable, string $module) use ($hook, &$cache, &$preprocess_functions): void {
       $function = $module . '_' . $hook;
       $cache[self::PREPROCESS_INVOKES][$function] = ['module' => $module, 'hook' => $hook];
       $preprocess_functions[] = $function;

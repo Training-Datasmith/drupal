@@ -23,18 +23,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   admin_label: new TranslatableMarkup('Add an item to a CKEditor 5 toolbar'),
   entity_types: ['editor'],
 )]
-final class AddItemToToolbar implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class AddItemToToolbar implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigManagerInterface $configManager,
-    private readonly CKEditor5PluginManagerInterface $pluginManager,
-    private readonly string $pluginId,
+    private ConfigManagerInterface $configManager,
+    private CKEditor5PluginManagerInterface $pluginManager,
+    private string $pluginId,
   ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get(ConfigManagerInterface::class),
       $container->get(CKEditor5PluginManagerInterface::class),

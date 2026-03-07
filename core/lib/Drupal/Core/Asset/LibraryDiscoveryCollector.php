@@ -16,36 +16,19 @@ use Drupal\Core\Theme\ThemeManagerInterface;
 class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscoveryInterface {
 
   /**
-   * The library discovery parser.
-   *
-   * @var \Drupal\Core\Asset\LibraryDiscoveryParser
-   */
-  protected $discoveryParser;
-
-  /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
    * Constructs a CacheCollector object.
    *
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend.
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend.
-   * @param \Drupal\Core\Asset\LibraryDiscoveryParser $discovery_parser
+   * @param \Drupal\Core\Asset\LibraryDiscoveryParser $discoveryParser
    *   The library discovery parser.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
    */
-  public function __construct(CacheBackendInterface $cache, LockBackendInterface $lock, LibraryDiscoveryParser $discovery_parser, ThemeManagerInterface $theme_manager) {
-    $this->themeManager = $theme_manager;
+  public function __construct(CacheBackendInterface $cache, LockBackendInterface $lock, protected \Drupal\Core\Asset\LibraryDiscoveryParser $discoveryParser, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager) {
     parent::__construct(NULL, $cache, $lock, ['library_info']);
-
-    $this->discoveryParser = $discovery_parser;
   }
 
   /**
@@ -96,7 +79,7 @@ class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscove
         else {
           // Otherwise replace with existing library definition if it exists.
           // Throw an exception if it doesn't.
-          [$replacement_extension, $replacement_name] = explode('/', $definition['override']);
+          [$replacement_extension, $replacement_name] = explode('/', (string) $definition['override']);
           $replacement_definition = $this->get($replacement_extension);
           if (isset($replacement_definition[$replacement_name])) {
             $libraries[$name] = $replacement_definition[$replacement_name];
@@ -184,7 +167,7 @@ class LibraryDiscoveryCollector extends CacheCollector implements LibraryDiscove
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): void {
     parent::reset();
     $this->cid = NULL;
   }

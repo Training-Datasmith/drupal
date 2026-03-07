@@ -18,13 +18,6 @@ namespace Drupal\Core\ProxyClass\Render {
         use \Drupal\Core\DependencyInjection\DependencySerializationTrait;
 
         /**
-         * The id of the original proxied service.
-         *
-         * @var string
-         */
-        protected $drupalProxyOriginalServiceId;
-
-        /**
          * The real proxied service, after it was lazy loaded.
          *
          * @var \Drupal\Core\Render\BareHtmlPageRenderer
@@ -43,13 +36,15 @@ namespace Drupal\Core\ProxyClass\Render {
          *
          * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
          *   The container.
-         * @param string $drupal_proxy_original_service_id
+         * @param string $drupalProxyOriginalServiceId
          *   The service ID of the original service.
          */
-        public function __construct(\Symfony\Component\DependencyInjection\ContainerInterface $container, $drupal_proxy_original_service_id)
+        public function __construct(\Symfony\Component\DependencyInjection\ContainerInterface $container, /**
+         * The id of the original proxied service.
+         */
+        protected $drupalProxyOriginalServiceId)
         {
             $this->container = $container;
-            $this->drupalProxyOriginalServiceId = $drupal_proxy_original_service_id;
         }
 
         /**
@@ -70,8 +65,8 @@ namespace Drupal\Core\ProxyClass\Render {
         /**
          * {@inheritdoc}
          */
-        public function renderBarePage(array $content, $title, $page_theme_property, array $page_additions = array (
-        ))
+        public function renderBarePage(array $content, $title, $page_theme_property, array $page_additions =  [
+        ])
         {
             return $this->lazyLoadItself()->renderBarePage($content, $title, $page_theme_property, $page_additions);
         }

@@ -14,7 +14,7 @@ class ContentTypeHeaderMatcher implements FilterInterface {
   /**
    * {@inheritdoc}
    */
-  public function filter(RouteCollection $collection, Request $request) {
+  public function filter(RouteCollection $collection, Request $request): RouteCollection {
     // The Content-type header does not make sense on GET or DELETE requests,
     // because they do not carry any content. Nothing to filter in this case.
     // Same for all other safe methods.
@@ -45,9 +45,7 @@ class ContentTypeHeaderMatcher implements FilterInterface {
     if (!$request->headers->get('Content-Type', FALSE)) {
       throw new UnsupportedMediaTypeHttpException('No "Content-Type" request header specified');
     }
-    else {
-      throw new UnsupportedMediaTypeHttpException('No route found that matches "Content-Type: ' . $request->headers->get('Content-Type') . '"');
-    }
+    throw new UnsupportedMediaTypeHttpException('No route found that matches "Content-Type: ' . $request->headers->get('Content-Type') . '"');
   }
 
 }

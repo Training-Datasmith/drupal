@@ -17,14 +17,14 @@ class LocaleSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'locale_translate_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['locale.settings'];
   }
 
@@ -110,7 +110,7 @@ class LocaleSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     if (empty($form['#translation_directory']) && $form_state->getValue('use_source') == LOCALE_TRANSLATION_USE_SOURCE_LOCAL) {
@@ -121,7 +121,7 @@ class LocaleSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Invalidate the cached translation status when the configuration setting
     // of 'use_source' changes.
     if ($form['use_source']['#default_value'] != $form_state->getValue('use_source')) {

@@ -29,23 +29,16 @@ class MimeTypeGuesser implements MimeTypeGuesserInterface {
    * @see \Drupal\Core\File\MimeType\MimeTypeGuesser::addGuesser()
    * @see \Drupal\Core\File\MimeType\MimeTypeGuesser::sortGuessers()
    */
-  protected $sortedGuessers = NULL;
-
-  /**
-   * The stream wrapper manager.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
+  protected $sortedGuessers;
 
   /**
    * Constructs a MimeTypeGuesser object.
    *
-   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $stream_wrapper_manager
+   * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
    *   The stream wrapper manager.
    */
-  public function __construct(StreamWrapperManagerInterface $stream_wrapper_manager) {
-    $this->streamWrapperManager = $stream_wrapper_manager;
+  public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager)
+  {
   }
 
   /**
@@ -86,7 +79,7 @@ class MimeTypeGuesser implements MimeTypeGuesserInterface {
    *
    * @return $this
    */
-  public function addMimeTypeGuesser(MimeTypeGuesserInterface $guesser, $priority = 0) {
+  public function addMimeTypeGuesser(MimeTypeGuesserInterface $guesser, $priority = 0): static {
     if ($guesser->isGuesserSupported()) {
       $this->guessers[$priority][] = $guesser;
       // Mark sorted guessers for rebuild.
@@ -108,7 +101,7 @@ class MimeTypeGuesser implements MimeTypeGuesserInterface {
    * @return \Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesserInterface[]
    *   A sorted array of MIME type guesser objects.
    */
-  protected function sortGuessers() {
+  protected function sortGuessers(): array {
     krsort($this->guessers);
     return array_merge(...$this->guessers);
   }

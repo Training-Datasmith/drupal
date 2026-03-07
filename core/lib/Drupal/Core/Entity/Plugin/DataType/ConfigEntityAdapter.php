@@ -38,7 +38,7 @@ class ConfigEntityAdapter extends EntityAdapter {
   /**
    * {@inheritdoc}
    */
-  public function set($property_name, $value, $notify = TRUE) {
+  public function set($property_name, $value, $notify = TRUE): static {
     if (!isset($this->entity)) {
       throw new MissingDataException("Unable to set property $property_name as no entity has been provided.");
     }
@@ -59,7 +59,7 @@ class ConfigEntityAdapter extends EntityAdapter {
   /**
    * {@inheritdoc}
    */
-  public function onChange($property_name) {
+  public function onChange($property_name): void {
     if (isset($this->entity)) {
       // Let the entity know of any changes.
       $this->getConfigTypedData()->onChange($property_name);
@@ -119,7 +119,7 @@ class ConfigEntityAdapter extends EntityAdapter {
    *
    * @todo Remove this in https://www.drupal.org/node/3011137.
    */
-  public function setTypedDataManager(TypedDataManagerInterface $typed_data_manager) {
+  public function setTypedDataManager(TypedDataManagerInterface $typed_data_manager): static {
     $this->typedDataManager = $typed_data_manager;
     if ($typed_data_manager instanceof TypedConfigManagerInterface) {
       $this->typedConfigManager = $typed_data_manager;
@@ -130,7 +130,7 @@ class ConfigEntityAdapter extends EntityAdapter {
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): never {
     // @todo Figure out what to do for this method, see
     //   https://www.drupal.org/project/drupal/issues/2945635.
     throw new \BadMethodCallException('Method not supported');

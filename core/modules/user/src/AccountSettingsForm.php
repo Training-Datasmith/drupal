@@ -19,41 +19,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class AccountSettingsForm extends ConfigFormBase {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The role storage used when changing the admin role.
-   *
-   * @var \Drupal\user\RoleStorageInterface
-   */
-  protected $roleStorage;
-
-  /**
    * Constructs a \Drupal\user\AccountSettingsForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The factory for configuration objects.
    * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
    *   The typed config manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\user\RoleStorageInterface $role_storage
+   * @param \Drupal\user\RoleStorageInterface $roleStorage
    *   The role storage.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, ModuleHandlerInterface $module_handler, RoleStorageInterface $role_storage) {
+  public function __construct(ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typedConfigManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\user\RoleStorageInterface $roleStorage) {
     parent::__construct($config_factory, $typedConfigManager);
-    $this->moduleHandler = $module_handler;
-    $this->roleStorage = $role_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -65,14 +49,14 @@ class AccountSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'user_admin_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return [
       'system.site',
       'user.mail',

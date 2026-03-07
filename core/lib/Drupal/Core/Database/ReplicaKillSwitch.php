@@ -15,20 +15,6 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class ReplicaKillSwitch implements EventSubscriberInterface {
 
   /**
-   * The settings object.
-   *
-   * @var \Drupal\Core\Site\Settings
-   */
-  protected $settings;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected $time;
-
-  /**
    * The session.
    *
    * @var \Symfony\Component\HttpFoundation\Session\SessionInterface
@@ -45,9 +31,7 @@ class ReplicaKillSwitch implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpFoundation\Session\SessionInterface $session
    *   The session.
    */
-  public function __construct(Settings $settings, TimeInterface $time, SessionInterface $session) {
-    $this->settings = $settings;
-    $this->time = $time;
+  public function __construct(protected \Drupal\Core\Site\Settings $settings, protected \Drupal\Component\Datetime\TimeInterface $time, SessionInterface $session) {
     $this->session = $session;
   }
 
@@ -56,7 +40,7 @@ class ReplicaKillSwitch implements EventSubscriberInterface {
    *
    * @see https://www.drupal.org/node/2286193
    */
-  public function trigger() {
+  public function trigger(): void {
     $connection_info = Database::getConnectionInfo();
     // Only set ignore_replica_server if there are replica servers being used,
     // which is assumed if there are more than one.
@@ -76,7 +60,7 @@ class ReplicaKillSwitch implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The Event to process.
    */
-  public function checkReplicaServer(RequestEvent $event) {
+  public function checkReplicaServer(RequestEvent $event): void {
     // Ignore replica database servers for this request.
     //
     // In Drupal's distributed database structure, new data is written to the

@@ -78,14 +78,6 @@ class Config extends DestinationBase implements ContainerFactoryPluginInterface,
   protected $config;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $language_manager;
-
-  /**
    * Constructs a Config destination object.
    *
    * @param array $configuration
@@ -109,12 +101,11 @@ class Config extends DestinationBase implements ContainerFactoryPluginInterface,
     $plugin_definition,
     MigrationInterface $migration,
     ConfigFactoryInterface $config_factory,
-    LanguageManagerInterface $language_manager,
+    protected \Drupal\Core\Language\LanguageManagerInterface $language_manager,
     protected TypedConfigManagerInterface $typedConfigManager,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration);
     $this->config = $config_factory->getEditable($configuration['config_name']);
-    $this->language_manager = $language_manager;
     if ($this->isTranslationDestination()) {
       $this->supportsRollback = TRUE;
     }
@@ -123,7 +114,7 @@ class Config extends DestinationBase implements ContainerFactoryPluginInterface,
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -169,7 +160,7 @@ class Config extends DestinationBase implements ContainerFactoryPluginInterface,
   /**
    * {@inheritdoc}
    */
-  public function fields() {
+  public function fields(): void {
     // @todo Dynamically fetch fields using Config Schema API.
   }
 
@@ -199,14 +190,14 @@ class Config extends DestinationBase implements ContainerFactoryPluginInterface,
    * @return bool
    *   Whether this destination is for translations.
    */
-  protected function isTranslationDestination() {
+  protected function isTranslationDestination(): bool {
     return !empty($this->configuration['translations']);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function rollback(array $destination_identifier) {
+  public function rollback(array $destination_identifier): void {
     if ($this->isTranslationDestination()) {
       $language = $destination_identifier['langcode'];
       $config = $this->language_manager->getLanguageConfigOverride($language, $this->config->getName());
@@ -233,7 +224,7 @@ class Config extends DestinationBase implements ContainerFactoryPluginInterface,
     }
     // Get the module handling this configuration object from the config_name,
     // which is of the form "<module_name>.<configuration object name>".
-    return !empty($this->configuration['config_name']) ? explode('.', $this->configuration['config_name'], 2)[0] : NULL;
+    return !empty($this->configuration['config_name']) ? explode('.', (string) $this->configuration['config_name'], 2)[0] : NULL;
   }
 
 }

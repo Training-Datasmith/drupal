@@ -16,21 +16,14 @@ use Drupal\Core\Validation\Attribute\Constraint;
 )]
 class CommentNameConstraint extends CompositeConstraintBase {
 
-  public function __construct(
-    mixed $options = NULL,
-    public $messageNameTaken = 'The name you used (%name) belongs to a registered user.',
-    public $messageRequired = 'You have to specify a valid author.',
-    public $messageMatch = 'The specified author name does not match the comment author.',
-    ?array $groups = NULL,
-    mixed $payload = NULL,
-  ) {
-    parent::__construct($options, $groups, $payload);
+  public function __construct(mixed $options = NULL, public $messageNameTaken = 'The name you used (%name) belongs to a registered user.', public $messageRequired = 'You have to specify a valid author.', public $messageMatch = 'The specified author name does not match the comment author.', ?array $groups = NULL, mixed $payload = NULL)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function coversFields() {
+  public function coversFields(): array {
     return ['name', 'uid'];
   }
 

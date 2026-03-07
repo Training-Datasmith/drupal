@@ -118,7 +118,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $bundle_entity_type = NULL;
+  protected $bundle_entity_type;
 
   /**
    * The name of the entity type for which bundles are provided.
@@ -126,7 +126,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string|null
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $bundle_of = NULL;
+  protected $bundle_of;
 
   /**
    * The human-readable name of the entity bundles, e.g. Vocabulary.
@@ -134,7 +134,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string|null
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $bundle_label = NULL;
+  protected $bundle_label;
 
   /**
    * The name of the entity type's base table.
@@ -142,7 +142,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string|null
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $base_table = NULL;
+  protected $base_table;
 
   /**
    * The name of the entity type's revision data table.
@@ -150,7 +150,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string|null
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $revision_data_table = NULL;
+  protected $revision_data_table;
 
   /**
    * The name of the entity type's revision table.
@@ -158,7 +158,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string|null
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $revision_table = NULL;
+  protected $revision_table;
 
   /**
    * The name of the entity type's data table.
@@ -166,7 +166,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string|null
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $data_table = NULL;
+  protected $data_table;
 
   /**
    * Indicates whether the entity data is internal.
@@ -259,7 +259,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @see https://www.drupal.org/node/3575062
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $uri_callback = NULL;
+  protected $uri_callback;
 
   /**
    * The machine name of the entity type group.
@@ -313,7 +313,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @var string[]
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $list_cache_tags = [];
+  protected array $list_cache_tags = [];
 
   /**
    * Entity constraint definitions.
@@ -338,9 +338,9 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    * @throws \Drupal\Core\Entity\Exception\EntityTypeIdLengthException
    *   Thrown when attempting to instantiate an entity type with too long ID.
    */
-  public function __construct($definition) {
+  public function __construct(array $definition) {
     // Throw an exception if the entity type ID is longer than 32 characters.
-    if (mb_strlen($definition['id']) > static::ID_MAX_LENGTH) {
+    if (mb_strlen((string) $definition['id']) > static::ID_MAX_LENGTH) {
       throw new EntityTypeIdLengthException('Attempt to create an entity type with an ID longer than ' . static::ID_MAX_LENGTH . " characters: {$definition['id']}.");
     }
 
@@ -357,7 +357,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
       'revision_translation_affected' => 'revision_translation_affected',
     ];
     $this->handlers += [
-      'access' => 'Drupal\Core\Entity\EntityAccessControlHandler',
+      'access' => \Drupal\Core\Entity\EntityAccessControlHandler::class,
     ];
     if (isset($this->handlers['storage'])) {
       $this->checkStorageClass($this->handlers['storage']);
@@ -385,18 +385,15 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
    */
   public function get($property) {
     if (property_exists($this, $property)) {
-      $value = $this->{$property} ?? NULL;
+      return $this->{$property} ?? NULL;
     }
-    else {
-      $value = $this->additional[$property] ?? NULL;
-    }
-    return $value;
+    return $this->additional[$property] ?? NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function set($property, $value) {
+  public function set($property, $value): static {
     if ($property === 'class') {
       $this->setClass($value);
     }
@@ -455,7 +452,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasKey($key) {
+  public function hasKey($key): bool {
     $keys = $this->getKeys();
     return !empty($keys[$key]);
   }
@@ -477,7 +474,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setClass($class) {
+  public function setClass($class): static {
     if ($this->class) {
       if (!$this->originalClass) {
         // If the original class is currently not set, set it to the current
@@ -493,7 +490,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function entityClassImplements($interface) {
+  public function entityClassImplements($interface): bool {
     return is_subclass_of($this->getClass(), $interface);
   }
 
@@ -518,7 +515,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setHandlerClass($handler_type, $value) {
+  public function setHandlerClass($handler_type, $value): static {
     $this->handlers[$handler_type] = $value;
     return $this;
   }
@@ -548,7 +545,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setStorageClass($class) {
+  public function setStorageClass($class): static {
     $this->checkStorageClass($class);
     $this->handlers['storage'] = $class;
     return $this;
@@ -574,7 +571,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFormClass($operation, $class) {
+  public function setFormClass($operation, $class): static {
     $this->handlers['form'][$operation] = $class;
     return $this;
   }
@@ -582,14 +579,14 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasFormClasses() {
+  public function hasFormClasses(): bool {
     return !empty($this->handlers['form']);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function hasRouteProviders() {
+  public function hasRouteProviders(): bool {
     return !empty($this->handlers['route_provider']);
   }
 
@@ -603,7 +600,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setListBuilderClass($class) {
+  public function setListBuilderClass($class): static {
     $this->handlers['list_builder'] = $class;
     return $this;
   }
@@ -625,7 +622,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setViewBuilderClass($class) {
+  public function setViewBuilderClass($class): static {
     $this->handlers['view_builder'] = $class;
     return $this;
   }
@@ -654,7 +651,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAccessClass($class) {
+  public function setAccessClass($class): static {
     $this->handlers['access'] = $class;
     return $this;
   }
@@ -698,7 +695,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasLinkTemplate($key) {
+  public function hasLinkTemplate($key): bool {
     $links = $this->getLinkTemplates();
     return isset($links[$key]);
   }
@@ -706,7 +703,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLinkTemplate($key, $path) {
+  public function setLinkTemplate($key, $path): static {
     if ($path[0] !== '/') {
       throw new \InvalidArgumentException('Link templates accepts paths, which have to start with a leading slash.');
     }
@@ -732,14 +729,14 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function getBundleLabel() {
+  public function getBundleLabel(): string {
     // If there is no bundle label defined, try to provide some sensible
     // fallbacks.
     if (!empty($this->bundle_label)) {
-      return (string) $this->bundle_label;
+        return (string) $this->bundle_label;
     }
-    elseif ($bundle_entity_type_id = $this->getBundleEntityType()) {
-      return (string) \Drupal::entityTypeManager()->getDefinition($bundle_entity_type_id)->getLabel();
+    if ($bundle_entity_type_id = $this->getBundleEntityType()) {
+        return (string) \Drupal::entityTypeManager()->getDefinition($bundle_entity_type_id)->getLabel();
     }
     return (string) new TranslatableMarkup('@type_label bundle', ['@type_label' => $this->getLabel()], [], $this->getStringTranslation());
   }
@@ -754,14 +751,14 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function showRevisionUi() {
+  public function showRevisionUi(): bool {
     return $this->isRevisionable() && $this->show_revision_ui;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isTranslatable() {
+  public function isTranslatable(): bool {
     return !empty($this->translatable);
   }
 
@@ -861,7 +858,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setUriCallback($callback) {
+  public function setUriCallback($callback): static {
     @trigger_error(__METHOD__ . ' is deprecated in drupal:11.4.0 and is removed from drupal:13.0.0. Use link templates or a route provider to specify entity URIs. See https://www.drupal.org/node/3575062', E_USER_DEPRECATED);
     $this->uri_callback = $callback;
     return $this;
@@ -905,7 +902,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function getConfigDependencyKey() {
+  public function getConfigDependencyKey(): string {
     // Return 'content' for the default implementation as important distinction
     // is that dependencies on other configuration entities are hard
     // dependencies and have to exist before creating the dependent entity.
@@ -929,7 +926,7 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function setConstraints(array $constraints) {
+  public function setConstraints(array $constraints): static {
     $this->constraints = $constraints;
     return $this;
   }
@@ -945,27 +942,24 @@ class EntityType extends PluginDefinition implements EntityTypeInterface {
   /**
    * {@inheritdoc}
    */
-  public function getBundleConfigDependency($bundle) {
+  public function getBundleConfigDependency($bundle): array {
     // If this entity type uses entities to manage its bundles then depend on
     // the bundle entity.
     if ($bundle_entity_type_id = $this->getBundleEntityType()) {
       if (!$bundle_entity = \Drupal::entityTypeManager()->getStorage($bundle_entity_type_id)->load($bundle)) {
         throw new \LogicException(sprintf('Missing bundle entity, entity type %s, entity id %s.', $bundle_entity_type_id, $bundle));
       }
-      $config_dependency = [
+      return [
         'type' => 'config',
         'name' => $bundle_entity->getConfigDependencyName(),
       ];
     }
-    else {
-      // Depend on the provider of the entity type.
-      $config_dependency = [
-        'type' => 'module',
-        'name' => $this->getProvider(),
-      ];
-    }
 
-    return $config_dependency;
+    // Depend on the provider of the entity type.
+    return [
+      'type' => 'module',
+      'name' => $this->getProvider(),
+    ];
   }
 
   /**

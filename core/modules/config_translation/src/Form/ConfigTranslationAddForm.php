@@ -15,7 +15,7 @@ class ConfigTranslationAddForm extends ConfigTranslationFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'config_translation_add_form';
   }
 

@@ -27,41 +27,6 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
   const MAX_DEPTH = 9;
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * Cache backend instance for the extracted tree data.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $menuCacheBackend;
-
-  /**
-   * The cache tags invalidator.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
-   */
-  protected $cacheTagsInvalidator;
-
-  /**
-   * The database table name.
-   *
-   * @var string
-   */
-  protected $table;
-
-  /**
-   * Additional database connection options to use in queries.
-   *
-   * @var array
-   */
-  protected $options = [];
-
-  /**
    * Stores definitions that have already been loaded for better performance.
    *
    * An array of plugin definition arrays, keyed by plugin ID.
@@ -81,8 +46,6 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * Pre-loaded original link data for batch operations.
    *
    * Used during rebuild() to avoid per-link queries in doSave().
-   *
-   * @var array|null
    */
   protected ?array $preloadedOriginals = NULL;
 
@@ -91,21 +54,26 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   A Database connection to use for reading and writing configuration data.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $menu_cache_backend
+   * @param \Drupal\Core\Cache\CacheBackendInterface $menuCacheBackend
    *   Cache backend instance for the extracted tree data.
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
    *   The cache tags invalidator.
    * @param string $table
    *   A database table name to store configuration data in.
    * @param array $options
    *   (optional) Any additional database connection options to use in queries.
    */
-  public function __construct(Connection $connection, CacheBackendInterface $menu_cache_backend, CacheTagsInvalidatorInterface $cache_tags_invalidator, $table, array $options = []) {
-    $this->connection = $connection;
-    $this->menuCacheBackend = $menu_cache_backend;
-    $this->cacheTagsInvalidator = $cache_tags_invalidator;
-    $this->table = $table;
-    $this->options = $options;
+  public function __construct(
+      protected \Drupal\Core\Database\Connection $connection,
+      protected \Drupal\Core\Cache\CacheBackendInterface $menuCacheBackend,
+      protected \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator,
+      /**
+       * The database table name.
+       */
+      protected $table,
+      protected array $options = []
+  )
+  {
   }
 
   /**
@@ -118,14 +86,14 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function resetDefinitions() {
+  public function resetDefinitions(): void {
     $this->definitions = [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function rebuild(array $definitions) {
+  public function rebuild(array $definitions): void {
     $links = [];
     $children = [];
     $top_links = [];
@@ -142,23 +110,21 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
     // Fetch the list of existing menus, in case some are not longer populated
     // after the rebuild.
     $before_menus = $this->getMenuNames();
-    if ($definitions) {
-      foreach ($definitions as $id => $link) {
-        // Flag this link as discovered, i.e. saved via rebuild().
-        $link['discovered'] = 1;
-        // Note: The parent we set here might be just stored in the {menu_tree}
-        // table, so it will not end up in $top_links. Therefore the later loop
-        // on the orphan links, will handle those cases.
-        if (!empty($link['parent'])) {
-          $children[$link['parent']][$id] = $id;
-        }
-        else {
-          // A top level link - we need them to root our tree.
-          $top_links[$id] = $id;
-          $link['parent'] = '';
-        }
-        $links[$id] = $link;
+    foreach ($definitions as $id => $link) {
+      // Flag this link as discovered, i.e. saved via rebuild().
+      $link['discovered'] = 1;
+      // Note: The parent we set here might be just stored in the {menu_tree}
+      // table, so it will not end up in $top_links. Therefore the later loop
+      // on the orphan links, will handle those cases.
+      if (!empty($link['parent'])) {
+        $children[$link['parent']][$id] = $id;
       }
+      else {
+        // A top level link - we need them to root our tree.
+        $top_links[$id] = $id;
+        $link['parent'] = '';
+      }
+      $links[$id] = $link;
     }
     foreach ($top_links as $id) {
       $this->saveRecursive($id, $children, $links);
@@ -278,7 +244,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    *   would cause the links children to be moved to greater than the maximum
    *   depth.
    */
-  protected function doSave(array $link) {
+  protected function doSave(array $link): array {
     $affected_menus = [];
 
     // Use pre-loaded data if available (during rebuild), otherwise query.
@@ -362,7 +328,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @throws \Drupal\Component\Plugin\Exception\PluginException
    *   Thrown when the specific depth exceeds the maximum.
    */
-  protected function preSave(array &$link, array $original) {
+  protected function preSave(array &$link, array $original): array {
     static $schema_fields, $schema_defaults;
     if (empty($schema_fields)) {
       $schema = static::schemaDefinition();
@@ -422,7 +388,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($id) {
+  public function delete($id): void {
     // Children get re-attached to the menu link's parent.
     $item = $this->loadFull($id);
     // It's possible the link is already deleted.
@@ -446,7 +412,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSubtreeHeight($id) {
+  public function getSubtreeHeight($id): int|float {
     $original = $this->loadFull($id);
     return $original ? $this->doFindChildrenRelativeDepth($original) + 1 : 0;
   }
@@ -460,7 +426,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @return int
    *   Returns the relative depth.
    */
-  protected function doFindChildrenRelativeDepth(array $original) {
+  protected function doFindChildrenRelativeDepth(array $original): int|float {
     $query = $this->connection->select($this->table, NULL, $this->options);
     $query->addField($this->table, 'depth');
     $query->condition('menu_name', $original['menu_name']);
@@ -536,7 +502,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @param array $original
    *   The original menu link.
    */
-  protected function moveChildren($fields, $original) {
+  protected function moveChildren(array $fields, array $original) {
     $query = $this->connection->update($this->table, $this->options);
 
     $query->fields(['menu_name' => $fields['menu_name']]);
@@ -587,7 +553,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @return array|false
    *   Returns a definition array, or FALSE if no parent was found.
    */
-  protected function findParent($link, $original) {
+  protected function findParent(array $link, $original) {
     $parent = FALSE;
 
     // This item is explicitly top-level, skip the rest of the parenting.
@@ -716,7 +682,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function loadMultiple(array $ids) {
+  public function loadMultiple(array $ids): array {
     $missing_ids = array_diff($ids, array_keys($this->definitions));
 
     if ($missing_ids) {
@@ -807,7 +773,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function getExpanded($menu_name, array $parents) {
+  public function getExpanded($menu_name, array $parents): array {
     // @todo Go back to tracking in state or some other way which menus have
     //   expanded links? https://www.drupal.org/node/2302187
     do {
@@ -835,7 +801,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @param array $links
    *   An array of all definitions keyed by ID.
    */
-  protected function saveRecursive($id, &$children, &$links) {
+  protected function saveRecursive($id, array &$children, array &$links) {
     if (!empty($links[$id]['parent']) && empty($links[$links[$id]['parent']])) {
       // Invalid parent ID, so remove it.
       $links[$id]['parent'] = '';
@@ -997,9 +963,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
       }
     }
 
-    $links = $this->safeExecuteSelect($query)->fetchAllAssoc('id', FetchAs::Associative);
-
-    return $links;
+    return $this->safeExecuteSelect($query)->fetchAllAssoc('id', FetchAs::Associative);
   }
 
   /**
@@ -1013,7 +977,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @return array
    *   Array of route names, with all values being unique.
    */
-  protected function collectRoutesAndDefinitions(array $tree, array &$definitions) {
+  protected function collectRoutesAndDefinitions(array $tree, array &$definitions): array {
     return array_values($this->doCollectRoutesAndDefinitions($tree, $definitions));
   }
 
@@ -1028,7 +992,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @return array
    *   The collected route names.
    */
-  protected function doCollectRoutesAndDefinitions(array $tree, array &$definitions) {
+  protected function doCollectRoutesAndDefinitions(array $tree, array &$definitions): array {
     $route_names = [];
     foreach (array_keys($tree) as $id) {
       $definitions[$id] = $this->definitions[$id];
@@ -1059,7 +1023,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function menuNameInUse($menu_name) {
+  public function menuNameInUse($menu_name): bool {
     $query = $this->connection->select($this->table, NULL, $this->options);
     $query->addField($this->table, 'mlid');
     $query->condition('menu_name', $menu_name);
@@ -1151,7 +1115,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    *
    * @see \Drupal\Core\Menu\MenuTreeStorage::loadTreeData()
    */
-  protected function treeDataRecursive(array &$links, array $parents, $depth) {
+  protected function treeDataRecursive(array &$links, array $parents, $depth): array {
     $tree = [];
     while ($tree_link_definition = array_pop($links)) {
       $tree[$tree_link_definition['id']] = [
@@ -1188,7 +1152,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @return bool
    *   TRUE if the table was created, FALSE otherwise.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $this->connection->schema()->createTable($this->table, static::schemaDefinition());
     }
@@ -1227,7 +1191,7 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    * @return string[]
    *   The list of the subset of fields that are part of the plugin definition.
    */
-  protected function definitionFields() {
+  protected function definitionFields(): array {
     return array_keys($this->defaults);
   }
 
@@ -1239,8 +1203,8 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
    *
    * @internal
    */
-  protected static function schemaDefinition() {
-    $schema = [
+  protected static function schemaDefinition(): array {
+    return [
       'description' => 'Contains the menu tree hierarchy.',
       'fields' => [
         'menu_name' => [
@@ -1473,8 +1437,6 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
         'id' => ['id'],
       ],
     ];
-
-    return $schema;
   }
 
   /**
@@ -1495,12 +1457,9 @@ class MenuTreeStorage implements MenuTreeStorageInterface {
       // Starting from links with the greatest depth will minimize the amount
       // of re-parenting done by the menu storage.
       $query->orderBy('depth', 'DESC');
-      $result = $query->execute()->fetchCol();
+      return $query->execute()->fetchCol();
     }
-    else {
-      $result = [];
-    }
-    return $result;
+    return [];
   }
 
   /**

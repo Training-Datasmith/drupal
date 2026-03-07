@@ -16,20 +16,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class FileDownloadController extends ControllerBase {
 
   /**
-   * The stream wrapper manager.
-   *
-   * @var \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface
-   */
-  protected $streamWrapperManager;
-
-  /**
    * FileDownloadController constructor.
    *
    * @param \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager
    *   The stream wrapper manager.
    */
-  public function __construct(StreamWrapperManagerInterface $streamWrapperManager) {
-    $this->streamWrapperManager = $streamWrapperManager;
+  public function __construct(protected \Drupal\Core\StreamWrapper\StreamWrapperManagerInterface $streamWrapperManager)
+  {
   }
 
   /**
@@ -57,7 +50,7 @@ class FileDownloadController extends ControllerBase {
    *
    * @see hook_file_download()
    */
-  public function download(Request $request, $scheme = 'private') {
+  public function download(Request $request, string $scheme = 'private') {
     $target = $request->query->get('file');
     // Merge remaining path arguments into relative file path.
     $uri = $this->streamWrapperManager->normalizeUri($scheme . '://' . $target);

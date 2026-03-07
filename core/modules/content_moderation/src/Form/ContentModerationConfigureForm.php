@@ -21,39 +21,29 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ContentModerationConfigureForm extends WorkflowTypeConfigureFormBase implements ContainerInjectionInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The moderation info service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInfo;
-
-  /**
-   * The entity type bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
    * Create an instance of ContentModerationConfigureForm.
    */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, ModerationInformationInterface $moderationInformation, EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->moderationInfo = $moderationInformation;
-    $this->entityTypeBundleInfo = $entityTypeBundleInfo;
+  public function __construct(
+      /**
+       * The entity type manager.
+       */
+      protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
+      /**
+       * The moderation info service.
+       */
+      protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo,
+      /**
+       * The entity type bundle info service.
+       */
+      protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('content_moderation.moderation_information'),
@@ -64,7 +54,7 @@ class ContentModerationConfigureForm extends WorkflowTypeConfigureFormBase imple
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $workflow = $form_state->getFormObject()->getEntity();
 
     $header = [
@@ -153,7 +143,7 @@ class ContentModerationConfigureForm extends WorkflowTypeConfigureFormBase imple
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $configuration = $this->workflowType->getConfiguration();
     $configuration['default_moderation_state'] = $form_state->getValue(['workflow_settings', 'default_moderation_state']);
     $this->workflowType->setConfiguration($configuration);

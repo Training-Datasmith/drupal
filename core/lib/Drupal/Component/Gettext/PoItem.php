@@ -8,7 +8,7 @@ namespace Drupal\Component\Gettext;
  * @todo This class contains some really old legacy code.
  * @see https://www.drupal.org/node/1637662
  */
-class PoItem {
+class PoItem implements \Stringable {
 
   /**
    * The delimiter used to split plural strings.
@@ -80,7 +80,7 @@ class PoItem {
    * @param string $langcode
    *   The language code of the current language.
    */
-  public function setLangcode($langcode) {
+  public function setLangcode($langcode): void {
     $this->langcode = $langcode;
   }
 
@@ -100,7 +100,7 @@ class PoItem {
    * @param string $context
    *   The context this translation belongs to.
    */
-  public function setContext($context) {
+  public function setContext($context): void {
     $this->context = $context;
   }
 
@@ -120,7 +120,7 @@ class PoItem {
    * @param string|array $source
    *   The source string or the array of strings if the translation has plurals.
    */
-  public function setSource($source) {
+  public function setSource($source): void {
     $this->source = $source;
   }
 
@@ -141,7 +141,7 @@ class PoItem {
    *   The translation string or the array of strings if the translation has
    *   plurals.
    */
-  public function setTranslation($translation) {
+  public function setTranslation($translation): void {
     $this->translation = $translation;
   }
 
@@ -151,7 +151,7 @@ class PoItem {
    * @param bool $plural
    *   TRUE, if the translation has plural values. FALSE otherwise.
    */
-  public function setPlural($plural) {
+  public function setPlural($plural): void {
     $this->plural = $plural;
   }
 
@@ -181,7 +181,7 @@ class PoItem {
    * @param string $comment
    *   The comment of this translation.
    */
-  public function setComment($comment) {
+  public function setComment($comment): void {
     $this->comment = $comment;
   }
 
@@ -191,7 +191,7 @@ class PoItem {
    * @param array $values
    *   A structured array to create the PoItem from.
    */
-  public function setFromArray(array $values = []) {
+  public function setFromArray(array $values = []): void {
     if (isset($values['context'])) {
       $this->setContext($values['context']);
     }
@@ -214,14 +214,14 @@ class PoItem {
   /**
    * Output the PoItem as a string.
    */
-  public function __toString() {
-    return $this->formatItem();
+  public function __toString(): string {
+    return (string) $this->formatItem();
   }
 
   /**
    * Format the POItem as a string.
    */
-  private function formatItem() {
+  private function formatItem(): string {
     $output = '';
 
     // Format string context.
@@ -246,7 +246,7 @@ class PoItem {
   /**
    * Formats a plural translation.
    */
-  private function formatPlural() {
+  private function formatPlural(): string {
     $output = '';
 
     // Format source strings.
@@ -268,19 +268,18 @@ class PoItem {
   /**
    * Formats a singular translation.
    */
-  private function formatSingular() {
+  private function formatSingular(): string {
     $output = '';
     $output .= 'msgid ' . $this->formatString($this->source);
-    $output .= 'msgstr ' . (isset($this->translation) ? $this->formatString($this->translation) : '""' . "\n");
-    return $output;
+    return $output . ('msgstr ' . isset($this->translation) ? $this->formatString($this->translation) : '""' . "\n");
   }
 
   /**
    * Formats a string for output on multiple lines.
    */
-  private function formatString($string) {
+  private function formatString($string): string {
     // Escape characters for processing.
-    $string = addcslashes($string, "\0..\37\\\"");
+    $string = addcslashes((string) $string, "\0..\37\\\"");
 
     // Always include a line break after the explicit \n line breaks from
     // the source string. Otherwise wrap at 70 chars to accommodate the extra
@@ -292,10 +291,7 @@ class PoItem {
     if (count($parts) > 1) {
       return "\"\"\n\"" . implode("\"\n\"", $parts) . "\"\n";
     }
-    // Single line strings are output on the same line.
-    else {
-      return "\"$parts[0]\"\n";
-    }
+    return "\"$parts[0]\"\n";
   }
 
 }

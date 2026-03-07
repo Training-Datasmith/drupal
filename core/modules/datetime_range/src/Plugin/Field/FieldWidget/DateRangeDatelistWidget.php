@@ -32,7 +32,7 @@ class DateRangeDatelistWidget extends DateRangeWidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
 
     $date_order = $this->getSetting('date_order');
@@ -144,8 +144,9 @@ class DateRangeDatelistWidget extends DateRangeWidgetBase {
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $summary[] = $this->t('Date part order: @order', ['@order' => $this->getSetting('date_order')]);

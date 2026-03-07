@@ -15,7 +15,7 @@ class NodeMenuHooks {
    * Implements hook_local_tasks_alter().
    */
   #[Hook('local_tasks_alter')]
-  public function localTasksAlter(&$local_tasks): void {
+  public function localTasksAlter(array &$local_tasks): void {
     // Removes 'Revisions' local task added by deriver. Local task
     // 'entity.node.version_history' will be replaced by
     // 'entity.version_history:node.version_history' after

@@ -14,7 +14,7 @@ class ComputedFileUrl extends TypedData {
    *
    * @var string
    */
-  protected $url = NULL;
+  protected $url;
 
   /**
    * {@inheritdoc}
@@ -37,7 +37,7 @@ class ComputedFileUrl extends TypedData {
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     $this->url = $value;
 
     // Notify the parent of any changes.

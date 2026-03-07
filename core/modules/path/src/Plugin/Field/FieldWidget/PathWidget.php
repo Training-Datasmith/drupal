@@ -22,7 +22,7 @@ class PathWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $entity = $items->getEntity();
 
     $element += [
@@ -79,9 +79,9 @@ class PathWidget extends WidgetBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public static function validateFormElement(array &$element, FormStateInterface $form_state) {
+  public static function validateFormElement(array &$element, FormStateInterface $form_state): void {
     // Trim the submitted value of whitespace and slashes.
-    $alias = rtrim(trim($element['alias']['#value']), " \\/");
+    $alias = rtrim(trim((string) $element['alias']['#value']), " \\/");
     if ($alias !== '') {
       $form_state->setValueForElement($element['alias'], $alias);
 

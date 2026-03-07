@@ -10,29 +10,27 @@ use Drupal\Core\Ajax\CommandInterface;
 class SetSubtreesCommand implements CommandInterface {
 
   /**
-   * The toolbar subtrees.
-   *
-   * @var array
-   */
-  protected $subtrees;
-
-  /**
    * Constructs a SetSubtreesCommand object.
    *
    * @param array $subtrees
    *   The toolbar subtrees that will be set.
    */
-  public function __construct($subtrees) {
-    $this->subtrees = $subtrees;
+  public function __construct(
+      /**
+       * The toolbar subtrees.
+       */
+      protected $subtrees
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     return [
       'command' => 'setToolbarSubtrees',
-      'subtrees' => array_map('strval', $this->subtrees),
+      'subtrees' => array_map(strval(...), $this->subtrees),
     ];
   }
 

@@ -21,7 +21,7 @@ enum Order: int implements OrderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getOperation(string $identifier): OrderOperation {
+  public function getOperation(string $identifier): \Drupal\Core\Hook\OrderOperation\FirstOrLast {
     return new FirstOrLast($identifier, $this === self::Last);
   }
 

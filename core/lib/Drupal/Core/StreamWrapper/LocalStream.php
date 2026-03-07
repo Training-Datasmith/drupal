@@ -26,7 +26,7 @@ abstract class LocalStream implements StreamWrapperInterface {
    *
    * @var resource
    */
-  public $handle = NULL;
+  public $handle;
 
   /**
    * Instance URI (stream).
@@ -55,7 +55,7 @@ abstract class LocalStream implements StreamWrapperInterface {
   /**
    * {@inheritdoc}
    */
-  public function setUri($uri) {
+  public function setUri($uri): void {
     $this->uri = $uri;
   }
 
@@ -315,7 +315,7 @@ abstract class LocalStream implements StreamWrapperInterface {
    * {@inheritdoc}
    */
   public function dirname($uri = NULL) {
-    [$scheme] = explode('://', $uri, 2);
+    [$scheme] = explode('://', (string) $uri, 2);
     $target = $this->getTarget($uri);
     $dirname = dirname($target);
 
@@ -345,9 +345,7 @@ abstract class LocalStream implements StreamWrapperInterface {
     if ($options & STREAM_REPORT_ERRORS) {
       return $file_system->mkdir($local_path, $mode, $recursive);
     }
-    else {
-      return @$file_system->mkdir($local_path, $mode, $recursive);
-    }
+    return @$file_system->mkdir($local_path, $mode, $recursive);
   }
 
   /**
@@ -360,9 +358,7 @@ abstract class LocalStream implements StreamWrapperInterface {
     if ($options & STREAM_REPORT_ERRORS) {
       return $file_system->rmdir($this->getLocalPath());
     }
-    else {
-      return @$file_system->rmdir($this->getLocalPath());
-    }
+    return @$file_system->rmdir($this->getLocalPath());
   }
 
   /**
@@ -376,9 +372,7 @@ abstract class LocalStream implements StreamWrapperInterface {
     if ($flags & STREAM_URL_STAT_QUIET || !file_exists($path)) {
       return @stat($path);
     }
-    else {
-      return stat($path);
-    }
+    return stat($path);
   }
 
   /**
@@ -425,7 +419,7 @@ abstract class LocalStream implements StreamWrapperInterface {
    * @return \Drupal\Core\File\FileSystemInterface
    *   The file system service.
    */
-  private function getFileSystem() {
+  private function getFileSystem(): object {
     return \Drupal::service('file_system');
   }
 

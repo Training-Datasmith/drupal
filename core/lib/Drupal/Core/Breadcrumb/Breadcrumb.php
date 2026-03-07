@@ -42,7 +42,7 @@ class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInt
    * @throws \LogicException
    *   Thrown when setting breadcrumb links after they've already been set.
    */
-  public function setLinks(array $links) {
+  public function setLinks(array $links): static {
     if (!empty($this->links)) {
       throw new \LogicException('Once breadcrumb links are set, only additional breadcrumb links can be added.');
     }
@@ -60,7 +60,7 @@ class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInt
    *
    * @return $this
    */
-  public function addLink(Link $link) {
+  public function addLink(Link $link): static {
     $this->links[] = $link;
 
     return $this;
@@ -68,8 +68,9 @@ class Breadcrumb implements RenderableInterface, RefinableCacheableDependencyInt
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function toRenderable() {
+  public function toRenderable(): array {
     $build = [
       '#cache' => [
         'contexts' => $this->cacheContexts,

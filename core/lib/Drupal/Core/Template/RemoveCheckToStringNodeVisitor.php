@@ -41,14 +41,14 @@ final class RemoveCheckToStringNodeVisitor implements NodeVisitorInterface {
   /**
    * {@inheritdoc}
    */
-  public function leaveNode(Node $node, Environment $env): ?Node {
+  public function leaveNode(Node $node, Environment $env): \Twig\Node\Node {
     return $node;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPriority() {
+  public function getPriority(): int {
     // Runs after sandbox visitor.
     return 1;
   }

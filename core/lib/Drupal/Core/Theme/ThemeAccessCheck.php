@@ -12,20 +12,13 @@ use Drupal\Core\Routing\Access\AccessInterface;
 class ThemeAccessCheck implements AccessInterface {
 
   /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
    * Constructs a \Drupal\Core\Theme\Registry object.
    *
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    */
-  public function __construct(ThemeHandlerInterface $theme_handler) {
-    $this->themeHandler = $theme_handler;
+  public function __construct(protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler)
+  {
   }
 
   /**
@@ -37,7 +30,7 @@ class ThemeAccessCheck implements AccessInterface {
    * @return \Drupal\Core\Access\AccessResultInterface
    *   The access result.
    */
-  public function access($theme) {
+  public function access(string $theme) {
     // Cacheable until the theme settings are modified.
     return AccessResult::allowedIf($this->checkAccess($theme))->addCacheTags(['config:' . $theme . '.settings']);
   }
@@ -51,7 +44,7 @@ class ThemeAccessCheck implements AccessInterface {
    * @return bool
    *   TRUE if the theme is installed, FALSE otherwise.
    */
-  public function checkAccess($theme) {
+  public function checkAccess($theme): bool {
     $themes = $this->themeHandler->listInfo();
     return !empty($themes[$theme]->status);
   }

@@ -69,8 +69,7 @@ class MediaHooks {
         $output .= '<li>' . $this->t('Contributed or custom projects can provide additional media sources (such as third-party websites, Twitter, etc.).') . '</li>';
         $output .= '<li>' . $this->t('Existing media items can be reused on any other content items with a media reference field.') . '</li>';
         $output .= '</ul>';
-        $output .= '<p>' . $this->t('Use <em>Media</em> reference fields for most files, images, audio, videos, and remote media. Use <em>File</em> or <em>Image</em> reference fields when creating your own media types, or for legacy files and images created before installing the Media module.') . '</p>';
-        return $output;
+        return $output . ('<p>' . $this->t('Use <em>Media</em> reference fields for most files, images, audio, videos, and remote media. Use <em>File</em> or <em>Image</em> reference fields when creating your own media types, or for legacy files and images created before installing the Media module.') . '</p>');
     }
     return NULL;
   }
@@ -132,7 +131,7 @@ class MediaHooks {
    * Implements hook_form_FORM_ID_alter().
    */
   #[Hook('form_field_ui_field_storage_add_form_alter')]
-  public function formFieldUiFieldStorageAddFormAlter(&$form, FormStateInterface $form_state, $form_id) : void {
+  public function formFieldUiFieldStorageAddFormAlter(array &$form, FormStateInterface $form_state, $form_id) : void {
     // Provide some help text to aid users decide whether they need a Media,
     // File, or Image reference field.
     if ($form_state->getStorage()['field_type'] === 'field_ui:entity_reference:media') {
@@ -205,15 +204,13 @@ class MediaHooks {
     // This help text is only relevant for autocomplete widgets. When the user
     // is presented with options, they don't need to type anything or know what
     // types of media are allowed.
-    if ($is_autocomplete) {
-      $elements['#media_help']['#media_list_help'] = $this->t('Type part of the media name.');
-      $overview_url = Url::fromRoute('entity.media.collection');
-      if ($overview_url->access()) {
-        $elements['#media_help']['#media_list_link'] = $this->t('See the <a href=":list_url" target="_blank">media list</a> (opens a new window) to help locate media.', [':list_url' => $overview_url->toString()]);
-      }
-      $bundle_labels = array_intersect_key(\Drupal::service('entity_type.bundle.info')->getBundleLabels('media'), $allowed_bundles);
-      $elements['#media_help']['#allowed_types_help'] = $this->t('Allowed media types: %types', ['%types' => implode(", ", $bundle_labels)]);
+    $elements['#media_help']['#media_list_help'] = $this->t('Type part of the media name.');
+    $overview_url = Url::fromRoute('entity.media.collection');
+    if ($overview_url->access()) {
+      $elements['#media_help']['#media_list_link'] = $this->t('See the <a href=":list_url" target="_blank">media list</a> (opens a new window) to help locate media.', [':list_url' => $overview_url->toString()]);
     }
+    $bundle_labels = array_intersect_key(\Drupal::service('entity_type.bundle.info')->getBundleLabels('media'), $allowed_bundles);
+    $elements['#media_help']['#allowed_types_help'] = $this->t('Allowed media types: %types', ['%types' => implode(", ", $bundle_labels)]);
   }
 
   /**
@@ -260,7 +257,7 @@ class MediaHooks {
    * Implements hook_field_widget_single_element_form_alter().
    */
   #[Hook('field_widget_single_element_form_alter')]
-  public function fieldWidgetSingleElementFormAlter(&$element, FormStateInterface $form_state, $context): void {
+  public function fieldWidgetSingleElementFormAlter(array &$element, FormStateInterface $form_state, array $context): void {
     // Add an attribute so that text editors plugins can pass the host entity's
     // language, allowing it to present entities in the same language.
     if (!empty($element['#type']) && $element['#type'] == 'text_format') {
@@ -284,7 +281,7 @@ class MediaHooks {
    * Implements hook_field_type_category_info_alter().
    */
   #[Hook('field_type_category_info_alter')]
-  public function fieldTypeCategoryInfoAlter(&$definitions): void {
+  public function fieldTypeCategoryInfoAlter(array &$definitions): void {
     // The `media` field type belongs in the `general` category, so the
     // libraries need to be attached using an alter hook.
     $definitions[FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY]['libraries'][] = 'media/drupal.media-icon';

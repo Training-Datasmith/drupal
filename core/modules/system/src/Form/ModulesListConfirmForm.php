@@ -22,20 +22,6 @@ class ModulesListConfirmForm extends ConfirmFormBase {
   use ModulesEnabledTrait;
 
   /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The expirable key value store.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
-   */
-  protected $keyValueExpirable;
-
-  /**
    * An associative list of modules to install or uninstall.
    *
    * @var array
@@ -43,32 +29,23 @@ class ModulesListConfirmForm extends ConfirmFormBase {
   protected $modules = [];
 
   /**
-   * The module installer.
-   *
-   * @var \Drupal\Core\Extension\ModuleInstallerInterface
-   */
-  protected $moduleInstaller;
-
-  /**
    * Constructs a ModulesListConfirmForm object.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
+   * @param \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller
    *   The module installer.
-   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $key_value_expirable
+   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable
    *   The key value expirable factory.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, KeyValueStoreExpirableInterface $key_value_expirable) {
-    $this->moduleHandler = $module_handler;
-    $this->moduleInstaller = $module_installer;
-    $this->keyValueExpirable = $key_value_expirable;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller, protected \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('module_installer'),
@@ -79,35 +56,35 @@ class ModulesListConfirmForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Some required modules must be installed');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('system.modules_list');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Continue');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Would you like to continue with the above?');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_modules_confirm_form';
   }
 
@@ -140,7 +117,7 @@ class ModulesListConfirmForm extends ConfirmFormBase {
    *
    * @see \Drupal\system\Form\ModulesListForm::buildModuleList()
    */
-  protected function buildMessageList() {
+  protected function buildMessageList(): array {
     $items = [];
     if (!empty($this->modules['dependencies'])) {
       // Display a list of required modules that have to be installed as well
@@ -171,7 +148,7 @@ class ModulesListConfirmForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Remove the key value store entry.
     $account = $this->currentUser()->id();
     $this->keyValueExpirable->delete($account);

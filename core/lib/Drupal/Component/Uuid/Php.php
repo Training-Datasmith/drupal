@@ -13,7 +13,7 @@ class Php implements UuidInterface {
   /**
    * {@inheritdoc}
    */
-  public function generate() {
+  public function generate(): string {
     // Obtain a random string of 32 hex characters.
     $hex = bin2hex(random_bytes(16));
 

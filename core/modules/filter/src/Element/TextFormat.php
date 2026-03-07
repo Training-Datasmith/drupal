@@ -37,7 +37,7 @@ class TextFormat extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#process' => [
         [static::class, 'processFormat'],
@@ -77,7 +77,7 @@ class TextFormat extends RenderElementBase {
    * @return array
    *   The form element.
    */
-  public static function processFormat(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processFormat(array &$element, FormStateInterface $form_state, &$complete_form): array {
     $user = static::currentUser();
 
     // Ensure that children appear as subkeys of this element.
@@ -261,7 +261,7 @@ class TextFormat extends RenderElementBase {
    * @return array
    *   The updated render array.
    */
-  public static function accessDeniedCallback(array $element) {
+  public static function accessDeniedCallback(array $element): array {
     $element['#value'] = t('This field has been disabled because you do not have sufficient permissions to edit it.');
     return $element;
   }
@@ -291,7 +291,7 @@ class TextFormat extends RenderElementBase {
    * @return \Drupal\Core\Render\ElementInfoManagerInterface
    *   The element info service.
    */
-  protected static function elementInfo() {
+  protected static function elementInfo(): object {
     return \Drupal::service('element_info');
   }
 

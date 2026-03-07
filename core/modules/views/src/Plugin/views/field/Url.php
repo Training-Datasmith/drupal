@@ -30,7 +30,7 @@ class Url extends FieldPluginBase {
   /**
    * Provide link to the page being visited.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['display_as_link'] = [
       '#title' => $this->t('Display as link'),
       '#type' => 'checkbox',
@@ -49,9 +49,7 @@ class Url extends FieldPluginBase {
       //   https://www.drupal.org/node/2423913
       return Link::fromTextAndUrl($this->sanitizeValue($value), CoreUrl::fromUserInput('/' . $value))->toString();
     }
-    else {
-      return $this->sanitizeValue($value, 'url');
-    }
+    return $this->sanitizeValue($value, 'url');
   }
 
 }

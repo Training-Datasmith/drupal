@@ -40,20 +40,6 @@ class Block extends DisplayPluginBase {
   protected $usesAttachments = TRUE;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The block manager.
-   *
-   * @var \Drupal\Core\Block\BlockManagerInterface
-   */
-  protected $blockManager;
-
-  /**
    * Constructs a new Block instance.
    *
    * @param array $configuration
@@ -62,16 +48,13 @@ class Block extends DisplayPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Block\BlockManagerInterface $block_manager
+   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
    *   The block manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, BlockManagerInterface $block_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Block\BlockManagerInterface $blockManager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->blockManager = $block_manager;
   }
 
   /**
@@ -105,7 +88,7 @@ class Block extends DisplayPluginBase {
    *
    * @see \Drupal\views\Plugin\Block\ViewsBlock::defaultConfiguration()
    */
-  public function blockSettings(array $settings) {
+  public function blockSettings(array $settings): array {
     $settings['items_per_page'] = NULL;
     return $settings;
   }
@@ -120,9 +103,7 @@ class Block extends DisplayPluginBase {
     if ($this->outputIsEmpty() && $this->getOption('block_hide_empty') && empty($this->view->style_plugin->definition['even empty'])) {
       return [];
     }
-    else {
-      return $element;
-    }
+    return $element;
   }
 
   /**
@@ -130,7 +111,7 @@ class Block extends DisplayPluginBase {
    *
    * This output is returned as an array.
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     parent::optionsSummary($categories, $options);
 
     $categories['block'] = [
@@ -141,7 +122,7 @@ class Block extends DisplayPluginBase {
       ],
     ];
 
-    $block_description = strip_tags($this->getOption('block_description'));
+    $block_description = strip_tags((string) $this->getOption('block_description'));
     if (empty($block_description)) {
       $block_description = $this->t('None');
     }
@@ -176,7 +157,7 @@ class Block extends DisplayPluginBase {
   /**
    * Provide the default form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     switch ($form_state->get('section')) {
@@ -242,7 +223,7 @@ class Block extends DisplayPluginBase {
    *
    * There is no need for this function to actually store the data.
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::submitOptionsForm($form, $form_state);
     $section = $form_state->get('section');
     switch ($section) {
@@ -272,7 +253,7 @@ class Block extends DisplayPluginBase {
    *
    * @see \Drupal\views\Plugin\Block\ViewsBlock::blockForm()
    */
-  public function blockForm(ViewsBlock $block, array &$form, FormStateInterface $form_state) {
+  public function blockForm(ViewsBlock $block, array &$form, FormStateInterface $form_state): array {
     $allow_settings = array_filter($this->getOption('allow'));
 
     $block_configuration = $block->getConfiguration();
@@ -340,7 +321,7 @@ class Block extends DisplayPluginBase {
    *
    * @see \Drupal\views\Plugin\Block\ViewsBlock::blockSubmit()
    */
-  public function blockSubmit(ViewsBlock $block, $form, FormStateInterface $form_state) {
+  public function blockSubmit(ViewsBlock $block, $form, FormStateInterface $form_state): void {
     if ($items_per_page = $form_state->getValue(['override', 'items_per_page'])) {
       $block->setConfigurationValue('items_per_page', $items_per_page === 'none' ? NULL : intval($items_per_page));
     }
@@ -353,7 +334,7 @@ class Block extends DisplayPluginBase {
    * @param \Drupal\views\Plugin\Block\ViewsBlock $block
    *   The block plugin for views displays.
    */
-  public function preBlockBuild(ViewsBlock $block) {
+  public function preBlockBuild(ViewsBlock $block): void {
     $config = $block->getConfiguration();
     if (is_numeric($config['items_per_page']) && $config['items_per_page'] > 0) {
       // @todo Delete the intval() in https://www.drupal.org/project/drupal/issues/3521221
@@ -364,14 +345,14 @@ class Block extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usesExposedFormInBlock() {
+  public function usesExposedFormInBlock(): bool {
     return TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function remove() {
+  public function remove(): void {
     parent::remove();
 
     if ($this->entityTypeManager->hasDefinition('block')) {

@@ -90,7 +90,7 @@ class PermissionsHashGenerator implements PermissionsHashGeneratorInterface {
    * @return string
    *   The hash.
    */
-  protected function hash($identifier) {
+  protected function hash(string $identifier): string {
     return hash('sha256', $this->privateKey->get() . Settings::getHashSalt() . $identifier);
   }
 

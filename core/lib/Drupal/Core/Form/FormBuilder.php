@@ -33,20 +33,6 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormSubmitterInterface, FormCacheInterface, TrustedCallbackInterface {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -54,65 +40,11 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   protected $requestStack;
 
   /**
-   * The element info manager.
-   *
-   * @var \Drupal\Core\Render\ElementInfoManagerInterface
-   */
-  protected $elementInfo;
-
-  /**
-   * The CSRF token generator to validate the form token.
-   *
-   * @var \Drupal\Core\Access\CsrfTokenGenerator
-   */
-  protected $csrfToken;
-
-  /**
-   * The class resolver.
-   *
-   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
-   */
-  protected $classResolver;
-
-  /**
    * The current user.
    *
    * @var \Drupal\Core\Session\AccountInterface
    */
   protected $currentUser;
-
-  /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
-   * The form validator.
-   *
-   * @var \Drupal\Core\Form\FormValidatorInterface
-   */
-  protected $formValidator;
-
-  /**
-   * The form submitter.
-   *
-   * @var \Drupal\Core\Form\FormSubmitterInterface
-   */
-  protected $formSubmitter;
-
-  /**
-   * The form cache.
-   *
-   * @var \Drupal\Core\Form\FormCacheInterface
-   */
-  protected $formCache;
-
-  /**
-   * The callable resolver.
-   */
-  protected CallableResolver $callableResolver;
 
   /**
    * Defines callables that are safe to run with invalid CSRF tokens.
@@ -156,29 +88,49 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   ];
 
   public function __construct(
-    FormValidatorInterface $form_validator,
-    FormSubmitterInterface $form_submitter,
-    FormCacheInterface $form_cache,
-    ModuleHandlerInterface $module_handler,
-    EventDispatcherInterface $event_dispatcher,
+    /**
+     * The form validator.
+     */
+    protected \Drupal\Core\Form\FormValidatorInterface $formValidator,
+    /**
+     * The form submitter.
+     */
+    protected \Drupal\Core\Form\FormSubmitterInterface $formSubmitter,
+    /**
+     * The form cache.
+     */
+    protected \Drupal\Core\Form\FormCacheInterface $formCache,
+    /**
+     * The module handler.
+     */
+    protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
+    /**
+     * The event dispatcher.
+     */
+    protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher,
     RequestStack $request_stack,
-    ClassResolverInterface $class_resolver,
-    ElementInfoManagerInterface $element_info,
-    ThemeManagerInterface $theme_manager,
-    CsrfTokenGenerator $csrf_token,
-    CallableResolver $callableResolver,
+    /**
+     * The class resolver.
+     */
+    protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver,
+    /**
+     * The element info manager.
+     */
+    protected \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo,
+    /**
+     * The theme manager.
+     */
+    protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager,
+    /**
+     * The CSRF token generator to validate the form token.
+     */
+    protected \Drupal\Core\Access\CsrfTokenGenerator $csrfToken,
+    /**
+     * The callable resolver.
+     */
+    protected CallableResolver $callableResolver,
   ) {
-    $this->formValidator = $form_validator;
-    $this->formSubmitter = $form_submitter;
-    $this->formCache = $form_cache;
-    $this->moduleHandler = $module_handler;
-    $this->eventDispatcher = $event_dispatcher;
     $this->requestStack = $request_stack;
-    $this->classResolver = $class_resolver;
-    $this->elementInfo = $element_info;
-    $this->csrfToken = $csrf_token;
-    $this->themeManager = $theme_manager;
-    $this->callableResolver = $callableResolver;
   }
 
   /**
@@ -214,12 +166,12 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
     if (is_string($form_arg) && class_exists($form_arg)) {
       $form_arg = $this->classResolver->getInstanceFromDefinition($form_arg);
     }
-
     if (!is_object($form_arg)) {
-      throw new \InvalidArgumentException(("The form class $form_arg could not be found or loaded."));
+        throw new \InvalidArgumentException(("The form class $form_arg could not be found or loaded."));
     }
-    elseif (!($form_arg instanceof FormInterface)) {
-      throw new \InvalidArgumentException('The form argument ' . $form_arg::class . ' must be an instance of \Drupal\Core\Form\FormInterface.');
+
+    if (!($form_arg instanceof FormInterface)) {
+        throw new \InvalidArgumentException('The form argument ' . $form_arg::class . ' must be an instance of \Drupal\Core\Form\FormInterface.');
     }
 
     // Add the $form_arg as the callback object and determine the form ID.
@@ -485,21 +437,21 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   /**
    * {@inheritdoc}
    */
-  public function setCache($form_build_id, $form, FormStateInterface $form_state) {
+  public function setCache($form_build_id, $form, FormStateInterface $form_state): void {
     $this->formCache->setCache($form_build_id, $form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteCache($form_build_id) {
+  public function deleteCache($form_build_id): void {
     $this->formCache->deleteCache($form_build_id);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm($form_arg, FormStateInterface &$form_state, mixed ...$args) {
+  public function submitForm($form_arg, FormStateInterface &$form_state, mixed ...$args): void {
     $build_info = $form_state->getBuildInfo();
     if (empty($build_info['args'])) {
       $form_state->addBuildInfo('args', $args);
@@ -675,7 +627,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
    * @return array
    *   A renderable array representing the form action.
    */
-  public function renderPlaceholderFormAction() {
+  public function renderPlaceholderFormAction(): array {
     return [
       '#type' => 'markup',
       '#markup' => $this->buildFormAction(),
@@ -693,7 +645,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
    * @return array
    *   A renderable array containing the CSRF token.
    */
-  public function renderFormTokenPlaceholder($placeholder) {
+  public function renderFormTokenPlaceholder($placeholder): array {
     return [
       '#markup' => $this->csrfToken->get($placeholder),
       '#cache' => [
@@ -707,7 +659,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   /**
    * {@inheritdoc}
    */
-  public function prepareForm($form_id, &$form, FormStateInterface &$form_state) {
+  public function prepareForm($form_id, &$form, FormStateInterface &$form_state): void {
     $user = $this->currentUser();
 
     $form['#type'] = 'form';
@@ -904,7 +856,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
    * @return string
    *   The URL to be used as the $form['#action'].
    */
-  protected function buildFormAction() {
+  protected function buildFormAction(): string {
     // @todo Use <current> instead of the main request in
     //   https://www.drupal.org/node/2505339.
     $request = $this->requestStack->getMainRequest();
@@ -912,7 +864,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
 
     // Prevent cross site requests via the Form API by using an absolute URL
     // when the request uri starts with multiple slashes.
-    if (str_starts_with($request_uri, '//')) {
+    if (str_starts_with((string) $request_uri, '//')) {
       $request_uri = $request->getUri();
     }
 
@@ -927,14 +879,14 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   /**
    * {@inheritdoc}
    */
-  public function setInvalidTokenError(FormStateInterface $form_state) {
+  public function setInvalidTokenError(FormStateInterface $form_state): void {
     $this->formValidator->setInvalidTokenError($form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateForm($form_id, &$form, FormStateInterface &$form_state) {
+  public function validateForm($form_id, &$form, FormStateInterface &$form_state): void {
     $this->formValidator->validateForm($form_id, $form, $form_state);
   }
 
@@ -948,21 +900,21 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   /**
    * {@inheritdoc}
    */
-  public function executeValidateHandlers(&$form, FormStateInterface &$form_state) {
+  public function executeValidateHandlers(&$form, FormStateInterface &$form_state): void {
     $this->formValidator->executeValidateHandlers($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function executeSubmitHandlers(&$form, FormStateInterface &$form_state) {
+  public function executeSubmitHandlers(&$form, FormStateInterface &$form_state): void {
     $this->formSubmitter->executeSubmitHandlers($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function doSubmitForm(&$form, FormStateInterface &$form_state) {
+  public function doSubmitForm(&$form, FormStateInterface &$form_state): never {
     throw new \LogicException('Use FormBuilderInterface::processForm() instead.');
   }
 
@@ -1230,7 +1182,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   /**
    * Adds the #name and #value properties of an input element before rendering.
    */
-  protected function handleInputElement($form_id, &$element, FormStateInterface &$form_state) {
+  protected function handleInputElement($form_id, array &$element, FormStateInterface &$form_state) {
     if (!isset($element['#name'])) {
       $name = array_shift($element['#parents']);
       $element['#name'] = $name;
@@ -1401,12 +1353,16 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
    * element value. An example where this is needed is if there are several
    * // buttons all named 'op', and only different in their value.
    */
-  protected function elementTriggeredScriptedSubmission($element, FormStateInterface &$form_state) {
+  protected function elementTriggeredScriptedSubmission(array $element, FormStateInterface &$form_state): bool {
     $input = $form_state->getUserInput();
-    if (!empty($input['_triggering_element_name']) && $element['#name'] == $input['_triggering_element_name']) {
-      if (empty($input['_triggering_element_value']) || $input['_triggering_element_value'] == $element['#value']) {
-        return TRUE;
-      }
+    if (!!empty($input['_triggering_element_name'])) {
+        return FALSE;
+    }
+    if (!($element['#name'] == $input['_triggering_element_name'])) {
+        return FALSE;
+    }
+    if (empty($input['_triggering_element_value']) || $input['_triggering_element_value'] == $element['#value']) {
+      return TRUE;
     }
     return FALSE;
   }
@@ -1431,7 +1387,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
    * to know which button was clicked should get that information from
    * $form_state->getTriggeringElement().
    */
-  protected function buttonWasClicked($element, FormStateInterface &$form_state) {
+  protected function buttonWasClicked(array $element, FormStateInterface &$form_state): bool {
     // First detect normal 'vanilla' button clicks. Traditionally, all standard
     // buttons on a form share the same name (usually 'op'), and the specific
     // return value is used to determine which was clicked. This ONLY works as
@@ -1443,15 +1399,15 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
     // to decode the value in $element['#value']. For more details see
     // https://www.w3.org/TR/html401/types.html#type-cdata.
     if (isset($input[$element['#name']]) && $input[$element['#name']] == Html::decodeEntities($element['#value'])) {
-      return TRUE;
+        return TRUE;
     }
     // When image buttons are clicked, browsers do NOT pass the form element
     // value in \Drupal::request()->Request. Instead they pass an integer
     // representing the coordinates of the click on the button image. This means
     // that image buttons MUST have unique $form['#name'] values, but the
     // details of their \Drupal::request()->request data should be ignored.
-    elseif (!empty($element['#has_garbage_value']) && isset($element['#value']) && $element['#value'] !== '') {
-      return TRUE;
+    if (!empty($element['#has_garbage_value']) && isset($element['#value']) && $element['#value'] !== '') {
+        return TRUE;
     }
     return FALSE;
   }
@@ -1483,7 +1439,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['renderPlaceholderFormAction', 'renderFormTokenPlaceholder'];
   }
 

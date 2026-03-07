@@ -33,7 +33,7 @@ class UnformattedSummary extends DefaultSummary {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['inline'] = [
       '#type' => 'checkbox',

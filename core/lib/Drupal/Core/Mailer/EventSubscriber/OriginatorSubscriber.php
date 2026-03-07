@@ -103,7 +103,7 @@ class OriginatorSubscriber implements EventSubscriberInterface {
    *   The language code from the email.
    */
   protected function getSiteAddress(?string $langcode): Address {
-    return $this->executeInEnvironment($langcode, function () {
+    return $this->executeInEnvironment($langcode, function (): \Symfony\Component\Mime\Address {
       $config = $this->configFactory->get('system.site');
       return new Address($config->get('mail'), $config->get('name'));
     });

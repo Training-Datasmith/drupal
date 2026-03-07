@@ -14,7 +14,7 @@ class LanguageEditForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     // @todo Remove in favor of base method.
     return 'language_admin_edit_form';
   }
@@ -22,7 +22,7 @@ class LanguageEditForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $this->commonForm($form);
     return parent::form($form, $form_state);
   }
@@ -30,7 +30,7 @@ class LanguageEditForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function actions(array $form, FormStateInterface $form_state) {
+  public function actions(array $form, FormStateInterface $form_state): array {
     $actions['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save language'),
@@ -43,7 +43,7 @@ class LanguageEditForm extends LanguageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     parent::save($form, $form_state);
     $form_state->setRedirectUrl($this->entity->toUrl('collection'));
     $this->logger('language')

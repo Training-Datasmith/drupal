@@ -33,10 +33,10 @@ class Condition extends ConditionBase {
         if (!in_array($condition['operator'], ['IS NULL', 'IS NOT NULL'], TRUE)) {
           // Lowercase condition value(s) for case-insensitive matches.
           if (is_array($condition['value'])) {
-            $condition['value'] = array_map('mb_strtolower', $condition['value']);
+            $condition['value'] = array_map(mb_strtolower(...), $condition['value']);
           }
           elseif (!is_bool($condition['value'])) {
-            $condition['value'] = mb_strtolower($condition['value']);
+            $condition['value'] = mb_strtolower((string) $condition['value']);
           }
         }
 
@@ -47,7 +47,7 @@ class Condition extends ConditionBase {
     if ($single_conditions) {
       foreach ($configs as $config_name => $config) {
         foreach ($single_conditions as $condition) {
-          $match = $this->matchArray($condition, $config, explode('.', $condition['field']));
+          $match = $this->matchArray($condition, $config, explode('.', (string) $condition['field']));
           // If AND and it's not matching, then the rest of conditions do not
           // matter and this config object does not match.
           // If OR and it is matching, then the rest of conditions do not
@@ -112,7 +112,7 @@ class Condition extends ConditionBase {
    * @return bool
    *   TRUE when the condition matched to the data else FALSE.
    */
-  protected function matchArray(array $condition, array $data, array $needs_matching, array $parents = []) {
+  protected function matchArray(array $condition, array $data, array $needs_matching, array $parents = []): bool {
     $parent = array_shift($needs_matching);
     if ($parent === '*') {
       $candidates = array_keys($data);
@@ -174,43 +174,20 @@ class Condition extends ConditionBase {
         $value = mb_strtolower($value);
       }
 
-      switch ($condition['operator']) {
-        case '=':
-          return $value == $condition['value'];
-
-        case '>':
-          return $value > $condition['value'];
-
-        case '<':
-          return $value < $condition['value'];
-
-        case '>=':
-          return $value >= $condition['value'];
-
-        case '<=':
-          return $value <= $condition['value'];
-
-        case '<>':
-          return $value != $condition['value'];
-
-        case 'IN':
-          return array_search($value, $condition['value']) !== FALSE;
-
-        case 'NOT IN':
-          return array_search($value, $condition['value']) === FALSE;
-
-        case 'STARTS_WITH':
-          return str_starts_with($value, $condition['value']);
-
-        case 'CONTAINS':
-          return str_contains($value, $condition['value']);
-
-        case 'ENDS_WITH':
-          return str_ends_with($value, $condition['value']);
-
-        default:
-          throw new QueryException('Invalid condition operator.');
-      }
+      return match ($condition['operator']) {
+          '=' => $value == $condition['value'],
+          '>' => $value > $condition['value'],
+          '<' => $value < $condition['value'],
+          '>=' => $value >= $condition['value'],
+          '<=' => $value <= $condition['value'],
+          '<>' => $value != $condition['value'],
+          'IN' => array_search($value, $condition['value']) !== FALSE,
+          'NOT IN' => array_search($value, $condition['value']) === FALSE,
+          'STARTS_WITH' => str_starts_with($value, (string) $condition['value']),
+          'CONTAINS' => str_contains($value, (string) $condition['value']),
+          'ENDS_WITH' => str_ends_with($value, (string) $condition['value']),
+          default => throw new QueryException('Invalid condition operator.'),
+      };
     }
     return FALSE;
   }

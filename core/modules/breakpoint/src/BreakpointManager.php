@@ -62,17 +62,10 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
     // The breakpoint group.
     'group' => '',
     // Default class for breakpoint implementations.
-    'class' => 'Drupal\breakpoint\Breakpoint',
+    'class' => \Drupal\breakpoint\Breakpoint::class,
     // The plugin id. Set by the plugin system based on the top-level YAML key.
     'id' => '',
   ];
-
-  /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
 
   /**
    * Static cache of breakpoints keyed by group.
@@ -93,7 +86,7 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
    *
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
@@ -102,10 +95,9 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
    * @param \Drupal\Core\Extension\ModuleExtensionList $module_extension_list
    *   The module extension list.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ThemeHandlerInterface $theme_handler, CacheBackendInterface $cache_backend, TranslationInterface $string_translation, ModuleExtensionList $module_extension_list) {
+  public function __construct(ModuleHandlerInterface $module_handler, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler, CacheBackendInterface $cache_backend, TranslationInterface $string_translation, ModuleExtensionList $module_extension_list) {
     $this->factory = new ContainerFactory($this);
     $this->moduleHandler = $module_handler;
-    $this->themeHandler = $theme_handler;
     $this->moduleExtensionList = $module_extension_list;
     $this->setStringTranslation($string_translation);
     $this->alterInfo('breakpoints');
@@ -126,7 +118,7 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     parent::processDefinition($definition, $plugin_id);
     // Allow custom groups and therefore more than one group per extension.
     if (empty($definition['group'])) {
@@ -144,14 +136,19 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
   /**
    * {@inheritdoc}
    */
-  protected function providerExists($provider) {
-    return $this->moduleHandler->moduleExists($provider) || $this->themeHandler->themeExists($provider);
+  protected function providerExists($provider): bool
+  {
+      if ($this->moduleHandler->moduleExists($provider)) {
+          return true;
+      }
+      return $this->themeHandler->themeExists($provider);
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getBreakpointsByGroup($group) {
+  public function getBreakpointsByGroup($group): array {
     if (!isset($this->breakpointsByGroup[$group])) {
       if ($cache = $this->cacheBackend->get($this->cacheKey . ':' . $group)) {
         $this->breakpointsByGroup[$group] = $cache->data;
@@ -163,7 +160,7 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
             $breakpoints[$plugin_id] = $plugin_definition;
           }
         }
-        uasort($breakpoints, ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+        uasort($breakpoints, \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
         $this->cacheBackend->set($this->cacheKey . ':' . $group, $breakpoints, Cache::PERMANENT, ['breakpoints']);
         $this->breakpointsByGroup[$group] = $breakpoints;
       }
@@ -181,8 +178,9 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getGroups() {
+  public function getGroups(): array {
     // Use a double colon so as to not clash with the cache for each group.
     if ($cache = $this->cacheBackend->get($this->cacheKey . '::groups')) {
       $groups = $cache->data;
@@ -207,8 +205,9 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getGroupProviders($group) {
+  public function getGroupProviders($group): array {
     $providers = [];
     $breakpoints = $this->getBreakpointsByGroup($group);
     foreach ($breakpoints as $breakpoint) {
@@ -230,7 +229,7 @@ class BreakpointManager extends DefaultPluginManager implements BreakpointManage
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     parent::clearCachedDefinitions();
     $this->breakpointsByGroup = NULL;
     $this->instances = [];

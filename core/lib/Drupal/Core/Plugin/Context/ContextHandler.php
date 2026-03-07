@@ -16,7 +16,7 @@ class ContextHandler implements ContextHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function filterPluginDefinitionsByContexts(array $contexts, array $definitions) {
+  public function filterPluginDefinitionsByContexts(array $contexts, array $definitions): array {
     $checked_requirements = [];
     return array_filter($definitions, function ($plugin_definition) use ($contexts, &$checked_requirements) {
       $context_definitions = $this->getContextDefinitions($plugin_definition);
@@ -59,7 +59,7 @@ class ContextHandler implements ContextHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function checkRequirements(array $contexts, array $requirements) {
+  public function checkRequirements(array $contexts, array $requirements): bool {
     foreach ($requirements as $requirement) {
       if ($requirement->isRequired() && !$this->getMatchingContexts($contexts, $requirement)) {
         return FALSE;
@@ -71,16 +71,14 @@ class ContextHandler implements ContextHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getMatchingContexts(array $contexts, ContextDefinitionInterface $definition) {
-    return array_filter($contexts, function (ContextInterface $context) use ($definition) {
-      return $definition->isSatisfiedBy($context);
-    });
+  public function getMatchingContexts(array $contexts, ContextDefinitionInterface $definition): array {
+    return array_filter($contexts, fn(ContextInterface $context) => $definition->isSatisfiedBy($context));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function applyContextMapping(ContextAwarePluginInterface $plugin, $contexts, $mappings = []) {
+  public function applyContextMapping(ContextAwarePluginInterface $plugin, $contexts, $mappings = []): void {
     /** @var \Drupal\Core\Plugin\Context\ContextInterface[] $contexts */
     $mappings += $plugin->getContextMapping();
     // Loop through each of the expected contexts.

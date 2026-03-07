@@ -23,7 +23,7 @@ abstract class ViewFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function init(FormStateInterface $form_state) {
+  public function init(FormStateInterface $form_state): void {
     parent::init($form_state);
 
     // @todo Remove the need for this.
@@ -51,7 +51,7 @@ abstract class ViewFormBase extends EntityForm {
       if (empty($this->displayID)) {
         // If a display isn't specified, use the first one after sorting by
         // #weight.
-        uasort($tabs, 'Drupal\Component\Utility\SortArray::sortByWeightProperty');
+        uasort($tabs, Drupal\Component\Utility\SortArray::sortByWeightProperty(...));
         foreach ($tabs as $id => $tab) {
           if (!isset($tab['#access']) || $tab['#access']) {
             $this->displayID = $id;
@@ -62,10 +62,10 @@ abstract class ViewFormBase extends EntityForm {
       // If a display is specified, but we don't have access to it, return
       // an access denied page.
       if ($this->displayID && !isset($tabs[$this->displayID])) {
-        throw new NotFoundHttpException();
+          throw new NotFoundHttpException();
       }
-      elseif ($this->displayID && (isset($tabs[$this->displayID]['#access']) && !$tabs[$this->displayID]['#access'])) {
-        throw new AccessDeniedHttpException();
+      if ($this->displayID && (isset($tabs[$this->displayID]['#access']) && !$tabs[$this->displayID]['#access'])) {
+          throw new AccessDeniedHttpException();
       }
 
     }

@@ -84,7 +84,7 @@ class ThemeSuggestionHooks {
     $path = $this->requestStack->getCurrentRequest()?->getPathInfo();
 
     if ($path !== '/') {
-      $path = trim($path, '/');
+      $path = trim((string) $path, '/');
       $arg = str_replace(["/", '-'], ['_', '_'], $path);
       $suggestions[] = 'page__' . $arg;
     }

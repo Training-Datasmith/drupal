@@ -30,7 +30,7 @@ class MemoryCounterBackend extends MemoryBackend {
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
     $this->increaseCounter(__FUNCTION__, $cid);
     parent::set($cid, $data, $expire, $tags);
   }
@@ -38,7 +38,7 @@ class MemoryCounterBackend extends MemoryBackend {
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     $this->increaseCounter(__FUNCTION__, $cid);
     parent::delete($cid);
   }
@@ -73,20 +73,18 @@ class MemoryCounterBackend extends MemoryBackend {
    */
   public function getCounter($method = NULL, $cid = NULL) {
     if ($method && $cid) {
-      return $this->counter[$method][$cid] ?? 0;
+        return $this->counter[$method][$cid] ?? 0;
     }
-    elseif ($method) {
-      return $this->counter[$method] ?? [];
+    if ($method) {
+        return $this->counter[$method] ?? [];
     }
-    else {
-      return $this->counter;
-    }
+    return $this->counter;
   }
 
   /**
    * Resets the call counter.
    */
-  public function resetCounter() {
+  public function resetCounter(): void {
     $this->counter = [];
   }
 

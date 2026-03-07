@@ -50,7 +50,7 @@ class WorkspaceViewBuilder extends EntityViewBuilder {
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     $instance = parent::createInstance($container, $entity_type);
     $instance->entityTypeManager = $container->get('entity_type.manager');
     $instance->workspaceTracker = $container->get('workspaces.tracker');
@@ -62,7 +62,7 @@ class WorkspaceViewBuilder extends EntityViewBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildComponents(array &$build, array $entities, array $displays, $view_mode) {
+  public function buildComponents(array &$build, array $entities, array $displays, $view_mode): void {
     parent::buildComponents($build, $entities, $displays, $view_mode);
     $bundle_info = $this->bundleInfo->getAllBundleInfo();
 

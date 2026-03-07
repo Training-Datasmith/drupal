@@ -24,7 +24,7 @@ class IntegerData extends PrimitiveBase implements IntegerInterface {
    * {@inheritdoc}
    */
   #[JsonSchema(['type' => 'integer'])]
-  public function getCastedValue() {
+  public function getCastedValue(): int {
     return (int) $this->value;
   }
 

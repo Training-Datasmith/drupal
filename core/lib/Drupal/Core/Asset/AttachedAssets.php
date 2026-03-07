@@ -31,7 +31,7 @@ class AttachedAssets implements AttachedAssetsInterface {
   /**
    * {@inheritdoc}
    */
-  public static function createFromRenderArray(array $render_array) {
+  public static function createFromRenderArray(array $render_array): static {
     if (!isset($render_array['#attached'])) {
       throw new \LogicException('The render array has not yet been rendered, hence not all attachments have been collected yet.');
     }
@@ -49,7 +49,7 @@ class AttachedAssets implements AttachedAssetsInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLibraries(array $libraries) {
+  public function setLibraries(array $libraries): static {
     $this->libraries = array_unique($libraries);
     return $this;
   }
@@ -64,7 +64,7 @@ class AttachedAssets implements AttachedAssetsInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSettings(array $settings) {
+  public function setSettings(array $settings): static {
     $this->settings = $settings;
     return $this;
   }
@@ -86,7 +86,7 @@ class AttachedAssets implements AttachedAssetsInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAlreadyLoadedLibraries(array $libraries) {
+  public function setAlreadyLoadedLibraries(array $libraries): static {
     $this->alreadyLoadedLibraries = $libraries;
     return $this;
   }

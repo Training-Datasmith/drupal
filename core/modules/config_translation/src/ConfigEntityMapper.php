@@ -22,13 +22,6 @@ use Symfony\Component\Routing\Route;
 class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapperInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Configuration entity type name.
    *
    * @var string
@@ -70,24 +63,22 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
    *   The route provider.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $translation_manager
    *   The string translation manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
    * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
    */
-  public function __construct($plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typed_config, LocaleConfigManager $locale_config_manager, ConfigMapperManagerInterface $config_mapper_manager, RouteProviderInterface $route_provider, TranslationInterface $translation_manager, EntityTypeManagerInterface $entity_type_manager, LanguageManagerInterface $language_manager, ?EventDispatcherInterface $event_dispatcher = NULL) {
+  public function __construct($plugin_id, $plugin_definition, ConfigFactoryInterface $config_factory, TypedConfigManagerInterface $typed_config, LocaleConfigManager $locale_config_manager, ConfigMapperManagerInterface $config_mapper_manager, RouteProviderInterface $route_provider, TranslationInterface $translation_manager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, LanguageManagerInterface $language_manager, ?EventDispatcherInterface $event_dispatcher = NULL) {
     parent::__construct($plugin_id, $plugin_definition, $config_factory, $typed_config, $locale_config_manager, $config_mapper_manager, $route_provider, $translation_manager, $language_manager, $event_dispatcher);
     $this->setType($plugin_definition['entity_type']);
-
-    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     // Note that we ignore the plugin $configuration because mappers have
     // nothing to configure in themselves.
     return new static(
@@ -108,7 +99,7 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
   /**
    * {@inheritdoc}
    */
-  public function populateFromRouteMatch(RouteMatchInterface $route_match) {
+  public function populateFromRouteMatch(RouteMatchInterface $route_match): void {
     $entity = $route_match->getParameter($this->entityType);
     $this->setEntity($entity);
     parent::populateFromRouteMatch($route_match);
@@ -124,7 +115,7 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
   /**
    * {@inheritdoc}
    */
-  public function setEntity(ConfigEntityInterface $entity) {
+  public function setEntity(ConfigEntityInterface $entity): bool {
     if (isset($this->entity)) {
       return FALSE;
     }
@@ -146,14 +137,14 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
   /**
    * {@inheritdoc}
    */
-  public function getTitle() {
+  public function getTitle(): string {
     return $this->entity->label() . ' ' . $this->pluginDefinition['title'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getBaseRouteParameters() {
+  public function getBaseRouteParameters(): array {
     return [$this->entityType => $this->entity->id()];
   }
 
@@ -194,7 +185,7 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
   /**
    * {@inheritdoc}
    */
-  public function getOperations() {
+  public function getOperations(): array {
     return [
       'list' => [
         'title' => $this->t('List'),
@@ -208,26 +199,20 @@ class ConfigEntityMapper extends ConfigNamesMapper implements ConfigEntityMapper
   /**
    * {@inheritdoc}
    */
-  public function getContextualLinkGroup() {
+  public function getContextualLinkGroup(): ?string {
     // @todo Contextual groups do not map to entity types in a predictable
     //   way. See https://www.drupal.org/node/2134841 to make them predictable.
-    switch ($this->entityType) {
-      case 'menu':
-      case 'block':
-        return $this->entityType;
-
-      case 'view':
-        return 'entity.view.edit_form';
-
-      default:
-        return NULL;
-    }
+    return match ($this->entityType) {
+        'menu', 'block' => $this->entityType,
+        'view' => 'entity.view.edit_form',
+        default => NULL,
+    };
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getOverviewRouteName() {
+  public function getOverviewRouteName(): string {
     return 'entity.' . $this->entityType . '.config_translation_overview';
   }
 

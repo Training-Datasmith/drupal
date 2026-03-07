@@ -24,32 +24,25 @@ class FieldUninstallValidator implements ConfigImportModuleUninstallValidatorInt
   protected $fieldStorageConfigStorage;
 
   /**
-   * The field type plugin manager.
-   *
-   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
-   */
-  protected $fieldTypeManager;
-
-  /**
    * Constructs a new FieldUninstallValidator.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
-   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager
    *   The field type plugin manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, FieldTypePluginManagerInterface $field_type_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, protected \Drupal\Core\Field\FieldTypePluginManagerInterface $fieldTypeManager) {
     $this->fieldStorageConfigStorage = $entity_type_manager->getStorage('field_storage_config');
     $this->stringTranslation = $string_translation;
-    $this->fieldTypeManager = $field_type_manager;
   }
 
   /**
    * {@inheritdoc}
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup[]
    */
-  public function validate($module) {
+  public function validate($module): array {
     $reasons = [];
     if ($field_storages = $this->getFieldStoragesByModule($module)) {
       // Provide an explanation message (only mention pending deletions if there

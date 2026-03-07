@@ -29,7 +29,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
  * @ingroup hooks
  * @see hook_options_list()
  */
-function hook_options_list_alter(array &$options, array $context) {
+function hook_options_list_alter(array &$options, array $context): void {
   // Check if this is the field we want to change.
   if ($context['fieldDefinition']->getName() == 'field_option') {
     // Change the label of the empty option.
@@ -80,24 +80,21 @@ function hook_options_list_alter(array &$options, array $context) {
  * @see \Drupal\options_test\OptionsAllowedValues::simpleValues()
  * @see \Drupal\options_test\OptionsAllowedValues::dynamicValues()
  */
-function callback_allowed_values_function(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, &$cacheable = TRUE) {
+function callback_allowed_values_function(FieldStorageDefinitionInterface $definition, ?FieldableEntityInterface $entity = NULL, &$cacheable = TRUE): array {
   if (isset($entity) && ($entity->bundle() == 'not_a_programmer')) {
-    $values = [
+    return [
       1 => 'One',
       2 => 'Two',
     ];
   }
-  else {
-    $values = [
-      'Group 1' => [
-        0 => 'Zero',
-        1 => 'One',
-      ],
-      'Group 2' => [
-        2 => 'Two',
-      ],
-    ];
-  }
 
-  return $values;
+  return [
+    'Group 1' => [
+      0 => 'Zero',
+      1 => 'One',
+    ],
+    'Group 2' => [
+      2 => 'Two',
+    ],
+  ];
 }

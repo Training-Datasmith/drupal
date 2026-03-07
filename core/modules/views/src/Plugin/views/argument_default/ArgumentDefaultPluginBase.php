@@ -57,7 +57,7 @@ abstract class ArgumentDefaultPluginBase extends PluginBase {
    * @param \Drupal\views\Plugin\views\argument\ArgumentPluginBase $argument
    *   The parent argument to set.
    */
-  public function setArgument(ArgumentPluginBase $argument) {
+  public function setArgument(ArgumentPluginBase $argument): void {
     $this->argument = $argument;
   }
 
@@ -71,7 +71,7 @@ abstract class ArgumentDefaultPluginBase extends PluginBase {
   /**
    * Provide the default form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {}
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {}
 
   /**
    * Provide the default form for validating options.
@@ -99,7 +99,7 @@ abstract class ArgumentDefaultPluginBase extends PluginBase {
    * This is only called by child objects if specified in the
    * buildOptionsForm(), so it will not always be used.
    */
-  protected function checkAccess(&$form, $option_name) {
+  protected function checkAccess(array &$form, $option_name) {
     if (!$this->access()) {
       $form[$option_name]['#disabled'] = TRUE;
       $form[$option_name]['#value'] = $form[$this->option_name]['#default_value'];

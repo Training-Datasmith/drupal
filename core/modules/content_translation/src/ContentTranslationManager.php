@@ -12,30 +12,15 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 class ContentTranslationManager implements ContentTranslationManagerInterface, BundleTranslationSettingsInterface {
 
   /**
-   * The entity type bundle info provider.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a ContentTranslationManageAccessCheck object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info provider.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo)
+  {
   }
 
   /**
@@ -58,15 +43,16 @@ class ContentTranslationManager implements ContentTranslationManagerInterface, B
   /**
    * {@inheritdoc}
    */
-  public function isSupported($entity_type_id) {
+  public function isSupported($entity_type_id): bool {
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
     return $entity_type->isTranslatable() && ($entity_type->hasLinkTemplate('drupal:content-translation-overview') || $entity_type->get('content_translation_ui_skip'));
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getSupportedEntityTypes() {
+  public function getSupportedEntityTypes(): array {
     $supported_types = [];
     foreach ($this->entityTypeManager->getDefinitions() as $entity_type_id => $entity_type) {
       if ($this->isSupported($entity_type_id)) {
@@ -79,7 +65,7 @@ class ContentTranslationManager implements ContentTranslationManagerInterface, B
   /**
    * {@inheritdoc}
    */
-  public function setEnabled($entity_type_id, $bundle, $value) {
+  public function setEnabled($entity_type_id, $bundle, $value): void {
     $config = $this->loadContentLanguageSettings($entity_type_id, $bundle);
     $config->setThirdPartySetting('content_translation', 'enabled', $value)->save();
   }
@@ -107,7 +93,7 @@ class ContentTranslationManager implements ContentTranslationManagerInterface, B
   /**
    * {@inheritdoc}
    */
-  public function setBundleTranslationSettings($entity_type_id, $bundle, array $settings) {
+  public function setBundleTranslationSettings($entity_type_id, $bundle, array $settings): void {
     $config = $this->loadContentLanguageSettings($entity_type_id, $bundle);
     $config->setThirdPartySetting('content_translation', 'bundle_settings', $settings)
       ->save();
@@ -133,13 +119,13 @@ class ContentTranslationManager implements ContentTranslationManagerInterface, B
    *   The content language config entity if one exists. Otherwise, returns
    *   default values.
    */
-  protected function loadContentLanguageSettings($entity_type_id, $bundle) {
+  protected function loadContentLanguageSettings(?string $entity_type_id, ?string $bundle) {
     if ($entity_type_id == NULL || $bundle == NULL) {
       return NULL;
     }
     $config = $this->entityTypeManager->getStorage('language_content_settings')->load($entity_type_id . '.' . $bundle);
     if ($config == NULL) {
-      $config = $this->entityTypeManager->getStorage('language_content_settings')->create(['target_entity_type_id' => $entity_type_id, 'target_bundle' => $bundle]);
+      return $this->entityTypeManager->getStorage('language_content_settings')->create(['target_entity_type_id' => $entity_type_id, 'target_bundle' => $bundle]);
     }
     return $config;
   }
@@ -171,9 +157,7 @@ class ContentTranslationManager implements ContentTranslationManagerInterface, B
     if ($bundle_id) {
       return \Drupal::service('content_moderation.moderation_information')->shouldModerateEntitiesOfBundle($entity_type, $bundle_id);
     }
-    else {
-      return \Drupal::service('content_moderation.moderation_information')->canModerateEntitiesOfEntityType($entity_type);
-    }
+    return \Drupal::service('content_moderation.moderation_information')->canModerateEntitiesOfEntityType($entity_type);
   }
 
 }

@@ -48,7 +48,7 @@ class BooleanItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -62,7 +62,7 @@ class BooleanItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function fieldSettingsForm(array $form, FormStateInterface $form_state) {
+  public function fieldSettingsForm(array $form, FormStateInterface $form_state): array {
     $element = [];
 
     $element['on_label'] = [
@@ -84,14 +84,14 @@ class BooleanItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getPossibleValues(?AccountInterface $account = NULL) {
+  public function getPossibleValues(?AccountInterface $account = NULL): array {
     return [0, 1];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getPossibleOptions(?AccountInterface $account = NULL) {
+  public function getPossibleOptions(?AccountInterface $account = NULL): array {
     return [
       0 => $this->getSetting('off_label'),
       1 => $this->getSetting('on_label'),
@@ -101,7 +101,7 @@ class BooleanItem extends FieldItemBase implements OptionsProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getSettableValues(?AccountInterface $account = NULL) {
+  public function getSettableValues(?AccountInterface $account = NULL): array {
     return [0, 1];
   }
 

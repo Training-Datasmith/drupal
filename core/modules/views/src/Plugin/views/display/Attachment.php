@@ -58,7 +58,7 @@ class Attachment extends DisplayPluginBase {
   /**
    * Gets the positions for the attachment in relation to the parent display.
    */
-  public function attachmentPositions($position = NULL) {
+  public function attachmentPositions($position = NULL): \Drupal\Core\StringTranslation\TranslatableMarkup|array {
     $positions = [
       'before' => $this->t('Before'),
       'after' => $this->t('After'),
@@ -77,7 +77,7 @@ class Attachment extends DisplayPluginBase {
    *
    * This output is returned as an array.
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     // It is very important to call the parent function here:
     parent::optionsSummary($categories, $options);
 
@@ -145,7 +145,7 @@ class Attachment extends DisplayPluginBase {
   /**
    * Provide the default form for setting options.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     // It is very important to call the parent function here:
     parent::buildOptionsForm($form, $form_state);
 
@@ -213,7 +213,7 @@ class Attachment extends DisplayPluginBase {
           '#title' => $this->t('Displays'),
           '#type' => 'checkboxes',
           '#description' => $this->t('Select which display or displays this should attach to.'),
-          '#options' => array_map('\Drupal\Component\Utility\Html::escape', $displays),
+          '#options' => array_map(\Drupal\Component\Utility\Html::escape(...), $displays),
           '#default_value' => $this->getOption('displays'),
         ];
         break;
@@ -225,7 +225,7 @@ class Attachment extends DisplayPluginBase {
    *
    * There is no need for this function to actually store the data.
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     // It is very important to call the parent function here:
     parent::submitOptionsForm($form, $form_state);
     $section = $form_state->get('section');
@@ -245,7 +245,7 @@ class Attachment extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function attachTo(ViewExecutable $view, $display_id, array &$build) {
+  public function attachTo(ViewExecutable $view, $display_id, array &$build): void {
     $displays = $this->getOption('displays');
 
     if (empty($displays[$display_id])) {
@@ -286,7 +286,7 @@ class Attachment extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function usesExposed() {
+  public function usesExposed(): bool {
     // Attachment displays only use exposed widgets if they are set to inherit
     // the exposed filter settings of their parent display.
     if (!empty($this->options['inherit_exposed_filters']) && parent::usesExposed()) {
@@ -298,7 +298,7 @@ class Attachment extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function displaysExposed() {
+  public function displaysExposed(): bool {
     // If an attachment is set to inherit the exposed filter settings from its
     // parent display, then don't render and display a second set of exposed
     // filter widgets.
@@ -308,7 +308,7 @@ class Attachment extends DisplayPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function renderPager() {
+  public function renderPager(): bool {
     return $this->usesPager() && $this->getOption('render_pager');
   }
 

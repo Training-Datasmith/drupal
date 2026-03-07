@@ -12,7 +12,7 @@ use Drupal\Core\Entity\Query\QueryInterface;
 /**
  * The SQL storage entity query class.
  */
-class Query extends QueryBase implements QueryInterface {
+class Query extends QueryBase implements QueryInterface, \Stringable {
 
   /**
    * The build sql select query.
@@ -50,11 +50,6 @@ class Query extends QueryBase implements QueryInterface {
   protected $sqlGroupBy = [];
 
   /**
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs a query object.
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
@@ -67,9 +62,8 @@ class Query extends QueryBase implements QueryInterface {
    * @param array $namespaces
    *   List of potential namespaces of the classes belonging to this query.
    */
-  public function __construct(EntityTypeInterface $entity_type, $conjunction, Connection $connection, array $namespaces) {
+  public function __construct(EntityTypeInterface $entity_type, $conjunction, protected \Drupal\Core\Database\Connection $connection, array $namespaces) {
     parent::__construct($entity_type, $conjunction, $namespaces);
-    $this->connection = $connection;
   }
 
   /**
@@ -94,7 +88,7 @@ class Query extends QueryBase implements QueryInterface {
    * @throws \Drupal\Core\Entity\Query\QueryException
    *   Thrown if the base table does not exist.
    */
-  protected function prepare() {
+  protected function prepare(): static {
     if ($this->allRevisions) {
       if (!$base_table = $this->entityType->getRevisionTable()) {
         throw new QueryException("No revision table for " . $this->entityTypeId . ", invalid query.");
@@ -189,7 +183,7 @@ class Query extends QueryBase implements QueryInterface {
    * @return $this
    *   Returns the called object.
    */
-  protected function compile() {
+  protected function compile(): static {
     $this->condition->compile($this->sqlQuery);
     return $this;
   }
@@ -200,7 +194,7 @@ class Query extends QueryBase implements QueryInterface {
    * @return $this
    *   Returns the called object.
    */
-  protected function addSort() {
+  protected function addSort(): static {
     if ($this->count) {
       $this->sort = [];
     }
@@ -258,7 +252,7 @@ class Query extends QueryBase implements QueryInterface {
    * @return $this
    *   Returns the called object.
    */
-  protected function finish() {
+  protected function finish(): static {
     $this->initializePager();
     if ($this->range) {
       $this->sqlQuery->range($this->range['start'], $this->range['length']);
@@ -308,9 +302,7 @@ class Query extends QueryBase implements QueryInterface {
     if (isset($this->sqlFields[$base_property])) {
       return $base_property;
     }
-    else {
-      return $this->tables->addField($field, 'LEFT', $langcode);
-    }
+    return $this->tables->addField($field, 'LEFT', $langcode);
   }
 
   /**
@@ -320,7 +312,7 @@ class Query extends QueryBase implements QueryInterface {
    *   TRUE if the query is a simple query which does not require GROUP BY and
    *   ORDER BY MIN/MAX. Otherwise FALSE.
    */
-  protected function isSimpleQuery() {
+  protected function isSimpleQuery(): bool {
     $isSimpleRange = !$this->range || (($this->range['start'] === 0) && ($this->range['length'] === 1));
     return (!$this->pager && $isSimpleRange && !$this->count) || $this->sqlQuery->getMetaData('simple_query');
   }
@@ -353,7 +345,7 @@ class Query extends QueryBase implements QueryInterface {
   /**
    * Implements the magic __toString method.
    */
-  public function __toString() {
+  public function __toString(): string {
     // Clone the query so the prepare and compile doesn't get repeated.
     $clone = clone($this);
 

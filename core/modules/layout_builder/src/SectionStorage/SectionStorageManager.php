@@ -24,13 +24,6 @@ use Drupal\layout_builder\SupportAwareSectionStorageInterface;
 class SectionStorageManager extends DefaultPluginManager implements SupportAwareSectionStorageManagerInterface {
 
   /**
-   * The context handler.
-   *
-   * @var \Drupal\Core\Plugin\Context\ContextHandlerInterface
-   */
-  protected $contextHandler;
-
-  /**
    * Constructs a new SectionStorageManager object.
    *
    * @param \Traversable $namespaces
@@ -40,13 +33,11 @@ class SectionStorageManager extends DefaultPluginManager implements SupportAware
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to invoke the alter hook with.
-   * @param \Drupal\Core\Plugin\Context\ContextHandlerInterface $context_handler
+   * @param \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler
    *   The context handler.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ContextHandlerInterface $context_handler) {
-    parent::__construct('Plugin/SectionStorage', $namespaces, $module_handler, SectionStorageInterface::class, SectionStorage::class, '\Drupal\layout_builder\Annotation\SectionStorage');
-
-    $this->contextHandler = $context_handler;
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Plugin\Context\ContextHandlerInterface $contextHandler) {
+    parent::__construct('Plugin/SectionStorage', $namespaces, $module_handler, SectionStorageInterface::class, SectionStorage::class, \Drupal\layout_builder\Annotation\SectionStorage::class);
 
     $this->alterInfo('layout_builder_section_storage');
     $this->setCacheBackend($cache_backend, 'layout_builder_section_storage_plugins');
@@ -60,9 +51,7 @@ class SectionStorageManager extends DefaultPluginManager implements SupportAware
 
     // Sort the definitions by their weight while preserving the original order
     // for those with matching weights.
-    $weights = array_map(function (SectionStorageDefinition $definition) {
-      return $definition->getWeight();
-    }, $definitions);
+    $weights = array_map(fn(SectionStorageDefinition $definition) => $definition->getWeight(), $definitions);
     $ids = array_keys($definitions);
     array_multisort($weights, $ids, $definitions);
     return $definitions;
@@ -117,7 +106,7 @@ class SectionStorageManager extends DefaultPluginManager implements SupportAware
       $storage = $this->loadEmpty($storage_type);
 
       if (!$storage instanceof SupportAwareSectionStorageInterface) {
-        @trigger_error('Section storage ' . get_class($storage) . ' not implementing \Drupal\layout_builder\SupportAwareSectionStorageInterface is deprecated in drupal:11.4.0 and is required from drupal:13.0.0. See https://www.drupal.org/node/3574738', E_USER_DEPRECATED);
+        @trigger_error('Section storage ' . $storage::class . ' not implementing \Drupal\layout_builder\SupportAwareSectionStorageInterface is deprecated in drupal:11.4.0 and is required from drupal:13.0.0. See https://www.drupal.org/node/3574738', E_USER_DEPRECATED);
         return FALSE;
       }
 

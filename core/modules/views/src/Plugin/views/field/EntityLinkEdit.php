@@ -16,7 +16,7 @@ class EntityLinkEdit extends EntityLink {
   /**
    * {@inheritdoc}
    */
-  protected function getEntityLinkTemplate() {
+  protected function getEntityLinkTemplate(): string {
     return 'edit-form';
   }
 
@@ -31,7 +31,7 @@ class EntityLinkEdit extends EntityLink {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultLabel() {
+  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('edit');
   }
 

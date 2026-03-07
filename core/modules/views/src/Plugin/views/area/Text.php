@@ -30,7 +30,7 @@ class Text extends TokenizeAreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['content'] = [
@@ -46,10 +46,10 @@ class Text extends TokenizeAreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preQuery() {
+  public function preQuery(): void {
     $content = $this->options['content']['value'];
     // Check for tokens that require a total row count.
-    if (str_contains($content, '[view:page-count]') || str_contains($content, '[view:total-rows]')) {
+    if (str_contains((string) $content, '[view:page-count]') || str_contains((string) $content, '[view:total-rows]')) {
       $this->view->get_total_rows = TRUE;
     }
   }
@@ -57,7 +57,7 @@ class Text extends TokenizeAreaPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($empty = FALSE) {
+  public function render($empty = FALSE): array {
     $format = $this->options['content']['format'] ?? filter_default_format();
     if (!$empty || !empty($this->options['empty'])) {
       return [

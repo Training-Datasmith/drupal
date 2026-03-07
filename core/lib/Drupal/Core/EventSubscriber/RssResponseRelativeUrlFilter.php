@@ -19,9 +19,9 @@ class RssResponseRelativeUrlFilter implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The response event.
    */
-  public function onResponse(ResponseEvent $event) {
+  public function onResponse(ResponseEvent $event): void {
     // Only care about RSS responses.
-    if (stripos($event->getResponse()->headers->get('Content-Type', ''), 'application/rss+xml') === FALSE) {
+    if (stripos((string) $event->getResponse()->headers->get('Content-Type', ''), 'application/rss+xml') === FALSE) {
       return;
     }
 

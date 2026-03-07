@@ -22,25 +22,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class DateRangeDefaultWidget extends DateRangeWidgetBase {
 
   /**
-   * The date format storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $dateStorage;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, EntityStorageInterface $date_storage) {
+  public function __construct($plugin_id, $plugin_definition, FieldDefinitionInterface $field_definition, array $settings, array $third_party_settings, /**
+   * The date format storage.
+   */
+  protected \Drupal\Core\Entity\EntityStorageInterface $dateStorage) {
     parent::__construct($plugin_id, $plugin_definition, $field_definition, $settings, $third_party_settings);
-
-    $this->dateStorage = $date_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $plugin_id,
       $plugin_definition,
@@ -54,7 +48,7 @@ class DateRangeDefaultWidget extends DateRangeWidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element = parent::formElement($items, $delta, $element, $form, $form_state);
 
     // Identify the type of date and time elements to use.

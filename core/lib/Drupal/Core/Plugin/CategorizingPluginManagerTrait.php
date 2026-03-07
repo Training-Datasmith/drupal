@@ -28,7 +28,7 @@ trait CategorizingPluginManagerTrait {
    * @param array $definition
    *   The plugin definition.
    */
-  protected function processDefinitionCategory(&$definition) {
+  protected function processDefinitionCategory(array &$definition) {
     // Ensure that every plugin has a category.
     if (empty($definition['category'])) {
       // Default to the human readable module name if the provider is a module;
@@ -70,12 +70,7 @@ trait CategorizingPluginManagerTrait {
    */
   public function getModuleHandler() {
     @trigger_error(__METHOD__ . '() is deprecated in drupal:10.3.0 and is removed from drupal:12.0.0. There is no replacement. See https://www.drupal.org/node/3310017', E_USER_DEPRECATED);
-    // If the class has an injected module handler, use it. Otherwise fall back
-    // to fetch it from the service container.
-    if (isset($this->moduleHandler)) {
-      return $this->moduleHandler;
-    }
-    return \Drupal::moduleHandler();
+    return $this->moduleHandler ?? \Drupal::moduleHandler();
   }
 
   /**
@@ -85,22 +80,16 @@ trait CategorizingPluginManagerTrait {
    *   The module extension list.
    */
   protected function getModuleExtensionList(): ModuleExtensionList {
-    // If the class has an injected module extension list, use it. Otherwise
-    // fall back to fetch it from the service container.
-    if (isset($this->moduleExtensionList)) {
-      return $this->moduleExtensionList;
-    }
-    return \Drupal::service('extension.list.module');
+    return $this->moduleExtensionList ?? \Drupal::service('extension.list.module');
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getCategories() {
+  public function getCategories(): array {
     // Fetch all categories from definitions and remove duplicates.
-    $categories = array_unique(array_values(array_map(function ($definition) {
-      return $definition['category'];
-    }, $this->getDefinitions())));
+    $categories = array_unique(array_values(array_map(fn(array $definition) => $definition['category'], $this->getDefinitions())));
     natcasesort($categories);
     return $categories;
   }
@@ -108,22 +97,23 @@ trait CategorizingPluginManagerTrait {
   /**
    * {@inheritdoc}
    */
-  public function getSortedDefinitions(?array $definitions = NULL, string $label_key = 'label') {
+  public function getSortedDefinitions(?array $definitions = NULL, string $label_key = 'label'): ?array {
     // Sort the plugins first by category, then by label.
-    $definitions = $definitions ?? $this->getDefinitions();
-    uasort($definitions, function ($a, $b) use ($label_key) {
+    $definitions ??= $this->getDefinitions();
+    uasort($definitions, function (array $a, array $b) use ($label_key): int {
       if ((string) $a['category'] != (string) $b['category']) {
-        return strnatcasecmp($a['category'], $b['category']);
+        return strnatcasecmp((string) $a['category'], (string) $b['category']);
       }
-      return strnatcasecmp($a[$label_key], $b[$label_key]);
+      return strnatcasecmp((string) $a[$label_key], (string) $b[$label_key]);
     });
     return $definitions;
   }
 
   /**
    * {@inheritdoc}
+   * @return array<string, non-empty-array>
    */
-  public function getGroupedDefinitions(?array $definitions = NULL, string $label_key = 'label') {
+  public function getGroupedDefinitions(?array $definitions = NULL, string $label_key = 'label'): array {
     // @phpstan-ignore arguments.count
     $definitions = $this->getSortedDefinitions($definitions ?? $this->getDefinitions(), $label_key);
     $grouped_definitions = [];

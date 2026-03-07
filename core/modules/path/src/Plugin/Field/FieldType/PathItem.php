@@ -40,14 +40,14 @@ class PathItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     $alias = $this->get('alias')->getValue();
     $pid = $this->get('pid')->getValue();
     $langcode = $this->get('langcode')->getValue();
@@ -58,7 +58,7 @@ class PathItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function preSave() {
+  public function preSave(): void {
     $alias = $this->get('alias')->getValue();
     if ($alias !== NULL) {
       $this->set('alias', trim($alias));
@@ -68,7 +68,7 @@ class PathItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public function postSave($update) {
+  public function postSave($update): void {
     $path_alias_storage = \Drupal::entityTypeManager()->getStorage('path_alias');
     $entity = $this->getEntity();
     $alias = $this->get('alias')->getValue();
@@ -140,7 +140,7 @@ class PathItem extends FieldItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function mainPropertyName() {
+  public static function mainPropertyName(): string {
     return 'alias';
   }
 

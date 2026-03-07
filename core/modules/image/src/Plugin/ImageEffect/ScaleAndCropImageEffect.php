@@ -20,12 +20,12 @@ class ScaleAndCropImageEffect extends CropImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
+  public function applyEffect(ImageInterface $image): bool {
     $width = (int) $this->configuration['width'];
     $height = (int) $this->configuration['height'];
     $scale = max($width / $image->getWidth(), $height / $image->getHeight());
 
-    [$x, $y] = explode('-', $this->configuration['anchor']);
+    [$x, $y] = explode('-', (string) $this->configuration['anchor']);
     $x = Image::getKeywordOffset($x, (int) round($image->getWidth() * $scale), $width);
     $y = Image::getKeywordOffset($y, (int) round($image->getHeight() * $scale), $height);
 
@@ -49,9 +49,8 @@ class ScaleAndCropImageEffect extends CropImageEffect {
       '#theme' => 'image_scale_and_crop_summary',
       '#data' => $this->configuration,
     ];
-    $summary += parent::getSummary();
 
-    return $summary;
+    return $summary + parent::getSummary();
   }
 
 }

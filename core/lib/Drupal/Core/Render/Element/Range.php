@@ -32,7 +32,7 @@ class Range extends Number {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     $info = parent::getInfo();
     return [
       '#min' => 0,
@@ -55,7 +55,7 @@ class Range extends Number {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderRange($element) {
+  public static function preRenderRange(array $element): array {
     $element['#attributes']['type'] = 'range';
     Element::setAttributes($element, ['id', 'name', 'value', 'step', 'min', 'max']);
     static::setAttributes($element, ['form-range']);
@@ -71,7 +71,7 @@ class Range extends Number {
       $offset = ($element['#max'] - $element['#min']) / 2;
 
       // Round to the step.
-      if (strtolower($element['#step']) != 'any') {
+      if (strtolower((string) $element['#step']) != 'any') {
         $steps = round($offset / $element['#step']);
         $offset = $element['#step'] * $steps;
       }

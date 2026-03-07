@@ -70,7 +70,7 @@ class FileUploadResource extends ResourceBase {
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    $serializer_formats,
+    array $serializer_formats,
     LoggerInterface $logger,
     protected FileSystemInterface $fileSystem,
     protected EntityTypeManagerInterface $entityTypeManager,
@@ -85,7 +85,7 @@ class FileUploadResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -104,7 +104,7 @@ class FileUploadResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public function permissions() {
+  public function permissions(): array {
     // Access to this resource depends on field-level access so no explicit
     // permissions are required.
     // @see \Drupal\file\Plugin\rest\resource\FileUploadResource::validateAndLoadFieldDefinition()
@@ -132,7 +132,7 @@ class FileUploadResource extends ResourceBase {
    *   Thrown when temporary files cannot be written, a lock cannot be acquired,
    *   or when temporary files cannot be moved to their new location.
    */
-  public function post(Request $request, $entity_type_id, $bundle, $field_name) {
+  public function post(Request $request, $entity_type_id, $bundle, $field_name): \Drupal\rest\ModifiedResourceResponse {
     $field_definition = $this->validateAndLoadFieldDefinition($entity_type_id, $bundle, $field_name);
     $destination = $this->getUploadDestination($field_definition);
 
@@ -156,7 +156,7 @@ class FileUploadResource extends ResourceBase {
       $tempPath = $this->inputStreamFileWriter->writeStreamToFile();
       $uploadedFile = new InputStreamUploadedFile($filename, $filename, $tempPath, @filesize($tempPath));
 
-      $result = $this->fileUploadHandler->handleFileUpload($uploadedFile, $validators, $destination, FileExists::Rename, FALSE);
+      $result = $this->fileUploadHandler->handleFileUpload($uploadedFile, $validators, $destination, FileExists::Rename);
     }
     catch (LockAcquiringException $e) {
       throw new HttpException(503, $e->getMessage(), NULL, ['Retry-After' => 1]);
@@ -277,7 +277,7 @@ class FileUploadResource extends ResourceBase {
    * @return string
    *   The generated lock ID.
    */
-  protected static function generateLockIdFromFileUri($file_uri) {
+  protected static function generateLockIdFromFileUri($file_uri): string {
     return 'file:rest:' . Crypt::hashBase64($file_uri);
   }
 

@@ -36,7 +36,7 @@ class PackageManagerRequirements implements InstallRequirementsInterface {
     $service_id = FailureMarker::class;
     if (\Drupal::hasService($service_id)) {
       try {
-        \Drupal::service($service_id)->assertNotExists(NULL);
+        \Drupal::service($service_id)->assertNotExists();
       }
       catch (FailureMarkerExistsException $exception) {
         $requirements['package_manager_failure_marker'] = [

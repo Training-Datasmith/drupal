@@ -44,7 +44,7 @@ class PluginEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\migrate\Event\MigrateImportEvent $event
    *   The import event.
    */
-  public function preImport(MigrateImportEvent $event) {
+  public function preImport(MigrateImportEvent $event): void {
     $this->invoke('preImport', $event, ImportAwareInterface::class);
   }
 
@@ -54,7 +54,7 @@ class PluginEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\migrate\Event\MigrateImportEvent $event
    *   The import event.
    */
-  public function postImport(MigrateImportEvent $event) {
+  public function postImport(MigrateImportEvent $event): void {
     $this->invoke('postImport', $event, ImportAwareInterface::class);
   }
 
@@ -64,7 +64,7 @@ class PluginEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\migrate\Event\MigrateRollbackEvent $event
    *   The rollback event.
    */
-  public function preRollback(MigrateRollbackEvent $event) {
+  public function preRollback(MigrateRollbackEvent $event): void {
     $this->invoke('preRollback', $event, RollbackAwareInterface::class);
   }
 
@@ -74,7 +74,7 @@ class PluginEventSubscriber implements EventSubscriberInterface {
    * @param \Drupal\migrate\Event\MigrateRollbackEvent $event
    *   The rollback event.
    */
-  public function postRollback(MigrateRollbackEvent $event) {
+  public function postRollback(MigrateRollbackEvent $event): void {
     $this->invoke('postRollback', $event, RollbackAwareInterface::class);
   }
 

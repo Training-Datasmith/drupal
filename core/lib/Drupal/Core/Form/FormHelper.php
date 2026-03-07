@@ -28,7 +28,7 @@ class FormHelper {
    *
    * @see self::processStates()
    */
-  public static function rewriteStatesSelector(array &$elements, $search, $replace) {
+  public static function rewriteStatesSelector(array &$elements, $search, $replace): void {
     if (!empty($elements['#states'])) {
       foreach ($elements['#states'] as $state => $ids) {
         static::processStatesArray($elements['#states'][$state], $search, $replace);
@@ -60,7 +60,7 @@ class FormHelper {
     $keys = array_keys($conditions);
     $update_keys = FALSE;
     foreach ($conditions as $id => $values) {
-      if (str_contains($id, $search)) {
+      if (str_contains((string) $id, $search)) {
         $update_keys = TRUE;
         $new_id = str_replace($search, $replace, $id);
         // Replace the key and keep the array in the same order.
@@ -202,7 +202,7 @@ class FormHelper {
    * @see \Drupal\form_test\Form\JavascriptStatesForm
    * @see \Drupal\FunctionalJavascriptTests\Core\Form\JavascriptStatesTest
    */
-  public static function processStates(array &$elements) {
+  public static function processStates(array &$elements): void {
     $elements['#attached']['library'][] = 'core/drupal.states';
     // Elements that are actual form input elements, use '#attributes'.
     // In cases like 'item' that are not actual form input elements or

@@ -89,7 +89,7 @@ class Select extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#multiple' => FALSE,
@@ -127,7 +127,7 @@ class Select extends FormElementBase {
    *
    * @see _form_validate()
    */
-  public static function processSelect(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processSelect(array &$element, FormStateInterface $form_state, &$complete_form): array {
     // #multiple select fields need a special #name.
     if ($element['#multiple']) {
       $element['#attributes']['multiple'] = 'multiple';
@@ -158,8 +158,7 @@ class Select extends FormElementBase {
       }
     }
     // Provide the correct default value for #sort_start.
-    $element['#sort_start'] = $element['#sort_start'] ??
-      (isset($element['#empty_value']) ? 1 : 0);
+    $element['#sort_start'] ??= isset($element['#empty_value']) ? 1 : 0;
     return $element;
   }
 
@@ -169,15 +168,13 @@ class Select extends FormElementBase {
   public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
     if ($input !== FALSE) {
       if (isset($element['#multiple']) && $element['#multiple']) {
-        // If an enabled multi-select submits NULL, it means all items are
-        // unselected. A disabled multi-select always submits NULL, and the
-        // default value should be used.
-        if (empty($element['#disabled'])) {
-          return (is_array($input)) ? array_combine($input, $input) : [];
-        }
-        else {
+          // If an enabled multi-select submits NULL, it means all items are
+          // unselected. A disabled multi-select always submits NULL, and the
+          // default value should be used.
+          if (empty($element['#disabled'])) {
+            return (is_array($input)) ? array_combine($input, $input) : [];
+          }
           return (isset($element['#default_value']) && is_array($element['#default_value'])) ? $element['#default_value'] : [];
-        }
       }
       // Non-multiple select elements may have an empty option prepended to them
       // (see \Drupal\Core\Render\Element\Select::processSelect()). When this
@@ -185,12 +182,10 @@ class Select extends FormElementBase {
       // #empty_value to integer 0 or some other non-string constant. PHP
       // receives all submitted form input as strings, but if the empty option
       // is selected, set the value to match the empty value exactly.
-      elseif (isset($element['#empty_value']) && $input === (string) $element['#empty_value']) {
-        return $element['#empty_value'];
+      if (isset($element['#empty_value']) && $input === (string) $element['#empty_value']) {
+          return $element['#empty_value'];
       }
-      else {
-        return $input;
-      }
+      return $input;
     }
   }
 

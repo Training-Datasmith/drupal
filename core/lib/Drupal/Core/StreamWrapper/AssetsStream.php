@@ -52,13 +52,10 @@ class AssetsStream extends PublicStream {
     $public_path = Settings::get('file_public_path', 'sites/default/files');
     $path = Settings::get('file_assets_path', $public_path);
     if ($path === $public_path) {
-      $base_url = PublicStream::baseUrl();
-    }
-    else {
-      $base_url = $GLOBALS['base_url'] . '/' . $path;
+      return PublicStream::baseUrl();
     }
 
-    return $base_url;
+    return $GLOBALS['base_url'] . '/' . $path;
   }
 
 }

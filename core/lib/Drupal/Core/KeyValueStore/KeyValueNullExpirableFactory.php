@@ -10,7 +10,7 @@ class KeyValueNullExpirableFactory implements KeyValueExpirableFactoryInterface 
   /**
    * {@inheritdoc}
    */
-  public function get($collection) {
+  public function get($collection): \Drupal\Core\KeyValueStore\NullStorageExpirable {
     return new NullStorageExpirable($collection);
   }
 

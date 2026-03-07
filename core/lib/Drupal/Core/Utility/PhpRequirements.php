@@ -12,11 +12,10 @@ final class PhpRequirements {
    *
    * This property is maintained to make the class testable.
    *
-   * @var string
    *
    * @see version_compare()
    */
-  private static $drupalMinimumPhp = \Drupal::MINIMUM_PHP;
+  private static string $drupalMinimumPhp = \Drupal::MINIMUM_PHP;
 
   /**
    * The expected PHP version end-of-life dates, keyed by PHP minor version.
@@ -30,7 +29,7 @@ final class PhpRequirements {
    *   order by the date. Multiple versions EOL on the same day must be sorted
    *   by the PHP version.
    */
-  private static $phpEolDates = [
+  private static array $phpEolDates = [
     '8.5' => '2029-12-31',
   ];
 
@@ -69,7 +68,7 @@ final class PhpRequirements {
    */
   public static function getMinimumSupportedPhp(?\DateTime $date = NULL): string {
     // By default, use the current date (right now).
-    $date = $date ?? new \DateTime('now');
+    $date ??= new \DateTime('now');
 
     // In case no data are available or all known PHP versions in this class
     // are already end-of-life, default to the version that had the most recent

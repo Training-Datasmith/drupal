@@ -98,94 +98,29 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
   protected $fieldMapByFieldType = [];
 
   /**
-   * The typed data manager.
-   *
-   * @var \Drupal\Core\TypedData\TypedDataManagerInterface
-   */
-  protected $typedDataManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The key-value factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
-   */
-  protected $keyValueFactory;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity type bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The entity last installed schema repository.
-   *
-   * @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface
-   */
-  protected $entityLastInstalledSchemaRepository;
-
-  /**
    * Constructs a new EntityFieldManager.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
-   * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typed_data_manager
+   * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typedDataManager
    *   The typed data manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory
    *   The key-value factory.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
-   * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository
+   * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository
    *   The entity last installed schema repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityDisplayRepositoryInterface $entity_display_repository, TypedDataManagerInterface $typed_data_manager, LanguageManagerInterface $language_manager, KeyValueFactoryInterface $key_value_factory, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend, EntityLastInstalledSchemaRepositoryInterface $entity_last_installed_schema_repository) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
-    $this->entityDisplayRepository = $entity_display_repository;
-
-    $this->typedDataManager = $typed_data_manager;
-    $this->languageManager = $language_manager;
-    $this->keyValueFactory = $key_value_factory;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, protected \Drupal\Core\TypedData\TypedDataManagerInterface $typedDataManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValueFactory, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, CacheBackendInterface $cache_backend, protected \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository) {
     $this->cacheBackend = $cache_backend;
-    $this->entityLastInstalledSchemaRepository = $entity_last_installed_schema_repository;
   }
 
   /**
@@ -298,7 +233,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
     // Retrieve base field definitions from modules.
     $this->moduleHandler->invokeAllWith(
       'entity_base_field_info',
-      function (callable $hook, string $module) use (&$base_field_definitions, $entity_type) {
+      function (callable $hook, string $module) use (&$base_field_definitions, $entity_type): void {
         $module_definitions = $hook($entity_type) ?? [];
         // Ensure the provider key actually matches the name of the provider
         // defining the field.
@@ -454,7 +389,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
     // Retrieve bundle field definitions from modules.
     $this->moduleHandler->invokeAllWith(
       'entity_bundle_field_info',
-      function (callable $hook, string $module) use (&$bundle_field_definitions, $entity_type, $bundle, $base_field_definitions) {
+      function (callable $hook, string $module) use (&$bundle_field_definitions, $entity_type, $bundle, $base_field_definitions): void {
         $module_definitions = $hook($entity_type, $bundle, $base_field_definitions) ?? [];
         // Ensure the provider key actually matches the name of the provider
         // defining the field.
@@ -536,7 +471,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
   /**
    * {@inheritdoc}
    */
-  public function setFieldMap(array $field_map) {
+  public function setFieldMap(array $field_map): static {
     $this->fieldMap = $field_map;
     return $this;
   }
@@ -631,7 +566,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
     // Retrieve base field definitions from modules.
     $this->moduleHandler->invokeAllWith(
       'entity_field_storage_info',
-      function (callable $hook, string $module) use (&$field_definitions, $entity_type, $entity_type_id) {
+      function (callable $hook, string $module) use (&$field_definitions, $entity_type, $entity_type_id): void {
         $module_definitions = $hook($entity_type) ?? [];
         // Ensure the provider key actually matches the name of the provider
         // defining the field.
@@ -657,7 +592,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
   /**
    * {@inheritdoc}
    */
-  public function clearCachedFieldDefinitions() {
+  public function clearCachedFieldDefinitions(): void {
     $this->baseFieldDefinitions = [];
     $this->fieldDefinitions = [];
     $this->fieldStorageDefinitions = [];
@@ -676,7 +611,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
   /**
    * {@inheritdoc}
    */
-  public function useCaches($use_caches = FALSE) {
+  public function useCaches($use_caches = FALSE): void {
     $this->useCaches = $use_caches;
     if (!$use_caches) {
       $this->fieldDefinitions = [];
@@ -753,9 +688,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
     $all_labels = [];
     // Count the number of fields per label per field storage.
     foreach (array_keys($this->entityTypeBundleInfo->getBundleInfo($entity_type)) as $bundle) {
-      $bundle_fields = array_filter($this->getFieldDefinitions($entity_type, $bundle), function ($field_definition) {
-        return $field_definition instanceof FieldConfigInterface;
-      });
+      $bundle_fields = array_filter($this->getFieldDefinitions($entity_type, $bundle), fn(\Drupal\Core\Field\FieldDefinitionInterface $field_definition) => $field_definition instanceof FieldConfigInterface);
       if (isset($bundle_fields[$field_name])) {
         $field = $bundle_fields[$field_name];
         $label = $field->getLabel();
@@ -769,7 +702,7 @@ class EntityFieldManager implements EntityFieldManagerInterface, PreWarmableInte
     // Sort the field labels by the most used label and return the most used
     // one. If the counts are equal, sort by the label to ensure the result is
     // deterministic.
-    uksort($label_counter, function ($a, $b) use ($label_counter) {
+    uksort($label_counter, function ($a, $b) use ($label_counter): int {
       if ($label_counter[$a] === $label_counter[$b]) {
         return strcmp($a, $b);
       }

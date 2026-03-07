@@ -82,10 +82,10 @@ class Callback extends ProcessPluginBase {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     if (!isset($configuration['callable'])) {
-      throw new \InvalidArgumentException('The "callable" must be set.');
+        throw new \InvalidArgumentException('The "callable" must be set.');
     }
-    elseif (!is_callable($configuration['callable'])) {
-      throw new \InvalidArgumentException('The "callable" must be a valid function or method.');
+    if (!is_callable($configuration['callable'])) {
+        throw new \InvalidArgumentException('The "callable" must be a valid function or method.');
     }
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -93,7 +93,7 @@ class Callback extends ProcessPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): mixed {
     if (!empty($this->configuration['unpack_source'])) {
       if (!is_array($value)) {
         throw new MigrateException(sprintf("When 'unpack_source' is set, the source must be an array. Instead it was of type '%s'", gettype($value)));

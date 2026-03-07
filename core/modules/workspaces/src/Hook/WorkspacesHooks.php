@@ -93,7 +93,7 @@ class WorkspacesHooks {
    */
   #[Hook('cron')]
   public function cron(): void {
-    $this->workspaceManager->executeOutsideWorkspace(function () {
+    $this->workspaceManager->executeOutsideWorkspace(function (): void {
       $deleted_workspace_ids = $this->state->get('workspace.deleted', []);
 
       // Bail out early if there are no workspaces to purge.

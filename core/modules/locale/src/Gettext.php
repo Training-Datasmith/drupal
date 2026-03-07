@@ -39,7 +39,7 @@ class Gettext {
    *
    * @see \Drupal\locale\PoDatabaseWriter
    */
-  public static function fileToDatabase($file, $options) {
+  public static function fileToDatabase($file, array $options) {
     // Add the default values to the options array.
     $options += [
       'overwrite_options' => [],
@@ -52,12 +52,7 @@ class Gettext {
     $reader->setLangcode($file->langcode);
     $reader->setURI($file->uri);
 
-    try {
-      $reader->open();
-    }
-    catch (\Exception $exception) {
-      throw $exception;
-    }
+    $reader->open();
 
     $header = $reader->getHeader();
     if (!$header) {
@@ -73,17 +68,10 @@ class Gettext {
     ];
     $writer->setOptions($writer_options);
     $writer->setHeader($header);
-
-    // Attempt to pipe all items from the file to the database.
-    try {
-      if ($options['seek']) {
-        $reader->setSeek($options['seek']);
-      }
-      $writer->writeItems($reader, $options['items']);
+    if ($options['seek']) {
+      $reader->setSeek($options['seek']);
     }
-    catch (\Exception $exception) {
-      throw $exception;
-    }
+    $writer->writeItems($reader, $options['items']);
 
     // Report back with an array of status information.
     $report = $writer->getReport();

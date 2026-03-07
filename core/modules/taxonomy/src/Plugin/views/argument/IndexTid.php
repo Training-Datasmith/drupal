@@ -18,8 +18,9 @@ class IndexTid extends ManyToOne {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function titleQuery() {
+  public function titleQuery(): array {
     $titles = [];
     $terms = Term::loadMultiple($this->value);
     foreach ($terms as $term) {

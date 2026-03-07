@@ -37,7 +37,7 @@ class ProxyServicesPass implements CompilerPassInterface {
 
           // Find the root namespace.
           $match = [];
-          preg_match('/([a-zA-Z0-9_]+\\\\[a-zA-Z0-9_]+)\\\\(.+)/', $class_name, $match);
+          preg_match('/([a-zA-Z0-9_]+\\\\[a-zA-Z0-9_]+)\\\\(.+)/', (string) $class_name, $match);
           $root_namespace = $match[1];
 
           // Find the root namespace path.

@@ -23,20 +23,6 @@ class DeleteMultipleForm extends ConfirmFormBase implements BaseFormIdInterface,
   use WorkspaceSafeFormTrait;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * The tempstore.
    *
    * @var \Drupal\Core\TempStore\SharedTempStore
@@ -74,18 +60,16 @@ class DeleteMultipleForm extends ConfirmFormBase implements BaseFormIdInterface,
   /**
    * Constructs a new DeleteMultiple object.
    *
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $temp_store_factory
    *   The tempstore factory.
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger service.
    */
-  public function __construct(AccountInterface $current_user, EntityTypeManagerInterface $entity_type_manager, PrivateTempStoreFactory $temp_store_factory, MessengerInterface $messenger) {
-    $this->currentUser = $current_user;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, PrivateTempStoreFactory $temp_store_factory, MessengerInterface $messenger) {
     $this->tempStore = $temp_store_factory->get('entity_delete_multiple_confirm');
     $this->messenger = $messenger;
   }
@@ -93,7 +77,7 @@ class DeleteMultipleForm extends ConfirmFormBase implements BaseFormIdInterface,
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('current_user'),
       $container->get('entity_type.manager'),
@@ -105,14 +89,14 @@ class DeleteMultipleForm extends ConfirmFormBase implements BaseFormIdInterface,
   /**
    * {@inheritdoc}
    */
-  public function getBaseFormId() {
+  public function getBaseFormId(): string {
     return 'entity_delete_multiple_confirm_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     // Get entity type ID from the route because ::buildForm has not yet been
     // called.
     $entity_type_id = $this->getRouteMatch()->getParameter('entity_type_id');
@@ -132,13 +116,11 @@ class DeleteMultipleForm extends ConfirmFormBase implements BaseFormIdInterface,
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     if ($this->entityType->hasLinkTemplate('collection')) {
       return new Url('entity.' . $this->entityTypeId . '.collection');
     }
-    else {
-      return new Url('<front>');
-    }
+    return new Url('<front>');
   }
 
   /**
@@ -208,15 +190,14 @@ class DeleteMultipleForm extends ConfirmFormBase implements BaseFormIdInterface,
       '#theme' => 'item_list',
       '#items' => $items,
     ];
-    $form = parent::buildForm($form, $form_state);
 
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $total_count = 0;
     $delete_entities = [];
     $delete_translations = [];
@@ -268,23 +249,21 @@ class DeleteMultipleForm extends ConfirmFormBase implements BaseFormIdInterface,
       }
     }
 
-    if ($delete_translations) {
-      /** @var \Drupal\Core\Entity\TranslatableInterface[][] $delete_translations */
-      foreach ($delete_translations as $id => $translations) {
-        $entity = $entities[$id]->getUntranslated();
-        foreach ($translations as $translation) {
-          $entity->removeTranslation($translation->language()->getId());
-        }
-        $entity->save();
-        foreach ($translations as $translation) {
-          $this->logger($entity->getEntityType()->getProvider())->info('The @entity-type %label @language translation has been deleted.', [
-            '@entity-type' => $entity->getEntityType()->getSingularLabel(),
-            '%label'       => $entity->label(),
-            '@language'    => $translation->language()->getName(),
-          ]);
-        }
-        $total_count += count($translations);
+    /** @var \Drupal\Core\Entity\TranslatableInterface[][] $delete_translations */
+    foreach ($delete_translations as $id => $translations) {
+      $entity = $entities[$id]->getUntranslated();
+      foreach ($translations as $translation) {
+        $entity->removeTranslation($translation->language()->getId());
       }
+      $entity->save();
+      foreach ($translations as $translation) {
+        $this->logger($entity->getEntityType()->getProvider())->info('The @entity-type %label @language translation has been deleted.', [
+          '@entity-type' => $entity->getEntityType()->getSingularLabel(),
+          '%label'       => $entity->label(),
+          '@language'    => $translation->language()->getName(),
+        ]);
+      }
+      $total_count += count($translations);
     }
 
     if ($total_count) {

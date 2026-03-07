@@ -31,7 +31,7 @@ class RoleAccessCheck implements AccessInterface {
     // Requirements just allow strings, so this might be a comma separated list.
     $rid_string = $route->getRequirement('_role');
 
-    $explode_and = array_filter(array_map('trim', explode(',', $rid_string)));
+    $explode_and = array_filter(array_map(trim(...), explode(',', $rid_string)));
     if (count($explode_and) > 1) {
       $diff = array_diff($explode_and, $account->getRoles());
       if (empty($diff)) {
@@ -39,7 +39,7 @@ class RoleAccessCheck implements AccessInterface {
       }
     }
     else {
-      $explode_or = array_filter(array_map('trim', explode('+', $rid_string)));
+      $explode_or = array_filter(array_map(trim(...), explode('+', $rid_string)));
       $intersection = array_intersect($explode_or, $account->getRoles());
       if (!empty($intersection)) {
         return AccessResult::allowed()->addCacheContexts(['user.roles']);

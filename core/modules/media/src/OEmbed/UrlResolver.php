@@ -24,27 +24,6 @@ class UrlResolver implements UrlResolverInterface {
   protected $httpClient;
 
   /**
-   * The OEmbed provider repository service.
-   *
-   * @var \Drupal\media\OEmbed\ProviderRepositoryInterface
-   */
-  protected $providers;
-
-  /**
-   * The OEmbed resource fetcher service.
-   *
-   * @var \Drupal\media\OEmbed\ResourceFetcherInterface
-   */
-  protected $resourceFetcher;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Static cache of discovered oEmbed resource URLs, keyed by canonical URL.
    *
    * A discovered resource URL is the actual endpoint URL for a specific media
@@ -55,32 +34,21 @@ class UrlResolver implements UrlResolverInterface {
   protected $urlCache = [];
 
   /**
-   * The cache backend.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cacheBackend;
-
-  /**
    * Constructs a UrlResolver object.
    *
    * @param \Drupal\media\OEmbed\ProviderRepositoryInterface $providers
    *   The oEmbed provider repository service.
-   * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resource_fetcher
+   * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher
    *   The OEmbed resource fetcher service.
    * @param \GuzzleHttp\ClientInterface $http_client
    *   The HTTP client.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
+   * @param \Drupal\Core\Cache\CacheBackendInterface $cacheBackend
    *   The cache backend.
    */
-  public function __construct(ProviderRepositoryInterface $providers, ResourceFetcherInterface $resource_fetcher, ClientInterface $http_client, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend) {
-    $this->providers = $providers;
-    $this->resourceFetcher = $resource_fetcher;
+  public function __construct(protected \Drupal\media\OEmbed\ProviderRepositoryInterface $providers, protected \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher, ClientInterface $http_client, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Cache\CacheBackendInterface $cacheBackend) {
     $this->httpClient = $http_client;
-    $this->moduleHandler = $module_handler;
-    $this->cacheBackend = $cache_backend;
   }
 
   /**
@@ -101,7 +69,7 @@ class UrlResolver implements UrlResolverInterface {
     }
 
     // Only care about HTML responses.
-    $response_type = strtolower($response->getHeaderLine('Content-Type'));
+    $response_type = strtolower((string) $response->getHeaderLine('Content-Type'));
     if (!str_contains($response_type, 'text/html')) {
       return FALSE;
     }

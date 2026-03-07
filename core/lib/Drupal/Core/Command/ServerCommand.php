@@ -26,21 +26,16 @@ use Symfony\Component\Process\Process;
 class ServerCommand extends Command {
 
   /**
-   * The class loader.
-   *
-   * @var object
-   */
-  protected $classLoader;
-
-  /**
    * Constructs a new ServerCommand command.
    *
-   * @param object $class_loader
+   * @param object $classLoader
    *   The class loader.
    */
-  public function __construct($class_loader) {
+  public function __construct(/**
+   * The class loader.
+   */
+  protected $classLoader) {
     parent::__construct('server');
-    $this->classLoader = $class_loader;
   }
 
   /**
@@ -89,7 +84,7 @@ class ServerCommand extends Command {
    * @throws \Exception
    *   Exception thrown if kernel does not boot.
    */
-  protected function boot() {
+  protected function boot(): \Drupal\Core\DrupalKernel {
     $kernel = new DrupalKernel('prod', $this->classLoader, FALSE);
     $kernel::bootEnvironment();
     $kernel->setSitePath($this->getSitePath());
@@ -113,7 +108,7 @@ class ServerCommand extends Command {
    * @return int|false
    *   The available port or FALSE, if no available port found,
    */
-  protected function findAvailablePort($host) {
+  protected function findAvailablePort($host): int|false {
     $port = 8888;
     while ($port >= 8888 && $port <= 9999) {
       $connection = @fsockopen($host, $port);
@@ -207,7 +202,7 @@ class ServerCommand extends Command {
    * @return int
    *   The exit status of the PHP in-built webserver command.
    */
-  protected function start($host, $port, DrupalKernelInterface $kernel, InputInterface $input, SymfonyStyle $io) {
+  protected function start(string $host, $port, DrupalKernelInterface $kernel, InputInterface $input, SymfonyStyle $io): int {
     $finder = new PhpExecutableFinder();
     $binary = $finder->find();
     if ($binary === FALSE) {

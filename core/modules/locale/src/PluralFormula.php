@@ -13,16 +13,6 @@ use Drupal\Core\State\StateInterface;
 class PluralFormula implements PluralFormulaInterface {
 
   /**
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * The plural formula and count keyed by langcode.
    *
    * @var array
@@ -42,20 +32,19 @@ class PluralFormula implements PluralFormulaInterface {
   protected $formulae;
 
   /**
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state.
    */
-  public function __construct(LanguageManagerInterface $language_manager, StateInterface $state) {
-    $this->languageManager = $language_manager;
-    $this->state = $state;
+  public function __construct(protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\State\StateInterface $state)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPluralFormula($langcode, $plural_count, array $formula) {
+  public function setPluralFormula($langcode, $plural_count, array $formula): static {
     // Ensure that the formulae are loaded.
     $this->loadFormulae();
 
@@ -104,7 +93,7 @@ class PluralFormula implements PluralFormulaInterface {
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): static {
     $this->formulae = NULL;
     return $this;
   }

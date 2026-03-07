@@ -26,7 +26,7 @@ class CommandLineOrUnsafeMethod implements RequestPolicyInterface {
   /**
    * Indicates whether this is a CLI request.
    */
-  protected function isCli() {
+  protected function isCli(): bool {
     return PHP_SAPI === 'cli';
   }
 

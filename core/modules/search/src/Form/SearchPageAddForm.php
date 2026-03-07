@@ -33,7 +33,7 @@ class SearchPageAddForm extends SearchPageFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     // If there is no default search page, make the added search the default.
     // TRICKY: ::getDefaultSearchPage() will return the first active search page
     // as the default if no explicit default is configured in `search.settings`.

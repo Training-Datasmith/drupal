@@ -21,7 +21,7 @@ class BeforeCommand extends InsertCommand {
   /**
    * Implements Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
 
     return [
       'command' => 'insert',

@@ -26,7 +26,7 @@ class File extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#multiple' => FALSE,
@@ -48,7 +48,7 @@ class File extends FormElementBase {
   /**
    * Processes a file upload element, make use of #multiple if present.
    */
-  public static function processFile(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processFile(array &$element, FormStateInterface $form_state, &$complete_form): array {
     if ($element['#multiple']) {
       $element['#attributes']['multiple'] = 'multiple';
       $element['#name'] .= '[]';
@@ -70,7 +70,7 @@ class File extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderFile($element) {
+  public static function preRenderFile(array $element): array {
     $element['#attributes']['type'] = 'file';
     Element::setAttributes($element, ['id', 'name', 'size']);
     static::setAttributes($element, ['js-form-file', 'form-file']);
@@ -81,7 +81,7 @@ class File extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public static function valueCallback(&$element, $input, FormStateInterface $form_state) {
+  public static function valueCallback(&$element, $input, FormStateInterface $form_state): ?array {
     if ($input === FALSE) {
       return NULL;
     }

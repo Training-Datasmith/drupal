@@ -22,11 +22,10 @@ class ViewsViewsExecutionHooks {
    */
   #[Hook('views_query_substitutions')]
   public function viewsQuerySubstitutions(ViewExecutable $view): array {
-    $substitutions = [
+    return [
       '***CURRENT_VERSION***' => \Drupal::VERSION,
       '***CURRENT_TIME***' => \Drupal::time()->getRequestTime(),
     ] + PluginBase::queryLanguageSubstitutions();
-    return $substitutions;
   }
 
   /**

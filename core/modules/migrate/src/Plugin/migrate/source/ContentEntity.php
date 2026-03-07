@@ -79,8 +79,6 @@ class ContentEntity extends SourcePluginBase implements ContainerFactoryPluginIn
 
   /**
    * The plugin's default configuration.
-   *
-   * @var array
    */
   protected array $defaultConfiguration = [
     'bundle' => NULL,
@@ -137,7 +135,7 @@ class ContentEntity extends SourcePluginBase implements ContainerFactoryPluginIn
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     return (string) $this->entityType->getPluralLabel();
   }
 
@@ -248,17 +246,14 @@ class ContentEntity extends SourcePluginBase implements ContainerFactoryPluginIn
   public function fields(): array {
     // Retrieving fields from a non-fieldable content entity will throw a
     // LogicException. Return an empty list of fields instead.
-    if (!$this->entityType->entityClassImplements('Drupal\Core\Entity\FieldableEntityInterface')) {
+    if (!$this->entityType->entityClassImplements(\Drupal\Core\Entity\FieldableEntityInterface::class)) {
       return [];
     }
     $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($this->entityType->id());
     if (!empty($this->configuration['bundle'])) {
       $field_definitions += $this->entityFieldManager->getFieldDefinitions($this->entityType->id(), $this->configuration['bundle']);
     }
-    $fields = array_map(function ($definition) {
-      return (string) $definition->getLabel();
-    }, $field_definitions);
-    return $fields;
+    return array_map(fn(\Drupal\Core\Field\FieldDefinitionInterface $definition) => (string) $definition->getLabel(), $field_definitions);
   }
 
   /**

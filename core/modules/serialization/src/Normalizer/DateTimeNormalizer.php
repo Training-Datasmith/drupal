@@ -76,7 +76,7 @@ class DateTimeNormalizer extends NormalizerBase implements DenormalizerInterface
    * @return \DateTimeZone
    *   The timezone to use.
    */
-  protected function getNormalizationTimezone() {
+  protected function getNormalizationTimezone(): \DateTimeZone {
     $default_site_timezone = $this->systemDateConfig->get('timezone.default');
     return new \DateTimeZone($default_site_timezone);
   }

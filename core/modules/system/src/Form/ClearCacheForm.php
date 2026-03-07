@@ -15,14 +15,14 @@ class ClearCacheForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_clear_cache';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form['clear'] = [
       '#type' => 'submit',
       '#value' => $this->t('Clear all caches'),
@@ -34,7 +34,7 @@ class ClearCacheForm extends FormBase {
   /**
    * Clears the caches.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     drupal_flush_all_caches();
     $this->messenger()->addStatus($this->t('Caches cleared.'));
   }

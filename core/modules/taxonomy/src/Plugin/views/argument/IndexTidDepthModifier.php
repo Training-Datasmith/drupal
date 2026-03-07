@@ -32,7 +32,7 @@ class IndexTidDepthModifier extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preQuery() {
+  public function preQuery(): void {
     // We don't know our argument yet, but it's based upon our position:
     $argument = $this->view->args[$this->position] ?? NULL;
     if (!is_numeric($argument)) {

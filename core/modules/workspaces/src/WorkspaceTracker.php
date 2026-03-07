@@ -34,8 +34,6 @@ class WorkspaceTracker implements WorkspaceTrackerInterface, EventSubscriberInte
    *
    * The first level keys are workspace IDs, the second level keys are entity
    * type IDs, and the third level array are entity IDs, keyed by revision IDs.
-   *
-   * @var array
    */
   protected array $associatedRevisions = [];
 
@@ -44,8 +42,6 @@ class WorkspaceTracker implements WorkspaceTrackerInterface, EventSubscriberInte
    *
    * The first level keys are workspace IDs, the second level keys are entity
    * type IDs, and the third level array are entity IDs, keyed by revision IDs.
-   *
-   * @var array
    */
   protected array $associatedInitialRevisions = [];
 
@@ -213,9 +209,7 @@ class WorkspaceTracker implements WorkspaceTrackerInterface, EventSubscriberInte
     if ($entity_ids) {
       return array_intersect($this->associatedRevisions[$workspace_id][$entity_type_id] ?? [], $entity_ids);
     }
-    else {
-      return $this->associatedRevisions[$workspace_id][$entity_type_id] ?? [];
-    }
+    return $this->associatedRevisions[$workspace_id][$entity_type_id] ?? [];
   }
 
   /**
@@ -227,9 +221,7 @@ class WorkspaceTracker implements WorkspaceTrackerInterface, EventSubscriberInte
     if ($entity_ids) {
       return array_intersect($this->associatedInitialRevisions[$workspace_id][$entity_type_id] ?? [], $entity_ids);
     }
-    else {
-      return $this->associatedInitialRevisions[$workspace_id][$entity_type_id] ?? [];
-    }
+    return $this->associatedInitialRevisions[$workspace_id][$entity_type_id] ?? [];
   }
 
   /**
@@ -347,7 +339,7 @@ class WorkspaceTracker implements WorkspaceTrackerInterface, EventSubscriberInte
     $transaction = $this->database->startTransaction();
     try {
       // Update the workspace revision metadata field if needed.
-      $this->workspaceManager->executeOutsideWorkspace(function () use ($source_workspace_id, $target_workspace_id, $entity_type_id, $entity_ids) {
+      $this->workspaceManager->executeOutsideWorkspace(function () use ($source_workspace_id, $target_workspace_id, $entity_type_id, $entity_ids): void {
         // Gather a list of revision IDs that have to be moved.
         if ($entity_type_id) {
           $affected_revision_ids[$entity_type_id] = $this->getAllTrackedRevisions($source_workspace_id, $entity_type_id, $entity_ids);

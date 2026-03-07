@@ -90,7 +90,7 @@ class UnmetDependenciesException extends ConfigException {
    * @return \Drupal\Core\Config\PreExistingConfigException
    *   An exception for the extension with a list of configuration objects.
    */
-  public static function create($extension, array $config_objects) {
+  public static function create($extension, array $config_objects): static {
     $message = new FormattableMarkup('Configuration objects provided by %extension have unmet dependencies: %config_names',
       [
         '%config_names' => static::formatConfigObjectList($config_objects),
@@ -112,7 +112,7 @@ class UnmetDependenciesException extends ConfigException {
    * @return string
    *   The imploded config_objects, formatted in an easy to read string.
    */
-  protected static function formatConfigObjectList(array $config_objects) {
+  protected static function formatConfigObjectList(array $config_objects): string {
     $list = [];
     foreach ($config_objects as $config_object => $missing_dependencies) {
       $list[] = $config_object . ' (' . implode(', ', $missing_dependencies) . ')';

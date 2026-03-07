@@ -23,10 +23,7 @@ use Drupal\Core\PhpStorage\PhpStorageFactory;
  */
 class PhpBackend implements CacheBackendInterface {
 
-  /**
-   * @var string
-   */
-  protected $bin;
+  protected string $bin;
 
   /**
    * The PHP storage.
@@ -41,25 +38,17 @@ class PhpBackend implements CacheBackendInterface {
   protected $cache = [];
 
   /**
-   * The cache tags checksum provider.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsChecksumInterface
-   */
-  protected $checksumProvider;
-
-  /**
    * Constructs a PhpBackend object.
    *
    * @param string $bin
    *   The cache bin for which the object is created.
-   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksum_provider
+   * @param \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider
    *   The cache tags checksum provider.
    * @param \Drupal\Component\Datetime\TimeInterface $time
    *   The time service.
    */
-  public function __construct($bin, CacheTagsChecksumInterface $checksum_provider, protected TimeInterface $time) {
+  public function __construct(string $bin, protected \Drupal\Core\Cache\CacheTagsChecksumInterface $checksumProvider, protected TimeInterface $time) {
     $this->bin = 'cache_' . $bin;
-    $this->checksumProvider = $checksum_provider;
   }
 
   /**
@@ -94,7 +83,7 @@ class PhpBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMultiple(array $items) {
+  public function setMultiple(array $items): void {
     foreach ($items as $cid => $item) {
       $this->set($cid, $item['data'], $item['expire'] ?? CacheBackendInterface::CACHE_PERMANENT, $item['tags'] ?? []);
     }
@@ -102,8 +91,9 @@ class PhpBackend implements CacheBackendInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getMultiple(&$cids, $allow_invalid = FALSE) {
+  public function getMultiple(&$cids, $allow_invalid = FALSE): array {
     $ret = [];
 
     foreach ($cids as $cid) {
@@ -132,7 +122,7 @@ class PhpBackend implements CacheBackendInterface {
    *   The item with data as appropriate or FALSE if there is no
    *   valid item to load.
    */
-  protected function prepareItem($cache, $allow_invalid) {
+  protected function prepareItem($cache, $allow_invalid): false|object {
     if (!isset($cache->data)) {
       return FALSE;
     }
@@ -155,7 +145,7 @@ class PhpBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []) {
+  public function set($cid, $data, $expire = Cache::PERMANENT, array $tags = []): void {
     assert(Inspector::assertAllStrings($tags), 'Cache Tags must be strings.');
 
     $item = (object) [
@@ -172,14 +162,14 @@ class PhpBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete($cid) {
+  public function delete($cid): void {
     $this->storage()->delete($this->normalizeCid($cid));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteMultiple(array $cids) {
+  public function deleteMultiple(array $cids): void {
     foreach ($cids as $cid) {
       $this->delete($cid);
     }
@@ -188,14 +178,14 @@ class PhpBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     $this->storage()->deleteAll();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function invalidate($cid) {
+  public function invalidate($cid): void {
     $this->invalidateByHash($this->normalizeCid($cid));
   }
 
@@ -215,7 +205,7 @@ class PhpBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function invalidateMultiple(array $cids) {
+  public function invalidateMultiple(array $cids): void {
     foreach ($cids as $cid) {
       $this->invalidate($cid);
     }
@@ -230,7 +220,7 @@ class PhpBackend implements CacheBackendInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeBin() {
+  public function removeBin(): void {
     $this->cache = [];
     $this->storage()->deleteAll();
   }
@@ -270,7 +260,7 @@ class PhpBackend implements CacheBackendInterface {
    * @return string
    *   A normalized cache ID.
    */
-  protected function normalizeCid($cid) {
+  protected function normalizeCid($cid): string {
     return Crypt::hashBase64($cid);
   }
 

@@ -21,7 +21,7 @@ class PublicStream extends LocalStream {
   /**
    * {@inheritdoc}
    */
-  public static function getType() {
+  public static function getType(): int {
     return StreamWrapperInterface::LOCAL_NORMAL;
   }
 
@@ -49,7 +49,7 @@ class PublicStream extends LocalStream {
   /**
    * {@inheritdoc}
    */
-  public function getExternalUrl() {
+  public function getExternalUrl(): string {
     $path = str_replace('\\', '/', $this->getTarget());
     return static::baseUrl() . '/' . UrlHelper::encodePath($path);
   }
@@ -66,14 +66,12 @@ class PublicStream extends LocalStream {
    * @return string
    *   The external base URL for public://
    */
-  public static function baseUrl() {
+  public static function baseUrl(): string {
     $settings_base_url = Settings::get('file_public_base_url', '');
     if ($settings_base_url) {
       return (string) $settings_base_url;
     }
-    else {
-      return $GLOBALS['base_url'] . '/' . static::basePath();
-    }
+    return $GLOBALS['base_url'] . '/' . static::basePath();
   }
 
   /**

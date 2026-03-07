@@ -14,7 +14,7 @@ class ResultRow {
    * @var \Drupal\Core\Entity\EntityInterface
    */
   // phpcs:ignore Drupal.Classes.PropertyDeclaration, Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public $_entity = NULL;
+  public $_entity;
 
   /**
    * An array of relationship entities.
@@ -46,7 +46,7 @@ class ResultRow {
   /**
    * Resets the _entity and _relationship_entities properties.
    */
-  public function resetEntityData() {
+  public function resetEntityData(): void {
     $this->_entity = NULL;
     $this->_relationship_entities = [];
   }

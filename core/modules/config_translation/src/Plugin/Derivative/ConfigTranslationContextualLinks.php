@@ -13,26 +13,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ConfigTranslationContextualLinks extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The mapper plugin discovery service.
-   *
-   * @var \Drupal\config_translation\ConfigMapperManagerInterface
-   */
-  protected $mapperManager;
-
-  /**
    * Constructs a new ConfigTranslationContextualLinks.
    *
-   * @param \Drupal\config_translation\ConfigMapperManagerInterface $mapper_manager
+   * @param \Drupal\config_translation\ConfigMapperManagerInterface $mapperManager
    *   The mapper plugin discovery service.
    */
-  public function __construct(ConfigMapperManagerInterface $mapper_manager) {
-    $this->mapperManager = $mapper_manager;
+  public function __construct(protected \Drupal\config_translation\ConfigMapperManagerInterface $mapperManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('plugin.manager.config_translation.mapper')
     );
@@ -57,7 +50,7 @@ class ConfigTranslationContextualLinks extends DeriverBase implements ContainerD
       $route_name = $mapper->getOverviewRouteName();
       $this->derivatives[$route_name] = $base_plugin_definition;
       $this->derivatives[$route_name]['config_translation_plugin_id'] = $plugin_id;
-      $this->derivatives[$route_name]['class'] = '\Drupal\config_translation\Plugin\Menu\ContextualLink\ConfigTranslationContextualLink';
+      $this->derivatives[$route_name]['class'] = \Drupal\config_translation\Plugin\Menu\ContextualLink\ConfigTranslationContextualLink::class;
       $this->derivatives[$route_name]['route_name'] = $route_name;
       $this->derivatives[$route_name]['group'] = $group_name;
     }

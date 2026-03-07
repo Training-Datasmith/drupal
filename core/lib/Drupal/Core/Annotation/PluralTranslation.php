@@ -94,7 +94,7 @@ class PluralTranslation extends AnnotationBase {
   /**
    * {@inheritdoc}
    */
-  public function get() {
+  public function get(): array {
     return [
       'singular' => $this->singular,
       'plural' => $this->plural,

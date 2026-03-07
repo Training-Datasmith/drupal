@@ -24,7 +24,7 @@ class UniqueLabelInListConstraint extends SymfonyConstraint {
    *
    * @var null|string
    */
-  public $labelKey = NULL;
+  public $labelKey;
 
   public function __construct(
     mixed $options = NULL,

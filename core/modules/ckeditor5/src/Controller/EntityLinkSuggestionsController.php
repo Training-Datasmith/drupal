@@ -80,7 +80,7 @@ class EntityLinkSuggestionsController extends ControllerBase {
    *   A JSON response containing the autocomplete suggestions.
    */
   public function suggestions(Request $request, EditorInterface $editor): JsonResponse {
-    $input = mb_strtolower($request->query->get('q'));
+    $input = mb_strtolower((string) $request->query->get('q'));
     $host_entity_type_id = $request->query->get('hostEntityTypeId');
     $host_entity_langcode = $request->query->get('hostEntityLangcode');
     $suggestions = [];
@@ -184,7 +184,7 @@ class EntityLinkSuggestionsController extends ControllerBase {
       return [];
     }
     // Sort the selection plugins by weight and select the best match.
-    uasort($selection_handler_groups['default'], ['Drupal\Component\Utility\SortArray', 'sortByWeightElement']);
+    uasort($selection_handler_groups['default'], \Drupal\Component\Utility\SortArray::sortByWeightElement(...));
     end($selection_handler_groups['default']);
     // Select the link_target variant of the default selection plugin for the
     // entity type, if it exists. Otherwise, select the next best match.
@@ -202,9 +202,7 @@ class EntityLinkSuggestionsController extends ControllerBase {
     // their translation but then only keeps bundle, entity ID and label. Reload
     // them to generate rich results. Note that performance overhead of this is
     // minimal because all this data is statically cached already anyway.
-    $entity_ids = array_reduce($entities_by_bundle, function ($flattened, $bundle_entities) {
-      return array_merge($flattened, array_keys($bundle_entities));
-    }, []);
+    $entity_ids = array_reduce($entities_by_bundle, fn(array $flattened, $bundle_entities) => array_merge($flattened, array_keys($bundle_entities)), []);
     $entities = $this->entityTypeManager()->getStorage($target_entity_type_id)->loadMultiple($entity_ids);
 
     $suggestions = [];
@@ -260,19 +258,17 @@ class EntityLinkSuggestionsController extends ControllerBase {
 
     $arg_owner = ['@owner' => $owner];
     $arg_creation_datetime = ['@creation-datetime' => $creation_datetime];
-
     if ($owner && $creation_datetime) {
-      return $this->t('by @owner on @creation-datetime', $arg_owner + $arg_creation_datetime);
+        return $this->t('by @owner on @creation-datetime', $arg_owner + $arg_creation_datetime);
     }
-    elseif ($owner) {
-      return $this->t('by @owner', $arg_owner);
+    if ($owner) {
+        return $this->t('by @owner', $arg_owner);
     }
-    elseif ($creation_datetime) {
-      return $this->t('on @creation-datetime', $arg_creation_datetime);
+
+    if ($creation_datetime) {
+        return $this->t('on @creation-datetime', $arg_creation_datetime);
     }
-    else {
-      return NULL;
-    }
+    return NULL;
   }
 
   /**

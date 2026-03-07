@@ -44,8 +44,6 @@ final class RecipeFileException extends \RuntimeException {
    *   The path of the offending recipe file.
    * @param \Symfony\Component\Validator\ConstraintViolationList $violations
    *   The list of validation constraint violations.
-   *
-   * @return static
    */
   public static function fromViolationList(string $path, ConstraintViolationList $violations): static {
     $lines = ["Validation errors were found in $path:"];

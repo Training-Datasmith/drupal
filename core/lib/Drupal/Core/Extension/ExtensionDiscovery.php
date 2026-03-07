@@ -64,20 +64,6 @@ class ExtensionDiscovery {
   protected static $files = [];
 
   /**
-   * List of installation profile directories to additionally scan.
-   *
-   * @var array
-   */
-  protected $profileDirectories;
-
-  /**
-   * The app root for the current operation.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
    * The file cache object.
    *
    * @var \Drupal\Component\FileCache\FileCacheInterface
@@ -90,18 +76,9 @@ class ExtensionDiscovery {
   protected $fileCache;
 
   /**
-   * The site path.
-   *
-   * @var string
-   */
-  protected $sitePath;
-
-  /**
    * The info parser.
    *
    * Reads .info.yml files efficiently.
-   *
-   * @var \Drupal\Core\Extension\InfoParser|null
    */
   protected ?InfoParser $infoParser;
 
@@ -114,18 +91,15 @@ class ExtensionDiscovery {
    *   Whether the info_parser should be used. Note this argument also
    *   determines if the deprecated file cache property is set to maintain BC in
    *   Drupal 11.
-   * @param string[] $profile_directories
+   * @param string[] $profileDirectories
    *   The available profile directories.
-   * @param string $site_path
+   * @param string $sitePath
    *   The path to the site.
    */
-  public function __construct(string $root, $use_info_parser = TRUE, ?array $profile_directories = NULL, ?string $site_path = NULL) {
-    $this->root = $root;
+  public function __construct(protected string $root, $use_info_parser = TRUE, protected ?array $profileDirectories = NULL, protected ?string $sitePath = NULL) {
     // @phpstan-ignore property.deprecated
     $this->fileCache = $use_info_parser ? FileCacheFactory::get('extension_discovery') : NULL;
-    $this->profileDirectories = $profile_directories;
-    $this->sitePath = $site_path;
-    $this->infoParser = $use_info_parser ? new InfoParser($root) : NULL;
+    $this->infoParser = $use_info_parser ? new InfoParser($this->root) : NULL;
   }
 
   /**
@@ -243,7 +217,7 @@ class ExtensionDiscovery {
    *
    * @return $this
    */
-  public function setProfileDirectoriesFromSettings() {
+  public function setProfileDirectoriesFromSettings(): static {
     $this->profileDirectories = [];
     // This method may be called by the database system early in bootstrap
     // before the container is initialized. In that case, the parameter is not
@@ -288,7 +262,7 @@ class ExtensionDiscovery {
    *
    * @return $this
    */
-  public function setProfileDirectories(?array $paths = NULL) {
+  public function setProfileDirectories(?array $paths = NULL): static {
     $this->profileDirectories = $paths;
     return $this;
   }
@@ -302,12 +276,12 @@ class ExtensionDiscovery {
    * @return \Drupal\Core\Extension\Extension[]
    *   The filtered list of extensions.
    */
-  protected function filterByProfileDirectories(array $all_files) {
+  protected function filterByProfileDirectories(array $all_files): array {
     if (empty($this->profileDirectories)) {
       return $all_files;
     }
 
-    $all_files = array_filter($all_files, function ($file) {
+    return array_filter($all_files, function (\Drupal\Core\Extension\Extension $file): bool {
       if (!str_starts_with($file->subpath, 'profiles')) {
         // This extension doesn't belong to a profile, ignore it.
         return TRUE;
@@ -322,8 +296,6 @@ class ExtensionDiscovery {
 
       return FALSE;
     });
-
-    return $all_files;
   }
 
   /**
@@ -337,13 +309,13 @@ class ExtensionDiscovery {
    * @return \Drupal\Core\Extension\Extension[]
    *   The sorted list of extensions.
    */
-  protected function sort(array $all_files, array $weights) {
+  protected function sort(array $all_files, array $weights): array {
     $origins = [];
     $profiles = [];
     foreach ($all_files as $key => $file) {
       // If the extension does not belong to a profile, just apply the weight
       // of the originating directory.
-      if (!str_starts_with($file->subpath, 'profiles')) {
+      if (!str_starts_with((string) $file->subpath, 'profiles')) {
         $origins[$key] = $weights[$file->origin];
         $profiles[$key] = NULL;
       }
@@ -357,7 +329,7 @@ class ExtensionDiscovery {
       else {
         // Apply the weight of the originating profile directory.
         foreach ($this->profileDirectories as $weight => $profile_path) {
-          if (str_starts_with($file->getPath(), $profile_path)) {
+          if (str_starts_with($file->getPath(), (string) $profile_path)) {
             $origins[$key] = static::ORIGIN_PROFILE;
             $profiles[$key] = $weight;
             continue 2;
@@ -392,7 +364,7 @@ class ExtensionDiscovery {
    * @return \Drupal\Core\Extension\Extension[]
    *   The filtered list of extensions, keyed by extension name.
    */
-  protected function process(array $all_files) {
+  protected function process(array $all_files): array {
     $files = [];
     // Duplicate files found in later search directories take precedence over
     // earlier ones; they replace the extension in the existing $files array.
@@ -418,7 +390,7 @@ class ExtensionDiscovery {
    *
    * @see \Drupal\Core\Extension\Discovery\RecursiveExtensionFilterCallback
    */
-  protected function scanDirectory($dir, $include_tests) {
+  protected function scanDirectory($dir, $include_tests): array {
     $files = [];
 
     // In order to scan top-level directories, absolute directory paths have to
@@ -453,7 +425,7 @@ class ExtensionDiscovery {
     // would recurse into the entire filesystem directory tree without any kind
     // of limitations.
     $callback = new RecursiveExtensionFilterCallback($ignore_directories, $include_tests);
-    $filter = new \RecursiveCallbackFilterIterator($directory_iterator, [$callback, 'accept']);
+    $filter = new \RecursiveCallbackFilterIterator($directory_iterator, $callback->accept(...));
 
     // The actual recursive filesystem scan is only invoked by instantiating the
     // RecursiveIteratorIterator.
@@ -466,7 +438,7 @@ class ExtensionDiscovery {
     foreach ($iterator as $key => $fileinfo) {
       // All extension names in Drupal have to be valid PHP function names due
       // to the module hook architecture.
-      if (!preg_match(static::PHP_FUNCTION_PATTERN, $fileinfo->getBasename('.info.yml'))) {
+      if (!preg_match(static::PHP_FUNCTION_PATTERN, (string) $fileinfo->getBasename('.info.yml'))) {
         continue;
       }
 
@@ -475,7 +447,7 @@ class ExtensionDiscovery {
       if ($this->infoParser === NULL) {
         $file = $fileinfo->openFile('r');
         while (!$type && !$file->eof()) {
-          preg_match('@^type:\s*(\'|")?(\w+)\1?\s*(?:\#.*)?$@', $file->fgets(), $matches);
+          preg_match('@^type:\s*(\'|")?(\w+)\1?\s*(?:\#.*)?$@', (string) $file->fgets(), $matches);
           if (isset($matches[2])) {
             $type = $matches[2];
           }

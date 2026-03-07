@@ -653,7 +653,7 @@ abstract class FormStateDecoratorBase implements FormStateInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearErrors() {
+  public function clearErrors(): void {
     $this->decoratedFormState->clearErrors();
   }
 

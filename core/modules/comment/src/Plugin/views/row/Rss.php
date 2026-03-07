@@ -51,7 +51,7 @@ class Rss extends RssPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender($result) {
+  public function preRender($result): void {
     $cids = [];
 
     foreach ($result as $row) {
@@ -127,14 +127,12 @@ class Rss extends RssPluginBase {
     // template_preprocess_views_view_row_rss() can still access it.
     $item->elements = &$comment->rss_elements;
     $item->cid = $comment->id();
-
-    $build = [
+    return [
       '#theme' => $this->themeFunctions(),
       '#view' => $this->view,
       '#options' => $this->options,
       '#row' => $item,
     ];
-    return $build;
   }
 
 }

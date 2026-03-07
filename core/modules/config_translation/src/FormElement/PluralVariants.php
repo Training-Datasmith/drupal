@@ -15,10 +15,11 @@ class PluralVariants extends FormElementBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  protected function getSourceElement(LanguageInterface $source_language, $source_config) {
+  protected function getSourceElement(LanguageInterface $source_language, $source_config): array {
     $plurals = $this->getNumberOfPlurals($source_language->getId());
-    $values = explode(PoItem::DELIMITER, $source_config);
+    $values = explode(PoItem::DELIMITER, (string) $source_config);
     $element = [
       '#type' => 'fieldset',
       '#title' => new FormattableMarkup('@label <span class="visually-hidden">(@source_language)</span>', [
@@ -45,10 +46,11 @@ class PluralVariants extends FormElementBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  protected function getTranslationElement(LanguageInterface $translation_language, $source_config, $translation_config) {
+  protected function getTranslationElement(LanguageInterface $translation_language, $source_config, $translation_config): array {
     $plurals = $this->getNumberOfPlurals($translation_language->getId());
-    $values = explode(PoItem::DELIMITER, $translation_config);
+    $values = explode(PoItem::DELIMITER, (string) $translation_config);
     $element = [
       '#type' => 'fieldset',
       '#title' => new FormattableMarkup('@label <span class="visually-hidden">(@translation_language)</span>', [
@@ -74,7 +76,7 @@ class PluralVariants extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function setConfig(Config $base_config, LanguageConfigOverride $config_translation, $config_values, $base_key = NULL) {
+  public function setConfig(Config $base_config, LanguageConfigOverride $config_translation, $config_values, $base_key = NULL): void {
     $config_values = implode(PoItem::DELIMITER, $config_values);
     parent::setConfig($base_config, $config_translation, $config_values, $base_key);
   }

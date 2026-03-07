@@ -36,7 +36,7 @@ class AttributeBoolean extends AttributeValueBase {
   /**
    * Implements the magic __toString() method.
    */
-  public function __toString() {
+  public function __toString(): string {
     return $this->value === FALSE ? '' : Html::escape($this->name);
   }
 

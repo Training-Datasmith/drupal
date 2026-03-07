@@ -18,7 +18,7 @@ class Tags {
    * @return array
    *   An array of tags.
    */
-  public static function explode($tags) {
+  public static function explode($tags): array {
     // This regexp allows the following types of user input:
     // this, "company, llc", "and ""this"" w,o.rks", foo bar.
     $regexp = '%(?:^|,\ *)("(?>[^"]*)(?>""[^"]* )*"|(?: [^",]*))%x';
@@ -64,7 +64,7 @@ class Tags {
    * @return string
    *   The imploded string.
    */
-  public static function implode($tags) {
+  public static function implode($tags): string {
     $encoded_tags = [];
     foreach ($tags as $tag) {
       $encoded_tags[] = self::encode($tag);

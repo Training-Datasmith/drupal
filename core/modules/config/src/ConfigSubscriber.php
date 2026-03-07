@@ -17,7 +17,7 @@ class ConfigSubscriber extends ConfigImportValidateEventSubscriberBase {
    * @param \Drupal\Core\Config\ConfigImporterEvent $event
    *   The config import event.
    */
-  public function onConfigImporterValidate(ConfigImporterEvent $event) {
+  public function onConfigImporterValidate(ConfigImporterEvent $event): void {
     // Make sure config syncs performed via the Config UI don't break, but
     // don't worry about syncs initiated via the command line.
     if (PHP_SAPI === 'cli') {

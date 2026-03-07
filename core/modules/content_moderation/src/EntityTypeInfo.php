@@ -37,41 +37,6 @@ class EntityTypeInfo implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * The moderation information service.
-   *
-   * @var \Drupal\content_moderation\ModerationInformationInterface
-   */
-  protected $moderationInfo;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The bundle information service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $bundleInfo;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The state transition validation service.
-   *
-   * @var \Drupal\content_moderation\StateTransitionValidationInterface
-   */
-  protected $validator;
-
-  /**
    * A keyed array of custom moderation handlers for given entity types.
    *
    * Any entity not specified will use a common default.
@@ -89,30 +54,25 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *
    * @param \Drupal\Core\StringTranslation\TranslationInterface $translation
    *   The translation service. for form alters.
-   * @param \Drupal\content_moderation\ModerationInformationInterface $moderation_information
+   * @param \Drupal\content_moderation\ModerationInformationInterface $moderationInfo
    *   The moderation information service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity type manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo
    *   Bundle information service.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   Current user.
    * @param \Drupal\content_moderation\StateTransitionValidationInterface $validator
    *   State transition validator.
    */
-  public function __construct(TranslationInterface $translation, ModerationInformationInterface $moderation_information, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $bundle_info, AccountInterface $current_user, StateTransitionValidationInterface $validator) {
+  public function __construct(TranslationInterface $translation, protected \Drupal\content_moderation\ModerationInformationInterface $moderationInfo, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\content_moderation\StateTransitionValidationInterface $validator) {
     $this->stringTranslation = $translation;
-    $this->moderationInfo = $moderation_information;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->bundleInfo = $bundle_info;
-    $this->currentUser = $current_user;
-    $this->validator = $validator;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('string_translation'),
       $container->get('content_moderation.moderation_information'),
@@ -131,7 +91,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *
    * @see hook_entity_type_alter()
    */
-  public function entityTypeAlter(array &$entity_types) {
+  public function entityTypeAlter(array &$entity_types): void {
     foreach ($entity_types as $entity_type_id => $entity_type) {
       // Internal entity types should never be moderated, and the 'path_alias'
       // entity type needs to be excluded for now.
@@ -165,7 +125,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    * @return \Drupal\Core\Entity\ContentEntityTypeInterface
    *   The modified content entity definition.
    */
-  protected function addModerationToEntityType(ContentEntityTypeInterface $type) {
+  protected function addModerationToEntityType(ContentEntityTypeInterface $type): ContentEntityTypeInterface {
     if (!$type->hasHandlerClass('moderation')) {
       $handler_class = !empty($this->moderationHandlers[$type->id()]) ? $this->moderationHandlers[$type->id()] : ModerationHandler::class;
       $type->setHandlerClass('moderation', $handler_class);
@@ -208,7 +168,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *
    * @see hook_entity_extra_field_info()
    */
-  public function entityExtraFieldInfo() {
+  public function entityExtraFieldInfo(): array {
     $return = [];
     foreach ($this->getModeratedBundles() as $bundle) {
       $return[$bundle['entity']][$bundle['bundle']]['display']['content_moderation_control'] = [
@@ -235,7 +195,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *   - bundle: The machine name of a bundle, such as "page" or "article".
    */
   protected function getModeratedBundles() {
-    $entity_types = array_filter($this->entityTypeManager->getDefinitions(), [$this->moderationInfo, 'canModerateEntitiesOfEntityType']);
+    $entity_types = array_filter($this->entityTypeManager->getDefinitions(), $this->moderationInfo->canModerateEntitiesOfEntityType(...));
     foreach ($entity_types as $type_name => $type) {
       foreach ($this->bundleInfo->getBundleInfo($type_name) as $bundle_id => $bundle) {
         if ($this->moderationInfo->shouldModerateEntitiesOfBundle($type, $bundle_id)) {
@@ -256,7 +216,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *
    * @see hook_entity_base_field_info()
    */
-  public function entityBaseFieldInfo(EntityTypeInterface $entity_type) {
+  public function entityBaseFieldInfo(EntityTypeInterface $entity_type): array {
     if (!$this->moderationInfo->isModeratedEntityType($entity_type)) {
       return [];
     }
@@ -298,7 +258,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *
    * @see hook_entity_prepare_form()
    */
-  public function entityPrepareForm(EntityInterface $entity, $operation, FormStateInterface $form_state) {
+  public function entityPrepareForm(EntityInterface $entity, $operation, FormStateInterface $form_state): void {
     /** @var \Drupal\Core\Entity\EntityFormInterface $form_object */
     $form_object = $form_state->getFormObject();
 
@@ -332,7 +292,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    *
    * @see hook_form_alter()
    */
-  public function formAlter(array &$form, FormStateInterface $form_state, $form_id) {
+  public function formAlter(array &$form, FormStateInterface $form_state, $form_id): void {
     $form_object = $form_state->getFormObject();
     if ($form_object instanceof BundleEntityFormBase) {
       $config_entity = $form_object->getEntity();
@@ -378,7 +338,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    * @return bool
    *   TRUE if the form should get form moderation, FALSE otherwise.
    */
-  protected function isModeratedEntityEditForm(FormInterface $form_object) {
+  protected function isModeratedEntityEditForm(FormInterface $form_object): bool {
     return $form_object instanceof ContentEntityFormInterface &&
       in_array($form_object->getOperation(), ['edit', 'default', 'layout_builder'], TRUE) &&
       $this->moderationInfo->isModeratedEntity($form_object->getEntity());
@@ -395,7 +355,7 @@ class EntityTypeInfo implements ContainerInjectionInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public static function bundleFormRedirect(array &$form, FormStateInterface $form_state) {
+  public static function bundleFormRedirect(array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $form_state->getFormObject()->getEntity();
 

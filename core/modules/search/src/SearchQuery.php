@@ -197,7 +197,7 @@ class SearchQuery extends SelectExtender {
    *
    * @return $this
    */
-  public function searchExpression($expression, $type) {
+  public function searchExpression($expression, string $type): static {
     $this->searchExpression = $expression;
     $this->type = $type;
 
@@ -357,12 +357,12 @@ class SearchQuery extends SelectExtender {
    * already there. Returns a list containing the number of new words found,
    * and the total number of words in the phrase.
    */
-  protected function parseWord($word) {
+  protected function parseWord($word): array {
     $num_new_scores = 0;
     $num_valid_words = 0;
 
     // Determine the scorewords of this word/phrase.
-    $split = explode(' ', $word);
+    $split = explode(' ', (string) $word);
     foreach ($split as $s) {
       $num = is_numeric($s);
       if ($num || mb_strlen($s) >= \Drupal::config('search.settings')->get('index.minimum_word_size')) {
@@ -390,7 +390,7 @@ class SearchQuery extends SelectExtender {
    * @return bool
    *   TRUE if at least one keyword matched the search index; FALSE if not.
    */
-  public function prepareAndNormalize() {
+  public function prepareAndNormalize(): bool {
     $this->parseSearchExpression();
     $this->executedPrepare = TRUE;
 
@@ -500,7 +500,7 @@ class SearchQuery extends SelectExtender {
    *
    * @return $this
    */
-  public function addScore($score, $arguments = [], $multiply = FALSE) {
+  public function addScore($score, array $arguments = [], $multiply = FALSE): static {
     if ($multiply) {
       $i = count($this->multiply);
       // Modify the score expression so it is multiplied by the multiplier,
@@ -623,7 +623,7 @@ class SearchQuery extends SelectExtender {
     $expressions = [];
 
     // Add sid as the only field and count them as a subquery.
-    $count = $this->connection->select($inner->fields('i', ['sid']), NULL);
+    $count = $this->connection->select($inner->fields('i', ['sid']));
 
     // Add the COUNT() expression.
     $count->addExpression('COUNT(*)');

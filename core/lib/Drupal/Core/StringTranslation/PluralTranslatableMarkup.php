@@ -10,13 +10,6 @@ use Drupal\Component\Gettext\PoItem;
 class PluralTranslatableMarkup extends TranslatableMarkup {
 
   /**
-   * The item count to display.
-   *
-   * @var numeric
-   */
-  protected $count;
-
-  /**
    * The already translated string.
    *
    * @var string
@@ -53,8 +46,10 @@ class PluralTranslatableMarkup extends TranslatableMarkup {
    *
    * @see \Drupal\Component\Render\FormattableMarkup::placeholderFormat()
    */
-  public function __construct($count, $singular, $plural, array $args = [], array $options = [], ?TranslationInterface $string_translation = NULL) {
-    $this->count = $count;
+  public function __construct(/**
+   * The item count to display.
+   */
+  protected $count, $singular, $plural, array $args = [], array $options = [], ?TranslationInterface $string_translation = NULL) {
     $translatable_string = implode(PoItem::DELIMITER, [$singular, $plural]);
     parent::__construct($translatable_string, $args, $options, $string_translation);
   }
@@ -83,7 +78,7 @@ class PluralTranslatableMarkup extends TranslatableMarkup {
    * @return static
    *   A PluralTranslatableMarkup object.
    */
-  public static function createFromTranslatedString($count, $translated_string, array $args = [], array $options = []) {
+  public static function createFromTranslatedString($count, $translated_string, array $args = [], array $options = []): static {
     $plural = new static($count, '', '', $args, $options);
     $plural->translatedString = $translated_string;
     return $plural;
@@ -95,7 +90,7 @@ class PluralTranslatableMarkup extends TranslatableMarkup {
    * @return string
    *   The translated string.
    */
-  public function render() {
+  public function render(): string {
     if (!$this->translatedString) {
       $this->translatedString = $this->getStringTranslation()->translateString($this);
     }

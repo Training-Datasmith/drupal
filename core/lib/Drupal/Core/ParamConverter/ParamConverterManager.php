@@ -23,7 +23,7 @@ class ParamConverterManager implements ParamConverterManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function addConverter(ParamConverterInterface $param_converter, $id) {
+  public function addConverter(ParamConverterInterface $param_converter, $id): static {
     $this->converters[$id] = $param_converter;
     return $this;
   }
@@ -35,15 +35,13 @@ class ParamConverterManager implements ParamConverterManagerInterface {
     if (isset($this->converters[$converter])) {
       return $this->converters[$converter];
     }
-    else {
-      throw new \InvalidArgumentException(sprintf('No converter has been registered for %s', $converter));
-    }
+    throw new \InvalidArgumentException(sprintf('No converter has been registered for %s', $converter));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setRouteParameterConverters(RouteCollection $routes) {
+  public function setRouteParameterConverters(RouteCollection $routes): void {
     foreach ($routes->all() as $route) {
       if (!$parameters = $route->getOption('parameters')) {
         // Continue with the next route if no parameters have been defined.
@@ -73,7 +71,7 @@ class ParamConverterManager implements ParamConverterManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function convert(array $defaults) {
+  public function convert(array $defaults): array {
     /** @var \Symfony\Component\Routing\Route $route */
     $route = $defaults[RouteObjectInterface::ROUTE_OBJECT];
 

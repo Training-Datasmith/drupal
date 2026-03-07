@@ -25,7 +25,7 @@ class FileDownloadHook {
   /**
    * Implements hook_file_download().
    */
-  public function __invoke($uri): array|int|null {
+  public function __invoke(string $uri): array|int|null {
     // Get the file record based on the URI. If not in the database just return.
     $file = $this->fileRepository->loadByUri($uri);
     if (!$file) {

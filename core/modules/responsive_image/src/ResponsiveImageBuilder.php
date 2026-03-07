@@ -172,7 +172,7 @@ class ResponsiveImageBuilder {
       $width = $variables['width'];
       $height = $variables['height'];
     }
-    $extension = pathinfo($variables['uri'], PATHINFO_EXTENSION);
+    $extension = pathinfo((string) $variables['uri'], PATHINFO_EXTENSION);
     $sizes = [];
     $srcset = [];
     $derivative_mime_types = [];
@@ -203,7 +203,7 @@ class ResponsiveImageBuilder {
             // Images within a srcset should be sorted from small to large,
             // since the first matching source will be used.
             $srcset[intval($dimensions['width'])] = $this->getImageStyleUrl($image_style_name, $variables['uri']) . ' ' . $dimensions['width'] . 'w';
-            $sizes = array_merge(explode(',', $image_style_mapping['image_mapping']['sizes']), $sizes);
+            $sizes = array_merge(explode(',', (string) $image_style_mapping['image_mapping']['sizes']), $sizes);
           }
           break;
 
@@ -216,7 +216,7 @@ class ResponsiveImageBuilder {
           // should be sorted from small to large, since the first matching
           // source will be used. We multiply it by 100 so multipliers with up
           // to two decimals can be used.
-          $srcset[intval(mb_substr($multiplier, 0, -1) * 100)] = $this->getImageStyleUrl($image_style_mapping['image_mapping'], $variables['uri']) . ' ' . $multiplier;
+          $srcset[intval(mb_substr((string) $multiplier, 0, -1) * 100)] = $this->getImageStyleUrl($image_style_mapping['image_mapping'], $variables['uri']) . ' ' . $multiplier;
           $dimensions = $this->getImageDimensions($image_style_mapping['image_mapping'], ['width' => $width, 'height' => $height], $variables['uri']);
           break;
       }

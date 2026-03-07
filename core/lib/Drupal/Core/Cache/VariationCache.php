@@ -26,8 +26,6 @@ class VariationCache implements VariationCacheInterface {
    * that does not support invalidation based on cache metadata. By storing the
    * last CacheRedirect that led to the hit, we can at least avoid having to
    * retrieve the entire chain again to get to the actual cached data.
-   *
-   * @var array
    */
   protected array $redirectChainCache = [];
 
@@ -50,7 +48,7 @@ class VariationCache implements VariationCacheInterface {
   /**
    * {@inheritdoc}
    */
-  public function get(array $keys, CacheableDependencyInterface $initial_cacheability) {
+  public function get(array $keys, CacheableDependencyInterface $initial_cacheability): mixed {
     $chain = $this->getRedirectChain($keys, $initial_cacheability);
     return end($chain);
   }
@@ -416,7 +414,7 @@ class VariationCache implements VariationCacheInterface {
    *
    * @see \Drupal\Core\Cache\CacheBackendInterface::set()
    */
-  protected function maxAgeToExpire($max_age) {
+  protected function maxAgeToExpire($max_age): int|float {
     if ($max_age !== Cache::PERMANENT) {
       return (int) $this->requestStack->getMainRequest()->server->get('REQUEST_TIME') + $max_age;
     }
@@ -438,7 +436,7 @@ class VariationCache implements VariationCacheInterface {
    * @return string
    *   The cache ID.
    */
-  protected function createCacheId(array $keys, CacheableMetadata &$cacheable_metadata) {
+  protected function createCacheId(array $keys, CacheableMetadata &$cacheable_metadata): string {
     if ($contexts = $cacheable_metadata->getCacheContexts()) {
       $context_cache_keys = $this->cacheContextsManager->convertTokensToKeys($contexts);
       $keys = array_merge($keys, $context_cache_keys->getKeys());
@@ -461,7 +459,7 @@ class VariationCache implements VariationCacheInterface {
    * @return string
    *   The cache ID for the redirect.
    */
-  protected function createCacheIdFast(array $keys, CacheableDependencyInterface $cacheability) {
+  protected function createCacheIdFast(array $keys, CacheableDependencyInterface $cacheability): string {
     if ($contexts = $cacheability->getCacheContexts()) {
       $context_cache_keys = $this->cacheContextsManager->convertTokensToKeys($contexts);
       $keys = array_merge($keys, $context_cache_keys->getKeys());

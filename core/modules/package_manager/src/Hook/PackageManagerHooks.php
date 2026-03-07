@@ -97,8 +97,7 @@ class PackageManagerHooks {
         $output .= '<pre><code>composer remove cweagans/composer-patches</code></pre>';
         $output .= '<h4 id="package-manager-faq-composer-patches-not-a-root-dependency">' . $this->t('What if it says <code>cweagans/composer-patches</code> must be a root dependency?') . '</h4>';
         $output .= '<p>' . $this->t('If <code>cweagans/composer-patches</code> is installed, it must be defined as a dependency of the main project (i.e., it must be listed in the <code>require</code> or <code>require-dev</code> section of <code>composer.json</code>). You can run the following command in your site root to add it as a dependency of the main project:') . '</p>';
-        $output .= "<pre><code>composer require cweagans/composer-patches</code></pre>";
-        return $output;
+        return $output . "<pre><code>composer require cweagans/composer-patches</code></pre>";
     }
     return NULL;
   }

@@ -21,50 +21,36 @@ class ComponentMetadata {
 
   /**
    * The absolute path to the component directory.
-   *
-   * @var string
    */
   public readonly string $path;
 
   /**
    * The component documentation.
-   *
-   * @var string
    */
   public readonly string $documentation;
 
   /**
    * The status of the component.
-   *
-   * @var string
    */
   public readonly string $status;
 
   /**
    * The machine name for the component.
-   *
-   * @var string
    */
   public readonly string $machineName;
 
   /**
    * The component's name.
-   *
-   * @var string
    */
   public readonly string $name;
 
   /**
    * The PNG path for the component thumbnail.
-   *
-   * @var string
    */
   private string $thumbnailPath;
 
   /**
    * The component group.
-   *
-   * @var string
    */
   public readonly string $group;
 
@@ -78,22 +64,11 @@ class ComponentMetadata {
 
   /**
    * The component description.
-   *
-   * @var string
    */
   public readonly string $description;
 
   /**
-   * TRUE if the schemas for props and slots are mandatory.
-   *
-   * @var bool
-   */
-  public readonly bool $mandatorySchemas;
-
-  /**
    * Slot information.
-   *
-   * @var array
    */
   public readonly array $slots;
 
@@ -114,20 +89,22 @@ class ComponentMetadata {
    *   The metadata info.
    * @param string $app_root
    *   The application root.
-   * @param bool $enforce_schemas
+   * @param bool $mandatorySchemas
    *   Enforces the definition of schemas for props and slots.
    *
    * @throws \Drupal\Core\Render\Component\Exception\InvalidComponentException
    */
-  public function __construct(array $metadata_info, string $app_root, bool $enforce_schemas) {
+  public function __construct(array $metadata_info, string $app_root, /**
+   * TRUE if the schemas for props and slots are mandatory.
+   */
+  public readonly bool $mandatorySchemas) {
     $path = $metadata_info['path'];
     // Make the absolute path, relative to the Drupal root.
     $app_root = rtrim($app_root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    if (str_starts_with($path, $app_root)) {
-      $path = substr($path, strlen($app_root));
+    if (str_starts_with((string) $path, $app_root)) {
+      $path = substr((string) $path, strlen($app_root));
     }
     $this->id = $metadata_info['id'];
-    $this->mandatorySchemas = $enforce_schemas;
     $this->path = $path;
 
     [, $machine_name] = explode(':', $metadata_info['id'] ?? []);
@@ -188,7 +165,7 @@ class ComponentMetadata {
           $translation_context = $prop_schema['x-translation-context'] ?? '';
           $prop_schema['meta:enum'] = array_map(
             // @phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-            fn($label) => new TranslatableMarkup((string) $label, [], ['context' => $translation_context]),
+            fn($label): \Drupal\Core\StringTranslation\TranslatableMarkup => new TranslatableMarkup((string) $label, [], ['context' => $translation_context]),
             $prop_schema['meta:enum']
           );
 

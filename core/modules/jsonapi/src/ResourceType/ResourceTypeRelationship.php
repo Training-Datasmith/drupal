@@ -31,7 +31,7 @@ class ResourceTypeRelationship extends ResourceTypeField {
    * @return static
    *   A new instance of the field with the given relatable resource types.
    */
-  public function withRelatableResourceTypes(array $resource_types) {
+  public function withRelatableResourceTypes(array $resource_types): static {
     $relationship = new static($this->internalName, $this->publicName, $this->enabled, $this->hasOne);
     $relationship->relatableResourceTypes = $resource_types;
     return $relationship;

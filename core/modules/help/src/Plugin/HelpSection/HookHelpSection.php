@@ -20,13 +20,6 @@ use Drupal\help\Attribute\HelpSection;
 class HookHelpSection extends HelpSectionPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a HookHelpSection object.
    *
    * @param array $configuration
@@ -35,7 +28,7 @@ class HookHelpSection extends HelpSectionPluginBase implements ContainerFactoryP
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
    * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
@@ -44,21 +37,21 @@ class HookHelpSection extends HelpSectionPluginBase implements ContainerFactoryP
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ModuleHandlerInterface $module_handler,
+    protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
     protected ModuleExtensionList $moduleExtensionList,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
+   * @return \Drupal\Core\Link[]
    */
-  public function listTopics() {
+  public function listTopics(): array {
     $topics = [];
     $this->moduleHandler->invokeAllWith(
       'help',
-      function (callable $hook, string $module) use (&$topics) {
+      function (callable $hook, string $module) use (&$topics): void {
         $title = $this->moduleExtensionList->getName($module);
         $topics[$title] = Link::createFromRoute($title, 'help.page', ['name' => $module]);
       }

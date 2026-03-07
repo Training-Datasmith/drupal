@@ -190,7 +190,7 @@ class LanguageNegotiationUrl extends LanguageNegotiationMethodBase implements In
           }
 
           // Add Drupal's subfolder from the base_path if there is one.
-          $options['base_url'] .= rtrim(base_path(), '/');
+          $options['base_url'] .= rtrim((string) base_path(), '/');
           if ($bubbleable_metadata) {
             $bubbleable_metadata->addCacheContexts(['languages:' . LanguageInterface::TYPE_URL, 'url.site']);
           }
@@ -202,8 +202,9 @@ class LanguageNegotiationUrl extends LanguageNegotiationMethodBase implements In
 
   /**
    * {@inheritdoc}
+   * @return array{url: Drupal\Core\Url, title: mixed, language: mixed, attributes: array{class: array{'language-link'}}, query: array<(int | string), (array<mixed> | string)>}[]
    */
-  public function getLanguageSwitchLinks(Request $request, $type, Url $url) {
+  public function getLanguageSwitchLinks(Request $request, $type, Url $url): array {
     $links = [];
     $query = [];
     parse_str($request->getQueryString() ?? '', $query);

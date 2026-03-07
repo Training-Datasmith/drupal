@@ -36,7 +36,7 @@ class ManyToOne extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->helper = new ManyToOneHelper($this);
@@ -71,7 +71,7 @@ class ManyToOne extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     // Allow '+' for "or". Allow ',' for "and".
@@ -104,14 +104,14 @@ class ManyToOne extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function ensureMyTable() {
+  public function ensureMyTable(): void {
     $this->helper->ensureMyTable();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query($group_by = FALSE) {
+  public function query($group_by = FALSE): void {
     $empty = FALSE;
     if (isset($this->definition['zero is null']) && $this->definition['zero is null']) {
       if (empty($this->argument)) {
@@ -203,7 +203,7 @@ class ManyToOne extends ArgumentPluginBase {
   public function summaryArgument($data) {
     $value = $data->{$this->base_alias};
     if (empty($value)) {
-      $value = 0;
+      return 0;
     }
 
     return $value;

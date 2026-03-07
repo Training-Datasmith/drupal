@@ -55,7 +55,7 @@ class ContentEntityDeleteForm extends ContentEntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     /** @var \Drupal\Core\Entity\ContentEntityInterface $entity */
     $entity = $this->getEntity();
     $message = $this->getDeletionMessage();

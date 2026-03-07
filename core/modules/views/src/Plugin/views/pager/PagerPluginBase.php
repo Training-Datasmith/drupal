@@ -33,7 +33,7 @@ abstract class PagerPluginBase extends PluginBase {
    * @phpcs:ignore Drupal.Commenting.VariableComment.MissingVar
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  public $current_page = NULL;
+  public $current_page;
 
   /**
    * The total number of lines.
@@ -75,7 +75,7 @@ abstract class PagerPluginBase extends PluginBase {
    *
    * This is mostly used for things that will override the value.
    */
-  public function setItemsPerPage($items) {
+  public function setItemsPerPage($items): void {
     $this->options['items_per_page'] = $items;
   }
 
@@ -92,7 +92,7 @@ abstract class PagerPluginBase extends PluginBase {
   /**
    * Set the page offset, or how many items to skip.
    */
-  public function setOffset($offset) {
+  public function setOffset($offset): void {
     $this->options['offset'] = $offset;
   }
 
@@ -129,7 +129,7 @@ abstract class PagerPluginBase extends PluginBase {
    *   If provided, the page number will be set to this. If NOT provided,
    *   the page number will be set from the global page array.
    */
-  public function setCurrentPage($number = NULL) {
+  public function setCurrentPage($number = NULL): void {
     if (!is_numeric($number) || $number < 0) {
       $number = 0;
     }

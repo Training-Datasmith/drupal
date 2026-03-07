@@ -8,20 +8,13 @@ namespace Drupal\Core\Config;
 class ReadOnlyStorage implements StorageInterface {
 
   /**
-   * The config storage that we are decorating.
-   *
-   * @var \Drupal\Core\Config\StorageInterface
-   */
-  protected $storage;
-
-  /**
    * Create a ReadOnlyStorage decorating another storage.
    *
    * @param \Drupal\Core\Config\StorageInterface $storage
    *   The decorated storage.
    */
-  public function __construct(StorageInterface $storage) {
-    $this->storage = $storage;
+  public function __construct(protected \Drupal\Core\Config\StorageInterface $storage)
+  {
   }
 
   /**
@@ -48,21 +41,21 @@ class ReadOnlyStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function write($name, array $data) {
+  public function write($name, array $data): never {
     throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function delete($name) {
+  public function delete($name): never {
     throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function rename($name, $new_name) {
+  public function rename($name, $new_name): never {
     throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
   }
 
@@ -90,14 +83,14 @@ class ReadOnlyStorage implements StorageInterface {
   /**
    * {@inheritdoc}
    */
-  public function deleteAll($prefix = '') {
+  public function deleteAll($prefix = ''): never {
     throw new \BadMethodCallException(__METHOD__ . ' is not allowed on a ReadOnlyStorage');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createCollection($collection) {
+  public function createCollection($collection): static {
     return new static($this->storage->createCollection($collection));
   }
 

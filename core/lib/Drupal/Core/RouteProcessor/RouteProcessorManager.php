@@ -38,7 +38,7 @@ class RouteProcessorManager implements OutboundRouteProcessorInterface {
    * @param int $priority
    *   The priority of the processor being added.
    */
-  public function addOutbound(OutboundRouteProcessorInterface $processor, $priority = 0) {
+  public function addOutbound(OutboundRouteProcessorInterface $processor, $priority = 0): void {
     $this->outboundProcessors[$priority][] = $processor;
     $this->sortedOutbound = [];
   }
@@ -46,7 +46,7 @@ class RouteProcessorManager implements OutboundRouteProcessorInterface {
   /**
    * {@inheritdoc}
    */
-  public function processOutbound($route_name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = NULL) {
+  public function processOutbound($route_name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = NULL): void {
     $processors = $this->getOutbound();
     foreach ($processors as $processor) {
       $processor->processOutbound($route_name, $route, $parameters, $bubbleable_metadata);
@@ -70,7 +70,7 @@ class RouteProcessorManager implements OutboundRouteProcessorInterface {
   /**
    * Sorts the processors according to priority.
    */
-  protected function sortProcessors() {
+  protected function sortProcessors(): array {
     krsort($this->outboundProcessors);
     return array_merge(...$this->outboundProcessors);
   }

@@ -11,26 +11,19 @@ use Drupal\file\FileInterface;
 abstract class FileUsageBase implements FileUsageInterface {
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * Creates a FileUsageBase object.
    *
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    */
-  public function __construct(ConfigFactoryInterface $config_factory) {
-    $this->configFactory = $config_factory;
+  public function __construct(protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function add(FileInterface $file, $module, $type, $id, $count = 1) {
+  public function add(FileInterface $file, $module, $type, $id, $count = 1): void {
     // Make sure that a used file is permanent.
     if (!$file->isPermanent()) {
       $file->setPermanent();
@@ -41,7 +34,7 @@ abstract class FileUsageBase implements FileUsageInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete(FileInterface $file, $module, $type = NULL, $id = NULL, $count = 1) {
+  public function delete(FileInterface $file, $module, $type = NULL, $id = NULL, $count = 1): void {
     // Do not actually mark files as temporary when the behavior is disabled.
     if (!$this->configFactory->get('file.settings')->get('make_unused_managed_files_temporary')) {
       return;

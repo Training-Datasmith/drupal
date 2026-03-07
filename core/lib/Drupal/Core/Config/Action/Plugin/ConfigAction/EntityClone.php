@@ -22,11 +22,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   admin_label: new TranslatableMarkup('Clone entity with a new ID'),
   entity_types: ['*'],
 )]
-final class EntityClone implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class EntityClone implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigManagerInterface $configManager,
-    private readonly ConfigActionManager $configActionManager,
+    private ConfigManagerInterface $configManager,
+    private ConfigActionManager $configActionManager,
   ) {}
 
   /**
@@ -63,8 +63,8 @@ final class EntityClone implements ConfigActionPluginInterface, ContainerFactory
     // with the ID `node.foo.teaser`, and the clone's ID is
     // `node.%.search_result`, the final ID of the clone will be
     // `node.foo.search_result`.
-    $original_id_parts = explode('.', $original->id());
-    $clone_id_parts = explode('.', $value['id']);
+    $original_id_parts = explode('.', (string) $original->id());
+    $clone_id_parts = explode('.', (string) $value['id']);
     assert(count($original_id_parts) === count($clone_id_parts));
     foreach ($clone_id_parts as $index => $part) {
       $clone_id_parts[$index] = $part === '%' ? $original_id_parts[$index] : $part;

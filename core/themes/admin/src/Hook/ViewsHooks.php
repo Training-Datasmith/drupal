@@ -45,13 +45,13 @@ readonly class ViewsHooks {
           foreach ($nested_child_keys as $nested_key) {
             $child_count++;
             $prefix = $dummy_dropbutton[$key][$nested_key]['#prefix'];
-            $dummy_dropbutton[$key][$nested_key]['#prefix'] = preg_replace($prefix_regex, '$1$2 dropbutton__item$3', $prefix);
+            $dummy_dropbutton[$key][$nested_key]['#prefix'] = preg_replace($prefix_regex, '$1$2 dropbutton__item$3', (string) $prefix);
           }
         }
         else {
           $child_count++;
           $prefix = $dummy_dropbutton[$key]['#prefix'];
-          $dummy_dropbutton[$key]['#prefix'] = preg_replace($prefix_regex, '$1$2 dropbutton__item$3', $prefix);
+          $dummy_dropbutton[$key]['#prefix'] = preg_replace($prefix_regex, '$1$2 dropbutton__item$3', (string) $prefix);
         }
       }
 
@@ -59,7 +59,7 @@ readonly class ViewsHooks {
         $classes = 'dropbutton--extrasmall ';
         $classes .= ($child_count > 1) ? 'dropbutton--multiple' : 'dropbutton--single';
         $prefix = $dummy_dropbutton['prefix']['#markup'];
-        $dummy_dropbutton['prefix']['#markup'] = preg_replace($prefix_regex, '$1$2 ' . $classes . '$3', $prefix);
+        $dummy_dropbutton['prefix']['#markup'] = preg_replace($prefix_regex, '$1$2 ' . $classes . '$3', (string) $prefix);
       }
     }
 
@@ -79,7 +79,7 @@ readonly class ViewsHooks {
   public function viewsUiDisplayTopAlter(array &$element): void {
     // @todo Remove this after https://www.drupal.org/node/3051605 has been
     //   solved.
-    $element['tabs']['#prefix'] = preg_replace('/(class="(.+\s)?)tabs(\s.+"|")/', '$1views-tabs$3', $element['tabs']['#prefix']);
+    $element['tabs']['#prefix'] = preg_replace('/(class="(.+\s)?)tabs(\s.+"|")/', '$1views-tabs$3', (string) $element['tabs']['#prefix']);
     $element['tabs']['#prefix'] = preg_replace('/(class="(.+\s)?)secondary(\s.+"|")/', '$1views-tabs--secondary$3', $element['tabs']['#prefix']);
 
     foreach (Element::children($element['tabs']) as $tab) {
@@ -124,7 +124,7 @@ readonly class ViewsHooks {
    */
   #[Hook('views_pre_render')]
   public function preRender(ViewExecutable $view): void {
-    $add_classes = static function (&$option, array $classes_to_add) {
+    $add_classes = static function (&$option, array $classes_to_add): void {
       $classes = preg_split('/\s+/', $option);
       $classes = array_filter($classes);
       $classes = array_merge($classes, $classes_to_add);

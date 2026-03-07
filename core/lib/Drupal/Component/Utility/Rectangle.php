@@ -80,7 +80,7 @@ class Rectangle {
    *
    * @return $this
    */
-  public function rotate($angle) {
+  public function rotate($angle): static {
     // PHP 5.5 GD bug: https://bugs.php.net/bug.php?id=65148: To prevent buggy
     // behavior on negative multiples of 30 degrees we convert any negative
     // angle to a positive one between 0 and 360 degrees.
@@ -154,7 +154,7 @@ class Rectangle {
    * @return float
    *   The fractional part of the input number, unsigned.
    */
-  protected function fraction($input) {
+  protected function fraction($input): float {
     return abs((int) $input - $input);
   }
 

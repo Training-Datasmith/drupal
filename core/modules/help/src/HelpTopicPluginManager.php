@@ -117,9 +117,7 @@ class HelpTopicPluginManager extends DefaultPluginManager implements HelpTopicPl
 
       // Search for Twig help topics in subdirectory help_topics, under
       // modules/profiles, themes, and the core directory.
-      $all_directories = array_map(function ($dir) {
-        return [$dir . '/help_topics'];
-      }, $all_directories);
+      $all_directories = array_map(fn($dir) => [$dir . '/help_topics'], $all_directories);
       $discovery = new HelpTopicDiscovery($all_directories);
 
       // Also allow modules/profiles to extend help topic discovery to their
@@ -134,8 +132,12 @@ class HelpTopicPluginManager extends DefaultPluginManager implements HelpTopicPl
   /**
    * {@inheritdoc}
    */
-  protected function providerExists($provider) {
-    return $this->moduleHandler->moduleExists($provider) || $this->themeHandler->themeExists($provider);
+  protected function providerExists($provider): bool
+  {
+      if ($this->moduleHandler->moduleExists($provider)) {
+          return true;
+      }
+      return $this->themeHandler->themeExists($provider);
   }
 
   /**

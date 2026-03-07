@@ -20,8 +20,6 @@ class HelpSectionManager extends DefaultPluginManager {
 
   /**
    * The search manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
    */
   protected ?PluginManagerInterface $searchManager = NULL;
 
@@ -37,7 +35,7 @@ class HelpSectionManager extends DefaultPluginManager {
    *   The module handler for the alter hook.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/HelpSection', $namespaces, $module_handler, HelpSectionPluginInterface::class, HelpSection::class, 'Drupal\help\Annotation\HelpSection');
+    parent::__construct('Plugin/HelpSection', $namespaces, $module_handler, HelpSectionPluginInterface::class, HelpSection::class, \Drupal\help\Annotation\HelpSection::class);
 
     $this->alterInfo('help_section_info');
     $this->setCacheBackend($cache_backend, 'help_section_plugins');
@@ -49,14 +47,14 @@ class HelpSectionManager extends DefaultPluginManager {
    * @param \Drupal\Component\Plugin\PluginManagerInterface|null $search_manager
    *   The search manager if the Search module is installed.
    */
-  public function setSearchManager(?PluginManagerInterface $search_manager = NULL) {
+  public function setSearchManager(?PluginManagerInterface $search_manager = NULL): void {
     $this->searchManager = $search_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     parent::clearCachedDefinitions();
     // Search module may be missing. Help module might be installing,
     // so its search plugin may not be discovered yet.

@@ -24,7 +24,7 @@ class FloatData extends PrimitiveBase implements FloatInterface {
    * {@inheritdoc}
    */
   #[JsonSchema(['type' => 'number'])]
-  public function getCastedValue() {
+  public function getCastedValue(): float {
     return (float) $this->value;
   }
 

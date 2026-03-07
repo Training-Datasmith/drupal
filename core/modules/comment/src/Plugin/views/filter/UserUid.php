@@ -17,7 +17,7 @@ class UserUid extends FilterPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
 
     $subselect = Database::getConnection()->select('comment_field_data', 'c');

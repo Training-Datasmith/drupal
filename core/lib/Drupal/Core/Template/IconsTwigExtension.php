@@ -19,7 +19,7 @@ final class IconsTwigExtension extends AbstractExtension {
    */
   public function getFunctions(): array {
     return [
-      new TwigFunction('icon', [$this, 'getIconRenderable']),
+      new TwigFunction('icon', $this->getIconRenderable(...)),
     ];
   }
 

@@ -28,40 +28,25 @@ class ModerationStateFilter extends InOperator implements DependentWithRemovalPl
   protected $valueFormType = 'select';
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The bundle information service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $bundleInfo;
-
-  /**
-   * The storage handler of the workflow entity type.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $workflowStorage;
-
-  /**
    * Creates an instance of ModerationStateFilter.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $bundle_info, EntityStorageInterface $workflow_storage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The entity type manager.
+   */
+  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
+   * The bundle information service.
+   */
+  protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundleInfo, /**
+   * The storage handler of the workflow entity type.
+   */
+  protected \Drupal\Core\Entity\EntityStorageInterface $workflowStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = $entity_type_manager;
-    $this->bundleInfo = $bundle_info;
-    $this->workflowStorage = $workflow_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -75,14 +60,14 @@ class ModerationStateFilter extends InOperator implements DependentWithRemovalPl
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return Cache::mergeTags(parent::getCacheTags(), $this->entityTypeManager->getDefinition('workflow')->getListCacheTags());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return Cache::mergeContexts(parent::getCacheContexts(), $this->entityTypeManager->getDefinition('workflow')->getListCacheContexts());
   }
 
@@ -177,7 +162,7 @@ class ModerationStateFilter extends InOperator implements DependentWithRemovalPl
     // we need to create a complex WHERE condition.
     $field = $this->view->query->getConnection()->condition('OR');
     foreach ((array) $this->value as $value) {
-      [$workflow_id, $state_id] = explode('-', $value, 2);
+      [$workflow_id, $state_id] = explode('-', (string) $value, 2);
 
       $and = $this->view->query->getConnection()->condition('AND');
       $and
@@ -244,10 +229,10 @@ class ModerationStateFilter extends InOperator implements DependentWithRemovalPl
    * @return array
    *   And array of workflow IDs.
    */
-  protected function getWorkflowIds() {
+  protected function getWorkflowIds(): array {
     $workflow_ids = [];
     foreach ((array) $this->value as $value) {
-      [$workflow_id] = explode('-', $value, 2);
+      [$workflow_id] = explode('-', (string) $value, 2);
       $workflow_ids[] = $workflow_id;
     }
 

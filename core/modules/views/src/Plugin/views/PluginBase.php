@@ -71,7 +71,7 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
    *
    * @var \Drupal\views\ViewExecutable
    */
-  public $view = NULL;
+  public $view;
 
   /**
    * The display object this plugin is for.
@@ -129,9 +129,9 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     $this->view = $view;
-    $this->options = $this->options ?? [];
+    $this->options ??= [];
     $this->setOptionDefaults($this->options, $this->defineOptions());
     $this->displayHandler = $display;
 
@@ -186,7 +186,7 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function filterByDefinedOptions(array &$storage) {
+  public function filterByDefinedOptions(array &$storage): void {
     $this->doFilterByDefinedOptions($storage, $this->defineOptions());
   }
 
@@ -213,7 +213,7 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function unpackOptions(&$storage, $options, $definition = NULL, $all = TRUE, $check = TRUE) {
+  public function unpackOptions(&$storage, $options, $definition = NULL, $all = TRUE, $check = TRUE): void {
     if ($check && !is_array($options)) {
       return;
     }
@@ -252,14 +252,14 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function destroy() {
+  public function destroy(): void {
     unset($this->view, $this->display, $this->query);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     // Some form elements belong in a fieldset for presentation, but can't
     // be moved into one because of the $form_state->getValues() hierarchy.
     // Those elements can add a #fieldset => 'fieldset_name' property, and
@@ -362,7 +362,7 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
       // Twig wants a token replacement array stripped of curly-brackets.
       // Some Views tokens come with curly-braces, others do not.
       // @todo https://www.drupal.org/node/2544392
-      if (str_contains($token, '{{')) {
+      if (str_contains((string) $token, '{{')) {
         // Twig wants a token replacement array stripped of curly-brackets.
         $token = trim(str_replace(['{{', '}}'], '', $token));
       }
@@ -370,15 +370,15 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
       // Check for arrays in Twig tokens. Internally these are passed as
       // dot-delimited strings, but need to be turned into associative arrays
       // for parsing.
-      if (!str_contains($token, '.')) {
+      if (!str_contains((string) $token, '.')) {
         // We need to validate tokens are valid Twig variables. Twig uses the
         // same variable naming rules as PHP.
         // @see http://php.net/manual/language.variables.basics.php
-        assert(preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $token) === 1, 'Tokens need to be valid Twig variables.');
+        assert(preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', (string) $token) === 1, 'Tokens need to be valid Twig variables.');
         $twig_tokens[$token] = $replacement;
       }
       else {
-        $parts = explode('.', $token);
+        $parts = explode('.', (string) $token);
         $top = array_shift($parts);
         assert(preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $top) === 1, 'Tokens need to be valid Twig variables.');
         $token_array = [array_pop($parts) => $replacement];
@@ -404,9 +404,7 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
         '#template' => $text,
         '#context' => $twig_tokens,
         '#post_render' => [
-          function ($children, $elements) {
-            return Xss::filterAdmin($children);
-          },
+          fn($children, $elements) => Xss::filterAdmin($children),
         ],
       ];
 
@@ -416,9 +414,7 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
       // @todo https://www.drupal.org/node/2566621
       return (string) $this->getRenderer()->renderInIsolation($build);
     }
-    else {
-      return Xss::filterAdmin($text);
-    }
+    return Xss::filterAdmin($text);
   }
 
   /**
@@ -448,7 +444,7 @@ abstract class PluginBase extends ComponentPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function globalTokenForm(&$form, FormStateInterface $form_state) {
+  public function globalTokenForm(&$form, FormStateInterface $form_state): void {
     $token_items = [];
 
     foreach ($this->getAvailableGlobalTokens() as $type => $tokens) {

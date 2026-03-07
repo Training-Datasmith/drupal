@@ -14,14 +14,14 @@ class SourceString extends StringBase {
   /**
    * {@inheritdoc}
    */
-  public function isSource() {
+  public function isSource(): bool {
     return isset($this->source);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isTranslation() {
+  public function isTranslation(): bool {
     return FALSE;
   }
 
@@ -35,7 +35,7 @@ class SourceString extends StringBase {
   /**
    * {@inheritdoc}
    */
-  public function setString($string) {
+  public function setString($string): static {
     $this->source = $string;
     return $this;
   }
@@ -43,7 +43,7 @@ class SourceString extends StringBase {
   /**
    * {@inheritdoc}
    */
-  public function isNew() {
+  public function isNew(): bool {
     return empty($this->lid);
   }
 

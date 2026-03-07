@@ -48,11 +48,13 @@ class NodeViewsHooks {
       }
     }
     foreach ($view->displayHandlers as $display) {
-      if ($display->getPluginId() == 'page') {
-        if ($display->getOption('path') == 'node/%') {
-          $ret[] = Analyzer::formatMessage($this->t('Display %display has set node/% as path. This will not produce what you want. If you want to have multiple versions of the node view, use Layout Builder.', ['%display' => $display->display['display_title']]), 'warning');
+        if ($display->getPluginId() != 'page') {
+            continue;
         }
-      }
+        if ($display->getOption('path') != 'node/%') {
+            continue;
+        }
+        $ret[] = Analyzer::formatMessage($this->t('Display %display has set node/% as path. This will not produce what you want. If you want to have multiple versions of the node view, use Layout Builder.', ['%display' => $display->display['display_title']]), 'warning');
     }
     return $ret;
   }

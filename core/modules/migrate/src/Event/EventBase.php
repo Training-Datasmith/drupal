@@ -12,20 +12,6 @@ use Drupal\Component\EventDispatcher\Event;
 class EventBase extends Event {
 
   /**
-   * The migration.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationInterface
-   */
-  protected $migration;
-
-  /**
-   * The current message service.
-   *
-   * @var \Drupal\migrate\MigrateMessageInterface
-   */
-  protected $message;
-
-  /**
    * Constructs a Migrate event object.
    *
    * @param \Drupal\migrate\Plugin\MigrationInterface $migration
@@ -33,9 +19,8 @@ class EventBase extends Event {
    * @param \Drupal\migrate\MigrateMessageInterface $message
    *   The Migrate message service.
    */
-  public function __construct(MigrationInterface $migration, MigrateMessageInterface $message) {
-    $this->migration = $migration;
-    $this->message = $message;
+  public function __construct(protected \Drupal\migrate\Plugin\MigrationInterface $migration, protected \Drupal\migrate\MigrateMessageInterface $message)
+  {
   }
 
   /**
@@ -56,7 +41,7 @@ class EventBase extends Event {
    * @param string $type
    *   The type of message, for example: status or warning.
    */
-  public function logMessage($message, $type = 'status') {
+  public function logMessage($message, $type = 'status'): void {
     $this->message->display($message, $type);
   }
 

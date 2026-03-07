@@ -28,30 +28,15 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class NodeTranslationMigrateSubscriber implements EventSubscriberInterface {
 
   /**
-   * The key value factory.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueFactoryInterface
-   */
-  protected $keyValue;
-
-  /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * Constructs the NodeTranslationMigrateSubscriber.
    *
-   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value
+   * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue
    *   The key value factory.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service.
    */
-  public function __construct(KeyValueFactoryInterface $key_value, StateInterface $state) {
-    $this->keyValue = $key_value;
-    $this->state = $state;
+  public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $keyValue, protected \Drupal\Core\State\StateInterface $state)
+  {
   }
 
   /**
@@ -63,7 +48,7 @@ class NodeTranslationMigrateSubscriber implements EventSubscriberInterface {
    * @return bool
    *   True if we are migrating translated nodes, false otherwise.
    */
-  protected function isNodeTranslationsMigration(EventBase $event) {
+  protected function isNodeTranslationsMigration(EventBase $event): bool {
     $migration = $event->getMigration();
     $source_configuration = $migration->getSourceConfiguration();
     $destination_configuration = $migration->getDestinationConfiguration();
@@ -76,7 +61,7 @@ class NodeTranslationMigrateSubscriber implements EventSubscriberInterface {
    * @param \Drupal\migrate\Event\MigratePostRowSaveEvent $event
    *   The migrate post row save event.
    */
-  public function onPostRowSave(MigratePostRowSaveEvent $event) {
+  public function onPostRowSave(MigratePostRowSaveEvent $event): void {
     if ($this->isNodeTranslationsMigration($event)) {
       $row = $event->getRow();
       $source = $row->getSource();
@@ -92,7 +77,7 @@ class NodeTranslationMigrateSubscriber implements EventSubscriberInterface {
    * @param \Drupal\migrate\Event\MigrateImportEvent $event
    *   The migrate import event.
    */
-  public function onPostImport(MigrateImportEvent $event) {
+  public function onPostImport(MigrateImportEvent $event): void {
     if ($this->isNodeTranslationsMigration($event)) {
       $this->state->set('node_translation_redirect', TRUE);
     }

@@ -20,7 +20,7 @@ class HelpBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata) {
+  public function applies(RouteMatchInterface $route_match, CacheableMetadata $cacheable_metadata): bool {
     $cacheable_metadata->addCacheContexts(['route']);
     return $route_match->getRouteName() == 'help.help_topic';
   }
@@ -28,7 +28,7 @@ class HelpBreadcrumbBuilder implements BreadcrumbBuilderInterface {
   /**
    * {@inheritdoc}
    */
-  public function build(RouteMatchInterface $route_match) {
+  public function build(RouteMatchInterface $route_match): \Drupal\Core\Breadcrumb\Breadcrumb {
     $breadcrumb = new Breadcrumb();
     $breadcrumb->addCacheContexts(['url.path.parent']);
     $breadcrumb->addLink(Link::createFromRoute(new TranslatableMarkup('Home'), '<front>'));

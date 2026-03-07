@@ -50,7 +50,7 @@ class SystemController extends ControllerBase {
    * @return array
    *   A renderable array of the administration overview page.
    */
-  public function overview($link_id) {
+  public function overview($link_id): array {
     // Check for status report errors.
     if ($this->currentUser()->hasPermission('administer site configuration') && $this->systemManager->checkRequirements()) {
       $this->messenger()->addError($this->t('One or more problems were detected with your Drupal installation. Check the <a href=":status">status report</a> for more information.', [':status' => Url::fromRoute('system.status')->toString()]));
@@ -96,13 +96,11 @@ class SystemController extends ControllerBase {
       $tree_access_cacheability->applyTo($build);
       return $build;
     }
-    else {
-      $build = [
-        '#markup' => $this->t('You do not have any administrative items.'),
-      ];
-      $tree_access_cacheability->applyTo($build);
-      return $build;
-    }
+    $build = [
+      '#markup' => $this->t('You do not have any administrative items.'),
+    ];
+    $tree_access_cacheability->applyTo($build);
+    return $build;
   }
 
   /**
@@ -134,15 +132,13 @@ class SystemController extends ControllerBase {
    *
    * @todo Move into ThemeController.
    */
-  public function themesPage() {
+  public function themesPage(): array {
     $config = $this->config('system.theme');
     // Get all available themes.
     $themes = $this->themeExtensionList->reset()->getList();
 
     // Remove obsolete themes.
-    $themes = array_filter($themes, function ($theme) {
-      return !$theme->isObsolete();
-    });
+    $themes = array_filter($themes, fn(\Drupal\Core\Extension\Extension $theme) => !$theme->isObsolete());
     uasort($themes, [ThemeExtensionList::class, 'sortByName']);
 
     $theme_default = $config->get('default');
@@ -294,13 +290,13 @@ class SystemController extends ControllerBase {
       }
       $lifecycle = $theme->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER];
       if (!empty($theme->info[ExtensionLifecycle::LIFECYCLE_LINK_IDENTIFIER])) {
-        $theme->notes[] = Link::fromTextAndUrl($this->t('@lifecycle', ['@lifecycle' => ucfirst($lifecycle)]),
+        $theme->notes[] = Link::fromTextAndUrl($this->t('@lifecycle', ['@lifecycle' => ucfirst((string) $lifecycle)]),
           Url::fromUri($theme->info[ExtensionLifecycle::LIFECYCLE_LINK_IDENTIFIER], [
             'attributes' =>
               [
                 'class' => 'theme-link--non-stable',
                 'aria-label' => $this->t('View information on the @lifecycle status of the theme @theme', [
-                  '@lifecycle' => ucfirst($lifecycle),
+                  '@lifecycle' => ucfirst((string) $lifecycle),
                   '@theme' => $theme->info['name'],
                 ]),
               ],
@@ -323,7 +319,7 @@ class SystemController extends ControllerBase {
       $theme_group_titles['uninstalled'] = $this->formatPlural(count($theme_groups['uninstalled']), 'Uninstalled theme', 'Uninstalled themes');
     }
 
-    uasort($theme_groups['installed'], 'system_sort_themes');
+    uasort($theme_groups['installed'], system_sort_themes(...));
     $this->moduleHandler()->alter('system_themes_page', $theme_groups);
 
     $build = [];
@@ -332,7 +328,7 @@ class SystemController extends ControllerBase {
       '#theme_groups' => $theme_groups,
       '#theme_group_titles' => $theme_group_titles,
     ];
-    $build[] = $this->formBuilder->getForm('Drupal\system\Form\ThemeAdminForm', $admin_theme_options);
+    $build[] = $this->formBuilder->getForm(\Drupal\system\Form\ThemeAdminForm::class, $admin_theme_options);
 
     return $build;
   }

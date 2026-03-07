@@ -10,13 +10,6 @@ use Symfony\Component\HttpFoundation\Session\Storage\Proxy\SessionHandlerProxy;
 class WriteSafeSessionHandler extends SessionHandlerProxy implements \SessionHandlerInterface, WriteSafeSessionHandlerInterface, \SessionUpdateTimestampHandlerInterface {
 
   /**
-   * Whether or not the session is enabled for writing.
-   *
-   * @var bool
-   */
-  protected $sessionWritable;
-
-  /**
    * The read sessions.
    *
    * @var array
@@ -29,12 +22,14 @@ class WriteSafeSessionHandler extends SessionHandlerProxy implements \SessionHan
    *
    * @param \SessionHandlerInterface $handler
    *   The underlying session handler.
-   * @param bool $session_writable
+   * @param bool $sessionWritable
    *   Whether or not the session should be initially writable.
    */
-  public function __construct(\SessionHandlerInterface $handler, $session_writable = TRUE) {
+  public function __construct(\SessionHandlerInterface $handler, /**
+   * Whether or not the session is enabled for writing.
+   */
+  protected $sessionWritable = TRUE) {
     parent::__construct($handler);
-    $this->sessionWritable = $session_writable;
   }
 
   /**
@@ -63,7 +58,7 @@ class WriteSafeSessionHandler extends SessionHandlerProxy implements \SessionHan
   /**
    * {@inheritdoc}
    */
-  public function setSessionWritable($flag) {
+  public function setSessionWritable($flag): void {
     $this->sessionWritable = (bool) $flag;
   }
 

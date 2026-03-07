@@ -23,43 +23,27 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class OEmbedForm extends AddFormBase {
 
   /**
-   * The oEmbed URL resolver service.
-   *
-   * @var \Drupal\media\OEmbed\UrlResolverInterface
-   */
-  protected $urlResolver;
-
-  /**
-   * The oEmbed resource fetcher service.
-   *
-   * @var \Drupal\media\OEmbed\ResourceFetcherInterface
-   */
-  protected $resourceFetcher;
-
-  /**
    * Constructs a new OEmbedForm.
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    * @param \Drupal\media_library\MediaLibraryUiBuilder $library_ui_builder
    *   The media library UI builder.
-   * @param \Drupal\media\OEmbed\UrlResolverInterface $url_resolver
+   * @param \Drupal\media\OEmbed\UrlResolverInterface $urlResolver
    *   The oEmbed URL resolver service.
-   * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resource_fetcher
+   * @param \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher
    *   The oEmbed resource fetcher service.
    * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
    *   The opener resolver.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, UrlResolverInterface $url_resolver, ResourceFetcherInterface $resource_fetcher, ?OpenerResolverInterface $opener_resolver = NULL) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, protected \Drupal\media\OEmbed\UrlResolverInterface $urlResolver, protected \Drupal\media\OEmbed\ResourceFetcherInterface $resourceFetcher, ?OpenerResolverInterface $opener_resolver = NULL) {
     parent::__construct($entity_type_manager, $library_ui_builder, $opener_resolver);
-    $this->urlResolver = $url_resolver;
-    $this->resourceFetcher = $resource_fetcher;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('media_library.ui_builder'),
@@ -72,7 +56,7 @@ class OEmbedForm extends AddFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return $this->getBaseFormId() . '_oembed';
   }
 
@@ -94,7 +78,7 @@ class OEmbedForm extends AddFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function buildInputElement(array $form, FormStateInterface $form_state) {
+  protected function buildInputElement(array $form, FormStateInterface $form_state): array {
     $media_type = $this->getMediaType($form_state);
     $providers = $media_type->getSource()->getProviders();
 
@@ -150,7 +134,7 @@ class OEmbedForm extends AddFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current form state.
    */
-  public function validateUrl(array &$form, FormStateInterface $form_state) {
+  public function validateUrl(array &$form, FormStateInterface $form_state): void {
     $url = $form_state->getValue('url');
     if ($url) {
       try {
@@ -171,7 +155,7 @@ class OEmbedForm extends AddFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public function addButtonSubmit(array $form, FormStateInterface $form_state) {
+  public function addButtonSubmit(array $form, FormStateInterface $form_state): void {
     $this->processInputValues([$form_state->getValue('url')], $form, $form_state);
   }
 

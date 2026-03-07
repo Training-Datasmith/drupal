@@ -33,20 +33,6 @@ class ModuleExtensionList extends ExtensionList {
   ];
 
   /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The profile list needed by this module list.
-   *
-   * @var \Drupal\Core\Extension\ExtensionList
-   */
-  protected $profileList;
-
-  /**
    * Constructs a new ModuleExtensionList instance.
    *
    * @param string $root
@@ -61,20 +47,17 @@ class ModuleExtensionList extends ExtensionList {
    *   The module handler.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\Extension\ExtensionList $profile_list
+   * @param \Drupal\Core\Extension\ExtensionList $profileList
    *   The site profile listing.
    * @param string $install_profile
    *   The install profile used by the site.
    * @param array[] $container_modules_info
    *   (optional) The module locations coming from the compiled container.
    */
-  public function __construct($root, $type, CacheBackendInterface $cache, InfoParserInterface $info_parser, ModuleHandlerInterface $module_handler, StateInterface $state, ConfigFactoryInterface $config_factory, ExtensionList $profile_list, $install_profile, array $container_modules_info = []) {
+  public function __construct($root, $type, CacheBackendInterface $cache, InfoParserInterface $info_parser, ModuleHandlerInterface $module_handler, StateInterface $state, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Extension\ExtensionList $profileList, $install_profile, array $container_modules_info = []) {
     parent::__construct($root, $type, $cache, $info_parser, $module_handler, $state, $install_profile);
-
-    $this->configFactory = $config_factory;
-    $this->profileList = $profile_list;
 
     // Use the information from the container. This is an optimization.
     foreach ($container_modules_info as $module_name => $info) {
@@ -104,16 +87,12 @@ class ModuleExtensionList extends ExtensionList {
    * @return string[]
    *   Paths to all installation profiles.
    */
-  protected function getProfileDirectories(ExtensionDiscovery $discovery) {
+  protected function getProfileDirectories(ExtensionDiscovery $discovery): array {
     $discovery->setProfileDirectories([]);
     $all_profiles = $discovery->scan('profile');
     $active_profile = $all_profiles[$this->installProfile];
     $profiles = array_intersect_key($all_profiles, $this->configFactory->get('core.extension')->get('module') ?: [$active_profile->getName() => 0]);
-
-    $profile_directories = array_map(function (Extension $profile) {
-      return $profile->getPath();
-    }, $profiles);
-    return $profile_directories;
+    return array_map(fn(Extension $profile) => $profile->getPath(), $profiles);
   }
 
   /**
@@ -194,7 +173,7 @@ class ModuleExtensionList extends ExtensionList {
   /**
    * {@inheritdoc}
    */
-  protected function getInstalledExtensionNames() {
+  protected function getInstalledExtensionNames(): array {
     return array_keys($this->moduleHandler->getModuleList());
   }
 

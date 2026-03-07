@@ -48,8 +48,9 @@ class NumberWidget extends WidgetBase {
 
   /**
    * {@inheritdoc}
+   * @return list
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $placeholder = $this->getSetting('placeholder');
@@ -66,7 +67,7 @@ class NumberWidget extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $value = $items[$delta]->value ?? NULL;
     $field_settings = $this->getFieldSettings();
 
@@ -79,7 +80,7 @@ class NumberWidget extends WidgetBase {
     // Set the step for floating point and decimal numbers.
     switch ($this->fieldDefinition->getType()) {
       case 'decimal':
-        $element['#step'] = pow(0.1, $field_settings['scale']);
+        $element['#step'] = 0.1 ** $field_settings['scale'];
         break;
 
       case 'float':
@@ -97,11 +98,11 @@ class NumberWidget extends WidgetBase {
 
     // Add prefix and suffix.
     if ($field_settings['prefix']) {
-      $prefixes = explode('|', $field_settings['prefix']);
+      $prefixes = explode('|', (string) $field_settings['prefix']);
       $element['#field_prefix'] = FieldFilteredMarkup::create(array_pop($prefixes));
     }
     if ($field_settings['suffix']) {
-      $suffixes = explode('|', $field_settings['suffix']);
+      $suffixes = explode('|', (string) $field_settings['suffix']);
       $element['#field_suffix'] = FieldFilteredMarkup::create(array_pop($suffixes));
     }
 

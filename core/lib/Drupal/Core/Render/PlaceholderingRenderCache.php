@@ -105,13 +105,10 @@ class PlaceholderingRenderCache extends RenderCache {
     if ($cached_element === FALSE) {
       return FALSE;
     }
-    else {
-      if ($this->placeholderGenerator->canCreatePlaceholder($elements) && $this->placeholderGenerator->shouldAutomaticallyPlaceholder($cached_element)) {
-        return $this->createPlaceholderAndRemember($cached_element, $elements);
-      }
-
-      return $cached_element;
+    if ($this->placeholderGenerator->canCreatePlaceholder($elements) && $this->placeholderGenerator->shouldAutomaticallyPlaceholder($cached_element)) {
+      return $this->createPlaceholderAndRemember($cached_element, $elements);
     }
+    return $cached_element;
   }
 
   /**
@@ -175,10 +172,7 @@ class PlaceholderingRenderCache extends RenderCache {
   protected function getFromPlaceholderResultsCache(array $elements) {
     $placeholder_element = $this->placeholderGenerator->createPlaceholder($elements);
     $placeholder = (string) $placeholder_element['#markup'];
-    if (isset($this->placeholderResultsCache[$placeholder])) {
-      return $this->placeholderResultsCache[$placeholder];
-    }
-    return FALSE;
+    return $this->placeholderResultsCache[$placeholder] ?? FALSE;
   }
 
 }

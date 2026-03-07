@@ -21,27 +21,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ConfigTranslationDeleteForm extends ConfirmFormBase {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The configuration mapper manager.
-   *
-   * @var \Drupal\config_translation\ConfigMapperManagerInterface
-   */
-  protected $configMapperManager;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * The configuration translation to be deleted.
    *
    * @var \Drupal\config_translation\ConfigMapperInterface
@@ -58,23 +37,21 @@ class ConfigTranslationDeleteForm extends ConfirmFormBase {
   /**
    * Constructs a ConfigTranslationDeleteForm.
    *
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $language_manager
+   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
    *   The language override configuration storage.
-   * @param \Drupal\config_translation\ConfigMapperManagerInterface $config_mapper_manager
+   * @param \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager
    *   The configuration mapper manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(ConfigurableLanguageManagerInterface $language_manager, ConfigMapperManagerInterface $config_mapper_manager, ModuleHandlerInterface $module_handler) {
-    $this->languageManager = $language_manager;
-    $this->configMapperManager = $config_mapper_manager;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager, protected \Drupal\config_translation\ConfigMapperManagerInterface $configMapperManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('language_manager'),
       $container->get('plugin.manager.config_translation.mapper'),
@@ -85,7 +62,7 @@ class ConfigTranslationDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to delete the @language translation of %label?', [
       '%label' => $this->mapper->getTitle(),
       '@language' => $this->language->getName(),
@@ -95,21 +72,21 @@ class ConfigTranslationDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Delete');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url($this->mapper->getOverviewRouteName(), $this->mapper->getOverviewRouteParameters());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'config_translation_delete_form';
   }
 
@@ -134,7 +111,7 @@ class ConfigTranslationDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     foreach ($this->mapper->getConfigNames() as $name) {
       $this->languageManager->getLanguageConfigOverride($this->language->getId(), $name)->delete();
     }

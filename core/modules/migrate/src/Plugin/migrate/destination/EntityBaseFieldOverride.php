@@ -49,7 +49,7 @@ class EntityBaseFieldOverride extends EntityConfigBase {
   /**
    * {@inheritdoc}
    */
-  protected function getEntityId(Row $row) {
+  protected function getEntityId(Row $row): string {
     $entity_type = $row->getDestinationProperty('entity_type');
     $bundle = $row->getDestinationProperty('bundle');
     $field_name = $row->getDestinationProperty('field_name');

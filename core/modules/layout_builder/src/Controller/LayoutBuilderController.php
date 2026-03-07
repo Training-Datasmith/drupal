@@ -25,7 +25,7 @@ class LayoutBuilderController {
    * @return string
    *   The title for the layout page.
    */
-  public function title(SectionStorageInterface $section_storage) {
+  public function title(SectionStorageInterface $section_storage): \Drupal\Core\StringTranslation\TranslatableMarkup {
     assert(Inspector::assertStringable($section_storage->label()), 'Section storage label is expected to be a string.');
     return $this->t('Edit layout for %label', ['%label' => $section_storage->label() ?? $section_storage->getStorageType() . ' ' . $section_storage->getStorageId()]);
   }
@@ -39,7 +39,7 @@ class LayoutBuilderController {
    * @return array
    *   A render array.
    */
-  public function layout(SectionStorageInterface $section_storage) {
+  public function layout(SectionStorageInterface $section_storage): array {
     return [
       '#type' => 'layout_builder',
       '#section_storage' => $section_storage,

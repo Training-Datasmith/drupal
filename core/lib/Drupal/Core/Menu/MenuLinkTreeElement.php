@@ -42,27 +42,6 @@ class MenuLinkTreeElement {
   public $subtree;
 
   /**
-   * The depth of this link relative to the root of the tree.
-   *
-   * @var int
-   */
-  public $depth;
-
-  /**
-   * Whether this link has any children at all.
-   *
-   * @var bool
-   */
-  public $hasChildren;
-
-  /**
-   * Whether this link is in the active trail.
-   *
-   * @var bool
-   */
-  public $inActiveTrail;
-
-  /**
    * Whether this link is accessible by the current user.
    *
    * If the value is NULL the access was not determined yet, if an access result
@@ -88,24 +67,30 @@ class MenuLinkTreeElement {
    *
    * @param \Drupal\Core\Menu\MenuLinkInterface $link
    *   The menu link for this element in the menu link tree.
-   * @param bool $has_children
+   * @param bool $hasChildren
    *   A flag as to whether this element has children even if they are not
    *   included in the tree (i.e. this may be TRUE even if $subtree is empty).
    * @param int $depth
    *   The depth of this element relative to the tree root.
-   * @param bool $in_active_trail
+   * @param bool $inActiveTrail
    *   A flag as to whether this link was included in the list of active trail
    *   IDs used to build the tree.
    * @param \Drupal\Core\Menu\MenuLinkTreeElement[] $subtree
    *   The children of this element in the menu link tree.
    */
-  public function __construct(MenuLinkInterface $link, $has_children, $depth, $in_active_trail, array $subtree) {
+  public function __construct(MenuLinkInterface $link, /**
+   * Whether this link has any children at all.
+   */
+  public $hasChildren, /**
+   * The depth of this link relative to the root of the tree.
+   */
+  public $depth, /**
+   * Whether this link is in the active trail.
+   */
+  public $inActiveTrail, array $subtree) {
     // Essential properties.
     $this->link = $link;
-    $this->hasChildren = $has_children;
-    $this->depth = $depth;
     $this->subtree = $subtree;
-    $this->inActiveTrail = $in_active_trail;
   }
 
   /**
@@ -115,10 +100,8 @@ class MenuLinkTreeElement {
    *   The number of menu links in this subtree (one plus the number of menu
    *   links in all descendants).
    */
-  public function count() {
-    $sum = function ($carry, MenuLinkTreeElement $element) {
-      return $carry + $element->count();
-    };
+  public function count(): int|float {
+    $sum = (fn($carry, MenuLinkTreeElement $element) => $carry + $element->count());
     return 1 + array_reduce($this->subtree, $sum);
   }
 

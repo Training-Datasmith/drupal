@@ -30,10 +30,8 @@ class ViewEditForm extends ViewFormBase {
 
   /**
    * The views temp store.
-   *
-   * @var \Drupal\Core\TempStore\SharedTempStore
    */
-  protected $tempStore;
+  protected \Drupal\Core\TempStore\SharedTempStore $tempStore;
 
   /**
    * The request object.
@@ -41,27 +39,6 @@ class ViewEditForm extends ViewFormBase {
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
-
-  /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The element info manager.
-   *
-   * @var \Drupal\Core\Render\ElementInfoManagerInterface
-   */
-  protected $elementInfo;
-
-  /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
 
   /**
    * The module handler service.
@@ -77,28 +54,25 @@ class ViewEditForm extends ViewFormBase {
    *   The factory for the temp store object.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
    *   The request stack object.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date Formatter service.
-   * @param \Drupal\Core\Render\ElementInfoManagerInterface $element_info
+   * @param \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo
    *   The element info manager.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler service.
    */
-  public function __construct(SharedTempStoreFactory $temp_store_factory, RequestStack $requestStack, DateFormatterInterface $date_formatter, ElementInfoManagerInterface $element_info, ThemeManagerInterface $theme_manager, ModuleHandlerInterface $module_handler) {
+  public function __construct(SharedTempStoreFactory $temp_store_factory, RequestStack $requestStack, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\Render\ElementInfoManagerInterface $elementInfo, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager, ModuleHandlerInterface $module_handler) {
     $this->tempStore = $temp_store_factory->get('views');
     $this->requestStack = $requestStack;
-    $this->dateFormatter = $date_formatter;
-    $this->elementInfo = $element_info;
-    $this->themeManager = $theme_manager;
     $this->moduleHandler = $module_handler;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('tempstore.shared'),
       $container->get('request_stack'),
@@ -112,7 +86,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     /** @var \Drupal\views_ui\ViewUI $view */
     $view = $this->entity;
     $display_id = $this->displayID;
@@ -257,7 +231,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     $view = $this->entity;
@@ -274,7 +248,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $view = $this->entity;
     $executable = $view->getExecutable();
     $executable->initDisplay();
@@ -375,7 +349,7 @@ class ViewEditForm extends ViewFormBase {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function cancel(array $form, FormStateInterface $form_state) {
+  public function cancel(array $form, FormStateInterface $form_state): void {
     // Remove this view from cache so edits will be lost.
     $view = $this->entity;
     $this->tempStore->delete($view->id());
@@ -424,7 +398,7 @@ class ViewEditForm extends ViewFormBase {
    * @return array
    *   A renderable page build array.
    */
-  public function getDisplayDetails($view, $display) {
+  public function getDisplayDetails(\Drupal\views_ui\ViewUI $view, array $display): array {
     $display_title = $this->getDisplayLabel($view, $display['id'], FALSE);
     $build = [
       '#theme_wrappers' => ['container'],
@@ -467,15 +441,15 @@ class ViewEditForm extends ViewFormBase {
         elseif ($view->status() && $view->getExecutable()->displayHandlers->get($display['id'])->hasPath()) {
           $path = $view->getExecutable()->displayHandlers->get($display['id'])->getPath();
 
-          if ($path && (!str_contains($path, '%'))) {
+          if ($path && (!str_contains((string) $path, '%'))) {
             // Wrap this in a try/catch as trying to generate links to some
             // routes may throw an exception, for example if they do not
             // respond to HTML, such as RESTExports.
             try {
-              if (!parse_url($path, PHP_URL_SCHEME)) {
+              if (!parse_url((string) $path, PHP_URL_SCHEME)) {
                 // @todo Views should expect and store a leading /. See:
                 //   https://www.drupal.org/node/2423913
-                $url = Url::fromUserInput('/' . ltrim($path, '/'));
+                $url = Url::fromUserInput('/' . ltrim((string) $path, '/'));
               }
               else {
                 $url = Url::fromUri("base:$path");
@@ -640,7 +614,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * Submit handler to add a restore a removed display to a view.
    */
-  public function submitDisplayUndoDelete($form, FormStateInterface $form_state) {
+  public function submitDisplayUndoDelete($form, FormStateInterface $form_state): void {
     $view = $this->entity;
     // Create the new display.
     $id = $form_state->get('display_id');
@@ -661,7 +635,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * Submit handler to enable a disabled display.
    */
-  public function submitDisplayEnable($form, FormStateInterface $form_state) {
+  public function submitDisplayEnable($form, FormStateInterface $form_state): void {
     $view = $this->entity;
     $id = $form_state->get('display_id');
     // setOption doesn't work because this would might affect upper displays.
@@ -680,7 +654,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * Submit handler to disable display.
    */
-  public function submitDisplayDisable($form, FormStateInterface $form_state) {
+  public function submitDisplayDisable($form, FormStateInterface $form_state): void {
     $view = $this->entity;
     $id = $form_state->get('display_id');
     $view->getExecutable()->displayHandlers->get($id)->setOption('enabled', FALSE);
@@ -698,7 +672,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * Submit handler to delete a display from a view.
    */
-  public function submitDisplayDelete($form, FormStateInterface $form_state) {
+  public function submitDisplayDelete($form, FormStateInterface $form_state): void {
     $view = $this->entity;
     $display_id = $form_state->get('display_id');
 
@@ -723,7 +697,7 @@ class ViewEditForm extends ViewFormBase {
    * @param string $display_id
    *   The display ID of the tab to regenerate.
    */
-  public function rebuildCurrentTab(ViewUI $view, AjaxResponse $response, $display_id) {
+  public function rebuildCurrentTab(ViewUI $view, AjaxResponse $response, string $display_id): void {
     $this->displayID = $display_id;
     if (!$view->getExecutable()->setDisplay('default')) {
       return;
@@ -856,7 +830,7 @@ class ViewEditForm extends ViewFormBase {
    * contextual link). This handler can be added to buttons whose form
    * submission should not yet redirect to the destination.
    */
-  public function submitDelayDestination($form, FormStateInterface $form_state) {
+  public function submitDelayDestination($form, FormStateInterface $form_state): void {
     $request = $this->requestStack->getCurrentRequest();
     $destination = $request->query->get('destination');
 
@@ -885,7 +859,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * Submit handler to duplicate a display for a view.
    */
-  public function submitDisplayDuplicate($form, FormStateInterface $form_state) {
+  public function submitDisplayDuplicate($form, FormStateInterface $form_state): void {
     $view = $this->entity;
     $display_id = $this->displayID;
 
@@ -912,7 +886,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * Submit handler to add a display to a view.
    */
-  public function submitDisplayAdd($form, FormStateInterface $form_state) {
+  public function submitDisplayAdd($form, FormStateInterface $form_state): void {
     $view = $this->entity;
     // Create the new display.
     $parents = $form_state->getTriggeringElement()['#parents'];
@@ -934,7 +908,7 @@ class ViewEditForm extends ViewFormBase {
   /**
    * Submit handler to Duplicate a display as another display type.
    */
-  public function submitDuplicateDisplayAsType($form, FormStateInterface $form_state) {
+  public function submitDuplicateDisplayAsType($form, FormStateInterface $form_state): void {
     /** @var \Drupal\views\ViewEntityInterface $view */
     $view = $this->entity;
     $display_id = $this->displayID;
@@ -962,8 +936,9 @@ class ViewEditForm extends ViewFormBase {
    *
    * This function might be more logical as a method on an object, if a suitable
    * object emerges out of refactoring.
+   * @return mixed[]
    */
-  public function buildOptionForm(ViewUI $view, $id, $option, $display) {
+  public function buildOptionForm(ViewUI $view, string $id, array $option, array $display): array {
     $option_build = [];
     $option_build['#theme'] = 'views_ui_display_tab_setting';
 
@@ -996,8 +971,9 @@ class ViewEditForm extends ViewFormBase {
 
   /**
    * Add information about a section to a display.
+   * @return mixed[]
    */
-  public function getFormBucket(ViewUI $view, $type, $display) {
+  public function getFormBucket(ViewUI $view, string $type, array $display): array {
     $executable = $view->getExecutable();
     $executable->setDisplay($display['id']);
     $executable->initStyle();

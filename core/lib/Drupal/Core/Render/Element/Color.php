@@ -28,7 +28,7 @@ class Color extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#process' => [
@@ -48,8 +48,8 @@ class Color extends FormElementBase {
   /**
    * Form element validation handler for #type 'color'.
    */
-  public static function validateColor(&$element, FormStateInterface $form_state, &$complete_form) {
-    $value = trim($element['#value']);
+  public static function validateColor(array &$element, FormStateInterface $form_state, &$complete_form): void {
+    $value = trim((string) $element['#value']);
 
     // Default to black if no value is given.
     // @see https://www.w3.org/TR/html5/number-state.html#color-state
@@ -77,7 +77,7 @@ class Color extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderColor($element) {
+  public static function preRenderColor(array $element): array {
     $element['#attributes']['type'] = 'color';
     Element::setAttributes($element, ['id', 'name', 'value']);
     static::setAttributes($element, ['form-color']);

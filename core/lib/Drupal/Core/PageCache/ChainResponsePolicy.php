@@ -33,10 +33,10 @@ class ChainResponsePolicy implements ChainResponsePolicyInterface {
     foreach ($this->rules as $rule) {
       $result = $rule->check($response, $request);
       if ($result === static::DENY) {
-        return $result;
+          return $result;
       }
-      elseif (isset($result)) {
-        throw new \UnexpectedValueException('Return value of ResponsePolicyInterface::check() must be one of ResponsePolicyInterface::DENY or NULL');
+      if (isset($result)) {
+          throw new \UnexpectedValueException('Return value of ResponsePolicyInterface::check() must be one of ResponsePolicyInterface::DENY or NULL');
       }
     }
   }
@@ -44,7 +44,7 @@ class ChainResponsePolicy implements ChainResponsePolicyInterface {
   /**
    * {@inheritdoc}
    */
-  public function addPolicy(ResponsePolicyInterface $policy) {
+  public function addPolicy(ResponsePolicyInterface $policy): static {
     $this->rules[] = $policy;
     return $this;
   }

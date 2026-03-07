@@ -21,20 +21,6 @@ use Drupal\Core\Render\Element;
 class Section implements ThirdPartySettingsInterface {
 
   /**
-   * The layout plugin ID.
-   *
-   * @var string
-   */
-  protected $layoutId;
-
-  /**
-   * The layout plugin settings.
-   *
-   * @var array
-   */
-  protected $layoutSettings = [];
-
-  /**
    * An array of components, keyed by UUID.
    *
    * @var \Drupal\layout_builder\SectionComponent[]
@@ -42,33 +28,29 @@ class Section implements ThirdPartySettingsInterface {
   protected $components = [];
 
   /**
-   * Third party settings.
-   *
-   * An array of key/value pairs keyed by provider.
-   *
-   * @var array[]
-   */
-  protected $thirdPartySettings = [];
-
-  /**
    * Constructs a new Section.
    *
-   * @param string $layout_id
+   * @param string $layoutId
    *   The layout plugin ID.
-   * @param array $layout_settings
+   * @param array $layoutSettings
    *   (optional) The layout plugin settings.
    * @param \Drupal\layout_builder\SectionComponent[] $components
    *   (optional) The components.
-   * @param array[] $third_party_settings
+   * @param array[] $thirdPartySettings
    *   (optional) Any third party settings.
    */
-  public function __construct($layout_id, array $layout_settings = [], array $components = [], array $third_party_settings = []) {
-    $this->layoutId = $layout_id;
-    $this->layoutSettings = $layout_settings;
+  public function __construct(/**
+   * The layout plugin ID.
+   */
+  protected $layoutId, protected array $layoutSettings = [], array $components = [], /**
+   * Third party settings.
+   *
+   * An array of key/value pairs keyed by provider.
+   */
+  protected array $thirdPartySettings = []) {
     foreach ($components as $component) {
       $this->setComponent($component);
     }
-    $this->thirdPartySettings = $third_party_settings;
   }
 
   /**
@@ -154,7 +136,7 @@ class Section implements ThirdPartySettingsInterface {
    *
    * @return $this
    */
-  public function setLayoutSettings(array $layout_settings) {
+  public function setLayoutSettings(array $layout_settings): static {
     $this->layoutSettings = $layout_settings;
     return $this;
   }
@@ -207,7 +189,7 @@ class Section implements ThirdPartySettingsInterface {
    *
    * @return $this
    */
-  protected function setComponent(SectionComponent $component) {
+  protected function setComponent(SectionComponent $component): static {
     $this->components[$component->getUuid()] = $component;
     return $this;
   }
@@ -220,7 +202,7 @@ class Section implements ThirdPartySettingsInterface {
    *
    * @return $this
    */
-  public function removeComponent($uuid) {
+  public function removeComponent($uuid): static {
     unset($this->components[$uuid]);
     return $this;
   }
@@ -233,7 +215,7 @@ class Section implements ThirdPartySettingsInterface {
    *
    * @return $this
    */
-  public function appendComponent(SectionComponent $component) {
+  public function appendComponent(SectionComponent $component): static {
     $component->setWeight($this->getNextHighestWeight($component->getRegion()));
     $this->setComponent($component);
     return $this;
@@ -248,11 +230,9 @@ class Section implements ThirdPartySettingsInterface {
    * @return int
    *   A number higher than the highest weight of the component in the region.
    */
-  protected function getNextHighestWeight($region) {
+  protected function getNextHighestWeight($region): int|float {
     $components = $this->getComponentsByRegion($region);
-    $weights = array_map(function (SectionComponent $component) {
-      return $component->getWeight();
-    }, $components);
+    $weights = array_map(fn(SectionComponent $component) => $component->getWeight(), $components);
     return $weights ? max($weights) + 1 : 0;
   }
 
@@ -265,13 +245,9 @@ class Section implements ThirdPartySettingsInterface {
    * @return \Drupal\layout_builder\SectionComponent[]
    *   An array of components in the specified region, sorted by weight.
    */
-  public function getComponentsByRegion($region) {
-    $components = array_filter($this->getComponents(), function (SectionComponent $component) use ($region) {
-      return $component->getRegion() === $region;
-    });
-    uasort($components, function (SectionComponent $a, SectionComponent $b) {
-      return $a->getWeight() <=> $b->getWeight();
-    });
+  public function getComponentsByRegion($region): array {
+    $components = array_filter($this->getComponents(), fn(SectionComponent $component) => $component->getRegion() === $region);
+    uasort($components, fn(SectionComponent $a, SectionComponent $b) => $a->getWeight() <=> $b->getWeight());
     return $components;
   }
 
@@ -288,7 +264,7 @@ class Section implements ThirdPartySettingsInterface {
    * @throws \InvalidArgumentException
    *   Thrown when the expected UUID does not exist.
    */
-  public function insertAfterComponent($preceding_uuid, SectionComponent $component) {
+  public function insertAfterComponent(string $preceding_uuid, SectionComponent $component) {
     // Find the delta of the specified UUID.
     $uuids = array_keys($this->getComponentsByRegion($component->getRegion()));
     $delta = array_search($preceding_uuid, $uuids, TRUE);
@@ -340,7 +316,7 @@ class Section implements ThirdPartySettingsInterface {
    * @return \Drupal\Core\Layout\LayoutPluginManagerInterface
    *   The layout plugin manager.
    */
-  protected function layoutPluginManager() {
+  protected function layoutPluginManager(): object {
     return \Drupal::service('plugin.manager.core.layout');
   }
 
@@ -352,13 +328,11 @@ class Section implements ThirdPartySettingsInterface {
    * @return array
    *   An array representation of the section component.
    */
-  public function toArray() {
+  public function toArray(): array {
     return [
       'layout_id' => $this->getLayoutId(),
       'layout_settings' => $this->getLayoutSettings(),
-      'components' => array_map(function (SectionComponent $component) {
-        return $component->toArray();
-      }, $this->getComponents()),
+      'components' => array_map(fn(SectionComponent $component) => $component->toArray(), $this->getComponents()),
       'third_party_settings' => $this->thirdPartySettings,
     ];
   }
@@ -374,7 +348,7 @@ class Section implements ThirdPartySettingsInterface {
    * @return static
    *   The section object.
    */
-  public static function fromArray(array $section) {
+  public static function fromArray(array $section): static {
     // Ensure expected array keys are present.
     $section += [
       'layout_id' => '',
@@ -416,7 +390,7 @@ class Section implements ThirdPartySettingsInterface {
   /**
    * {@inheritdoc}
    */
-  public function setThirdPartySetting($provider, $key, $value) {
+  public function setThirdPartySetting($provider, $key, $value): static {
     $this->thirdPartySettings[$provider][$key] = $value;
     return $this;
   }
@@ -424,7 +398,7 @@ class Section implements ThirdPartySettingsInterface {
   /**
    * {@inheritdoc}
    */
-  public function unsetThirdPartySetting($provider, $key) {
+  public function unsetThirdPartySetting($provider, $key): static {
     unset($this->thirdPartySettings[$provider][$key]);
     // If the third party is no longer storing any information, completely
     // remove the array holding the settings for this provider.
@@ -437,7 +411,7 @@ class Section implements ThirdPartySettingsInterface {
   /**
    * {@inheritdoc}
    */
-  public function getThirdPartyProviders() {
+  public function getThirdPartyProviders(): array {
     return array_keys($this->thirdPartySettings);
   }
 
@@ -447,7 +421,7 @@ class Section implements ThirdPartySettingsInterface {
    * @return \Drupal\Core\Plugin\Context\ContextHandlerInterface
    *   The context handler.
    */
-  protected function contextHandler() {
+  protected function contextHandler(): object {
     return \Drupal::service('context.handler');
   }
 

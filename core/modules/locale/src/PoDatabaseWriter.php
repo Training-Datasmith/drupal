@@ -23,10 +23,8 @@ class PoDatabaseWriter implements PoWriterInterface {
    *     overwritten.
    * - customized: the strings being imported should be saved as customized.
    *     One of LOCALE_CUSTOMIZED or LOCALE_NOT_CUSTOMIZED.
-   *
-   * @var array
    */
-  private $options;
+  private ?array $options = null;
 
   /**
    * Language code of the language being written to the database.
@@ -37,10 +35,8 @@ class PoDatabaseWriter implements PoWriterInterface {
 
   /**
    * Header of the po file written to the database.
-   *
-   * @var \Drupal\Component\Gettext\PoHeader
    */
-  private $header;
+  private ?\Drupal\Component\Gettext\PoHeader $header = null;
 
   /**
    * Associative array summarizing the number of changes done.
@@ -50,10 +46,8 @@ class PoDatabaseWriter implements PoWriterInterface {
    *  - updates: number of translations updated
    *  - deletes: number of translations deleted
    *  - skips: number of strings skipped due to disallowed HTML
-   *
-   * @var array
    */
-  private $report;
+  private array $report;
 
   /**
    * Constructor, initialize reporting array.
@@ -72,7 +66,7 @@ class PoDatabaseWriter implements PoWriterInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLangcode($langcode) {
+  public function setLangcode($langcode): void {
     $this->langcode = $langcode;
   }
 
@@ -89,7 +83,7 @@ class PoDatabaseWriter implements PoWriterInterface {
    * @param array $report
    *   Associative array with result information.
    */
-  public function setReport($report = []) {
+  public function setReport($report = []): void {
     $report += [
       'additions' => 0,
       'updates' => 0,
@@ -120,7 +114,7 @@ class PoDatabaseWriter implements PoWriterInterface {
    *   - customized: The strings being imported should be saved as customized.
    *     One of LOCALE_CUSTOMIZED or LOCALE_NOT_CUSTOMIZED.
    */
-  public function setOptions(array $options) {
+  public function setOptions(array $options): void {
     if (!isset($options['overwrite_options'])) {
       $options['overwrite_options'] = [];
     }
@@ -156,7 +150,7 @@ class PoDatabaseWriter implements PoWriterInterface {
    *
    * @throws \Exception
    */
-  public function setHeader(PoHeader $header) {
+  public function setHeader(PoHeader $header): void {
     $this->header = $header;
     $locale_plurals = \Drupal::state()->get('locale.translation.plurals', []);
 
@@ -186,7 +180,7 @@ class PoDatabaseWriter implements PoWriterInterface {
   /**
    * {@inheritdoc}
    */
-  public function writeItem(PoItem $item) {
+  public function writeItem(PoItem $item): void {
     if ($item->isPlural()) {
       $item->setSource(implode(PoItem::DELIMITER, $item->getSource()));
       $item->setTranslation(implode(PoItem::DELIMITER, $item->getTranslation()));
@@ -197,7 +191,7 @@ class PoDatabaseWriter implements PoWriterInterface {
   /**
    * {@inheritdoc}
    */
-  public function writeItems(PoReaderInterface $reader, $count = -1) {
+  public function writeItems(PoReaderInterface $reader, $count = -1): void {
     // Processing multiple writes in a transaction is quicker than committing
     // each individual write.
     $transaction = \Drupal::database()->startTransaction();
@@ -238,35 +232,34 @@ class PoDatabaseWriter implements PoWriterInterface {
       'context' => $context,
     ]);
     $string = reset($strings);
-
     if (!empty($translation)) {
-      // Skip this string unless it passes a check for dangerous code.
-      if (!locale_string_is_safe($translation)) {
-        \Drupal::logger('locale')->error('Import of string "%string" was skipped because of disallowed or malformed HTML.', ['%string' => $translation]);
-        $this->report['skips']++;
-        return 0;
-      }
-      elseif ($string) {
-        $string->setString($translation);
-        if ($string->isNew()) {
-          // No translation in this language.
-          $string->setValues([
-            'language' => $this->langcode,
-            'customized' => $customized,
-          ]);
-          $string->save();
-          $this->report['additions']++;
+        // Skip this string unless it passes a check for dangerous code.
+        if (!locale_string_is_safe($translation)) {
+            \Drupal::logger('locale')->error('Import of string "%string" was skipped because of disallowed or malformed HTML.', ['%string' => $translation]);
+            $this->report['skips']++;
+            return 0;
         }
-        elseif ($overwrite_options[$string->customized ? 'customized' : 'not_customized']) {
-          // Translation exists, only overwrite if instructed.
-          $string->customized = $customized;
-          $string->save();
-          $this->report['updates']++;
+        // Skip this string unless it passes a check for dangerous code.
+        if ($string) {
+            $string->setString($translation);
+            if ($string->isNew()) {
+              // No translation in this language.
+              $string->setValues([
+                'language' => $this->langcode,
+                'customized' => $customized,
+              ]);
+              $string->save();
+              $this->report['additions']++;
+            }
+            elseif ($overwrite_options[$string->customized ? 'customized' : 'not_customized']) {
+              // Translation exists, only overwrite if instructed.
+              $string->customized = $customized;
+              $string->save();
+              $this->report['updates']++;
+            }
+            $this->report['strings'][] = $string->getId();
+            return $string->lid;
         }
-        $this->report['strings'][] = $string->getId();
-        return $string->lid;
-      }
-      else {
         // No such source string in the database yet.
         $string = \Drupal::service('locale.storage')->createString(['source' => $source, 'context' => $context])
           ->save();
@@ -276,18 +269,17 @@ class PoDatabaseWriter implements PoWriterInterface {
           'translation' => $translation,
           'customized' => $customized,
         ])->save();
-
         $this->report['additions']++;
         $this->report['strings'][] = $string->getId();
         return $string->lid;
-      }
     }
-    elseif ($string && !$string->isNew() && $overwrite_options[$string->customized ? 'customized' : 'not_customized']) {
-      // Empty translation, remove existing if instructed.
-      $string->delete();
-      $this->report['deletes']++;
-      $this->report['strings'][] = $string->lid;
-      return $string->lid;
+
+    if ($string && !$string->isNew() && $overwrite_options[$string->customized ? 'customized' : 'not_customized']) {
+        // Empty translation, remove existing if instructed.
+        $string->delete();
+        $this->report['deletes']++;
+        $this->report['strings'][] = $string->lid;
+        return $string->lid;
     }
   }
 

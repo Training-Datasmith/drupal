@@ -24,7 +24,7 @@ class TermSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'sort' => [
         'field' => 'name',
@@ -50,7 +50,7 @@ class TermSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0) {
+  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0): array {
     if ($match || $limit) {
       return parent::getReferenceableEntities($match, $match_operator, $limit);
     }
@@ -63,18 +63,20 @@ class TermSelection extends DefaultSelection {
     $has_admin_access = $this->currentUser->hasPermission('administer taxonomy');
     $unpublished_terms = [];
     foreach ($bundle_names as $bundle) {
-      if ($vocabulary = Vocabulary::load($bundle)) {
-        /** @var \Drupal\taxonomy\TermInterface[] $terms */
-        if ($terms = $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vocabulary->id(), 0, NULL, TRUE)) {
-          foreach ($terms as $term) {
-            if (!$has_admin_access && (!$term->isPublished() || in_array($term->parent->target_id, $unpublished_terms))) {
-              $unpublished_terms[] = $term->id();
-              continue;
-            }
-            $options[$vocabulary->id()][$term->id()] = str_repeat('-', $term->depth) . Html::escape($this->entityRepository->getTranslationFromContext($term)->label());
-          }
+        if (!$vocabulary = Vocabulary::load($bundle)) {
+            continue;
         }
-      }
+        /** @var \Drupal\taxonomy\TermInterface[] $terms */
+        if (!$terms = $this->entityTypeManager->getStorage('taxonomy_term')->loadTree($vocabulary->id(), 0, NULL, TRUE)) {
+            continue;
+        }
+        foreach ($terms as $term) {
+          if (!$has_admin_access && (!$term->isPublished() || in_array($term->parent->target_id, $unpublished_terms))) {
+            $unpublished_terms[] = $term->id();
+            continue;
+          }
+          $options[$vocabulary->id()][$term->id()] = str_repeat('-', $term->depth) . Html::escape($this->entityRepository->getTranslationFromContext($term)->label());
+        }
     }
 
     return $options;
@@ -127,11 +129,11 @@ class TermSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function validateReferenceableNewEntities(array $entities) {
+  public function validateReferenceableNewEntities(array $entities): array {
     $entities = parent::validateReferenceableNewEntities($entities);
     // Mirror the conditions checked in buildEntityQuery().
     if (!$this->currentUser->hasPermission('administer taxonomy')) {
-      $entities = array_filter($entities, function ($term) {
+      return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $term) {
         /** @var \Drupal\taxonomy\TermInterface $term */
         return $term->isPublished();
       });

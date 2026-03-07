@@ -25,7 +25,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  protected $statementWrapperClass = NULL;
+  protected $statementWrapperClass;
 
   /**
    * A map of condition operators to SQLite operators.
@@ -246,9 +246,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
     if (count($args)) {
       return max($args);
     }
-    else {
-      return NULL;
-    }
+    return NULL;
   }
 
   /**
@@ -265,7 +263,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * SQLite compatibility implementation for the CONCAT() SQL function.
    */
-  public static function sqlFunctionConcat() {
+  public static function sqlFunctionConcat(): string {
     $args = func_get_args();
     return implode('', $args);
   }
@@ -275,7 +273,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *
    * @see http://dev.mysql.com/doc/refman/5.6/en/string-functions.html#function_concat-ws
    */
-  public static function sqlFunctionConcatWs() {
+  public static function sqlFunctionConcatWs(): ?string {
     $args = func_get_args();
     $separator = array_shift($args);
     // If the separator is NULL, the result is NULL.
@@ -283,41 +281,39 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
       return NULL;
     }
     // Skip any NULL values after the separator argument.
-    $args = array_filter($args, function ($value) {
-      return !is_null($value);
-    });
+    $args = array_filter($args, fn($value) => !is_null($value));
     return implode($separator, $args);
   }
 
   /**
    * SQLite compatibility implementation for the SUBSTRING() SQL function.
    */
-  public static function sqlFunctionSubstring($string, $from, $length) {
-    return substr($string, $from - 1, $length);
+  public static function sqlFunctionSubstring($string, $from, $length): string {
+    return substr((string) $string, $from - 1, $length);
   }
 
   /**
    * SQLite compatibility implementation for the SUBSTRING_INDEX() SQL function.
    */
-  public static function sqlFunctionSubstringIndex($string, $delimiter, $count) {
+  public static function sqlFunctionSubstringIndex($string, $delimiter, $count): string {
     // If string is empty, simply return an empty string.
     if (empty($string)) {
       return '';
     }
     $end = 0;
     for ($i = 0; $i < $count; $i++) {
-      $end = strpos($string, $delimiter, $end + 1);
+      $end = strpos((string) $string, (string) $delimiter, $end + 1);
       if ($end === FALSE) {
-        $end = strlen($string);
+        $end = strlen((string) $string);
       }
     }
-    return substr($string, 0, $end);
+    return substr((string) $string, 0, $end);
   }
 
   /**
    * SQLite compatibility implementation for the RAND() SQL function.
    */
-  public static function sqlFunctionRand($seed = NULL) {
+  public static function sqlFunctionRand($seed = NULL): int|float {
     if (isset($seed)) {
       mt_srand($seed);
     }
@@ -331,12 +327,12 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *
    * @see http://www.sqlite.org/lang_expr.html#regexp
    */
-  public static function sqlFunctionRegexp($pattern, $subject) {
+  public static function sqlFunctionRegexp($pattern, $subject): int|false {
     // preg_quote() cannot be used here, since $pattern may contain reserved
     // regular expression characters already (such as ^, $, etc). Therefore,
     // use a rare character as PCRE delimiter.
-    $pattern = '#' . addcslashes($pattern, '#') . '#i';
-    return preg_match($pattern, $subject);
+    $pattern = '#' . addcslashes((string) $pattern, '#') . '#i';
+    return preg_match($pattern, (string) $subject);
   }
 
   /**
@@ -349,12 +345,12 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    * @see https://sqlite.org/pragma.html#pragma_case_sensitive_like
    * @see https://sqlite.org/lang_expr.html#like
    */
-  public static function sqlFunctionLikeBinary($pattern, $subject) {
+  public static function sqlFunctionLikeBinary($pattern, $subject): int|false {
     // Replace the SQL LIKE wildcard meta-characters with the equivalent regular
     // expression meta-characters and escape the delimiter that will be used for
     // matching.
-    $pattern = str_replace(['%', '_'], ['.*?', '.'], preg_quote($pattern, '/'));
-    return preg_match('/^' . $pattern . '$/', $subject);
+    $pattern = str_replace(['%', '_'], ['.*?', '.'], preg_quote((string) $pattern, '/'));
+    return preg_match('/^' . $pattern . '$/', (string) $subject);
   }
 
   /**
@@ -367,7 +363,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function queryTemporary($query, array $args = [], array $options = []) {
+  public function queryTemporary($query, array $args = [], array $options = []): string {
     $tablename = 'db_temporary_' . uniqid();
 
     $this->query('CREATE TEMPORARY TABLE ' . $tablename . ' AS ' . $query, $args, $options);
@@ -383,14 +379,14 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function driver() {
+  public function driver(): string {
     return 'sqlite';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function databaseType() {
+  public function databaseType(): string {
     return 'sqlite';
   }
 
@@ -402,7 +398,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
    *
    * @throws \Drupal\Core\Database\DatabaseNotFoundException
    */
-  public function createDatabase($database) {
+  public function createDatabase($database): void {
     // Verify the database is writable.
     $db_directory = new \SplFileInfo(dirname($database));
     if (!$db_directory->isDir() && !\Drupal::service('file_system')->mkdir($db_directory->getPathName(), 0755, TRUE)) {
@@ -437,7 +433,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function getFullQualifiedTableName($table) {
+  public function getFullQualifiedTableName($table): string {
     $prefix = $this->getPrefix();
 
     // Don't include the SQLite database file name as part of the table name.
@@ -471,7 +467,7 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public static function createUrlFromConnectionOptions(array $connection_options) {
+  public static function createUrlFromConnectionOptions(array $connection_options): string {
     if (!isset($connection_options['driver'], $connection_options['database'])) {
       throw new \InvalidArgumentException("As a minimum, the connection options array must contain at least the 'driver' and 'database' keys");
     }
@@ -488,35 +484,35 @@ class Connection extends DatabaseConnection implements SupportsTemporaryTablesIn
   /**
    * {@inheritdoc}
    */
-  public function exceptionHandler() {
+  public function exceptionHandler(): \Drupal\Core\Database\ExceptionHandler {
     return new ExceptionHandler();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function select($table, $alias = NULL, array $options = []) {
+  public function select($table, $alias = NULL, array $options = []): \Drupal\sqlite\Driver\Database\sqlite\Select {
     return new Select($this, $table, $alias, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function insert($table, array $options = []) {
+  public function insert($table, array $options = []): \Drupal\sqlite\Driver\Database\sqlite\Insert {
     return new Insert($this, $table, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function upsert($table, array $options = []) {
+  public function upsert($table, array $options = []): \Drupal\sqlite\Driver\Database\sqlite\Upsert {
     return new Upsert($this, $table, $options);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function truncate($table, array $options = []) {
+  public function truncate($table, array $options = []): \Drupal\sqlite\Driver\Database\sqlite\Truncate {
     return new Truncate($this, $table, $options);
   }
 

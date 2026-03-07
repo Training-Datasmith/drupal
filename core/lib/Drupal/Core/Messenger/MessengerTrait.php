@@ -20,7 +20,7 @@ trait MessengerTrait {
    * @param \Drupal\Core\Messenger\MessengerInterface $messenger
    *   The messenger.
    */
-  public function setMessenger(MessengerInterface $messenger) {
+  public function setMessenger(MessengerInterface $messenger): void {
     $this->messenger = $messenger;
   }
 

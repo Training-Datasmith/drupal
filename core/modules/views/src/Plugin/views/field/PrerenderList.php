@@ -43,7 +43,7 @@ abstract class PrerenderList extends FieldPluginBase implements MultiItemsFieldH
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['type'] = [
       '#type' => 'radios',
       '#title' => $this->t('Display type'),

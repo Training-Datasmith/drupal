@@ -15,20 +15,13 @@ use Symfony\Component\Routing\Route;
 class LayoutSectionStorageParamConverter implements ParamConverterInterface {
 
   /**
-   * The section storage manager.
-   *
-   * @var \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface
-   */
-  protected $sectionStorageManager;
-
-  /**
    * Constructs a new LayoutSectionStorageParamConverter.
    *
-   * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $section_storage_manager
+   * @param \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $sectionStorageManager
    *   The section storage manager.
    */
-  public function __construct(SectionStorageManagerInterface $section_storage_manager) {
-    $this->sectionStorageManager = $section_storage_manager;
+  public function __construct(protected \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface $sectionStorageManager)
+  {
   }
 
   /**
@@ -50,7 +43,7 @@ class LayoutSectionStorageParamConverter implements ParamConverterInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies($definition, $name, Route $route) {
+  public function applies($definition, $name, Route $route): bool {
     return !empty($definition['layout_builder_section_storage']) || !empty($definition['layout_builder_tempstore']);
   }
 

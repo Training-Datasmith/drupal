@@ -24,7 +24,7 @@ class ListPlugin extends CKEditor5PluginDefault implements CKEditor5PluginConfig
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'properties' => [
         'reversed' => TRUE,
@@ -38,7 +38,7 @@ class ListPlugin extends CKEditor5PluginDefault implements CKEditor5PluginConfig
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['reversed'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Allow the user to reverse an ordered list'),
@@ -67,7 +67,7 @@ class ListPlugin extends CKEditor5PluginDefault implements CKEditor5PluginConfig
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $form_value = $form_state->getValue('reversed');
     $form_state->setValue('reversed', (bool) $form_value);
     $form_value = $form_state->getValue('startIndex');
@@ -81,7 +81,7 @@ class ListPlugin extends CKEditor5PluginDefault implements CKEditor5PluginConfig
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['properties']['reversed'] = $form_state->getValue('reversed');
     $this->configuration['properties']['startIndex'] = $form_state->getValue('startIndex');
     $this->configuration['properties']['styles'] = $form_state->getValue('styles');

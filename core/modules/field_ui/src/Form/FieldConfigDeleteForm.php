@@ -25,7 +25,7 @@ class FieldConfigDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.bundle.info'),
       $container->get('entity_type.manager'),
@@ -57,7 +57,7 @@ class FieldConfigDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  protected function getConfigNamesToDelete(ConfigEntityInterface $entity) {
+  protected function getConfigNamesToDelete(ConfigEntityInterface $entity): array {
     /** @var \Drupal\field\FieldStorageConfigInterface $field_storage */
     $field_storage = $entity->getFieldStorageDefinition();
     $config_names = [$entity->getConfigDependencyName()];
@@ -80,7 +80,7 @@ class FieldConfigDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $field_storage = $this->entity->getFieldStorageDefinition();
     $target_entity_type_id = $this->entity->getTargetEntityTypeId();
     $target_bundle = $this->entity->getTargetBundle();

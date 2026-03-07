@@ -17,15 +17,11 @@ class CKEditor5Plugin extends Plugin {
 
   /**
    * The CKEditor 5 aspects of the plugin definition.
-   *
-   * @var \Drupal\ckeditor5\Attribute\CKEditor5AspectsOfCKEditor5Plugin|null
    */
   public readonly ?CKEditor5AspectsOfCKEditor5Plugin $ckeditor5;
 
   /**
    * The Drupal aspects of the plugin definition.
-   *
-   * @var \Drupal\ckeditor5\Attribute\DrupalAspectsOfCKEditor5Plugin|null
    */
   public readonly ?DrupalAspectsOfCKEditor5Plugin $drupal;
 

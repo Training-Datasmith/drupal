@@ -33,28 +33,6 @@ abstract class EntityDisplayFormBase extends EntityForm {
   protected $displayContext;
 
   /**
-   * The widget or formatter plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerBase
-   */
-  protected $pluginManager;
-
-  /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
    * A list of field types.
    *
    * @var array
@@ -73,18 +51,15 @@ abstract class EntityDisplayFormBase extends EntityForm {
    *
    * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
    *   The field type manager.
-   * @param \Drupal\Component\Plugin\PluginManagerBase $plugin_manager
+   * @param \Drupal\Component\Plugin\PluginManagerBase $pluginManager
    *   The widget or formatter plugin manager.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface|null $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface|null $entityDisplayRepository
    *   (optional) The entity display_repository.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface|null $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface|null $entityFieldManager
    *   (optional) The entity field manager.
    */
-  public function __construct(FieldTypePluginManagerInterface $field_type_manager, PluginManagerBase $plugin_manager, EntityDisplayRepositoryInterface $entity_display_repository, EntityFieldManagerInterface $entity_field_manager) {
+  public function __construct(FieldTypePluginManagerInterface $field_type_manager, protected \Drupal\Component\Plugin\PluginManagerBase $pluginManager, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager) {
     $this->fieldTypes = $field_type_manager->getDefinitions();
-    $this->pluginManager = $plugin_manager;
-    $this->entityDisplayRepository = $entity_display_repository;
-    $this->entityFieldManager = $entity_field_manager;
   }
 
   /**
@@ -151,15 +126,13 @@ abstract class EntityDisplayFormBase extends EntityForm {
    */
   protected function getFieldDefinitions() {
     $context = $this->displayContext;
-    return array_filter($this->entityFieldManager->getFieldDefinitions($this->entity->getTargetEntityTypeId(), $this->entity->getTargetBundle()), function (FieldDefinitionInterface $field_definition) use ($context) {
-      return $field_definition->isDisplayConfigurable($context);
-    });
+    return array_filter($this->entityFieldManager->getFieldDefinitions($this->entity->getTargetEntityTypeId(), $this->entity->getTargetBundle()), fn(FieldDefinitionInterface $field_definition) => $field_definition->isDisplayConfigurable($context));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $field_definitions = $this->getFieldDefinitions();
@@ -315,7 +288,7 @@ abstract class EntityDisplayFormBase extends EntityForm {
     $field_row = [
       '#attributes' => ['class' => ['draggable', 'tabledrag-leaf']],
       '#row_type' => 'field',
-      '#region_callback' => [$this, 'getRowRegion'],
+      '#region_callback' => $this->getRowRegion(...),
       '#js_settings' => [
         'rowHandler' => 'field',
         'defaultPlugin' => $this->getDefaultPlugin($field_definition->getType()),
@@ -488,14 +461,15 @@ abstract class EntityDisplayFormBase extends EntityForm {
    * @return array
    *   A table row array.
    */
-  protected function buildExtraFieldRow($field_id, $extra_field) {
+  protected function buildExtraFieldRow($field_id, array $extra_field) {
     $display_options = $this->entity->getComponent($field_id);
 
     $regions = array_keys($this->getRegions());
-    $extra_field_row = [
+
+    return [
       '#attributes' => ['class' => ['draggable', 'tabledrag-leaf']],
       '#row_type' => 'extra_field',
-      '#region_callback' => [$this, 'getRowRegion'],
+      '#region_callback' => $this->getRowRegion(...),
       '#js_settings' => ['rowHandler' => 'field'],
       'human_name' => [
         '#markup' => $extra_field['label'],
@@ -547,14 +521,12 @@ abstract class EntityDisplayFormBase extends EntityForm {
       'settings_summary' => [],
       'settings_edit' => [],
     ];
-
-    return $extra_field_row;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // If the main "Save" button was submitted while a field settings subform
     // was being edited, update the new incoming settings when rebuilding the
     // entity, just as if the subform's "Update" button had been submitted.
@@ -661,7 +633,7 @@ abstract class EntityDisplayFormBase extends EntityForm {
   /**
    * Form submission handler for multistep buttons.
    */
-  public function multistepSubmit($form, FormStateInterface $form_state) {
+  public function multistepSubmit(array $form, FormStateInterface $form_state): void {
     $trigger = $form_state->getTriggeringElement();
     $op = $trigger['#op'];
 
@@ -689,7 +661,7 @@ abstract class EntityDisplayFormBase extends EntityForm {
       case 'refresh_table':
         // If the currently edited field is one of the rows to be refreshed, set
         // it back to 'non edit' mode.
-        $updated_rows = explode(' ', $form_state->getValue('refresh_rows'));
+        $updated_rows = explode(' ', (string) $form_state->getValue('refresh_rows'));
         $plugin_settings_edit = $form_state->get('plugin_settings_edit');
         if ($plugin_settings_edit && in_array($plugin_settings_edit, $updated_rows)) {
           $form_state->set('plugin_settings_edit', NULL);
@@ -703,7 +675,7 @@ abstract class EntityDisplayFormBase extends EntityForm {
   /**
    * Ajax handler for multistep buttons.
    */
-  public function multistepAjax($form, FormStateInterface $form_state) {
+  public function multistepAjax(array $form, FormStateInterface $form_state) {
     $response = new AjaxResponse();
     $trigger = $form_state->getTriggeringElement();
     $op = $trigger['#op'];
@@ -712,7 +684,7 @@ abstract class EntityDisplayFormBase extends EntityForm {
     $updated_rows = match ($op) {
       'edit' => [$trigger['#field_name']],
       'update', 'cancel' => [$trigger['#field_name']],
-      'refresh_table' => array_values(explode(' ', $form_state->getValue('refresh_rows')))
+      'refresh_table' => array_values(explode(' ', (string) $form_state->getValue('refresh_rows')))
     };
     $updated_columns = match ($op) {
       'edit' => ['plugin'],
@@ -837,7 +809,7 @@ abstract class EntityDisplayFormBase extends EntityForm {
    * @return string|null
    *   The region name this row belongs to.
    */
-  public function getRowRegion(&$row) {
+  public function getRowRegion(array &$row) {
     $regions = $this->getRegions();
     if (!isset($regions[$row['region']['#value']])) {
       $row['region']['#value'] = 'hidden';
@@ -888,7 +860,7 @@ abstract class EntityDisplayFormBase extends EntityForm {
    * @param array $display_statuses
    *   An array holding updated form or view mode statuses.
    */
-  protected function saveDisplayStatuses($display_statuses) {
+  protected function saveDisplayStatuses(array $display_statuses) {
     $displays = $this->getDisplays();
     foreach ($displays as $display) {
       // Only update the display if the status is changing.

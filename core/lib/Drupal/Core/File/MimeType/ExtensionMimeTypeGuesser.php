@@ -24,7 +24,7 @@ class ExtensionMimeTypeGuesser implements MimeTypeGuesserInterface {
    * {@inheritdoc}
    */
   public function guessMimeType($path): ?string {
-    $file_parts = explode('.', basename($path));
+    $file_parts = explode('.', basename((string) $path));
 
     // Remove the first part: a full filename should not match an extension,
     // then iterate over the file parts, trying to find a match.

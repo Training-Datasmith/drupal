@@ -18,20 +18,6 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 class LatestRevision extends FilterPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Entity Type Manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * Views Handler Plugin Manager.
-   *
-   * @var \Drupal\views\Plugin\ViewsHandlerManager
-   */
-  protected $joinHandler;
-
-  /**
    * Constructs a new LatestRevision.
    *
    * @param array $configuration
@@ -40,23 +26,20 @@ class LatestRevision extends FilterPluginBase implements ContainerFactoryPluginI
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   Entity Type Manager Service.
-   * @param \Drupal\views\Plugin\ViewsHandlerManager $join_handler
+   * @param \Drupal\views\Plugin\ViewsHandlerManager $joinHandler
    *   Views Handler Plugin Manager.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    EntityTypeManagerInterface $entity_type_manager,
+    protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager,
     #[Autowire(service: 'plugin.manager.views.join')]
-    ViewsHandlerManager $join_handler,
+    protected \Drupal\views\Plugin\ViewsHandlerManager $joinHandler,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->joinHandler = $join_handler;
   }
 
   /**
@@ -74,14 +57,14 @@ class LatestRevision extends FilterPluginBase implements ContainerFactoryPluginI
   /**
    * {@inheritdoc}
    */
-  public function canExpose() {
+  public function canExpose(): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     /** @var \Drupal\views\Plugin\views\query\Sql $query */
     $query = $this->query;
     $query_base_table = $this->relationship ?: $this->view->storage->get('base_table');

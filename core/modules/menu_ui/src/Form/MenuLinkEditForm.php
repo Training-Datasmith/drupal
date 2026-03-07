@@ -20,26 +20,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class MenuLinkEditForm extends FormBase {
 
   /**
-   * The class resolver.
-   *
-   * @var \Drupal\Core\DependencyInjection\ClassResolverInterface
-   */
-  protected $classResolver;
-
-  /**
    * Constructs a MenuLinkEditForm object.
    *
-   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $class_resolver
+   * @param \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver
    *   The class resolver.
    */
-  public function __construct(ClassResolverInterface $class_resolver) {
-    $this->classResolver = $class_resolver;
+  public function __construct(protected \Drupal\Core\DependencyInjection\ClassResolverInterface $classResolver)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('class_resolver')
     );
@@ -48,7 +41,7 @@ class MenuLinkEditForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'menu_link_edit';
   }
 
@@ -62,7 +55,7 @@ class MenuLinkEditForm extends FormBase {
    * @param \Drupal\Core\Menu\MenuLinkInterface $menu_link_plugin
    *   The plugin instance to use for this form.
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?MenuLinkInterface $menu_link_plugin = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?MenuLinkInterface $menu_link_plugin = NULL): array {
     $form['menu_link_id'] = [
       '#type' => 'value',
       '#value' => $menu_link_plugin->getPluginId(),
@@ -85,14 +78,14 @@ class MenuLinkEditForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $form['#plugin_form']->validateConfigurationForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $link = $form['#plugin_form']->submitConfigurationForm($form, $form_state);
 
     $this->messenger()->addStatus($this->t('The menu link has been saved.'));

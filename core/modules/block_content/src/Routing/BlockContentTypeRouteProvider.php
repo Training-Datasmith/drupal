@@ -15,7 +15,7 @@ class BlockContentTypeRouteProvider extends AdminHtmlRouteProvider {
   /**
    * {@inheritdoc}
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
+  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
     $routes = parent::getRoutes($entity_type);
     // Rename the entity.block_content_type.add_form route to keep BC.
     // @todo remove this and use an alias instead when https://www.drupal.org/project/drupal/issues/3506653 is done.

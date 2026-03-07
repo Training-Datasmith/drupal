@@ -33,7 +33,7 @@ class Link extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderLink'],
@@ -184,7 +184,7 @@ class Link extends RenderElementBase {
    * @return array
    *   Render array containing child links grouped into a single array.
    */
-  public static function preRenderLinks($element) {
+  public static function preRenderLinks(array $element): array {
     $element += ['#links' => [], '#attached' => []];
     foreach (Element::children($element) as $key) {
       $child = &$element[$key];

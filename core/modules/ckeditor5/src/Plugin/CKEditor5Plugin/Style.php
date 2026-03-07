@@ -25,7 +25,7 @@ class Style extends CKEditor5PluginDefault implements CKEditor5PluginConfigurabl
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['styles'] = [
       '#title' => $this->t('Styles'),
       '#type' => 'textarea',
@@ -65,7 +65,7 @@ class Style extends CKEditor5PluginDefault implements CKEditor5PluginConfigurabl
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Match the config schema structure at ckeditor5.plugin.ckeditor5_style.
     $form_value = $form_state->getValue('styles');
     [$styles, $invalid_lines] = self::parseStylesFormValue($form_value);
@@ -110,7 +110,7 @@ class Style extends CKEditor5PluginDefault implements CKEditor5PluginConfigurabl
       }
 
       // Parse the line.
-      [$selector, $label] = array_map('trim', explode('|', $line));
+      [$selector, $label] = array_map(trim(...), explode('|', $line));
 
       // Validate the selector.
       $selector_matches = [];
@@ -136,14 +136,14 @@ class Style extends CKEditor5PluginDefault implements CKEditor5PluginConfigurabl
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['styles'] = $form_state->getValue('styles');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'styles' => [],
     ];

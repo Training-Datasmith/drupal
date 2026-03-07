@@ -49,7 +49,7 @@ trait FieldableEntityNormalizerTrait {
    * @return string
    *   The entity type ID.
    */
-  protected function determineEntityTypeId($class, $context) {
+  protected function determineEntityTypeId($class, array $context) {
     // Get the entity type ID while letting context override the $class param.
     return !empty($context['entity_type']) ? $context['entity_type'] : $this->getEntityTypeRepository()->getEntityTypeFromClass($class);
   }
@@ -65,7 +65,7 @@ trait FieldableEntityNormalizerTrait {
    *
    * @throws \Symfony\Component\Serializer\Exception\UnexpectedValueException
    */
-  protected function getEntityTypeDefinition($entity_type_id) {
+  protected function getEntityTypeDefinition(string $entity_type_id) {
     /** @var \Drupal\Core\Entity\EntityTypeInterface $entity_type_definition */
     // Get the entity type definition.
     $entity_type_definition = $this->getEntityTypeManager()->getDefinition($entity_type_id, FALSE);
@@ -92,7 +92,7 @@ trait FieldableEntityNormalizerTrait {
    * @return array
    *   An array containing a single $bundle_key => $bundle_value pair.
    */
-  protected function extractBundleData(array &$data, EntityTypeInterface $entity_type_definition) {
+  protected function extractBundleData(array &$data, EntityTypeInterface $entity_type_definition): array {
     $bundle_key = $entity_type_definition->getKey('bundle');
     // Get the base field definitions for this entity type.
     $base_field_definitions = $this->getEntityFieldManager()->getBaseFieldDefinitions($entity_type_definition->id());
@@ -143,7 +143,7 @@ trait FieldableEntityNormalizerTrait {
       // uuid). If the incoming field data is set to an empty array, this will
       // also have the effect of emptying the field in REST module.
       $field_item_list->setValue([]);
-      $field_item_list_class = get_class($field_item_list);
+      $field_item_list_class = $field_item_list::class;
 
       if ($field_data) {
         // The field instance must be passed in the context so that the field
@@ -204,7 +204,7 @@ trait FieldableEntityNormalizerTrait {
    *   The value to use in \Drupal\Core\Field\FieldItemBase::setValue() or a
    *   subclass.
    */
-  protected function constructValue($data, $context) {
+  protected function constructValue($data, array $context) {
     $field_item = $context['target_instance'];
 
     // Get the property definitions.
@@ -219,12 +219,10 @@ trait FieldableEntityNormalizerTrait {
       if ($this->serializer->supportsDenormalization($property_value, $property_value_class, NULL, $context)) {
         return $this->serializer->denormalize($property_value, $property_value_class, NULL, $context);
       }
-      else {
-        if (in_array($property_name, $serialized_property_names, TRUE)) {
-          $property_value = serialize($property_value);
-        }
-        return $property_value;
+      if (in_array($property_name, $serialized_property_names, TRUE)) {
+        return serialize($property_value);
       }
+      return $property_value;
     };
 
     if (!is_array($data)) {

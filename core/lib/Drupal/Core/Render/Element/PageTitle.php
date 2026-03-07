@@ -15,7 +15,7 @@ class PageTitle extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#theme' => 'page_title',
       // The page title: either a string for plain titles or a render array for

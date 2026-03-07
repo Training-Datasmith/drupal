@@ -26,7 +26,7 @@ class CacheTagsInvalidator implements CacheTagsInvalidatorInterface, CacheTagsPu
   /**
    * {@inheritdoc}
    */
-  public function invalidateTags(array $tags) {
+  public function invalidateTags(array $tags): void {
     assert(Inspector::assertAllStrings($tags), 'Cache tags must be strings.');
 
     // Notify all added cache tags invalidators.
@@ -45,7 +45,7 @@ class CacheTagsInvalidator implements CacheTagsInvalidatorInterface, CacheTagsPu
    *
    * This is only used by tests.
    */
-  public function resetChecksums() {
+  public function resetChecksums(): void {
     foreach ($this->invalidators as $invalidator) {
       if ($invalidator instanceof CacheTagsChecksumInterface) {
         $invalidator->reset();
@@ -70,7 +70,7 @@ class CacheTagsInvalidator implements CacheTagsInvalidatorInterface, CacheTagsPu
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $invalidator
    *   A cache invalidator.
    */
-  public function addInvalidator(CacheTagsInvalidatorInterface $invalidator) {
+  public function addInvalidator(CacheTagsInvalidatorInterface $invalidator): void {
     $this->invalidators[] = $invalidator;
   }
 

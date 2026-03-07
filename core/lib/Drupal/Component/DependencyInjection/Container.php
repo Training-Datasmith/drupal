@@ -296,7 +296,7 @@ class Container implements ContainerInterface, ResetInterface {
       }
 
       if (!is_callable($callable)) {
-        throw new InvalidArgumentException(sprintf('The configurator for class "%s" is not a callable.', get_class($service)));
+        throw new InvalidArgumentException(sprintf('The configurator for class "%s" is not a callable.', $service::class));
       }
 
       call_user_func($callable, $service);
@@ -373,7 +373,7 @@ class Container implements ContainerInterface, ResetInterface {
    * @throws \Symfony\Component\DependencyInjection\Exception\InvalidArgumentException
    *   If an unknown type is met while resolving parameters and services.
    */
-  protected function resolveServicesAndParameters($arguments) {
+  protected function resolveServicesAndParameters(array $arguments) {
     // Check if this collection needs to be resolved.
     if ($arguments instanceof \stdClass) {
       if ($arguments->type !== 'collection') {
@@ -410,71 +410,59 @@ class Container implements ContainerInterface, ResetInterface {
           // Fall through.
           $type = $argument->type;
         }
-
         // Create a service.
         if ($type == 'service') {
-          $id = $argument->id;
-
-          // Does the service already exist?
-          if (isset($this->aliases[$id])) {
-            $id = $this->aliases[$id];
-          }
-
-          if (isset($this->services[$id])) {
-            $arguments[$key] = $this->services[$id];
+            $id = $argument->id;
+            // Does the service already exist?
+            if (isset($this->aliases[$id])) {
+              $id = $this->aliases[$id];
+            }
+            if (isset($this->services[$id])) {
+              $arguments[$key] = $this->services[$id];
+              continue;
+            }
+            // Return the service.
+            $arguments[$key] = $this->get($id, $argument->invalidBehavior);
             continue;
-          }
-
-          // Return the service.
-          $arguments[$key] = $this->get($id, $argument->invalidBehavior);
-
-          continue;
         }
         // Create private service.
-        elseif ($type == 'private_service') {
-          $id = $argument->id;
-
-          // Does the private service already exist.
-          if (isset($this->privateServices[$id])) {
-            $arguments[$key] = $this->privateServices[$id];
-            continue;
-          }
-
-          // Create the private service.
-          $arguments[$key] = $this->createService($argument->value, $id);
-          if ($argument->shared) {
-            $this->privateServices[$id] = $arguments[$key];
-          }
-
-          continue;
-        }
-        elseif ($type == 'service_closure') {
-          $arguments[$key] = function () use ($argument) {
-            return $this->get($argument->id, $argument->invalidBehavior);
-          };
-
-          continue;
-        }
-        elseif ($type == 'iterator') {
-          $services = $argument->value;
-          $arguments[$key] = new RewindableGenerator(function () use ($services) {
-            foreach ($services as $key => $service) {
-              yield $key => $this->resolveServicesAndParameters([$service])[0];
+        if ($type == 'private_service') {
+            $id = $argument->id;
+            // Does the private service already exist.
+            if (isset($this->privateServices[$id])) {
+              $arguments[$key] = $this->privateServices[$id];
+              continue;
             }
-          }, count($services));
-
-          continue;
+            // Create the private service.
+            $arguments[$key] = $this->createService($argument->value, $id);
+            if ($argument->shared) {
+              $this->privateServices[$id] = $arguments[$key];
+            }
+            continue;
+        }
+        if ($type == 'service_closure') {
+            $arguments[$key] = (fn() => $this->get($argument->id, $argument->invalidBehavior));
+            continue;
+        }
+        if ($type == 'iterator') {
+            $services = $argument->value;
+            $arguments[$key] = new RewindableGenerator(function () use ($services) {
+              foreach ($services as $key => $service) {
+                yield $key => $this->resolveServicesAndParameters([$service])[0];
+              }
+            }, count($services));
+            continue;
         }
         // Check for collection.
-        elseif ($type == 'collection') {
-          $arguments[$key] = $this->resolveServicesAndParameters($argument->value);
-
-          continue;
+        if ($type == 'collection') {
+            $arguments[$key] = $this->resolveServicesAndParameters($argument->value);
+            continue;
         }
-        elseif ($type == 'raw') {
-          $arguments[$key] = $argument->value;
 
-          continue;
+        // Create a service.
+        if ($type == 'raw') {
+            $arguments[$key] = $argument->value;
+            continue;
         }
 
         if ($type !== NULL) {
@@ -497,11 +485,11 @@ class Container implements ContainerInterface, ResetInterface {
    * @return string[]
    *   An array of strings with suitable alternatives.
    */
-  protected function getAlternatives($search_key, array $keys) {
+  protected function getAlternatives($search_key, array $keys): array {
     $alternatives = [];
     foreach ($keys as $key) {
       $lev = levenshtein($search_key, $key);
-      if ($lev <= strlen($search_key) / 3 || str_contains($key, $search_key)) {
+      if ($lev <= strlen($search_key) / 3 || str_contains((string) $key, $search_key)) {
         $alternatives[] = $key;
       }
     }
@@ -539,7 +527,7 @@ class Container implements ContainerInterface, ResetInterface {
   /**
    * {@inheritdoc}
    */
-  public function getServiceIds() {
+  public function getServiceIds(): array {
     return array_merge(['service_container'], array_keys($this->serviceDefinitions + $this->services));
   }
 

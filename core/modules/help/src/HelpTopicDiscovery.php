@@ -31,16 +31,6 @@ class HelpTopicDiscovery implements DiscoveryInterface {
   const FILE_KEY = '_discovered_file_path';
 
   /**
-   * An array of directories to scan, keyed by the provider.
-   *
-   * The value can either be a string or an array of strings. The string values
-   * should be the path of a directory to scan.
-   *
-   * @var array
-   */
-  protected $directories = [];
-
-  /**
    * Constructs a HelpTopicDiscovery object.
    *
    * @param array $directories
@@ -48,14 +38,15 @@ class HelpTopicDiscovery implements DiscoveryInterface {
    *   either be a string or an array of strings. The string values should be
    *   the path of a directory to scan.
    */
-  public function __construct(array $directories) {
-    $this->directories = $directories;
+  public function __construct(protected array $directories)
+  {
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getDefinitions() {
+  public function getDefinitions(): array {
     $plugins = $this->findAll();
 
     // Flatten definitions into what's expected from plugins.
@@ -78,7 +69,7 @@ class HelpTopicDiscovery implements DiscoveryInterface {
    * @throws \Drupal\Component\Discovery\DiscoveryException
    *   Exception thrown if there is a problem during discovery.
    */
-  public function findAll() {
+  public function findAll(): array {
     $all = [];
 
     $files = $this->findFiles();
@@ -95,7 +86,7 @@ class HelpTopicDiscovery implements DiscoveryInterface {
     // parse them now. This list was flipped above and is keyed by filename.
     if ($files) {
       foreach ($files as $file => $provider) {
-        $plugin_id = substr(basename($file), 0, -10);
+        $plugin_id = substr(basename((string) $file), 0, -10);
         // The plugin ID begins with provider.
         [$file_name_provider] = explode('.', $plugin_id, 2);
         $data = [
@@ -158,7 +149,7 @@ class HelpTopicDiscovery implements DiscoveryInterface {
    * @return array
    *   An array of providers keyed by file path.
    */
-  protected function findFiles() {
+  protected function findFiles(): array {
     $file_list = [];
     foreach ($this->directories as $provider => $directories) {
       $directories = (array) $directories;

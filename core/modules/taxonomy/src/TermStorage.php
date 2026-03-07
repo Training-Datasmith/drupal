@@ -70,14 +70,13 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
     if (empty($values['parent'])) {
       $values['parent'] = [0];
     }
-    $entity = parent::create($values);
-    return $entity;
+    return parent::create($values);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function resetCache(?array $ids = NULL) {
+  public function resetCache(?array $ids = NULL): void {
     $this->ancestors = [];
     $this->treeChildren = [];
     $this->treeParents = [];
@@ -89,8 +88,9 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function loadParents($tid) {
+  public function loadParents($tid): array {
     $terms = [];
     if ($tid && $term = $this->load($tid)) {
       foreach ($this->getParents($term) as $id => $parent) {
@@ -317,7 +317,7 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
   /**
    * {@inheritdoc}
    */
-  public function resetWeights($vid) {
+  public function resetWeights($vid): void {
     $this->database->update($this->getDataTable())
       ->fields(['weight' => 0])
       ->condition('vid', $vid)
@@ -326,8 +326,9 @@ class TermStorage extends SqlContentEntityStorage implements TermStorageInterfac
 
   /**
    * {@inheritdoc}
+   * @return non-empty-array[]
    */
-  public function getNodeTerms(array $nids, array $vids = [], $langcode = NULL) {
+  public function getNodeTerms(array $nids, array $vids = [], $langcode = NULL): array {
     $query = $this->database->select($this->getDataTable(), 'td');
     $query->innerJoin('taxonomy_index', 'tn', '[td].[tid] = [tn].[tid]');
     $query->fields('td', ['tid']);

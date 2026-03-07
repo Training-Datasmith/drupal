@@ -20,20 +20,13 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class HtmlResponsePlaceholderStrategySubscriber implements EventSubscriberInterface {
 
   /**
-   * The placeholder strategy to use.
-   *
-   * @var \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface
-   */
-  protected $placeholderStrategy;
-
-  /**
    * Constructs a HtmlResponsePlaceholderStrategySubscriber object.
    *
-   * @param \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $placeholder_strategy
+   * @param \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $placeholderStrategy
    *   The placeholder strategy to use.
    */
-  public function __construct(PlaceholderStrategyInterface $placeholder_strategy) {
-    $this->placeholderStrategy = $placeholder_strategy;
+  public function __construct(protected \Drupal\Core\Render\Placeholder\PlaceholderStrategyInterface $placeholderStrategy)
+  {
   }
 
   /**
@@ -42,7 +35,7 @@ class HtmlResponsePlaceholderStrategySubscriber implements EventSubscriberInterf
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onRespond(ResponseEvent $event) {
+  public function onRespond(ResponseEvent $event): void {
     $response = $event->getResponse();
     if (!$response instanceof HtmlResponse) {
       return;

@@ -20,13 +20,6 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
   use DependencySerializationTrait;
 
   /**
-   * The manager used to instantiate the plugins.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $manager;
-
-  /**
    * The initial configuration for each plugin in the collection.
    *
    * @var array
@@ -44,10 +37,8 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
 
   /**
    * The original order of the instances.
-   *
-   * @var array
    */
-  protected $originalOrder = [];
+  protected array $originalOrder = [];
 
   /**
    * Constructs a new DefaultLazyPluginCollection object.
@@ -58,8 +49,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
    *   (optional) An associative array containing the initial configuration for
    *   each plugin in the collection, keyed by plugin instance ID.
    */
-  public function __construct(PluginManagerInterface $manager, array $configurations = []) {
-    $this->manager = $manager;
+  public function __construct(protected \Drupal\Component\Plugin\PluginManagerInterface $manager, array $configurations = []) {
     $this->configurations = $configurations;
 
     if (!empty($configurations)) {
@@ -86,15 +76,15 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
    *
    * @return $this
    */
-  public function sort() {
-    uasort($this->instanceIds, [$this, 'sortHelper']);
+  public function sort(): static {
+    uasort($this->instanceIds, $this->sortHelper(...));
     return $this;
   }
 
   /**
    * Provides uasort() callback to sort plugins.
    */
-  public function sortHelper($aID, $bID) {
+  public function sortHelper(string $aID, string $bID): int {
     return strnatcasecmp($this->getPluginId($aID), $this->getPluginId($bID));
   }
 
@@ -119,8 +109,9 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getConfiguration() {
+  public function getConfiguration(): array {
     $instances = [];
     // Store the current order of the instances.
     $current_order = $this->instanceIds;
@@ -144,7 +135,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function setConfiguration(array $configuration) {
+  public function setConfiguration(array $configuration): static {
     // Track each instance ID as it is updated.
     $unprocessed_instance_ids = $this->getInstanceIds();
 
@@ -172,7 +163,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
    * @param array $configuration
    *   The plugin configuration to set.
    */
-  public function setInstanceConfiguration($instance_id, array $configuration) {
+  public function setInstanceConfiguration($instance_id, array $configuration): void {
     if (
       isset($this->pluginInstances[$instance_id]) &&
       isset($configuration[$this->pluginKey]) &&
@@ -194,7 +185,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function addInstanceId($id, $configuration = NULL) {
+  public function addInstanceId($id, $configuration = NULL): void {
     parent::addInstanceId($id);
     if ($configuration !== NULL) {
       $this->setInstanceConfiguration($id, $configuration);
@@ -207,7 +198,7 @@ class DefaultLazyPluginCollection extends LazyPluginCollection {
   /**
    * {@inheritdoc}
    */
-  public function removeInstanceId($instance_id) {
+  public function removeInstanceId($instance_id): void {
     parent::removeInstanceId($instance_id);
     unset($this->originalOrder[$instance_id]);
     unset($this->configurations[$instance_id]);

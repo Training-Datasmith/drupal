@@ -24,10 +24,8 @@ final class ExportStorageManager implements StorageManagerInterface {
 
   /**
    * The database storage.
-   *
-   * @var \Drupal\Core\Config\DatabaseStorage
    */
-  protected $storage;
+  protected \Drupal\Core\Config\DatabaseStorage $storage;
 
   /**
    * ExportStorageManager constructor.
@@ -55,7 +53,7 @@ final class ExportStorageManager implements StorageManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function getStorage() {
+  public function getStorage(): \Drupal\Core\Config\ReadOnlyStorage {
     // Acquire a lock for the request to assert that the storage does not change
     // when a concurrent request transforms the storage.
     if (!$this->lock->acquire(self::LOCK_NAME)) {

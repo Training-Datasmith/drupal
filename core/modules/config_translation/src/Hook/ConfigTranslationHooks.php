@@ -55,12 +55,10 @@ class ConfigTranslationHooks {
         $output .= '<dd>' . $this->t('You can choose to translate date formats on the <a href=":translation-page">Configuration translation</a> page. This allows you not only to translate the label text, but also to set a language-specific <em>PHP date format</em>.', [
           ':translation-page' => Url::fromRoute('config_translation.mapper_list')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'config_translation.mapper_list':
-        $output = '<p>' . $this->t('This page lists all configuration items on your site that have translatable text, like your site name, role names, etc.') . '</p>';
-        return $output;
+        return '<p>' . $this->t('This page lists all configuration items on your site that have translatable text, like your site name, role names, etc.') . '</p>';
     }
     return NULL;
   }
@@ -111,16 +109,16 @@ class ConfigTranslationHooks {
     foreach ($entity_types as $entity_type_id => $entity_type) {
       if ($entity_type->entityClassImplements(ConfigEntityInterface::class)) {
         if ($entity_type_id == 'block') {
-          $class = 'Drupal\config_translation\Controller\ConfigTranslationBlockListBuilder';
+          $class = \Drupal\config_translation\Controller\ConfigTranslationBlockListBuilder::class;
         }
         elseif ($entity_type_id == 'field_config') {
-          $class = 'Drupal\config_translation\Controller\ConfigTranslationFieldListBuilder';
+          $class = \Drupal\config_translation\Controller\ConfigTranslationFieldListBuilder::class;
           // Will be filled in dynamically, see
           // \Drupal\field\Entity\FieldConfig::linkTemplates().
           $entity_type->setLinkTemplate('config-translation-overview', $entity_type->getLinkTemplate('edit-form') . '/translate');
         }
         else {
-          $class = 'Drupal\config_translation\Controller\ConfigTranslationEntityListBuilder';
+          $class = \Drupal\config_translation\Controller\ConfigTranslationEntityListBuilder::class;
         }
         $entity_type->setHandlerClass('config_translation_list', $class);
         if ($entity_type->hasLinkTemplate('edit-form')) {
@@ -134,7 +132,7 @@ class ConfigTranslationHooks {
    * Implements hook_config_translation_info().
    */
   #[Hook('config_translation_info')]
-  public function configTranslationInfo(&$info): void {
+  public function configTranslationInfo(array &$info): void {
     $entity_type_manager = \Drupal::entityTypeManager();
     // If field UI is not enabled, the base routes of the type
     // "entity.field_config.{$entity_type}_field_edit_form" are not defined.
@@ -146,7 +144,7 @@ class ConfigTranslationHooks {
           $info[$entity_type_id . '_fields'] = [
             'base_route_name' => "entity.field_config.{$entity_type_id}_field_edit_form",
             'entity_type' => 'field_config',
-            'class' => '\Drupal\config_translation\ConfigFieldMapper',
+            'class' => \Drupal\config_translation\ConfigFieldMapper::class,
             'base_entity_type' => $entity_type_id,
             'weight' => 10,
           ];
@@ -157,17 +155,24 @@ class ConfigTranslationHooks {
     foreach ($entity_type_manager->getDefinitions() as $entity_type_id => $entity_type) {
       // Determine base path for entities automatically if provided via the
       // configuration entity.
-      if (!$entity_type->entityClassImplements(ConfigEntityInterface::class) || !$entity_type->hasLinkTemplate('edit-form')) {
-        // Do not record this entity mapper if the entity type does not
-        // provide a base route. We'll surely not be able to do anything with
-        // it anyway. Configuration entities with a dynamic base path, such as
-        // fields, need special treatment. See above.
-        continue;
+      if (!$entity_type->entityClassImplements(ConfigEntityInterface::class)) {
+          // Do not record this entity mapper if the entity type does not
+          // provide a base route. We'll surely not be able to do anything with
+          // it anyway. Configuration entities with a dynamic base path, such as
+          // fields, need special treatment. See above.
+          continue;
+      }
+      if (!$entity_type->hasLinkTemplate('edit-form')) {
+          // Do not record this entity mapper if the entity type does not
+          // provide a base route. We'll surely not be able to do anything with
+          // it anyway. Configuration entities with a dynamic base path, such as
+          // fields, need special treatment. See above.
+          continue;
       }
       // Use the entity type as the plugin ID.
       $base_route_name = "entity.{$entity_type_id}.edit_form";
       $info[$entity_type_id] = [
-        'class' => '\Drupal\config_translation\ConfigEntityMapper',
+        'class' => \Drupal\config_translation\ConfigEntityMapper::class,
         'base_route_name' => $base_route_name,
         'title' => $entity_type->getSingularLabel(),
         'names' => [],
@@ -204,13 +209,13 @@ class ConfigTranslationHooks {
   #[Hook('config_schema_info_alter')]
   public function configSchemaInfoAlter(&$definitions): void {
     $map = [
-      'label' => '\Drupal\config_translation\FormElement\Textfield',
-      'text' => '\Drupal\config_translation\FormElement\Textarea',
-      'date_format' => '\Drupal\config_translation\FormElement\DateFormat',
-      'text_format' => '\Drupal\config_translation\FormElement\TextFormat',
-      'mapping' => '\Drupal\config_translation\FormElement\ListElement',
-      'sequence' => '\Drupal\config_translation\FormElement\ListElement',
-      'plural_label' => '\Drupal\config_translation\FormElement\PluralVariants',
+      'label' => \Drupal\config_translation\FormElement\Textfield::class,
+      'text' => \Drupal\config_translation\FormElement\Textarea::class,
+      'date_format' => \Drupal\config_translation\FormElement\DateFormat::class,
+      'text_format' => \Drupal\config_translation\FormElement\TextFormat::class,
+      'mapping' => \Drupal\config_translation\FormElement\ListElement::class,
+      'sequence' => \Drupal\config_translation\FormElement\ListElement::class,
+      'plural_label' => \Drupal\config_translation\FormElement\PluralVariants::class,
     ];
     // Enhance the text and date type definitions with classes to generate
     // proper form elements in ConfigTranslationFormBase. Other translatable

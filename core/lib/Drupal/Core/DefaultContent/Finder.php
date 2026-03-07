@@ -16,7 +16,7 @@ use Symfony\Component\Finder\Finder as SymfonyFinder;
  * @internal
  *   This API is experimental.
  */
-final class Finder {
+final readonly class Finder {
 
   /**
    * The content entity data to import.
@@ -25,7 +25,7 @@ final class Finder {
    *
    * @var array<string, array<mixed>>
    */
-  public readonly array $data;
+  public array $data;
 
   public function __construct(string $path) {
     try {

@@ -41,45 +41,25 @@ class SystemMenuOffCanvasForm extends PluginFormBase implements ContainerInjecti
   protected $menu;
 
   /**
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $menuStorage;
-
-  /**
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * SystemMenuOffCanvasForm constructor.
    *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $menu_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $menuStorage
    *   The menu storage handler.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation handler.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
    */
-  public function __construct(EntityStorageInterface $menu_storage, EntityTypeManagerInterface $entity_type_manager, TranslationInterface $string_translation, ConfigFactoryInterface $config_factory) {
-    $this->menuStorage = $menu_storage;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $menuStorage, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, TranslationInterface $string_translation, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory) {
     $this->stringTranslation = $string_translation;
-    $this->configFactory = $config_factory;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('menu'),
       $container->get('entity_type.manager'),
@@ -127,7 +107,7 @@ class SystemMenuOffCanvasForm extends PluginFormBase implements ContainerInjecti
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->plugin->validateConfigurationForm($form, $form_state);
     if (!$this->hasMenuOverrides()) {
       $this->getEntityForm($this->menu)->validateForm($form, $form_state);
@@ -137,7 +117,7 @@ class SystemMenuOffCanvasForm extends PluginFormBase implements ContainerInjecti
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->plugin->submitConfigurationForm($form, $form_state);
     if (!$this->hasMenuOverrides()) {
       $this->getEntityForm($this->menu)->submitForm($form, $form_state);
@@ -163,7 +143,7 @@ class SystemMenuOffCanvasForm extends PluginFormBase implements ContainerInjecti
   /**
    * {@inheritdoc}
    */
-  public function setPlugin(PluginInspectionInterface $plugin) {
+  public function setPlugin(PluginInspectionInterface $plugin): void {
     $this->plugin = $plugin;
     $this->menu = $this->menuStorage->loadOverrideFree($this->plugin->getDerivativeId());
   }
@@ -174,7 +154,7 @@ class SystemMenuOffCanvasForm extends PluginFormBase implements ContainerInjecti
    * @return bool
    *   TRUE if the menu has configuration overrides, otherwise FALSE.
    */
-  protected function hasMenuOverrides() {
+  protected function hasMenuOverrides(): ?bool {
     // @todo Replace the following with $this->menu->hasOverrides() in https://www.drupal.org/project/drupal/issues/2910353
     //   and remove this function.
     return $this->configFactory->get($this->menu->getEntityType()

@@ -23,20 +23,6 @@ class DefaultsEntityForm extends EntityForm {
   use LayoutBuilderEntityFormTrait;
 
   /**
-   * Layout tempstore repository.
-   *
-   * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
-   */
-  protected $layoutTempstoreRepository;
-
-  /**
-   * The entity type bundle info service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
    * The section storage.
    *
    * @var \Drupal\layout_builder\SectionStorageInterface
@@ -46,20 +32,19 @@ class DefaultsEntityForm extends EntityForm {
   /**
    * Constructs a new DefaultsEntityForm.
    *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
+   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
    *   The layout tempstore repository.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info service.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
-    $this->layoutTempstoreRepository = $layout_tempstore_repository;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
+  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('layout_builder.tempstore_repository'),
       $container->get('entity_type.bundle.info')
@@ -90,7 +75,7 @@ class DefaultsEntityForm extends EntityForm {
    * @return array
    *   A renderable array containing the message.
    */
-  protected function buildMessage(LayoutEntityDisplayInterface $entity) {
+  protected function buildMessage(LayoutEntityDisplayInterface $entity): array {
     $entity_type_id = $entity->getTargetEntityTypeId();
     $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
     $bundle_info = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
@@ -111,7 +96,7 @@ class DefaultsEntityForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     // \Drupal\Core\Entity\EntityForm::buildEntity() clones the entity object.
     // Keep it in sync with the one used by the section storage.
     $this->setEntity($this->sectionStorage->getContextValue('display'));
@@ -132,7 +117,7 @@ class DefaultsEntityForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     $actions = parent::actions($form, $form_state);
     return $this->buildActions($actions);
   }

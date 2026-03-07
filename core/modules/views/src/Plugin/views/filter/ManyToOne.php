@@ -27,12 +27,12 @@ class ManyToOne extends InOperator {
    *
    * Stores the Helper object which handles the many_to_one complexity.
    */
-  public $helper = NULL;
+  public $helper;
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->helper = new ManyToOneHelper($this);
@@ -60,8 +60,9 @@ class ManyToOne extends InOperator {
 
   /**
    * {@inheritdoc}
+   * @return array{title: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opEmpty', short: Drupal\Core\StringTranslation\TranslatableMarkup, values: 0}[]|array{title: Drupal\Core\StringTranslation\TranslatableMarkup, short: Drupal\Core\StringTranslation\TranslatableMarkup, short_single: Drupal\Core\StringTranslation\TranslatableMarkup, method: 'opHelper', values: 1, ensure_my_table: 'helper'}[]
    */
-  public function operators() {
+  public function operators(): array {
     $operators = [
       'or' => [
         'title' => $this->t('Is one of'),

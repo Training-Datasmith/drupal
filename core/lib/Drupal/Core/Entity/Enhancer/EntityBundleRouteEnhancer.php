@@ -14,26 +14,19 @@ use Symfony\Component\Routing\Route;
 class EntityBundleRouteEnhancer implements EnhancerInterface {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a EntityBundleRouteEnhancer object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function enhance(array $defaults, Request $request) {
+  public function enhance(array $defaults, Request $request): array {
     if (!$this->applies($defaults[RouteObjectInterface::ROUTE_OBJECT])) {
       return $defaults;
     }

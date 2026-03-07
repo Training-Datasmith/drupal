@@ -28,7 +28,7 @@ class UserCacheContext extends UserCacheContextBase implements CacheContextInter
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

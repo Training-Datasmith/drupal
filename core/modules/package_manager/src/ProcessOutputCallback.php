@@ -26,15 +26,11 @@ final class ProcessOutputCallback implements OutputCallbackInterface, LoggerAwar
 
   /**
    * The output buffer.
-   *
-   * @var array
    */
   private array $outBuffer = [];
 
   /**
    * The error buffer.
-   *
-   * @var array
    */
   private array $errorBuffer = [];
 

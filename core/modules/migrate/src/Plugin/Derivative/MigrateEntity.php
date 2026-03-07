@@ -18,26 +18,24 @@ class MigrateEntity implements ContainerDeriverInterface {
   protected $derivatives = [];
 
   /**
-   * The entity definitions.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface[]
-   */
-  protected $entityDefinitions;
-
-  /**
    * Constructs a MigrateEntity object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface[] $entity_definitions
+   * @param \Drupal\Core\Entity\EntityTypeInterface[] $entityDefinitions
    *   A list of entity definition objects.
    */
-  public function __construct(array $entity_definitions) {
-    $this->entityDefinitions = $entity_definitions;
+  public function __construct(
+      /**
+       * The entity definitions.
+       */
+      protected array $entityDefinitions
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('entity_type.manager')->getDefinitions()
     );
@@ -59,9 +57,9 @@ class MigrateEntity implements ContainerDeriverInterface {
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
     foreach ($this->entityDefinitions as $entity_type => $entity_info) {
-      $class = is_subclass_of($entity_info->getClass(), 'Drupal\Core\Config\Entity\ConfigEntityInterface') ?
-        'Drupal\migrate\Plugin\migrate\destination\EntityConfigBase' :
-        'Drupal\migrate\Plugin\migrate\destination\EntityContentBase';
+      $class = is_subclass_of($entity_info->getClass(), \Drupal\Core\Config\Entity\ConfigEntityInterface::class) ?
+        \Drupal\migrate\Plugin\migrate\destination\EntityConfigBase::class :
+        \Drupal\migrate\Plugin\migrate\destination\EntityContentBase::class;
       $this->derivatives[$entity_type] = [
         'id' => "entity:$entity_type",
         'class' => $class,

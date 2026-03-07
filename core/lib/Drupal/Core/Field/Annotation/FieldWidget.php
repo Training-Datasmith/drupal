@@ -79,6 +79,6 @@ class FieldWidget extends Plugin {
    *
    * @var int
    */
-  public $weight = NULL;
+  public $weight;
 
 }

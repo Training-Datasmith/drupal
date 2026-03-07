@@ -67,7 +67,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
    * @param \Drupal\Core\Cache\VariationCacheInterface $variation_cache
    *   The variation cache.
    */
-  public function setVariationCache(VariationCacheInterface $variation_cache) {
+  public function setVariationCache(VariationCacheInterface $variation_cache): void {
     $this->variationCache = $variation_cache;
   }
 
@@ -77,7 +77,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    */
-  public function setRequestStack(RequestStack $request_stack) {
+  public function setRequestStack(RequestStack $request_stack): void {
     $this->requestStack = $request_stack;
   }
 
@@ -95,7 +95,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
    *
    * @see \Drupal\dynamic_page_cache\EventSubscriber\DynamicPageCacheSubscriber::renderArrayToResponse()
    */
-  public function get(ResourceObject $object) {
+  public function get(ResourceObject $object): false|array {
     // @todo Investigate whether to cache POST and PATCH requests.
     // @todo Follow up on https://www.drupal.org/project/drupal/issues/3381898.
     if (!$this->requestStack->getCurrentRequest()->isMethodCacheable()) {
@@ -106,7 +106,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
       return FALSE;
     }
 
-    $cached = $this->variationCache->get($this->generateCacheKeys($object), new CacheableMetadata());
+    $cached = $this->variationCache->get(static::generateCacheKeys($object), new CacheableMetadata());
     if (!$cached) {
       return FALSE;
     }
@@ -150,7 +150,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
    * @param array $normalization_parts
    *   The normalization parts to cache.
    */
-  public function saveOnTerminate(ResourceObject $object, array $normalization_parts) {
+  public function saveOnTerminate(ResourceObject $object, array $normalization_parts): void {
     if ($object->getCacheMaxAge() === 0) {
       return;
     }
@@ -171,7 +171,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\TerminateEvent $event
    *   The Event to process.
    */
-  public function onTerminate(TerminateEvent $event) {
+  public function onTerminate(TerminateEvent $event): void {
     foreach ($this->toCache as $value) {
       [$object, $normalization_parts] = $value;
       $this->set($object, $normalization_parts);
@@ -199,7 +199,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
       ->merge(static::mergeCacheableDependencies($normalization_parts[static::RESOURCE_CACHE_SUBSET_BASE]))
       ->merge(static::mergeCacheableDependencies($normalization_parts[static::RESOURCE_CACHE_SUBSET_FIELDS]));
 
-    $this->variationCache->set($this->generateCacheKeys($object), $normalization_parts, $cacheability, new CacheableMetadata());
+    $this->variationCache->set(static::generateCacheKeys($object), $normalization_parts, $cacheability, new CacheableMetadata());
   }
 
   /**
@@ -213,7 +213,7 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
    *
    * @see \Drupal\dynamic_page_cache\EventSubscriber\DynamicPageCacheSubscriber::$dynamicPageCacheRedirectRenderArray
    */
-  protected static function generateCacheKeys(ResourceObject $object) {
+  protected static function generateCacheKeys(ResourceObject $object): array {
     return [$object->getResourceType()->getTypeName(), $object->getId(), $object->getLanguage()->getId()];
   }
 
@@ -236,9 +236,9 @@ class ResourceObjectNormalizationCacher implements EventSubscriberInterface {
    *
    * @see \Drupal\Core\Cache\RefinableCacheableDependencyInterface::addCacheableDependency()
    */
-  protected static function mergeCacheableDependencies(array $dependencies) {
+  protected static function mergeCacheableDependencies(array $dependencies): \Drupal\Core\Cache\CacheableMetadata {
     $merged_cacheability = new CacheableMetadata();
-    array_walk($dependencies, function ($dependency) use ($merged_cacheability) {
+    array_walk($dependencies, function ($dependency) use ($merged_cacheability): void {
       $merged_cacheability->addCacheableDependency($dependency);
     });
     return $merged_cacheability;

@@ -38,7 +38,7 @@ abstract class FieldUpdateActionBase extends ActionBase {
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
+  public function execute($entity = NULL): void {
     foreach ($this->getFieldsToUpdate() as $field => $value) {
       $entity->$field = $value;
     }

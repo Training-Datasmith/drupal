@@ -33,7 +33,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
    *
    * @var \Drupal\views\ViewExecutable
    */
-  public $view = NULL;
+  public $view;
 
   /**
    * A multi-dimensional array of instantiated handlers used in this display.
@@ -72,7 +72,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
    *
    * @see \Drupal\views\ViewExecutable::render()
    */
-  public $output = NULL;
+  public $output;
 
   /**
    * Whether the display allows the use of AJAX or not.
@@ -158,7 +158,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function initDisplay(ViewExecutable $view, array &$display, ?array &$options = NULL) {
+  public function initDisplay(ViewExecutable $view, array &$display, ?array &$options = NULL): void {
     $this->view = $view;
 
     // Load extenders as soon as possible.
@@ -202,7 +202,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function destroy() {
+  public function destroy(): void {
     parent::destroy();
 
     foreach ($this->handlers as $type => $handlers) {
@@ -541,49 +541,49 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
           'type' => ['default' => 'none'],
           'options' => ['default' => []],
         ],
-        'merge_defaults' => [$this, 'mergePlugin'],
+        'merge_defaults' => $this->mergePlugin(...),
       ],
       'cache' => [
         'contains' => [
           'type' => ['default' => 'tag'],
           'options' => ['default' => []],
         ],
-        'merge_defaults' => [$this, 'mergePlugin'],
+        'merge_defaults' => $this->mergePlugin(...),
       ],
       'query' => [
         'contains' => [
           'type' => ['default' => 'views_query'],
           'options' => ['default' => []],
         ],
-        'merge_defaults' => [$this, 'mergePlugin'],
+        'merge_defaults' => $this->mergePlugin(...),
       ],
       'exposed_form' => [
         'contains' => [
           'type' => ['default' => 'basic'],
           'options' => ['default' => []],
         ],
-        'merge_defaults' => [$this, 'mergePlugin'],
+        'merge_defaults' => $this->mergePlugin(...),
       ],
       'pager' => [
         'contains' => [
           'type' => ['default' => 'mini'],
           'options' => ['default' => []],
         ],
-        'merge_defaults' => [$this, 'mergePlugin'],
+        'merge_defaults' => $this->mergePlugin(...),
       ],
       'style' => [
         'contains' => [
           'type' => ['default' => 'default'],
           'options' => ['default' => []],
         ],
-        'merge_defaults' => [$this, 'mergePlugin'],
+        'merge_defaults' => $this->mergePlugin(...),
       ],
       'row' => [
         'contains' => [
           'type' => ['default' => 'fields'],
           'options' => ['default' => []],
         ],
-        'merge_defaults' => [$this, 'mergePlugin'],
+        'merge_defaults' => $this->mergePlugin(...),
       ],
 
       'exposed_block' => [
@@ -592,34 +592,34 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
 
       'header' => [
         'default' => [],
-        'merge_defaults' => [$this, 'mergeHandler'],
+        'merge_defaults' => $this->mergeHandler(...),
       ],
       'footer' => [
         'default' => [],
-        'merge_defaults' => [$this, 'mergeHandler'],
+        'merge_defaults' => $this->mergeHandler(...),
       ],
       'empty' => [
         'default' => [],
-        'merge_defaults' => [$this, 'mergeHandler'],
+        'merge_defaults' => $this->mergeHandler(...),
       ],
 
       // We want these to export last.
       // These are the 5 handler types.
       'relationships' => [
         'default' => [],
-        'merge_defaults' => [$this, 'mergeHandler'],
+        'merge_defaults' => $this->mergeHandler(...),
       ],
       'fields' => [
         'default' => [],
-        'merge_defaults' => [$this, 'mergeHandler'],
+        'merge_defaults' => $this->mergeHandler(...),
       ],
       'sorts' => [
         'default' => [],
-        'merge_defaults' => [$this, 'mergeHandler'],
+        'merge_defaults' => $this->mergeHandler(...),
       ],
       'arguments' => [
         'default' => [],
-        'merge_defaults' => [$this, 'mergeHandler'],
+        'merge_defaults' => $this->mergeHandler(...),
       ],
       'filter_groups' => [
         'contains' => [
@@ -963,7 +963,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
     // Collect all the dependencies of handlers and plugins. Only calculate
     // their dependencies if they are configured by this display.
     $plugins = array_merge($this->getAllHandlers(TRUE), $this->getAllPlugins(TRUE));
-    array_walk($plugins, [$this, 'calculatePluginDependencies']);
+    array_walk($plugins, $this->calculatePluginDependencies(...));
 
     return $this->dependencies;
   }
@@ -1013,7 +1013,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function overrideOption($option, $value) {
+  public function overrideOption($option, $value): void {
     $this->setOverride($option, FALSE);
     $this->setOption($option, $value);
   }
@@ -1022,7 +1022,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
    * {@inheritdoc}
    */
   public function optionLink($text, $section, $class = '', $title = '') {
-    if (!trim($text)) {
+    if (!trim((string) $text)) {
       $text = $this->t('Broken field');
     }
 
@@ -1052,18 +1052,17 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
    * {@inheritdoc}
    */
   public function getArgumentsTokens() {
-    $tokens = [];
     if (!empty($this->view->build_info['substitutions'])) {
-      $tokens = $this->view->build_info['substitutions'];
+      return $this->view->build_info['substitutions'];
     }
 
-    return $tokens;
+    return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function optionsSummary(&$categories, &$options) {
+  public function optionsSummary(&$categories, &$options): void {
     $categories = [
       'title' => [
         'title' => $this->t('Title'),
@@ -1129,7 +1128,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
       'desc' => $this->t('Comment or document this display.'),
     ];
 
-    $title = strip_tags($this->getOption('title'));
+    $title = strip_tags((string) $this->getOption('title'));
     if (!$title) {
       $title = $this->t('None');
     }
@@ -1360,7 +1359,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
       $options['exposed_form']['links']['exposed_form_options'] = $this->t('Exposed form settings for this exposed form style.');
     }
 
-    $css_class = trim($this->getOption('css_class'));
+    $css_class = trim((string) $this->getOption('css_class'));
     if (!$css_class) {
       $css_class = $this->t('None');
     }
@@ -1380,7 +1379,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $section = $form_state->get('section');
     if ($this->defaultableSections($section)) {
@@ -1881,7 +1880,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     $section = $form_state->get('section');
     switch ($section) {
       case 'display_title':
@@ -1899,7 +1898,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
 
       case 'display_id':
         if ($form_state->getValue('display_id')) {
-          if (preg_match('/[^a-z0-9_]/', $form_state->getValue('display_id'))) {
+          if (preg_match('/[^a-z0-9_]/', (string) $form_state->getValue('display_id'))) {
             $form_state->setError($form['display_id'], $this->t('Display machine name must contain only lowercase letters, numbers, or underscores.'));
           }
 
@@ -1920,7 +1919,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
 
     // Validate plugin options. Every section with "_options" in it, belongs to
     // a plugin type, like "style_options".
-    if (str_contains($section, '_options')) {
+    if (str_contains((string) $section, '_options')) {
       $plugin_type = str_replace('_options', '', $section);
       // Load the plugin and let it handle the validation.
       if ($plugin = $this->getPlugin($plugin_type)) {
@@ -1936,7 +1935,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     // Not sure I like this being here, but it seems (?) like a logical place.
     $cache_plugin = $this->getPlugin('cache');
     if ($cache_plugin) {
@@ -2049,14 +2048,14 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function optionsOverride($form, FormStateInterface $form_state) {
+  public function optionsOverride($form, FormStateInterface $form_state): void {
     $this->setOverride($form_state->get('section'));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setOverride($section, $new_state = NULL) {
+  public function setOverride($section, $new_state = NULL): void {
     $options = $this->defaultableSections($section);
     if (!$options) {
       return;
@@ -2086,7 +2085,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     foreach ($this->extenders as $extender) {
       $extender->query();
     }
@@ -2163,7 +2162,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
     // Create URL.
     // @todo Views should expect and store a leading /. See:
     //   https://www.drupal.org/node/2423913
-    $url = UrlHelper::isExternal($path) ? Url::fromUri($path, $options) : Url::fromUserInput('/' . ltrim($path, '/'), $options);
+    $url = UrlHelper::isExternal($path) ? Url::fromUri($path, $options) : Url::fromUserInput('/' . ltrim((string) $path, '/'), $options);
 
     // Merge the exposed query parameters.
     if (!empty($this->view->exposed_raw_input)) {
@@ -2209,7 +2208,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
     $element = [
       '#theme' => $this->themeFunctions(),
       '#view' => $this->view,
-      '#pre_render' => [[$this, 'elementPreRender']],
+      '#pre_render' => [$this->elementPreRender(...)],
       '#rows' => $rows,
       // Assigned by reference so anything added in $element['#attached'] will
       // be available on the view.
@@ -2349,7 +2348,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function preExecute() {
+  public function preExecute(): void {
     $this->view->setAjaxEnabled($this->ajaxEnabled());
     if ($this->isMoreEnabled() && !$this->useMoreAlways()) {
       $this->view->get_total_rows = TRUE;
@@ -2671,7 +2670,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   public function viewExposedFormBlocks() {
     // Avoid interfering with the admin forms.
     $route_name = \Drupal::routeMatch()->getRouteName();
-    if (str_starts_with($route_name, 'views_ui.')) {
+    if (str_starts_with((string) $route_name, 'views_ui.')) {
       return;
     }
     $this->view->initHandlers();
@@ -2707,7 +2706,7 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
   /**
    * {@inheritdoc}
    */
-  public function mergeDefaults() {
+  public function mergeDefaults(): void {
     $defined_options = $this->defineOptions();
 
     // Build a map of plural => singular for handler types.
@@ -2718,8 +2717,11 @@ abstract class DisplayPluginBase extends PluginBase implements DisplayPluginInte
 
     // Find all defined options, that have specified a merge_defaults callback.
     foreach ($defined_options as $type => $definition) {
-      if (!isset($definition['merge_defaults']) || !is_callable($definition['merge_defaults'])) {
-        continue;
+      if (!isset($definition['merge_defaults'])) {
+          continue;
+      }
+      if (!is_callable($definition['merge_defaults'])) {
+          continue;
       }
       // Switch the type to singular, if it's a plural handler.
       if (isset($type_map[$type])) {

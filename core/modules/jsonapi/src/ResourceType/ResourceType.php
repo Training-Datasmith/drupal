@@ -26,69 +26,6 @@ class ResourceType {
   const TYPE_NAME_URI_PATH_SEPARATOR = '--';
 
   /**
-   * The entity type ID.
-   *
-   * @var string
-   */
-  protected $entityTypeId;
-
-  /**
-   * The bundle ID.
-   *
-   * @var string
-   */
-  protected $bundle;
-
-  /**
-   * The type name.
-   *
-   * @var string
-   */
-  protected $typeName;
-
-  /**
-   * The class to which a payload converts to.
-   *
-   * @var class-string
-   */
-  protected $deserializationTargetClass;
-
-  /**
-   * Whether this resource type is internal.
-   *
-   * @var bool
-   */
-  protected $internal;
-
-  /**
-   * Whether this resource type's resources are locatable.
-   *
-   * @var bool
-   */
-  protected $isLocatable;
-
-  /**
-   * Whether this resource type's resources are mutable.
-   *
-   * @var bool
-   */
-  protected $isMutable;
-
-  /**
-   * Whether this resource type's resources are versionable.
-   *
-   * @var bool
-   */
-  protected $isVersionable;
-
-  /**
-   * The list of fields on the underlying entity type + bundle.
-   *
-   * @var string[]
-   */
-  protected $fields;
-
-  /**
    * An array of arrays of relatable resource types, keyed by public field name.
    *
    * @var array
@@ -100,7 +37,7 @@ class ResourceType {
    *
    * @var string[]
    */
-  protected $fieldMapping;
+  protected array $fieldMapping;
 
   /**
    * Gets the entity type ID.
@@ -234,7 +171,7 @@ class ResourceType {
    *   TRUE if the field is known to exist on the resource type; FALSE
    *   otherwise.
    */
-  public function hasField($field_name) {
+  public function hasField($field_name): bool {
     return array_key_exists($field_name, $this->fields);
   }
 
@@ -251,7 +188,7 @@ class ResourceType {
    *   TRUE if the field exists and is enabled and should be considered as part
    *   of the data model. FALSE otherwise.
    */
-  public function isFieldEnabled($field_name) {
+  public function isFieldEnabled($field_name): bool {
     return $this->hasField($field_name) && $this->fields[$field_name]->isFieldEnabled();
   }
 
@@ -261,7 +198,7 @@ class ResourceType {
    * @return bool
    *   Whether to include a collection count.
    */
-  public function includeCount() {
+  public function includeCount(): bool {
     // By default, do not return counts in collection queries.
     return FALSE;
   }
@@ -329,45 +266,60 @@ class ResourceType {
   /**
    * Instantiates a ResourceType object.
    *
-   * @param string $entity_type_id
+   * @param string $entityTypeId
    *   An entity type ID.
    * @param string $bundle
    *   A bundle.
-   * @param class-string $deserialization_target_class
+   * @param class-string $deserializationTargetClass
    *   The deserialization target class.
    * @param bool $internal
    *   (optional) Whether the resource type should be internal.
-   * @param bool $is_locatable
+   * @param bool $isLocatable
    *   (optional) Whether the resource type is locatable.
-   * @param bool $is_mutable
+   * @param bool $isMutable
    *   (optional) Whether the resource type is mutable.
-   * @param bool $is_versionable
+   * @param bool $isVersionable
    *   (optional) Whether the resource type is versionable.
    * @param \Drupal\jsonapi\ResourceType\ResourceTypeField[] $fields
    *   (optional) The resource type fields, keyed by internal field name.
-   * @param null|string $type_name
+   * @param null|string $typeName
    *   The resource type name.
    */
-  public function __construct($entity_type_id, $bundle, $deserialization_target_class, $internal = FALSE, $is_locatable = TRUE, $is_mutable = TRUE, $is_versionable = FALSE, array $fields = [], $type_name = NULL) {
-    $this->entityTypeId = $entity_type_id;
-    $this->bundle = $bundle;
-    $this->deserializationTargetClass = $deserialization_target_class;
-    $this->internal = $internal;
-    $this->isLocatable = $is_locatable;
-    $this->isMutable = $is_mutable;
-    $this->isVersionable = $is_versionable;
-    $this->fields = $fields;
-
-    $this->typeName = $type_name;
-    if ($type_name === NULL) {
+  public function __construct(/**
+   * The entity type ID.
+   */
+  protected $entityTypeId, /**
+   * The bundle ID.
+   */
+  protected $bundle, /**
+   * The class to which a payload converts to.
+   */
+  protected $deserializationTargetClass, /**
+   * Whether this resource type is internal.
+   */
+  protected $internal = FALSE, /**
+   * Whether this resource type's resources are locatable.
+   */
+  protected $isLocatable = TRUE, /**
+   * Whether this resource type's resources are mutable.
+   */
+  protected $isMutable = TRUE, /**
+   * Whether this resource type's resources are versionable.
+   */
+  protected $isVersionable = FALSE, /**
+   * The list of fields on the underlying entity type + bundle.
+   */
+  protected array $fields = [], /**
+   * The type name.
+   */
+  protected $typeName = NULL) {
+    if ($this->typeName === NULL) {
       $this->typeName = $this->bundle === '?'
         ? 'unknown'
         : $this->entityTypeId . self::TYPE_NAME_URI_PATH_SEPARATOR . $this->bundle;
     }
 
-    $this->fieldMapping = array_flip(array_map(function (ResourceTypeField $field) {
-      return $field->getPublicName();
-    }, $this->fields));
+    $this->fieldMapping = array_flip(array_map(fn(ResourceTypeField $field) => $field->getPublicName(), $this->fields));
   }
 
   /**
@@ -379,8 +331,8 @@ class ResourceType {
    *   whose values are an array of resource types. There may be duplicate
    *   across resource types across fields, but not within a field.
    */
-  public function setRelatableResourceTypes(array $relatable_resource_types) {
-    $this->fields = array_reduce(array_keys($relatable_resource_types), function ($fields, $public_field_name) use ($relatable_resource_types) {
+  public function setRelatableResourceTypes(array $relatable_resource_types): void {
+    $this->fields = array_reduce(array_keys($relatable_resource_types), function (array $fields, int|string $public_field_name) use ($relatable_resource_types): array {
       if (!isset($this->fieldMapping[$public_field_name])) {
         throw new \LogicException('A field must exist for relatable resource types to be set on it.');
       }
@@ -402,11 +354,7 @@ class ResourceType {
    */
   public function getRelatableResourceTypes() {
     if (!isset($this->relatableResourceTypesByField)) {
-      $this->relatableResourceTypesByField = array_reduce(array_map(function (ResourceTypeRelationship $field) {
-        return [$field->getPublicName() => $field->getRelatableResourceTypes()];
-      }, array_filter($this->fields, function (ResourceTypeField $field) {
-        return $field instanceof ResourceTypeRelationship && $field->isFieldEnabled();
-      })), 'array_merge', []);
+      $this->relatableResourceTypesByField = array_reduce(array_map(fn(ResourceTypeRelationship $field) => [$field->getPublicName() => $field->getRelatableResourceTypes()], array_filter($this->fields, fn(ResourceTypeField $field) => $field instanceof ResourceTypeRelationship && $field->isFieldEnabled())), array_merge(...), []);
     }
     return $this->relatableResourceTypesByField;
   }
@@ -439,7 +387,7 @@ class ResourceType {
    * @see \Drupal\jsonapi\ResourceType\ResourceType::TYPE_NAME_URI_PATH_SEPARATOR
    * @see jsonapi.base_path
    */
-  public function getPath() {
+  public function getPath(): string {
     return '/' . implode('/', explode(self::TYPE_NAME_URI_PATH_SEPARATOR, $this->typeName));
   }
 

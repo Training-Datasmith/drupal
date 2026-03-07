@@ -15,7 +15,7 @@ class Http4xxController extends ControllerBase {
    * @return array
    *   A render array containing the message to display for 4xx errors.
    */
-  public function on4xx() {
+  public function on4xx(): array {
     return [
       '#markup' => $this->t('A client error happened'),
     ];
@@ -27,7 +27,7 @@ class Http4xxController extends ControllerBase {
    * @return array
    *   A render array containing the message to display for 401 pages.
    */
-  public function on401() {
+  public function on401(): array {
     return [
       '#markup' => $this->t('Log in to access this page.'),
     ];
@@ -39,7 +39,7 @@ class Http4xxController extends ControllerBase {
    * @return array
    *   A render array containing the message to display for 403 pages.
    */
-  public function on403() {
+  public function on403(): array {
     return [
       '#markup' => $this->t('You are not authorized to access this page.'),
     ];
@@ -51,7 +51,7 @@ class Http4xxController extends ControllerBase {
    * @return array
    *   A render array containing the message to display for 404 pages.
    */
-  public function on404() {
+  public function on404(): array {
     return [
       '#markup' => $this->t('The requested page could not be found.'),
     ];

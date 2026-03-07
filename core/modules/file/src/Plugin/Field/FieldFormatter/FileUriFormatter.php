@@ -52,7 +52,7 @@ class FileUriFormatter extends BaseFieldFileFormatterBase {
   protected function viewValue(FieldItemInterface $item) {
     $value = $item->value;
     if ($this->getSetting('file_download_path')) {
-      $value = $this->fileUrlGenerator->generateAbsoluteString($value);
+      return $this->fileUrlGenerator->generateAbsoluteString($value);
     }
     return $value;
   }
@@ -60,7 +60,7 @@ class FileUriFormatter extends BaseFieldFileFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     return parent::isApplicable($field_definition) && $field_definition->getName() === 'uri';
   }
 

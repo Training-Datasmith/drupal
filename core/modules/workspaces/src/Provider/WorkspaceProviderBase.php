@@ -51,20 +51,11 @@ abstract class WorkspaceProviderBase implements WorkspaceProviderInterface {
 
     // @todo Consider adding explicit "publish any|own workspace" permissions in
     //   https://www.drupal.org/project/drupal/issues/3084260.
-    switch ($operation) {
-      case 'update':
-      case 'publish':
-        $permission_operation = 'edit';
-        break;
-
-      case 'view all revisions':
-        $permission_operation = 'view';
-        break;
-
-      default:
-        $permission_operation = $operation;
-        break;
-    }
+    $permission_operation = match ($operation) {
+        'update', 'publish' => 'edit',
+        'view all revisions' => 'view',
+        default => $operation,
+    };
 
     // Check if the user has permission to access all workspaces.
     $access_result = AccessResult::allowedIfHasPermission($account, $permission_operation . ' any workspace');
@@ -72,7 +63,7 @@ abstract class WorkspaceProviderBase implements WorkspaceProviderInterface {
     // Check if it's their own workspace, and they have permission to access
     // their own workspace.
     if ($access_result->isNeutral() && $account->isAuthenticated() && $account->id() === $workspace->getOwnerId()) {
-      $access_result = AccessResult::allowedIfHasPermission($account, $permission_operation . ' own workspace')
+      return AccessResult::allowedIfHasPermission($account, $permission_operation . ' own workspace')
         ->cachePerUser()
         ->addCacheableDependency($workspace);
     }
@@ -216,11 +207,9 @@ abstract class WorkspaceProviderBase implements WorkspaceProviderInterface {
     // that translation to the default revision as well, otherwise the new
     // translation wouldn't show up in entity queries or views which use the
     // field data table as the base table.
-    $default_revision = $this->workspaceManager->executeOutsideWorkspace(function () use ($translation) {
-      return $this->entityTypeManager
-        ->getStorage($translation->getEntityTypeId())
-        ->load($translation->id());
-    });
+    $default_revision = $this->workspaceManager->executeOutsideWorkspace(fn() => $this->entityTypeManager
+      ->getStorage($translation->getEntityTypeId())
+      ->load($translation->id()));
     $langcode = $translation->language()->getId();
     if (!$default_revision->hasTranslation($langcode)) {
       $default_revision_translation = $default_revision->addTranslation($langcode, $translation->toArray());

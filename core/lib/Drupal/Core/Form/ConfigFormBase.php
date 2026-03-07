@@ -64,11 +64,9 @@ abstract class ConfigFormBase extends FormBase {
    * @return \Drupal\Core\Config\TypedConfigManagerInterface
    *   The typed config manager service.
    */
-  protected function typedConfigManager(): TypedConfigManagerInterface {
-    if ($this->typedConfigManager instanceof TypedConfigManagerInterface) {
+  protected function typedConfigManager(): TypedConfigManagerInterface
+  {
       return $this->typedConfigManager;
-    }
-    return \Drupal::service('config.typed');
   }
 
   /**
@@ -200,7 +198,7 @@ abstract class ConfigFormBase extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $map = $form_state->get(static::CONFIG_KEY_TO_FORM_ELEMENT_MAP) ?? [];
     foreach (array_keys($map) as $config_name) {
       $config = $this->configFactory()->getEditable($config_name);
@@ -224,11 +222,11 @@ abstract class ConfigFormBase extends FormBase {
 
         // Detect if this is a sequence item property path, and if so, attempt
         // to fall back to the containing sequence's property path.
-        if (!isset($map[$config_name][$property_path]) && preg_match("/.*\.(\d+)$/", $property_path, $matches) === 1) {
+        if (!isset($map[$config_name][$property_path]) && preg_match("/.*\.(\d+)$/", (string) $property_path, $matches) === 1) {
           $index = intval($matches[1]);
           // The property path as known in the config key-to-form element map
           // will not have the sequence index in it.
-          $property_path = rtrim($property_path, '0123456789.');
+          $property_path = rtrim((string) $property_path, '0123456789.');
         }
 
         if (isset($map[$config_name][$property_path])) {
@@ -303,7 +301,7 @@ abstract class ConfigFormBase extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $map = $form_state->get(static::CONFIG_KEY_TO_FORM_ELEMENT_MAP) ?? [];
     foreach (array_keys($map) as $config_name) {
       $config = $this->configFactory()->getEditable($config_name);

@@ -36,13 +36,6 @@ class ConfigureSectionForm extends FormBase implements WorkspaceDynamicSafeFormI
   use WorkspaceSafeFormTrait;
 
   /**
-   * The layout tempstore repository.
-   *
-   * @var \Drupal\layout_builder\LayoutTempstoreRepositoryInterface
-   */
-  protected $layoutTempstoreRepository;
-
-  /**
    * The plugin being configured.
    *
    * @var \Drupal\Core\Layout\LayoutInterface|\Drupal\Core\Plugin\PluginFormInterface
@@ -55,13 +48,6 @@ class ConfigureSectionForm extends FormBase implements WorkspaceDynamicSafeFormI
    * @var \Drupal\layout_builder\Section
    */
   protected $section;
-
-  /**
-   * The plugin form manager.
-   *
-   * @var \Drupal\Core\Plugin\PluginFormFactoryInterface
-   */
-  protected $pluginFormFactory;
 
   /**
    * The section storage.
@@ -94,20 +80,19 @@ class ConfigureSectionForm extends FormBase implements WorkspaceDynamicSafeFormI
   /**
    * Constructs a new ConfigureSectionForm.
    *
-   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layout_tempstore_repository
+   * @param \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository
    *   The layout tempstore repository.
-   * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $plugin_form_manager
+   * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory
    *   The plugin form manager.
    */
-  public function __construct(LayoutTempstoreRepositoryInterface $layout_tempstore_repository, PluginFormFactoryInterface $plugin_form_manager) {
-    $this->layoutTempstoreRepository = $layout_tempstore_repository;
-    $this->pluginFormFactory = $plugin_form_manager;
+  public function __construct(protected \Drupal\layout_builder\LayoutTempstoreRepositoryInterface $layoutTempstoreRepository, protected \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('layout_builder.tempstore_repository'),
       $container->get('plugin_form.factory')
@@ -117,14 +102,14 @@ class ConfigureSectionForm extends FormBase implements WorkspaceDynamicSafeFormI
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'layout_builder_configure_section';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL, $delta = NULL, $plugin_id = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?SectionStorageInterface $section_storage = NULL, $delta = NULL, $plugin_id = NULL): array {
     $this->sectionStorage = $section_storage;
     $this->delta = $delta;
     $this->isUpdate = is_null($plugin_id);
@@ -176,7 +161,7 @@ class ConfigureSectionForm extends FormBase implements WorkspaceDynamicSafeFormI
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $subform_state = SubformState::createForSubform($form['layout_settings'], $form, $form_state);
     $this->getPluginForm($this->layout)->validateConfigurationForm($form['layout_settings'], $subform_state);
   }
@@ -184,7 +169,7 @@ class ConfigureSectionForm extends FormBase implements WorkspaceDynamicSafeFormI
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Call the plugin submit handler.
     $subform_state = SubformState::createForSubform($form['layout_settings'], $form, $form_state);
     $this->getPluginForm($this->layout)->submitConfigurationForm($form['layout_settings'], $subform_state);

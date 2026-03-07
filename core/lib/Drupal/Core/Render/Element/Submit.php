@@ -32,7 +32,7 @@ class Submit extends Button {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#executes_submit_callback' => TRUE,
     ] + parent::getInfo();

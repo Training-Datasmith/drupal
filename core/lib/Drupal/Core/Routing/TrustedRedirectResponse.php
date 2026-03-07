@@ -21,9 +21,8 @@ class TrustedRedirectResponse extends CacheableSecuredRedirectResponse {
   /**
    * {@inheritdoc}
    */
-  public function __construct($url, $status = 302, $headers = []) {
+  public function __construct($url) {
     $this->trustedUrls[$url] = TRUE;
-    parent::__construct($url, $status, $headers);
   }
 
   /**
@@ -42,7 +41,7 @@ class TrustedRedirectResponse extends CacheableSecuredRedirectResponse {
   /**
    * {@inheritdoc}
    */
-  protected function isSafe($url) {
+  protected function isSafe($url): bool {
     return !empty($this->trustedUrls[$url]) || $this->isLocal($url);
   }
 

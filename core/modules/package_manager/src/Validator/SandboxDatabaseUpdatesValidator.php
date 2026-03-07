@@ -163,9 +163,9 @@ class SandboxDatabaseUpdatesValidator implements EventSubscriberInterface {
     // invalid), followed by a T_STRING (the function name). This will ignore
     // anonymous functions, but match class methods (although class methods are
     // highly unlikely to match the naming patterns of update hooks).
-    $names = array_map('token_name', array_column($tokens, 0));
+    $names = array_map(token_name(...), array_column($tokens, 0));
     if ($names === ['T_FUNCTION', 'T_WHITESPACE', 'T_STRING']) {
-      return (bool) preg_match($pattern, $tokens[2][1]);
+      return (bool) preg_match($pattern, (string) $tokens[2][1]);
     }
     return FALSE;
   }

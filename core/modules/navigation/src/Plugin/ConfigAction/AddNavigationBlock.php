@@ -25,11 +25,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   id: 'addNavigationBlock',
   admin_label: new TranslatableMarkup('Add navigation block'),
 )]
-final class AddNavigationBlock implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class AddNavigationBlock implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    protected readonly SectionStorageManagerInterface $sectionStorageManager,
-    protected readonly UuidInterface $uuidGenerator,
+    protected SectionStorageManagerInterface $sectionStorageManager,
+    protected UuidInterface $uuidGenerator,
   ) {
   }
 

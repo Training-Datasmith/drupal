@@ -28,21 +28,16 @@ class InstallCommand extends Command {
   use StringTranslationTrait;
 
   /**
-   * The class loader.
-   *
-   * @var object
-   */
-  protected $classLoader;
-
-  /**
    * Constructs a new InstallCommand command.
    *
-   * @param object $class_loader
+   * @param object $classLoader
    *   The class loader.
    */
-  public function __construct($class_loader) {
+  public function __construct(/**
+   * The class loader.
+   */
+  protected $classLoader) {
     parent::__construct('install');
-    $this->classLoader = $class_loader;
   }
 
   /**
@@ -103,11 +98,11 @@ class InstallCommand extends Command {
 
       // If it does not look like a path make suggestions based upon available
       // profiles.
-      if (!str_contains('/', $install_profile_or_recipe)) {
+      if (!str_contains('/', (string) $install_profile_or_recipe)) {
         $alternatives = [];
         foreach (array_keys($this->getProfiles(TRUE, FALSE)) as $profile_name) {
           $lev = levenshtein($install_profile_or_recipe, $profile_name);
-          if ($lev <= strlen($profile_name) / 4 || str_contains($profile_name, $install_profile_or_recipe)) {
+          if ($lev <= strlen((string) $profile_name) / 4 || str_contains((string) $profile_name, (string) $install_profile_or_recipe)) {
             $alternatives[] = $profile_name;
           }
         }
@@ -168,7 +163,7 @@ class InstallCommand extends Command {
    * @return int
    *   The command exit status.
    */
-  protected function install($class_loader, SymfonyStyle $io, $profile, $langcode, $site_path, $site_name, string $recipe, ?string $password = NULL) {
+  protected function install($class_loader, SymfonyStyle $io, $profile, $langcode, string $site_path, $site_name, string $recipe, ?string $password = NULL): int {
     $sqliteDriverNamespace = 'Drupal\\sqlite\\Driver\\Database\\sqlite';
     $password ??= Crypt::randomBytesBase64(12);
     $parameters = [
@@ -230,7 +225,7 @@ class InstallCommand extends Command {
     require_once 'core/includes/install.core.inc';
 
     $progress_bar = $io->createProgressBar();
-    install_drupal($class_loader, $parameters, function ($install_state) use ($progress_bar) {
+    install_drupal($class_loader, $parameters, function ($install_state) use ($progress_bar): void {
       static $started = FALSE;
       if (!$started) {
         $started = TRUE;
@@ -357,7 +352,7 @@ class InstallCommand extends Command {
    * @return string[]
    *   An array of profile descriptions keyed by the profile machine name.
    */
-  protected function getProfiles($include_hidden = FALSE, $auto_select_distributions = TRUE) {
+  protected function getProfiles($include_hidden = FALSE, $auto_select_distributions = TRUE): array {
     // Build a list of all available profiles.
     $listing = new ExtensionDiscovery(getcwd(), FALSE);
     $listing->setProfileDirectories([]);

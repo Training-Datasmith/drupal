@@ -23,7 +23,7 @@ class BubbleableMetadata extends CacheableMetadata implements AttachmentsInterfa
    * @return static
    *   A new bubbleable metadata object, with the merged data.
    */
-  public function merge(CacheableMetadata $other) {
+  public function merge(CacheableMetadata $other): static {
     $result = parent::merge($other);
 
     // This is called many times per request, so avoid merging unless absolutely
@@ -49,7 +49,7 @@ class BubbleableMetadata extends CacheableMetadata implements AttachmentsInterfa
    * @param array &$build
    *   A render array.
    */
-  public function applyTo(array &$build) {
+  public function applyTo(array &$build): void {
     parent::applyTo($build);
     $build['#attached'] = $this->attachments;
   }
@@ -59,12 +59,10 @@ class BubbleableMetadata extends CacheableMetadata implements AttachmentsInterfa
    *
    * @param array $build
    *   A render array.
-   *
-   * @return static
    */
-  public static function createFromRenderArray(array $build) {
+  public static function createFromRenderArray(array $build): static {
     $meta = parent::createFromRenderArray($build);
-    $meta->attachments = (isset($build['#attached'])) ? $build['#attached'] : [];
+    $meta->attachments = $build['#attached'] ?? [];
     return $meta;
   }
 
@@ -76,10 +74,8 @@ class BubbleableMetadata extends CacheableMetadata implements AttachmentsInterfa
    *   CacheableDependencyInterface, its cacheability metadata will be used,
    *   otherwise, the passed in object must be assumed to be uncacheable, so
    *   max-age 0 is set.
-   *
-   * @return static
    */
-  public static function createFromObject($object) {
+  public static function createFromObject($object): static {
     $meta = parent::createFromObject($object);
 
     if ($object instanceof AttachmentsInterface) {
@@ -92,7 +88,7 @@ class BubbleableMetadata extends CacheableMetadata implements AttachmentsInterfa
   /**
    * {@inheritdoc}
    */
-  public function addCacheableDependency($other_object) {
+  public function addCacheableDependency($other_object): static {
     parent::addCacheableDependency($other_object);
 
     if ($other_object instanceof AttachmentsInterface) {
@@ -144,7 +140,7 @@ class BubbleableMetadata extends CacheableMetadata implements AttachmentsInterfa
    * @return array
    *   The merged attachments array.
    */
-  public static function mergeAttachments(array $a, array $b) {
+  public static function mergeAttachments(array $a, array $b): array {
     // If both #attached arrays contain drupalSettings, then merge them
     // correctly; adding the same settings multiple times needs to be
     // idempotent.

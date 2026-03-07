@@ -21,40 +21,17 @@ class EntitySchemaSubscriber implements EntityTypeListenerInterface, EventSubscr
   use StringTranslationTrait;
 
   /**
-   * The definition update manager.
-   *
-   * @var \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface
-   */
-  protected $entityDefinitionUpdateManager;
-
-  /**
-   * The last installed schema definitions.
-   *
-   * @var \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface
-   */
-  protected $entityLastInstalledSchemaRepository;
-
-  /**
-   * The workspace information service.
-   *
-   * @var \Drupal\workspaces\WorkspaceInformationInterface
-   */
-  protected $workspaceInfo;
-
-  /**
    * Constructs a new EntitySchemaSubscriber.
    *
    * @param \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $entityDefinitionUpdateManager
    *   Definition update manager.
    * @param \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository
    *   Last definitions.
-   * @param \Drupal\workspaces\WorkspaceInformationInterface $workspace_information
+   * @param \Drupal\workspaces\WorkspaceInformationInterface $workspaceInfo
    *   The workspace information service.
    */
-  public function __construct(EntityDefinitionUpdateManagerInterface $entityDefinitionUpdateManager, EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository, WorkspaceInformationInterface $workspace_information) {
-    $this->entityDefinitionUpdateManager = $entityDefinitionUpdateManager;
-    $this->entityLastInstalledSchemaRepository = $entityLastInstalledSchemaRepository;
-    $this->workspaceInfo = $workspace_information;
+  public function __construct(protected \Drupal\Core\Entity\EntityDefinitionUpdateManagerInterface $entityDefinitionUpdateManager, protected \Drupal\Core\Entity\EntityLastInstalledSchemaRepositoryInterface $entityLastInstalledSchemaRepository, protected \Drupal\workspaces\WorkspaceInformationInterface $workspaceInfo)
+  {
   }
 
   /**
@@ -67,7 +44,7 @@ class EntitySchemaSubscriber implements EntityTypeListenerInterface, EventSubscr
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeCreate(EntityTypeInterface $entity_type) {
+  public function onEntityTypeCreate(EntityTypeInterface $entity_type): void {
     // If the entity type is supported by Workspaces, add the revision metadata
     // field.
     if ($this->workspaceInfo->isEntityTypeSupported($entity_type)) {
@@ -78,14 +55,14 @@ class EntitySchemaSubscriber implements EntityTypeListenerInterface, EventSubscr
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions) {
+  public function onFieldableEntityTypeCreate(EntityTypeInterface $entity_type, array $field_storage_definitions): void {
     $this->onEntityTypeCreate($entity_type);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original) {
+  public function onEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original): void {
     // If the entity type is now supported by Workspaces, add the revision
     // metadata field.
     if ($this->workspaceInfo->isEntityTypeSupported($entity_type) && !$this->workspaceInfo->isEntityTypeSupported($original)) {
@@ -109,14 +86,14 @@ class EntitySchemaSubscriber implements EntityTypeListenerInterface, EventSubscr
   /**
    * {@inheritdoc}
    */
-  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL) {
+  public function onFieldableEntityTypeUpdate(EntityTypeInterface $entity_type, EntityTypeInterface $original, array $field_storage_definitions, array $original_field_storage_definitions, ?array &$sandbox = NULL): void {
     $this->onEntityTypeUpdate($entity_type, $original);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function onEntityTypeDelete(EntityTypeInterface $entity_type) {
+  public function onEntityTypeDelete(EntityTypeInterface $entity_type): void {
     // Nothing to do here.
   }
 
@@ -148,7 +125,7 @@ class EntitySchemaSubscriber implements EntityTypeListenerInterface, EventSubscr
    * @return \Drupal\Core\Field\BaseFieldDefinition
    *   The base field definition.
    */
-  protected function getWorkspaceFieldDefinition() {
+  protected function getWorkspaceFieldDefinition(): \Drupal\Core\Field\BaseFieldDefinition {
     return BaseFieldDefinition::create('entity_reference')
       ->setLabel($this->t('Workspace'))
       ->setDescription($this->t('Indicates the workspace that this revision belongs to.'))

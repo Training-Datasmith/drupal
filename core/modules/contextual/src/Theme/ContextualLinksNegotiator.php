@@ -11,13 +11,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 /**
  * Set the theme according to the parameter passed to the controller.
  */
-final class ContextualLinksNegotiator implements ThemeNegotiatorInterface {
+final readonly class ContextualLinksNegotiator implements ThemeNegotiatorInterface {
 
   public function __construct(
-    protected readonly RouteMatchInterface $route_match,
-    protected readonly RequestStack $requestStack,
-    protected readonly ThemeHandlerInterface $themeHandler,
-    protected readonly ConfigFactoryInterface $configFactory,
+    protected RouteMatchInterface $route_match,
+    protected RequestStack $requestStack,
+    protected ThemeHandlerInterface $themeHandler,
+    protected ConfigFactoryInterface $configFactory,
   ) {}
 
   public function applies(RouteMatchInterface $route_match): bool {

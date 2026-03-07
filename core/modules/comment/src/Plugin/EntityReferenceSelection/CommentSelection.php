@@ -52,11 +52,11 @@ class CommentSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function validateReferenceableNewEntities(array $entities) {
+  public function validateReferenceableNewEntities(array $entities): array {
     $entities = parent::validateReferenceableNewEntities($entities);
     // Mirror the conditions checked in buildEntityQuery().
     if (!$this->currentUser->hasPermission('administer comments')) {
-      $entities = array_filter($entities, function ($comment) {
+      return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $comment) {
         /** @var \Drupal\comment\CommentInterface $comment */
         return $comment->isPublished();
       });
@@ -88,7 +88,7 @@ class CommentSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function entityQueryAlter(SelectInterface $query) {
+  public function entityQueryAlter(SelectInterface $query): void {
     parent::entityQueryAlter($query);
 
     $tables = $query->getTables();
@@ -141,7 +141,7 @@ class CommentSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0) {
+  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0): array {
     $target_type = $this->getConfiguration()['target_type'];
 
     $query = $this->buildEntityQuery($match, $match_operator);
@@ -172,7 +172,7 @@ class CommentSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS') {
+  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS'): int {
     $options = $this->getReferenceableEntities($match, $match_operator);
     return count($options, COUNT_RECURSIVE) - count($options);
   }

@@ -22,7 +22,7 @@ class DateTimeComputed extends TypedData {
    *
    * @var \DateTime|null
    */
-  protected $date = NULL;
+  protected $date;
 
   /**
    * {@inheritdoc}
@@ -55,7 +55,7 @@ class DateTimeComputed extends TypedData {
     $storage_format = $datetime_type === DateTimeItem::DATETIME_TYPE_DATE ? DateTimeItemInterface::DATE_STORAGE_FORMAT : DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
     try {
       $date = DrupalDateTime::createFromFormat($storage_format, $value, DateTimeItemInterface::STORAGE_TIMEZONE);
-      if ($date instanceof DrupalDateTime && !$date->hasErrors()) {
+      if (!$date->hasErrors()) {
         $this->date = $date;
         // If the format did not include an explicit time portion, then the
         // time will be set from the current time instead. For consistency, we
@@ -78,7 +78,7 @@ class DateTimeComputed extends TypedData {
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     $this->date = $value;
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {

@@ -78,9 +78,7 @@ final class Exporter implements LoggerAwareInterface {
       }
     }
     // Exported user accounts should include the hashed password.
-    $event->setCallback('field_item:password', function (PasswordItem $item): array {
-      return $item->set('pre_hashed', TRUE)->getValue();
-    });
+    $event->setCallback('field_item:password', fn(PasswordItem $item): array => $item->set('pre_hashed', TRUE)->getValue());
     // Ensure that all entity reference fields mark the referenced entity as a
     // dependency of the entity being exported.
     $event->setCallback('field_item:entity_reference', $this->exportReference(...));
@@ -208,8 +206,14 @@ final class Exporter implements LoggerAwareInterface {
       // Skip the field if it's empty, or it was explicitly disallowed, or is a
       // computed field that wasn't explicitly allowed.
       $allowed = $allow_list[$name] ?? NULL;
-      if ($allowed === FALSE || ($allowed === NULL && $items->getDataDefinition()->isComputed()) || $items->isEmpty()) {
-        continue;
+      if ($allowed === FALSE) {
+          continue;
+      }
+      if ($allowed === NULL && $items->getDataDefinition()->isComputed()) {
+          continue;
+      }
+      if ($items->isEmpty()) {
+          continue;
       }
 
       // Try to find a callback for this specific field, then for the field's
@@ -299,7 +303,7 @@ final class Exporter implements LoggerAwareInterface {
       // guaranteed to have existed at some point. Either way, there's no chance
       // of accidentally referencing the wrong entity on import.
       if ($entity instanceof AccountInterface && intval($entity->id()) < 2) {
-        return array_map('intval', $values);
+        return array_map(intval(...), $values);
       }
       // Mark the referenced entity as a dependency of the one we're exporting.
       $metadata->addDependency($entity);

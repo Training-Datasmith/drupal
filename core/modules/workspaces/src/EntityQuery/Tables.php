@@ -18,7 +18,7 @@ class Tables extends BaseTables {
    *
    * @var \Drupal\workspaces\WorkspaceInformationInterface
    */
-  protected $workspaceInfo;
+  protected object $workspaceInfo;
 
   /**
    * Workspace association table array, key is base table name, value is alias.
@@ -58,7 +58,7 @@ class Tables extends BaseTables {
   /**
    * {@inheritdoc}
    */
-  public function addField($field, $type, $langcode) {
+  public function addField($field, $type, $langcode): int|string {
     // The parent method uses shared and dedicated revision tables only when the
     // entity query is instructed to query all revisions. However, if we are
     // looking for workspace-specific revisions, we have to force the parent
@@ -83,7 +83,7 @@ class Tables extends BaseTables {
   /**
    * {@inheritdoc}
    */
-  protected function addJoin($type, $table, $join_condition, $langcode, $delta = NULL) {
+  protected function addJoin($type, $table, string $join_condition, $langcode, $delta = NULL) {
     if ($this->sqlQuery->getMetaData('active_workspace_id')) {
       // The join condition for a shared or dedicated field table is in the form
       // of "%alias.$id_field = $base_table.$id_field". Whenever we join a field
@@ -141,7 +141,7 @@ class Tables extends BaseTables {
    * @return string
    *   The alias of the joined table.
    */
-  public function addWorkspaceTrackerJoin($entity_type_id, $base_table_alias, $active_workspace_id) {
+  public function addWorkspaceTrackerJoin(string $entity_type_id, $base_table_alias, $active_workspace_id) {
     if (!isset($this->contentWorkspaceTables[$base_table_alias])) {
       $entity_type = $this->entityTypeManager->getActiveDefinition($entity_type_id);
       $id_field = $entity_type->getKey('id');

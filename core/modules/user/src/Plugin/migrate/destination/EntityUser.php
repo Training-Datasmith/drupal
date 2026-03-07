@@ -68,13 +68,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class EntityUser extends EntityContentBase {
 
   /**
-   * The password service class.
-   *
-   * @var \Drupal\Core\Password\PasswordInterface
-   */
-  protected $password;
-
-  /**
    * Builds a user entity destination.
    *
    * @param array $configuration
@@ -100,15 +93,14 @@ class EntityUser extends EntityContentBase {
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface|null $entity_type_bundle_info
    *   The entity type bundle info service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, PasswordInterface $password, ?AccountSwitcherInterface $account_switcher = NULL, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, EntityStorageInterface $storage, array $bundles, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, protected \Drupal\Core\Password\PasswordInterface $password, ?AccountSwitcherInterface $account_switcher = NULL, ?EntityTypeBundleInfoInterface $entity_type_bundle_info = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $migration, $storage, $bundles, $entity_field_manager, $field_type_manager, $account_switcher, $entity_type_bundle_info);
-    $this->password = $password;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     $entity_type = static::getEntityTypeId($plugin_id);
     return new static(
       $configuration,
@@ -141,7 +133,7 @@ class EntityUser extends EntityContentBase {
   /**
    * {@inheritdoc}
    */
-  protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []) {
+  protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []): array {
     // Do not overwrite the root account password.
     if ($entity->id() != 1) {
       // Set the pre_hashed password so that the PasswordItem field does not
@@ -182,7 +174,7 @@ class EntityUser extends EntityContentBase {
   /**
    * {@inheritdoc}
    */
-  public function getHighestId() {
+  public function getHighestId(): int {
     $highest_id = parent::getHighestId();
 
     // Every Drupal site must have a user with UID of 1 and it's normal for

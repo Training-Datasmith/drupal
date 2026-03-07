@@ -19,7 +19,7 @@ class UpdateBlockForm extends ConfigureBlockFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'layout_builder_update_block';
   }
 
@@ -51,7 +51,7 @@ class UpdateBlockForm extends ConfigureBlockFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function submitLabel() {
+  protected function submitLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Update');
   }
 

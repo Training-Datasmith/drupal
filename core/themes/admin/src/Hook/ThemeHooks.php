@@ -78,14 +78,14 @@ class ThemeHooks implements TrustedCallbackInterface {
     // @todo Refactor when https://www.drupal.org/node/3056089 is in.
     if (isset($info['container'])) {
       $container_pre_renders = !empty($info['container']['#pre_render']) ? $info['container']['#pre_render'] : [];
-      array_unshift($container_pre_renders, [__CLASS__, 'container']);
+      array_unshift($container_pre_renders, [self::class, 'container']);
 
       $info['container']['#pre_render'] = $container_pre_renders;
     }
 
     // @todo Refactor when https://www.drupal.org/node/3016343 is fixed.
     if (isset($info['text_format'])) {
-      $info['text_format']['#pre_render'][] = [__CLASS__, 'textFormat'];
+      $info['text_format']['#pre_render'][] = [self::class, 'textFormat'];
     }
 
     // Add a pre-render function for Operations to set #dropbutton_type.
@@ -97,7 +97,7 @@ class ThemeHooks implements TrustedCallbackInterface {
       // \Drupal\Core\Render\Element\Dropbutton::preRenderDropbutton(). This
       // ensures #dropbutton_type is available to preRenderDropbutton().
       $operations_pre_renders = !empty($info['operations']['#pre_render']) ? $info['operations']['#pre_render'] : [];
-      array_unshift($operations_pre_renders, [__CLASS__, 'operations']);
+      array_unshift($operations_pre_renders, [self::class, 'operations']);
 
       $info['operations']['#pre_render'] = $operations_pre_renders;
 
@@ -106,22 +106,22 @@ class ThemeHooks implements TrustedCallbackInterface {
     }
 
     if (isset($info['vertical_tabs'])) {
-      $info['vertical_tabs']['#pre_render'][] = [__CLASS__, 'verticalTabs'];
+      $info['vertical_tabs']['#pre_render'][] = [self::class, 'verticalTabs'];
     }
 
     // Add a pre-render to managed_file.
     if (isset($info['managed_file'])) {
-      $info['managed_file']['#pre_render'][] = [__CLASS__, 'managedFile'];
+      $info['managed_file']['#pre_render'][] = [self::class, 'managedFile'];
     }
 
     // Add a pre-render to status_messages to alter the placeholder markup.
     if (isset($info['status_messages'])) {
-      $info['status_messages']['#pre_render'][] = [__CLASS__, 'messagePlaceholder'];
+      $info['status_messages']['#pre_render'][] = [self::class, 'messagePlaceholder'];
     }
 
     if (array_key_exists('text_format', $info)) {
       $info['text_format']['#pre_render'][] = [
-        __CLASS__,
+        self::class,
         'textFormat',
       ];
     }

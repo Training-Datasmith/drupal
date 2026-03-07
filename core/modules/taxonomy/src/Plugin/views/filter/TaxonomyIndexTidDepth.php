@@ -21,7 +21,7 @@ class TaxonomyIndexTidDepth extends TaxonomyIndexTid {
   /**
    * {@inheritdoc}
    */
-  public function operatorOptions($which = 'title') {
+  public function operatorOptions($which = 'title'): array {
     return [
       'or' => $this->t('Is one of'),
     ];
@@ -41,7 +41,7 @@ class TaxonomyIndexTidDepth extends TaxonomyIndexTid {
   /**
    * {@inheritdoc}
    */
-  public function buildExtraOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildExtraOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildExtraOptionsForm($form, $form_state);
 
     $form['depth'] = [
@@ -55,16 +55,17 @@ class TaxonomyIndexTidDepth extends TaxonomyIndexTid {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     // If no filter values are present, then do nothing.
     if (count($this->value) == 0) {
-      return;
+        return;
     }
-    elseif (count($this->value) == 1) {
-      // Sometimes $this->value is an array with a single element so convert it.
-      if (is_array($this->value)) {
-        $this->value = current($this->value);
-      }
+    // If no filter values are present, then do nothing.
+    if (count($this->value) == 1) {
+        // Sometimes $this->value is an array with a single element so convert it.
+        if (is_array($this->value)) {
+          $this->value = current($this->value);
+        }
     }
 
     // The normal use of ensureMyTable() here breaks Views.

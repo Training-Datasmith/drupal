@@ -15,40 +15,17 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class MediaConfigSubscriber implements EventSubscriberInterface {
 
   /**
-   * The route builder.
-   *
-   * @var \Drupal\Core\Routing\RouteBuilderInterface
-   */
-  protected $routeBuilder;
-
-  /**
-   * The cache tags invalidator.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
-   */
-  protected $cacheTagsInvalidator;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs the MediaConfigSubscriber.
    *
-   * @param \Drupal\Core\Routing\RouteBuilderInterface $router_builder
+   * @param \Drupal\Core\Routing\RouteBuilderInterface $routeBuilder
    *   The route builder.
-   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cache_tags_invalidator
+   * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
    *   The cache tags invalidator.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(RouteBuilderInterface $router_builder, CacheTagsInvalidatorInterface $cache_tags_invalidator, EntityTypeManagerInterface $entity_type_manager) {
-    $this->routeBuilder = $router_builder;
-    $this->cacheTagsInvalidator = $cache_tags_invalidator;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Routing\RouteBuilderInterface $routeBuilder, protected \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -57,7 +34,7 @@ class MediaConfigSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Config\ConfigCrudEvent $event
    *   The ConfigCrudEvent to process.
    */
-  public function onSave(ConfigCrudEvent $event) {
+  public function onSave(ConfigCrudEvent $event): void {
     $saved_config = $event->getConfig();
     if ($saved_config->getName() === 'media.settings' && $event->isChanged('standalone_url')) {
       $this->cacheTagsInvalidator->invalidateTags([

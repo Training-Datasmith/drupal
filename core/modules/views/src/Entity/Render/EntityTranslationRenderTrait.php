@@ -25,7 +25,7 @@ trait EntityTranslationRenderTrait {
    * @return \Drupal\views\Entity\Render\EntityTranslationRendererBase
    *   The configured renderer.
    */
-  protected function getEntityTranslationRenderer() {
+  protected function getEntityTranslationRenderer(): \Drupal\views\Entity\Render\ConfigurableLanguageRenderer|\\Drupal\views\Entity\Render\TranslationLanguageRenderer|\\Drupal\views\Entity\Render\DefaultLanguageRenderer {
     if (!isset($this->entityTranslationRenderer)) {
       $view = $this->getView();
       $rendering_language = $view->display_handler->getOption('rendering_language');
@@ -41,7 +41,7 @@ trait EntityTranslationRenderTrait {
         $this->entityTranslationRenderer = new $class($view, $this->getLanguageManager(), $entity_type);
       }
       else {
-        if (str_contains($rendering_language, '***LANGUAGE_')) {
+        if (str_contains((string) $rendering_language, '***LANGUAGE_')) {
           $langcode = PluginBase::queryLanguageSubstitutions()[$rendering_language];
         }
         else {

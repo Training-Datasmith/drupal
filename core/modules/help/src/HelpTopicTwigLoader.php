@@ -46,8 +46,8 @@ class HelpTopicTwigLoader extends FilesystemLoader {
     // Add help_topics directories for modules and themes in the 'help_topic'
     // namespace, plus core.
     $this->addExtension($root_path . '/core');
-    array_map([$this, 'addExtension'], $module_handler->getModuleDirectories());
-    array_map([$this, 'addExtension'], $theme_handler->getThemeDirectories());
+    array_map($this->addExtension(...), $module_handler->getModuleDirectories());
+    array_map($this->addExtension(...), $theme_handler->getThemeDirectories());
   }
 
   /**
@@ -97,11 +97,11 @@ class HelpTopicTwigLoader extends FilesystemLoader {
    * {@inheritdoc}
    */
   protected function findTemplate($name, $throw = TRUE): ?string {
-    if (!str_ends_with($name, '.html.twig')) {
+    if (!str_ends_with((string) $name, '.html.twig')) {
       if (!$throw) {
         return NULL;
       }
-      $extension = pathinfo($name, PATHINFO_EXTENSION);
+      $extension = pathinfo((string) $name, PATHINFO_EXTENSION);
       throw new LoaderError(sprintf("Help topic %s has an invalid file extension (%s). Only help topics ending .html.twig are allowed.", $name, $extension));
     }
     return parent::findTemplate($name, $throw);

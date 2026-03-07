@@ -27,22 +27,16 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
 
   /**
    * The entity operation.
-   *
-   * @var string
    */
   protected string $operation;
 
   /**
    * The entity revision.
-   *
-   * @var \Drupal\Core\Entity\RevisionableInterface
    */
   protected RevisionableInterface $revision;
 
   /**
    * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
   protected ModuleHandlerInterface $moduleHandler;
 
@@ -76,7 +70,7 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('date.formatter'),
       $container->get('entity_type.manager'),
@@ -90,14 +84,14 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  public function getBaseFormId() {
+  public function getBaseFormId(): string {
     return $this->revision->getEntityTypeId() . '_revision_delete';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return $this->revision->getEntityTypeId() . '_revision_delete';
   }
 
@@ -131,14 +125,14 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
+  public function getDescription(): string {
     return '';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $entityTypeId = $this->revision->getEntityTypeId();
     /** @var \Drupal\Core\Entity\RevisionableStorageInterface $entityStorage */
     $entityStorage = $this->entityTypeManager->getStorage($entityTypeId);
@@ -204,7 +198,7 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  public function setOperation($operation) {
+  public function setOperation($operation): static {
     $this->operation = $operation;
     return $this;
   }
@@ -212,21 +206,21 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  public function getOperation() {
+  public function getOperation(): string {
     return $this->operation;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getEntity() {
+  public function getEntity(): \Drupal\Core\Entity\RevisionableInterface {
     return $this->revision;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setEntity(EntityInterface $entity) {
+  public function setEntity(EntityInterface $entity): static {
     assert($entity instanceof RevisionableInterface);
     $this->revision = $entity;
     return $this;
@@ -242,7 +236,7 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): \Drupal\Core\Entity\RevisionableInterface {
     return $this->revision;
   }
 
@@ -254,14 +248,14 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
    *
    * Confirmation forms should override submitForm() instead for their logic.
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): never {
     throw new \LogicException('The save() method is not used in RevisionDeleteForm');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setModuleHandler(ModuleHandlerInterface $module_handler) {
+  public function setModuleHandler(ModuleHandlerInterface $module_handler): static {
     $this->moduleHandler = $module_handler;
     return $this;
   }
@@ -269,7 +263,7 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  public function setEntityTypeManager(EntityTypeManagerInterface $entity_type_manager) {
+  public function setEntityTypeManager(EntityTypeManagerInterface $entity_type_manager): static {
     $this->entityTypeManager = $entity_type_manager;
     return $this;
   }
@@ -277,7 +271,7 @@ class RevisionDeleteForm extends ConfirmFormBase implements EntityFormInterface 
   /**
    * {@inheritdoc}
    */
-  protected function currentUser() {
+  protected function currentUser(): \Drupal\Core\Session\AccountInterface {
     return $this->currentUser;
   }
 

@@ -14,13 +14,6 @@ use Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath;
 class OperationFactory {
 
   /**
-   * The Composer service.
-   *
-   * @var \Composer\Composer
-   */
-  protected $composer;
-
-  /**
    * OperationFactory constructor.
    *
    * @param \Composer\Composer $composer
@@ -28,8 +21,13 @@ class OperationFactory {
    *   is also responsible for evaluating relative package paths as it creates
    *   scaffold operations.
    */
-  public function __construct(Composer $composer) {
-    $this->composer = $composer;
+  public function __construct(
+      /**
+       * The Composer service.
+       */
+      protected \Composer\Composer $composer
+  )
+  {
   }
 
   /**
@@ -47,18 +45,14 @@ class OperationFactory {
    *   Exception thrown when parameter data does not identify a known scaffold
    *   operation.
    */
-  public function create(PackageInterface $package, OperationData $operation_data) {
-    switch ($operation_data->mode()) {
-      case SkipOp::ID:
-        return new SkipOp();
-
-      case ReplaceOp::ID:
-        return $this->createReplaceOp($package, $operation_data);
-
-      case AppendOp::ID:
-        return $this->createAppendOp($package, $operation_data);
-    }
-    throw new \RuntimeException("Unknown scaffold operation mode <comment>{$operation_data->mode()}</comment>.");
+  public function create(PackageInterface $package, OperationData $operation_data)
+  {
+      return match ($operation_data->mode()) {
+          SkipOp::ID => new SkipOp(),
+          ReplaceOp::ID => $this->createReplaceOp($package, $operation_data),
+          AppendOp::ID => $this->createAppendOp($package, $operation_data),
+          default => throw new \RuntimeException("Unknown scaffold operation mode <comment>{$operation_data->mode()}</comment>."),
+      };
   }
 
   /**
@@ -74,15 +68,14 @@ class OperationFactory {
    * @return \Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface
    *   A scaffold replace operation object.
    */
-  protected function createReplaceOp(PackageInterface $package, OperationData $operation_data) {
+  protected function createReplaceOp(PackageInterface $package, OperationData $operation_data): \Drupal\Composer\Plugin\Scaffold\Operations\ReplaceOp {
     if (!$operation_data->hasPath()) {
       throw new \RuntimeException("'path' component required for 'replace' operations.");
     }
     $package_name = $package->getName();
     $package_path = $this->getPackagePath($package);
     $source = ScaffoldFilePath::sourcePath($package_name, $package_path, $operation_data->destination(), $operation_data->path());
-    $op = new ReplaceOp($source, $operation_data->overwrite());
-    return $op;
+    return new ReplaceOp($source, $operation_data->overwrite());
   }
 
   /**
@@ -96,7 +89,7 @@ class OperationFactory {
    * @return \Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface
    *   A scaffold replace operation object.
    */
-  protected function createAppendOp(PackageInterface $package, OperationData $operation_data) {
+  protected function createAppendOp(PackageInterface $package, OperationData $operation_data): \Drupal\Composer\Plugin\Scaffold\Operations\SkipOp|\Drupal\Composer\Plugin\Scaffold\Operations\AppendOp {
     $package_name = $package->getName();
     $package_path = $this->getPackagePath($package);
     $prepend_source_file = NULL;

@@ -27,13 +27,6 @@ abstract class EntityBase implements EntityInterface {
   }
 
   /**
-   * The entity type.
-   *
-   * @var string
-   */
-  protected $entityTypeId;
-
-  /**
    * Boolean indicating whether the entity should be forced to be new.
    *
    * @var bool
@@ -65,11 +58,13 @@ abstract class EntityBase implements EntityInterface {
    * @param array $values
    *   An array of values to set, keyed by property name. If the entity type
    *   has bundles, the bundle key has to be specified.
-   * @param string $entity_type
+   * @param string $entityTypeId
    *   The type of the entity to create.
    */
-  public function __construct(array $values, $entity_type) {
-    $this->entityTypeId = $entity_type;
+  public function __construct(array $values, /**
+   * The entity type.
+   */
+  protected $entityTypeId) {
     // Set initial values.
     foreach ($values as $key => $value) {
       $this->$key = $value;
@@ -314,7 +309,7 @@ abstract class EntityBase implements EntityInterface {
    * {@inheritdoc}
    */
   public function uriRelationships() {
-    return array_filter(array_keys($this->linkTemplates()), function ($link_relation_type) {
+    return array_filter(array_keys($this->linkTemplates()), function (int|string $link_relation_type): bool {
       // It's not guaranteed that every link relation type also has a
       // corresponding route. For some, additional modules or configuration may
       // be necessary. The interface demands that we only return supported URI
@@ -322,10 +317,7 @@ abstract class EntityBase implements EntityInterface {
       try {
         $this->toUrl($link_relation_type)->toString(TRUE)->getGeneratedUrl();
       }
-      catch (RouteNotFoundException) {
-        return FALSE;
-      }
-      catch (MissingMandatoryParametersException) {
+      catch (RouteNotFoundException|MissingMandatoryParametersException) {
         return FALSE;
       }
       return TRUE;
@@ -359,8 +351,7 @@ abstract class EntityBase implements EntityInterface {
     }
     // Make sure we return a proper language object.
     $langcode = !empty($this->langcode) ? $this->langcode : LanguageInterface::LANGCODE_NOT_SPECIFIED;
-    $language = new Language(['id' => $langcode]);
-    return $language;
+    return new Language(['id' => $langcode]);
   }
 
   /**
@@ -374,7 +365,7 @@ abstract class EntityBase implements EntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function delete() {
+  public function delete(): void {
     if (!$this->isNew()) {
       $this->entityTypeManager()->getStorage($this->entityTypeId)->delete([$this->id() => $this]);
     }
@@ -413,11 +404,11 @@ abstract class EntityBase implements EntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     // Check if this is an entity bundle.
     if ($this->getEntityType()->getBundleOf()) {
       // Throw an exception if the bundle ID is longer than 32 characters.
-      if (mb_strlen($this->id()) > EntityTypeInterface::BUNDLE_MAX_LENGTH) {
+      if (mb_strlen((string) $this->id()) > EntityTypeInterface::BUNDLE_MAX_LENGTH) {
         throw new ConfigEntityIdLengthException("Attempt to create a bundle with an ID longer than " . EntityTypeInterface::BUNDLE_MAX_LENGTH . " characters: " . $this->id() . ".");
       }
     }
@@ -426,7 +417,7 @@ abstract class EntityBase implements EntityInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     $this->invalidateTagsOnSave($update);
   }
 
@@ -451,7 +442,7 @@ abstract class EntityBase implements EntityInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     static::invalidateTagsOnDelete($storage->getEntityType(), $entities);
   }
 
@@ -484,7 +475,7 @@ abstract class EntityBase implements EntityInterface {
   protected function getListCacheTagsToInvalidate() {
     $tags = $this->getEntityType()->getListCacheTags();
     if ($this->getEntityType()->hasKey('bundle')) {
-      $tags = Cache::mergeTags(
+      return Cache::mergeTags(
         $tags,
         $this->getEntityType()->getBundleListCacheTags($this->bundle())
       );

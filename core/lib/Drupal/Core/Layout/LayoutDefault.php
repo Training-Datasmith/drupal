@@ -33,8 +33,9 @@ class LayoutDefault extends ConfigurablePluginBase implements LayoutInterface, P
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function build(array $regions) {
+  public function build(array $regions): array {
     // Ensure $build only contains defined regions and in the order defined.
     $build = [];
     foreach ($this->getPluginDefinition()->getRegionNames() as $region_name) {
@@ -55,7 +56,7 @@ class LayoutDefault extends ConfigurablePluginBase implements LayoutInterface, P
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'label' => '',
     ];
@@ -64,7 +65,7 @@ class LayoutDefault extends ConfigurablePluginBase implements LayoutInterface, P
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     return [];
   }
 
@@ -81,7 +82,7 @@ class LayoutDefault extends ConfigurablePluginBase implements LayoutInterface, P
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Administrative label'),
@@ -101,7 +102,7 @@ class LayoutDefault extends ConfigurablePluginBase implements LayoutInterface, P
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['label'] = $form_state->getValue('label');
   }
 

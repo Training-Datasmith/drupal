@@ -15,7 +15,7 @@ trait CompositeFormElementTrait {
    *
    * This is used as a pre render function for checkboxes and radios.
    */
-  public static function preRenderCompositeFormElement($element) {
+  public static function preRenderCompositeFormElement(array $element): array {
     // Set the element's title attribute to show #title as a tooltip, if needed.
     if (isset($element['#title']) && $element['#title_display'] == 'attribute') {
       $element['#attributes']['title'] = $element['#title'];

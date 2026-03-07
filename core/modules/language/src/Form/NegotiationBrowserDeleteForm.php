@@ -25,28 +25,28 @@ class NegotiationBrowserDeleteForm extends ConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['language.mappings'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to delete %browser_langcode?', ['%browser_langcode' => $this->browserLangcode]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
+  public function getCancelUrl(): \Drupal\Core\Url {
     return new Url('language.negotiation_browser');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'language_negotiation_configure_browser_delete_form';
   }
 
@@ -56,15 +56,13 @@ class NegotiationBrowserDeleteForm extends ConfirmFormBase {
   public function buildForm(array $form, FormStateInterface $form_state, $browser_langcode = NULL) {
     $this->browserLangcode = $browser_langcode;
 
-    $form = parent::buildForm($form, $form_state);
-
-    return $form;
+    return parent::buildForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $this->config('language.mappings')
       ->clear('map.' . $this->browserLangcode)
       ->save();

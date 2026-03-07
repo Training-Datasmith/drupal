@@ -159,7 +159,7 @@ class ConfigDependencyManager {
    * @return \Drupal\Core\Config\Entity\ConfigEntityDependency[]
    *   An array of config entity dependency objects that are dependent.
    */
-  public function getDependentEntities($type, $name) {
+  public function getDependentEntities($type, $name): array {
     $dependent_entities = [];
 
     $entities_to_check = [];
@@ -168,9 +168,7 @@ class ConfigDependencyManager {
     }
     else {
       if ($type == 'module' || $type == 'theme' || $type == 'content') {
-        $dependent_entities = array_filter($this->data, function (ConfigEntityDependency $entity) use ($type, $name) {
-          return $entity->hasDependency($type, $name);
-        });
+        $dependent_entities = array_filter($this->data, fn(ConfigEntityDependency $entity) => $entity->hasDependency($type, $name));
       }
       // If checking content, module, or theme dependencies, discover which
       // entities are dependent on the entities that have a direct dependency.
@@ -202,7 +200,7 @@ class ConfigDependencyManager {
    *   row from the graph and the value is the corresponding value for the key
    *   from the graph.
    */
-  protected function prepareMultisort($graph, $keys) {
+  protected function prepareMultisort($graph, $keys): array {
     $return = array_fill_keys($keys, []);
     foreach ($graph as $graph_key => $graph_row) {
       foreach ($keys as $key) {
@@ -219,7 +217,7 @@ class ConfigDependencyManager {
    *   The list of entities in order of most dependent last, otherwise
    *   alphabetical.
    */
-  public function sortAll() {
+  public function sortAll(): array {
     $graph = $this->getGraph();
     // Sort by weight and alphabetically. The most dependent entities
     // are last and entities with the same weight are alphabetically ordered.
@@ -240,7 +238,7 @@ class ConfigDependencyManager {
    *   A graph of config entity dependency objects that are dependent on the
    *   supplied entities to check.
    */
-  protected function createGraphConfigEntityDependencies($entities_to_check) {
+  protected function createGraphConfigEntityDependencies($entities_to_check): array {
     $dependent_entities = [];
     $graph = $this->getGraph();
 
@@ -299,8 +297,8 @@ class ConfigDependencyManager {
    *
    * @return $this
    */
-  public function setData(array $data) {
-    array_walk($data, function (&$config, $name) {
+  public function setData(array $data): static {
+    array_walk($data, function (&$config, $name): void {
       $config = new ConfigEntityDependency($name, $config);
     });
     $this->data = $data;
@@ -335,7 +333,7 @@ class ConfigDependencyManager {
    *
    * @return $this
    */
-  public function updateData($name, array $dependencies) {
+  public function updateData($name, array $dependencies): static {
     $this->graph = NULL;
     $this->data[$name] = new ConfigEntityDependency($name, ['dependencies' => $dependencies]);
     return $this;

@@ -17,8 +17,9 @@ class JsCollectionGrouper implements AssetCollectionGrouperInterface {
    * Also ensures that the process of grouping items does not change their
    * relative order. This requirement may result in multiple groups for the same
    * type, if needed to accommodate other items in between.
+   * @return mixed[]
    */
-  public function group(array $js_assets) {
+  public function group(array $js_assets): array {
     $groups = [];
     // If a group can contain multiple items, we track the information that must
     // be the same for each item in the group, so that when we iterate the next

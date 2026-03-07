@@ -35,7 +35,7 @@ class EntityResourcePostRouteSubscriber implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The route build event.
    */
-  public function onDynamicRouteEvent(RouteBuildEvent $event) {
+  public function onDynamicRouteEvent(RouteBuildEvent $event): void {
     $route_collection = $event->getRouteCollection();
 
     $resource_configs = $this->resourceConfigStorage->loadMultiple();
@@ -44,11 +44,11 @@ class EntityResourcePostRouteSubscriber implements EventSubscriberInterface {
       // We only care about REST resource config entities for the
       // \Drupal\rest\Plugin\rest\resource\EntityResource plugin.
       $plugin_id = $resource_config->toArray()['plugin_id'];
-      if (!str_starts_with($plugin_id, 'entity')) {
+      if (!str_starts_with((string) $plugin_id, 'entity')) {
         continue;
       }
 
-      $entity_type_id = substr($plugin_id, 7);
+      $entity_type_id = substr((string) $plugin_id, 7);
       $rest_post_route_name = "rest.entity.$entity_type_id.POST";
       if ($rest_post_route = $route_collection->get($rest_post_route_name)) {
         // Create a route for the 'create' link relation type for this entity

@@ -34,10 +34,8 @@ class EntityAccessDeniedHttpException extends CacheableAccessDeniedHttpException
    *   - pointer: A path in the JSON:API response structure pointing to the
    *     entity.
    *   - reason: (Optional) An optional reason for this failure.
-   *
-   * @var array
    */
-  protected $error = [];
+  protected array $error;
 
   /**
    * EntityAccessDeniedHttpException constructor.

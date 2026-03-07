@@ -12,20 +12,13 @@ use Symfony\Component\Routing\Route;
 class LanguageConverter implements ParamConverterInterface {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new LanguageConverter.
    *
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(LanguageManagerInterface $language_manager) {
-    $this->languageManager = $language_manager;
+  public function __construct(protected \Drupal\Core\Language\LanguageManagerInterface $languageManager)
+  {
   }
 
   /**
@@ -41,7 +34,7 @@ class LanguageConverter implements ParamConverterInterface {
   /**
    * {@inheritdoc}
    */
-  public function applies($definition, $name, Route $route) {
+  public function applies($definition, $name, Route $route): bool {
     return (!empty($definition['type']) && $definition['type'] == 'language');
   }
 

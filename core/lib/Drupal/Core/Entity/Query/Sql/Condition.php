@@ -27,15 +27,13 @@ class Condition extends ConditionBase {
 
   /**
    * The current SQL query, set by parent condition compile() method calls.
-   *
-   * @var \Drupal\Core\Database\Query\SelectInterface
    */
   protected SelectInterface $sqlQuery;
 
   /**
    * {@inheritdoc}
    */
-  public function compile($conditionContainer) {
+  public function compile($conditionContainer): void {
 
     // If this is not the top level condition group then the sql query is
     // added to the $conditionContainer object by this function itself. The
@@ -107,7 +105,7 @@ class Condition extends ConditionBase {
    *
    * @see \Drupal\Core\Database\Query\ConditionInterface::condition()
    */
-  public static function translateCondition(&$condition, SelectInterface $sql_query, $case_sensitive) {
+  public static function translateCondition(array &$condition, SelectInterface $sql_query, $case_sensitive): void {
     // // There is nothing we can do for IN ().
     if (is_array($condition['value'])) {
       return;

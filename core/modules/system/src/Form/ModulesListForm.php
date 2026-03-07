@@ -41,58 +41,9 @@ class ModulesListForm extends FormBase {
   use ModulesEnabledTrait;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The expirable key value store.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
-   */
-  protected $keyValueExpirable;
-
-  /**
-   * The module installer.
-   *
-   * @var \Drupal\Core\Extension\ModuleInstallerInterface
-   */
-  protected $moduleInstaller;
-
-  /**
-   * The permission handler.
-   *
-   * @var \Drupal\user\PermissionHandlerInterface
-   */
-  protected $permissionHandler;
-
-  /**
-   * The module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
-
-  /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('module_installer'),
@@ -107,42 +58,36 @@ class ModulesListForm extends FormBase {
   /**
    * Constructs a ModulesListForm object.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
+   * @param \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller
    *   The module installer.
-   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $key_value_expirable
+   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable
    *   The key value expirable factory.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   Access manager.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
-   * @param \Drupal\user\PermissionHandlerInterface $permission_handler
+   * @param \Drupal\user\PermissionHandlerInterface $permissionHandler
    *   The permission handler.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, KeyValueStoreExpirableInterface $key_value_expirable, AccessManagerInterface $access_manager, AccountInterface $current_user, PermissionHandlerInterface $permission_handler, ModuleExtensionList $extension_list_module) {
-    $this->moduleExtensionList = $extension_list_module;
-    $this->moduleHandler = $module_handler;
-    $this->moduleInstaller = $module_installer;
-    $this->keyValueExpirable = $key_value_expirable;
-    $this->accessManager = $access_manager;
-    $this->currentUser = $current_user;
-    $this->permissionHandler = $permission_handler;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller, protected \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\user\PermissionHandlerInterface $permissionHandler, protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_modules';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     require_once DRUPAL_ROOT . '/core/includes/install.inc';
     $distribution = drupal_install_profile_distribution_name();
 
@@ -174,9 +119,7 @@ class ModulesListForm extends FormBase {
       $modules = $this->moduleExtensionList->reset()->getList();
 
       // Remove obsolete modules.
-      $modules = array_filter($modules, function ($module) {
-        return !$module->isObsolete();
-      });
+      $modules = array_filter($modules, fn(\Drupal\Core\Extension\Extension $module) => !$module->isObsolete());
       uasort($modules, [ModuleExtensionList::class, 'sortByName']);
     }
     catch (InfoParserException $e) {
@@ -223,7 +166,7 @@ class ModulesListForm extends FormBase {
     }
 
     // Lastly, sort all packages by title.
-    uasort($form['modules'], ['\Drupal\Component\Utility\SortArray', 'sortByTitleProperty']);
+    uasort($form['modules'], \Drupal\Component\Utility\SortArray::sortByTitleProperty(...));
 
     $form['#attached']['library'][] = 'core/drupal.tableresponsive';
     $form['#attached']['library'][] = 'system/drupal.system.modules';
@@ -250,7 +193,7 @@ class ModulesListForm extends FormBase {
    * @return array
    *   The form row for the given module.
    */
-  protected function buildRow(array $modules, Extension $module, $distribution) {
+  protected function buildRow(array $modules, Extension $module, string $distribution) {
     // Set the basic properties.
     $row['#required'] = [];
     $row['#requires'] = [];
@@ -259,13 +202,13 @@ class ModulesListForm extends FormBase {
     $lifecycle = $module->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER];
     $row['name']['#markup'] = $module->info['name'];
     if ($lifecycle !== ExtensionLifecycle::STABLE && !empty($module->info[ExtensionLifecycle::LIFECYCLE_LINK_IDENTIFIER])) {
-      $row['name']['#markup'] .= ' ' . Link::fromTextAndUrl('(' . $this->t('@lifecycle', ['@lifecycle' => ucfirst($lifecycle)]) . ')',
+      $row['name']['#markup'] .= ' ' . Link::fromTextAndUrl('(' . $this->t('@lifecycle', ['@lifecycle' => ucfirst((string) $lifecycle)]) . ')',
           Url::fromUri($module->info[ExtensionLifecycle::LIFECYCLE_LINK_IDENTIFIER], [
             'attributes' =>
               [
                 'class' => ['module-link--non-stable'],
                 'aria-label' => $this->t('View information on the @lifecycle status of the module @module', [
-                  '@lifecycle' => ucfirst($lifecycle),
+                  '@lifecycle' => ucfirst((string) $lifecycle),
                   '@module' => $module->info['name'],
                 ]),
               ],
@@ -354,7 +297,7 @@ class ModulesListForm extends FormBase {
     // PHP.
     if (version_compare(phpversion(), $module->info['php']) < 0) {
       $compatible = FALSE;
-      $required = $module->info['php'] . (substr_count($module->info['php'], '.') < 2 ? '.*' : '');
+      $required = $module->info['php'] . (substr_count((string) $module->info['php'], '.') < 2 ? '.*' : '');
       $reasons[] = $this->t('This module requires PHP version @php_required and is incompatible with PHP version @php_version.', [
         '@php_required' => $required,
         '@php_version' => phpversion(),
@@ -408,7 +351,7 @@ class ModulesListForm extends FormBase {
    * @return array
    *   An array of modules to install and their dependencies.
    */
-  protected function buildModuleList(FormStateInterface $form_state) {
+  protected function buildModuleList(FormStateInterface $form_state): array {
     // Build a list of modules to install.
     $modules = [
       'install' => [],
@@ -477,7 +420,7 @@ class ModulesListForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Retrieve a list of modules to install and their dependencies.
     $modules = $this->buildModuleList($form_state);
 

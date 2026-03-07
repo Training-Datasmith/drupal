@@ -48,7 +48,7 @@ abstract class EntityTranslationRendererBase extends RendererBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender(array $result) {
+  public function preRender(array $result): void {
     $this->preRenderByRelationship($result, 'none');
   }
 
@@ -111,12 +111,9 @@ abstract class EntityTranslationRendererBase extends RendererBase {
    */
   protected function getEntity(ResultRow $row, string $relationship = 'none'): ?EntityInterface {
     if ($relationship === 'none') {
-      return $row->_entity;
+        return $row->_entity;
     }
-    elseif (isset($row->_relationship_entities[$relationship])) {
-      return $row->_relationship_entities[$relationship];
-    }
-    return NULL;
+    return $row->_relationship_entities[$relationship] ?? NULL;
   }
 
 }

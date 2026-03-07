@@ -18,7 +18,6 @@ final class StatusCheckEvent extends SandboxValidationEvent {
   /**
    * The paths to exclude, or NULL if there was an error collecting them.
    *
-   * @var \Drupal\package_manager\ImmutablePathList|null
    *
    * @see ::__construct()
    */

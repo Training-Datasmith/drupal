@@ -96,8 +96,7 @@ class PackageManagerRequirementsHooks {
   public function update(): array {
     $requirements = [];
     $requirements = $this->checkSettings($requirements);
-    $requirements = $this->checkFailure($requirements);
-    return $requirements;
+    return $this->checkFailure($requirements);
   }
 
   /**
@@ -112,7 +111,7 @@ class PackageManagerRequirementsHooks {
    * @see hook_runtime_requirements
    * @see hook_update_requirements
    */
-  public function checkSettings($requirements): array {
+  public function checkSettings(array $requirements): array {
     if (Settings::get('testing_package_manager', FALSE) === FALSE) {
       $requirements['testing_package_manager'] = [
         'title' => 'Package Manager',
@@ -146,7 +145,7 @@ class PackageManagerRequirementsHooks {
     $service_id = FailureMarker::class;
     if (\Drupal::hasService($service_id)) {
       try {
-        \Drupal::service($service_id)->assertNotExists(NULL);
+        \Drupal::service($service_id)->assertNotExists();
       }
       catch (FailureMarkerExistsException $exception) {
         $requirements['package_manager_failure_marker'] = [

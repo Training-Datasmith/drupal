@@ -17,22 +17,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 class GenerateProxyClassCommand extends Command {
 
   /**
-   * The proxy builder.
-   *
-   * @var \Drupal\Component\ProxyBuilder\ProxyBuilder
-   */
-  protected $proxyBuilder;
-
-  /**
    * Constructs a new GenerateProxyClassCommand instance.
    *
-   * @param \Drupal\Component\ProxyBuilder\ProxyBuilder $proxy_builder
+   * @param \Drupal\Component\ProxyBuilder\ProxyBuilder $proxyBuilder
    *   The proxy builder.
    */
-  public function __construct(ProxyBuilder $proxy_builder) {
+  public function __construct(protected \Drupal\Component\ProxyBuilder\ProxyBuilder $proxyBuilder) {
     parent::__construct();
-
-    $this->proxyBuilder = $proxy_builder;
   }
 
   /**
@@ -54,7 +45,7 @@ class GenerateProxyClassCommand extends Command {
    * {@inheritdoc}
    */
   protected function execute(InputInterface $input, OutputInterface $output): int {
-    $class_name = ltrim($input->getArgument('class_name'), '\\');
+    $class_name = ltrim((string) $input->getArgument('class_name'), '\\');
     $namespace_root = $input->getArgument('namespace_root_path');
 
     $match = [];

@@ -61,13 +61,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   admin_label: new TranslatableMarkup('Add component(s) to layout'),
   deriver: AddComponentDeriver::class,
 )]
-final class AddComponent implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class AddComponent implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigManagerInterface $configManager,
-    private readonly UuidInterface $uuidGenerator,
-    private readonly string $pluginId,
-    private readonly bool $multiple,
+    private ConfigManagerInterface $configManager,
+    private UuidInterface $uuidGenerator,
+    private string $pluginId,
+    private bool $multiple,
   ) {}
 
   /**

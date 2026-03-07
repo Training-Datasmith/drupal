@@ -33,7 +33,7 @@ class MetadataBag extends SymfonyMetadataBag {
    * @param string $csrf_token_seed
    *   The per-session CSRF token seed.
    */
-  public function setCsrfTokenSeed($csrf_token_seed) {
+  public function setCsrfTokenSeed($csrf_token_seed): void {
     $this->meta[static::CSRF_TOKEN_SEED] = $csrf_token_seed;
   }
 

@@ -24,21 +24,14 @@ class DerivativeDiscoveryDecorator implements CachedDiscoveryInterface {
   protected $derivers = [];
 
   /**
-   * The decorated plugin discovery.
-   *
-   * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface
-   */
-  protected $decorated;
-
-  /**
    * Creates a new instance.
    *
    * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
    *   The parent object implementing DiscoveryInterface that is being
    *   decorated.
    */
-  public function __construct(DiscoveryInterface $decorated) {
-    $this->decorated = $decorated;
+  public function __construct(protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated)
+  {
   }
 
   /**
@@ -92,8 +85,9 @@ class DerivativeDiscoveryDecorator implements CachedDiscoveryInterface {
    *
    * This should be called by the class extending this in
    * DiscoveryInterface::getDefinitions().
+   * @return mixed[]
    */
-  protected function getDerivatives(array $base_plugin_definitions) {
+  protected function getDerivatives(array $base_plugin_definitions): array {
     $plugin_definitions = [];
     foreach ($base_plugin_definitions as $base_plugin_id => $plugin_definition) {
       $deriver = $this->getDeriver($base_plugin_id, $plugin_definition);
@@ -129,7 +123,7 @@ class DerivativeDiscoveryDecorator implements CachedDiscoveryInterface {
    *   An array with the base plugin id as the first index and the derivative id
    *   as the second. If there is no derivative id it will be an empty string.
    */
-  protected function decodePluginId($plugin_id) {
+  protected function decodePluginId($plugin_id): array {
     // Try and split the passed plugin definition into a plugin and a
     // derivative id. We don't need to check for !== FALSE because a leading
     // colon would break the derivative system and doesn't makes sense.
@@ -202,7 +196,7 @@ class DerivativeDiscoveryDecorator implements CachedDiscoveryInterface {
    *   does not implement
    *   \Drupal\Component\Plugin\Derivative\DerivativeInterface.
    */
-  protected function getDeriverClass($base_definition) {
+  protected function getDeriverClass($base_definition): string|array|int|float|false|null {
     $class = NULL;
     $id = NULL;
     if ($base_definition instanceof DerivablePluginDefinitionInterface) {
@@ -217,7 +211,7 @@ class DerivativeDiscoveryDecorator implements CachedDiscoveryInterface {
       if (!class_exists($class)) {
         throw new InvalidDeriverException(sprintf('Plugin (%s) deriver "%s" does not exist.', $id, $class));
       }
-      if (!is_subclass_of($class, '\Drupal\Component\Plugin\Derivative\DeriverInterface')) {
+      if (!is_subclass_of($class, \Drupal\Component\Plugin\Derivative\DeriverInterface::class)) {
         throw new InvalidDeriverException(sprintf('Plugin (%s) deriver "%s" must implement \Drupal\Component\Plugin\Derivative\DeriverInterface.', $id, $class));
       }
     }
@@ -247,14 +241,14 @@ class DerivativeDiscoveryDecorator implements CachedDiscoveryInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     $this->derivers = [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function useCaches($use_caches = FALSE) {
+  public function useCaches($use_caches = FALSE): void {
     if (!$use_caches) {
       $this->clearCachedDefinitions();
     }
@@ -263,7 +257,7 @@ class DerivativeDiscoveryDecorator implements CachedDiscoveryInterface {
   /**
    * Passes through all unknown calls onto the decorated object.
    */
-  public function __call($method, $args) {
+  public function __call(string $method, array $args) {
     return call_user_func_array([$this->decorated, $method], $args);
   }
 

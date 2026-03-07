@@ -32,52 +32,17 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 class ModuleInstaller implements ModuleInstallerInterface {
 
   /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The drupal kernel.
-   *
-   * @var \Drupal\Core\DrupalKernelInterface
-   */
-  protected $kernel;
-
-  /**
-   * The app root.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
-   * The update registry service.
-   *
-   * @var \Drupal\Core\Update\UpdateHookRegistry
-   */
-  protected $updateRegistry;
-
-  /**
    * Constructs a new ModuleInstaller instance.
    *
    * @param string $root
    *   The app root.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\DrupalKernelInterface $kernel
    *   The drupal kernel.
    * @param \Drupal\Core\Database\Connection $connection
    *   The database connection.
-   * @param \Drupal\Core\Update\UpdateHookRegistry $update_registry
+   * @param \Drupal\Core\Update\UpdateHookRegistry $updateRegistry
    *   The update registry service.
    * @param \Psr\Log\LoggerInterface|null $logger
    *   The logger.
@@ -89,21 +54,16 @@ class ModuleInstaller implements ModuleInstallerInterface {
    */
   public function __construct(
     #[Autowire(param: 'app.root')]
-    string $root,
-    ModuleHandlerInterface $module_handler,
-    DrupalKernelInterface $kernel,
-    Connection $connection,
-    UpdateHookRegistry $update_registry,
+    protected string $root,
+    protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler,
+    protected \Drupal\Core\DrupalKernelInterface $kernel,
+    protected \Drupal\Core\Database\Connection $connection,
+    protected \Drupal\Core\Update\UpdateHookRegistry $updateRegistry,
     #[Autowire(service: 'logger.channel.default')]
     protected LoggerInterface $logger,
     #[AutowireIterator(tag: 'module_install.uninstall_validator')]
     protected ?\Traversable $uninstallValidators = NULL,
   ) {
-    $this->root = $root;
-    $this->moduleHandler = $module_handler;
-    $this->kernel = $kernel;
-    $this->connection = $connection;
-    $this->updateRegistry = $update_registry;
     if ($this->uninstallValidators === NULL) {
       $this->uninstallValidators = \Drupal::service('module_installer.uninstall_validators');
     }
@@ -112,14 +72,14 @@ class ModuleInstaller implements ModuleInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function addUninstallValidator(ModuleUninstallValidatorInterface $uninstall_validator) {
+  public function addUninstallValidator(ModuleUninstallValidatorInterface $uninstall_validator): void {
     @trigger_error(__METHOD__ . ' is deprecated in drupal:11.1.0 and is removed from drupal:12.0.0. Inject the uninstall validators into the constructor instead. See https://www.drupal.org/node/3432595', E_USER_DEPRECATED);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function install(array $module_list, $enable_dependencies = TRUE) {
+  public function install(array $module_list, $enable_dependencies = TRUE): bool {
     $extension_config = \Drupal::configFactory()->getEditable('core.extension');
 
     // Remove any modules that are already installed.
@@ -176,9 +136,7 @@ class ModuleInstaller implements ModuleInstallerInterface {
       }
 
       // Set the actual module weights.
-      $module_list = array_map(function ($module) use ($module_data) {
-        return $module_data[$module]->sort;
-      }, $module_list);
+      $module_list = array_map(fn($module) => $module_data[$module]->sort, $module_list);
 
       // Sort the module list by their weights (reverse).
       arsort($module_list);
@@ -492,7 +450,7 @@ class ModuleInstaller implements ModuleInstallerInterface {
   /**
    * {@inheritdoc}
    */
-  public function uninstall(array $module_list, $uninstall_dependents = TRUE) {
+  public function uninstall(array $module_list, $uninstall_dependents = TRUE): bool {
     // Get all module data so we can find dependencies and sort.
     $module_data = \Drupal::service('extension.list.module')->getList();
     $sync_status = \Drupal::service('config.installer')->isSyncing();
@@ -537,9 +495,7 @@ class ModuleInstaller implements ModuleInstallerInterface {
       throw new ModuleUninstallValidatorException('The following reasons prevent the modules from being uninstalled: ' . implode('; ', $reason_message));
     }
     // Set the actual module weights.
-    $module_list = array_map(function ($module) use ($module_data) {
-      return $module_data[$module]->sort;
-    }, $module_list);
+    $module_list = array_map(fn($module) => $module_data[$module]->sort, $module_list);
 
     // Sort the module list by their weights.
     asort($module_list);
@@ -688,7 +644,7 @@ class ModuleInstaller implements ModuleInstallerInterface {
 
     $cache_bin_services = array_filter(
       $definitions['services'] ?? [],
-      function ($definition) {
+      function (array $definition): bool {
         $tags = $definition['tags'] ?? [];
         foreach ($tags as $tag) {
           if (isset($tag['name']) && ($tag['name'] == 'cache.bin')) {
@@ -749,8 +705,9 @@ class ModuleInstaller implements ModuleInstallerInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[][]
    */
-  public function validateUninstall(array $module_list) {
+  public function validateUninstall(array $module_list): array {
     $reasons = [];
     foreach ($module_list as $module) {
       foreach ($this->uninstallValidators as $validator) {

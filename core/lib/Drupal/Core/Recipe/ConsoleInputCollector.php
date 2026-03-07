@@ -17,7 +17,7 @@ use Symfony\Component\Console\Style\StyleInterface;
  * @internal
  *   This API is experimental.
  */
-final class ConsoleInputCollector implements InputCollectorInterface {
+final readonly class ConsoleInputCollector implements InputCollectorInterface {
 
   /**
    * The name of the command-line option for passing input values.
@@ -27,8 +27,8 @@ final class ConsoleInputCollector implements InputCollectorInterface {
   public const INPUT_OPTION = 'input';
 
   public function __construct(
-    private readonly InputInterface $input,
-    private readonly StyleInterface $io,
+    private InputInterface $input,
+    private StyleInterface $io,
   ) {}
 
   /**
@@ -61,7 +61,7 @@ final class ConsoleInputCollector implements InputCollectorInterface {
     $options = [];
     try {
       foreach ($this->input->getOption(static::INPUT_OPTION) ?? [] as $option) {
-        [$key, $value] = explode('=', $option, 2);
+        [$key, $value] = explode('=', (string) $option, 2);
         $options[$key] = $value;
       }
     }

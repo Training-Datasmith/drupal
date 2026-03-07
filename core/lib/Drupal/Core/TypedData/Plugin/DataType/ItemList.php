@@ -41,8 +41,9 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getValue() {
+  public function getValue(): array {
     $values = [];
     foreach ($this->list as $delta => $item) {
       $values[$delta] = $item->getValue();
@@ -59,7 +60,7 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
    *   (optional) Whether to notify the parent object of the change. Defaults to
    *   TRUE.
    */
-  public function setValue($values, $notify = TRUE) {
+  public function setValue($values, $notify = TRUE): void {
     if (!isset($values) || $values === []) {
       $this->list = [];
     }
@@ -91,7 +92,7 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
   /**
    * {@inheritdoc}
    */
-  public function getString() {
+  public function getString(): string {
     $strings = [];
     foreach ($this->list as $item) {
       $strings[] = $item->getString();
@@ -113,7 +114,7 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
   /**
    * {@inheritdoc}
    */
-  public function set($index, $value) {
+  public function set($index, $value): static {
     if (!is_numeric($index)) {
       throw new \InvalidArgumentException('Unable to set a value with a non-numeric delta in a list.');
     }
@@ -135,7 +136,7 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeItem($index) {
+  public function removeItem($index): static {
     if (isset($this->list) && array_key_exists($index, $this->list)) {
       // Remove the item, and reassign deltas.
       unset($this->list[$index]);
@@ -251,7 +252,7 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
   /**
    * {@inheritdoc}
    */
-  public function isEmpty() {
+  public function isEmpty(): bool {
     foreach ($this->list as $item) {
       if ($item instanceof ComplexDataInterface || $item instanceof ListInterface) {
         if (!$item->isEmpty()) {
@@ -269,17 +270,15 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
   /**
    * {@inheritdoc}
    */
-  public function filter($callback) {
+  public function filter($callback): static {
     if (isset($this->list)) {
       $removed = FALSE;
       // Apply the filter, detecting if some items were actually removed.
-      $this->list = array_filter($this->list, function ($item) use ($callback, &$removed) {
+      $this->list = array_filter($this->list, function (\Drupal\Core\TypedData\TypedDataInterface $item) use ($callback, &$removed) {
         if (call_user_func($callback, $item)) {
           return TRUE;
         }
-        else {
-          $removed = TRUE;
-        }
+        $removed = TRUE;
       });
       if ($removed) {
         $this->rekey();
@@ -291,7 +290,7 @@ class ItemList extends TypedData implements \IteratorAggregate, ListInterface {
   /**
    * {@inheritdoc}
    */
-  public function onChange($delta) {
+  public function onChange($delta): void {
     // Notify the parent of changes.
     if (isset($this->parent)) {
       $this->parent->onChange($this->name);

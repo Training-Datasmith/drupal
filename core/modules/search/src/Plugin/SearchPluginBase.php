@@ -104,7 +104,7 @@ abstract class SearchPluginBase extends PluginBase implements ContainerFactoryPl
   /**
    * {@inheritdoc}
    */
-  public function searchFormAlter(array &$form, FormStateInterface $form_state) {
+  public function searchFormAlter(array &$form, FormStateInterface $form_state): void {
     // Empty default implementation.
   }
 
@@ -126,10 +126,9 @@ abstract class SearchPluginBase extends PluginBase implements ContainerFactoryPl
    */
   public function buildSearchUrlQuery(FormStateInterface $form_state) {
     // Grab the keywords entered in the form and put them as 'keys' in the GET.
-    $keys = trim($form_state->getValue('keys'));
-    $query = ['keys' => $keys];
+    $keys = trim((string) $form_state->getValue('keys'));
 
-    return $query;
+    return ['keys' => $keys];
   }
 
   /**

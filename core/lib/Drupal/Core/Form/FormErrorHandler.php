@@ -16,7 +16,7 @@ class FormErrorHandler implements FormErrorHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function handleFormErrors(array &$form, FormStateInterface $form_state) {
+  public function handleFormErrors(array &$form, FormStateInterface $form_state): static {
     // After validation check if there are errors.
     if ($form_state->getErrors()) {
       // Display error messages for each element.
@@ -149,7 +149,7 @@ class FormErrorHandler implements FormErrorHandlerInterface {
         // If this direct child belongs to a group populate the grouping element
         // with the children errors.
         if (!empty($child['#group'])) {
-          $parents = explode('][', $child['#group']);
+          $parents = explode('][', (string) $child['#group']);
           $group_element = NestedArray::getValue($form, $parents);
           if (isset($group_element['#children_errors'])) {
             $group_element['#children_errors'] = $group_element['#children_errors'] + $children_errors;

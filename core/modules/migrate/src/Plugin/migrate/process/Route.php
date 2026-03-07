@@ -56,30 +56,22 @@ use Drupal\migrate\Row;
 class Route extends ProcessPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The current migration.
-   */
-  protected MigrationInterface $migration;
-
-  /**
-   * The path validator service.
-   *
-   * @var \Drupal\Core\Path\PathValidatorInterface
-   */
-  protected $pathValidator;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration, PathValidatorInterface $path_validator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The current migration.
+   */
+  protected MigrationInterface $migration, /**
+   * The path validator service.
+   */
+  protected \Drupal\Core\Path\PathValidatorInterface $pathValidator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->migration = $migration;
-    $this->pathValidator = $path_validator;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, ?MigrationInterface $migration = NULL): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -94,8 +86,9 @@ class Route extends ProcessPluginBase implements ContainerFactoryPluginInterface
    * {@inheritdoc}
    *
    * Set the destination route information based on the source link_path.
+   * @return mixed[]
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property): array {
     if (is_string($value)) {
       $link_path = $value;
       $options = [];

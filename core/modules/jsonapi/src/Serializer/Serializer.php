@@ -38,7 +38,7 @@ final class Serializer extends SymfonySerializer implements JsonSchemaProviderSe
    */
   public function __construct(array $normalizers = [], array $encoders = []) {
     foreach ($normalizers as $normalizer) {
-      if (!str_starts_with(get_class($normalizer), 'Drupal\jsonapi\Normalizer')) {
+      if (!str_starts_with($normalizer::class, 'Drupal\jsonapi\Normalizer')) {
         throw new \LogicException('JSON:API does not allow adding more normalizers!');
       }
     }
@@ -54,7 +54,7 @@ final class Serializer extends SymfonySerializer implements JsonSchemaProviderSe
    * @param \Symfony\Component\Serializer\Normalizer\NormalizerInterface $normalizer
    *   The secondary normalizer.
    */
-  public function setFallbackNormalizer(NormalizerInterface $normalizer) {
+  public function setFallbackNormalizer(NormalizerInterface $normalizer): void {
     $this->fallbackNormalizer = $normalizer;
   }
 
@@ -84,8 +84,12 @@ final class Serializer extends SymfonySerializer implements JsonSchemaProviderSe
   /**
    * {@inheritdoc}
    */
-  public function supportsNormalization($data, ?string $format = NULL, array $context = []): bool {
-    return $this->selfSupportsNormalization($data, $format, $context) || $this->fallbackNormalizer->supportsNormalization($data, $format, $context);
+  public function supportsNormalization($data, ?string $format = NULL, array $context = []): bool
+  {
+      if ($this->selfSupportsNormalization($data, $format, $context)) {
+          return true;
+      }
+      return (bool) $this->fallbackNormalizer->supportsNormalization($data, $format, $context);
   }
 
   /**
@@ -108,8 +112,12 @@ final class Serializer extends SymfonySerializer implements JsonSchemaProviderSe
   /**
    * {@inheritdoc}
    */
-  public function supportsDenormalization($data, string $type, ?string $format = NULL, array $context = []): bool {
-    return $this->selfSupportsDenormalization($data, $type, $format, $context) || $this->fallbackNormalizer->supportsDenormalization($data, $type, $format, $context);
+  public function supportsDenormalization($data, string $type, ?string $format = NULL, array $context = []): bool
+  {
+      if ($this->selfSupportsDenormalization($data, $type, $format, $context)) {
+          return true;
+      }
+      return (bool) $this->fallbackNormalizer->supportsDenormalization($data, $type, $format, $context);
   }
 
   /**

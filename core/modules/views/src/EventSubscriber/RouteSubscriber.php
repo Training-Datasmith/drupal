@@ -37,13 +37,6 @@ class RouteSubscriber extends RouteSubscriberBase {
   protected $viewStorage;
 
   /**
-   * The state key value store.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
    * Stores an array of route names keyed by view_id.display_id.
    *
    * @var array
@@ -58,15 +51,14 @@ class RouteSubscriber extends RouteSubscriberBase {
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key value store.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, StateInterface $state) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, protected \Drupal\Core\State\StateInterface $state) {
     $this->viewStorage = $entity_type_manager->getStorage('view');
-    $this->state = $state;
   }
 
   /**
    * Resets the internal state of the route subscriber.
    */
-  public function reset() {
+  public function reset(): void {
     $this->viewsDisplayPairs = NULL;
   }
 
@@ -107,10 +99,10 @@ class RouteSubscriber extends RouteSubscriberBase {
    * @return \Symfony\Component\Routing\RouteCollection
    *   A route collection.
    */
-  public function routes() {
+  public function routes(): \Symfony\Component\Routing\RouteCollection {
     $collection = new RouteCollection();
     foreach ($this->getViewsDisplayIDsWithRoute() as $pair) {
-      [$view_id, $display_id] = explode('.', $pair);
+      [$view_id, $display_id] = explode('.', (string) $pair);
       $view = $this->viewStorage->load($view_id);
       // @todo This should have an executable factory injected.
       if (($view = $view->getExecutable()) && $view instanceof ViewExecutable) {
@@ -132,7 +124,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    */
   protected function alterRoutes(RouteCollection $collection) {
     foreach ($this->getViewsDisplayIDsWithRoute() as $pair) {
-      [$view_id, $display_id] = explode('.', $pair);
+      [$view_id, $display_id] = explode('.', (string) $pair);
       $view = $this->viewStorage->load($view_id);
       // @todo This should have an executable factory injected.
       if (($view = $view->getExecutable()) && $view instanceof ViewExecutable) {
@@ -161,7 +153,7 @@ class RouteSubscriber extends RouteSubscriberBase {
    *
    * @see \Drupal\views\EventSubscriber::getSubscribedEvents()
    */
-  public function routeRebuildFinished() {
+  public function routeRebuildFinished(): void {
     $this->reset();
     $this->state->set('views.view_route_names', $this->viewRouteNames);
   }

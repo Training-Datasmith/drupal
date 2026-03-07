@@ -24,13 +24,6 @@ class UpdateProcessor implements UpdateProcessorInterface {
   protected $updateSettings;
 
   /**
-   * The UpdateFetcher service.
-   *
-   * @var \Drupal\update\UpdateFetcherInterface
-   */
-  protected $updateFetcher;
-
-  /**
    * The update fetch queue.
    *
    * @var \Drupal\Core\Queue\QueueInterface
@@ -60,24 +53,8 @@ class UpdateProcessor implements UpdateProcessorInterface {
 
   /**
    * Array of release history URLs that we have failed to fetch.
-   *
-   * @var array
    */
-  protected $failed;
-
-  /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $stateStore;
-
-  /**
-   * The private key.
-   *
-   * @var \Drupal\Core\PrivateKey
-   */
-  protected $privateKey;
+  protected array $failed;
 
   /**
    * The queue for fetching release history data.
@@ -91,11 +68,11 @@ class UpdateProcessor implements UpdateProcessorInterface {
    *   The config factory.
    * @param \Drupal\Core\Queue\QueueFactory $queue_factory
    *   The queue factory.
-   * @param \Drupal\update\UpdateFetcherInterface $update_fetcher
+   * @param \Drupal\update\UpdateFetcherInterface $updateFetcher
    *   The update fetcher service.
-   * @param \Drupal\Core\State\StateInterface $state_store
+   * @param \Drupal\Core\State\StateInterface $stateStore
    *   The state service.
-   * @param \Drupal\Core\PrivateKey $private_key
+   * @param \Drupal\Core\PrivateKey $privateKey
    *   The private key factory service.
    * @param \Drupal\Core\KeyValueStore\KeyValueFactoryInterface $key_value_factory
    *   The key/value factory.
@@ -107,21 +84,18 @@ class UpdateProcessor implements UpdateProcessorInterface {
   public function __construct(
     ConfigFactoryInterface $config_factory,
     QueueFactory $queue_factory,
-    UpdateFetcherInterface $update_fetcher,
-    StateInterface $state_store,
-    PrivateKey $private_key,
+    protected \Drupal\update\UpdateFetcherInterface $updateFetcher,
+    protected \Drupal\Core\State\StateInterface $stateStore,
+    protected \Drupal\Core\PrivateKey $privateKey,
     KeyValueFactoryInterface $key_value_factory,
     KeyValueExpirableFactoryInterface $key_value_expirable_factory,
     protected TimeInterface $time,
   ) {
-    $this->updateFetcher = $update_fetcher;
     $this->updateSettings = $config_factory->get('update.settings');
     $this->fetchQueue = $queue_factory->get('update_fetch_tasks');
     $this->tempStore = $key_value_expirable_factory->get('update');
     $this->fetchTaskStore = $key_value_factory->get('update_fetch_task');
     $this->availableReleasesTempStore = $key_value_expirable_factory->get('update_available_releases');
-    $this->stateStore = $state_store;
-    $this->privateKey = $private_key;
     $this->fetchTasks = [];
     $this->failed = [];
   }
@@ -129,7 +103,7 @@ class UpdateProcessor implements UpdateProcessorInterface {
   /**
    * {@inheritdoc}
    */
-  public function createFetchTask($project) {
+  public function createFetchTask($project): void {
     if (empty($this->fetchTasks)) {
       $this->fetchTasks = $this->fetchTaskStore->getAll();
     }
@@ -143,7 +117,7 @@ class UpdateProcessor implements UpdateProcessorInterface {
   /**
    * {@inheritdoc}
    */
-  public function fetchData() {
+  public function fetchData(): void {
     $end = time() + $this->updateSettings->get('fetch.timeout');
     if ($this->fetchQueue->numberOfItems()) {
       // Delete any stored project data as that needs refreshing when
@@ -227,7 +201,7 @@ class UpdateProcessor implements UpdateProcessorInterface {
    *   Array of parsed data about releases for a given project, or NULL if there
    *   was an error parsing the string.
    */
-  protected function parseXml($raw_xml) {
+  protected function parseXml($raw_xml): ?array {
     try {
       $xml = new \SimpleXMLElement($raw_xml);
     }

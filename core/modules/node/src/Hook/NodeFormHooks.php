@@ -29,7 +29,7 @@ class NodeFormHooks {
    * @see self::systemThemesAdminFormSubmit()
    */
   #[Hook('form_system_themes_admin_form_alter')]
-  public function formSystemThemesAdminFormAlter(&$form, FormStateInterface $form_state, $form_id): void {
+  public function formSystemThemesAdminFormAlter(array &$form, FormStateInterface $form_state, $form_id): void {
     $form['admin_theme']['use_admin_theme'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Use the administration theme when editing or creating content'),

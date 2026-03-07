@@ -14,40 +14,17 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 class SearchTextProcessor implements SearchTextProcessorInterface {
 
   /**
-   * The transliteration service.
-   *
-   * @var \Drupal\Component\Transliteration\TransliterationInterface
-   */
-  protected $transliteration;
-
-  /**
-   * The config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * SearchTextProcessor constructor.
    *
    * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
    *   The transliteration service.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    */
-  public function __construct(TransliterationInterface $transliteration, ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler) {
-    $this->transliteration = $transliteration;
-    $this->configFactory = $config_factory;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Component\Transliteration\TransliterationInterface $transliteration, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler)
+  {
   }
 
   /**
@@ -76,7 +53,7 @@ class SearchTextProcessor implements SearchTextProcessorInterface {
 
     // Simple CJK handling.
     if ($this->configFactory->get('search.settings')->get('index.overlap_cjk')) {
-      $text = preg_replace_callback('/[' . self::PREG_CLASS_CJK . ']+/u', [$this, 'expandCjk'], $text);
+      $text = preg_replace_callback('/[' . self::PREG_CLASS_CJK . ']+/u', $this->expandCjk(...), $text);
     }
 
     // To improve searching for numerical data such as dates, IP addresses
@@ -85,27 +62,26 @@ class SearchTextProcessor implements SearchTextProcessorInterface {
     // This also means that searching for e.g. '20/03/1984' also returns
     // results with '20-03-1984' in them.
     // Readable regexp: ([number]+)[punctuation]+(?=[number])
-    $text = preg_replace('/([' . self::PREG_CLASS_NUMBERS . ']+)[' . self::PREG_CLASS_PUNCTUATION . ']+(?=[' . self::PREG_CLASS_NUMBERS . '])/u', '\1', $text);
+    $text = preg_replace('/([' . self::PREG_CLASS_NUMBERS . ']+)[' . self::PREG_CLASS_PUNCTUATION . ']+(?=[' . self::PREG_CLASS_NUMBERS . '])/u', '\1', (string) $text);
 
     // Multiple dot and dash groups are word boundaries and replaced with space.
     // No need to use the unicode modifier here because 0-127 ASCII characters
     // can't match higher UTF-8 characters as the leftmost bit of those are 1.
-    $text = preg_replace('/[.-]{2,}/', ' ', $text);
+    $text = preg_replace('/[.-]{2,}/', ' ', (string) $text);
 
     // The dot, underscore and dash are simply removed. This allows meaningful
     // search behavior with acronyms and URLs. See unicode note directly above.
-    $text = preg_replace('/[._-]+/', '', $text);
+    $text = preg_replace('/[._-]+/', '', (string) $text);
 
     // With the exception of the rules above, we consider all punctuation,
     // marks, spacers, etc, to be a word boundary.
-    $text = preg_replace('/[' . Unicode::PREG_CLASS_WORD_BOUNDARY . ']+/u', ' ', $text);
+    $text = preg_replace('/[' . Unicode::PREG_CLASS_WORD_BOUNDARY . ']+/u', ' ', (string) $text);
 
     // Truncate everything to 50 characters.
-    $words = explode(' ', $text);
-    array_walk($words, [$this, 'truncate']);
-    $text = implode(' ', $words);
+    $words = explode(' ', (string) $text);
+    array_walk($words, $this->truncate(...));
 
-    return $text;
+    return implode(' ', $words);
   }
 
   /**
@@ -119,7 +95,7 @@ class SearchTextProcessor implements SearchTextProcessorInterface {
   protected function invokePreprocess(string &$text, ?string $langcode = NULL): void {
     $this->moduleHandler->invokeAllWith(
       'search_preprocess',
-      function (callable $hook, string $module) use (&$text, &$langcode) {
+      function (callable $hook, string $module) use (&$text, &$langcode): void {
         $text = $hook($text, $langcode);
       }
     );
@@ -148,7 +124,7 @@ class SearchTextProcessor implements SearchTextProcessorInterface {
   protected function expandCjk(array $matches): string {
     $min = $this->configFactory->get('search.settings')->get('index.minimum_word_size');
     $str = $matches[0];
-    $length = mb_strlen($str);
+    $length = mb_strlen((string) $str);
     // If the text is shorter than the minimum word size, don't tokenize it.
     if ($length <= $min) {
       return ' ' . $str . ' ';
@@ -158,8 +134,8 @@ class SearchTextProcessor implements SearchTextProcessorInterface {
     $chars = [];
     for ($i = 0; $i < $length; $i++) {
       // Add the next character off the beginning of the string to the queue.
-      $current = mb_substr($str, 0, 1);
-      $str = substr($str, strlen($current));
+      $current = mb_substr((string) $str, 0, 1);
+      $str = substr((string) $str, strlen($current));
       $chars[] = $current;
       if ($i >= $min - 1) {
         // Make a token of $min characters, and add it to the token string.

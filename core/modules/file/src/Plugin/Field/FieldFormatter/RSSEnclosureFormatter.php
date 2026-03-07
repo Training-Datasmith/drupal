@@ -21,7 +21,7 @@ class RSSEnclosureFormatter extends FileFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $entity = $items->getEntity();
     // Add the first file as an enclosure to the RSS item. RSS allows only one
     // enclosure per item. See: http://wikipedia.org/wiki/RSS_enclosure

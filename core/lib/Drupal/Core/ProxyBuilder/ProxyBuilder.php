@@ -12,12 +12,10 @@ class ProxyBuilder extends BaseProxyBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function buildUseStatements() {
+  protected function buildUseStatements(): string {
     $output = parent::buildUseStatements();
 
-    $output .= 'use \Drupal\Core\DependencyInjection\DependencySerializationTrait;' . "\n\n";
-
-    return $output;
+    return $output . ('use \Drupal\Core\DependencyInjection\DependencySerializationTrait;' . "\n\n");
   }
 
 }

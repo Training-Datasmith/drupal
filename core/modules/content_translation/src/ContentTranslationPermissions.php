@@ -17,46 +17,23 @@ class ContentTranslationPermissions implements ContainerInjectionInterface {
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The content translation manager.
-   *
-   * @var \Drupal\content_translation\ContentTranslationManagerInterface
-   */
-  protected $contentTranslationManager;
-
-  /**
    * Constructs a ContentTranslationPermissions instance.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\content_translation\ContentTranslationManagerInterface $content_translation_manager
+   * @param \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager
    *   The content translation manager.
-   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    *   The entity type bundle info.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ContentTranslationManagerInterface $content_translation_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->contentTranslationManager = $content_translation_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\content_translation\ContentTranslationManagerInterface $contentTranslationManager, protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager'),
       $container->get('content_translation.manager'),
@@ -70,7 +47,7 @@ class ContentTranslationPermissions implements ContainerInjectionInterface {
    * @return array
    *   An associative array of permissions keyed by permission name.
    */
-  public function contentPermissions() {
+  public function contentPermissions(): array {
     $permissions = [];
     // Create a translate permission for each enabled entity type and
     // (optionally) bundle.
@@ -113,7 +90,7 @@ class ContentTranslationPermissions implements ContainerInjectionInterface {
    * @return array
    *   The permission details, keyed by 'title' and 'dependencies'.
    */
-  private function buildBundlePermission(EntityTypeInterface $entity_type, string $bundle, array $bundle_info) {
+  private function buildBundlePermission(EntityTypeInterface $entity_type, string $bundle, array $bundle_info): array {
     $permission = [
       'title' => $this->t('Translate %bundle_label @entity_label', [
         '@entity_label' => $entity_type->getSingularLabel(),

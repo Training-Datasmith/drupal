@@ -71,7 +71,7 @@ abstract class ConditionPluginBase extends ExecutablePluginBase implements Condi
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['negate'] = $form_state->getValue('negate');
     if ($form_state->hasValue('context_mapping')) {
       $this->setContextMapping($form_state->getValue('context_mapping'));

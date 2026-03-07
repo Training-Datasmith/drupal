@@ -30,7 +30,7 @@ class RemoveBlockForm extends LayoutRebuildConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $label = $this->sectionStorage
       ->getSection($this->delta)
       ->getComponent($this->uuid)
@@ -43,14 +43,14 @@ class RemoveBlockForm extends LayoutRebuildConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Remove');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'layout_builder_remove_block';
   }
 

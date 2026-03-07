@@ -17,7 +17,7 @@ abstract class FilterFormatFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $format = $this->entity;
     $is_fallback = ($format->id() == $this->config('filter.settings')->get('fallback_format'));
 
@@ -37,7 +37,7 @@ abstract class FilterFormatFormBase extends EntityForm {
       '#default_value' => $format->id(),
       '#maxlength' => 255,
       '#machine_name' => [
-        'exists' => [$this, 'exists'],
+        'exists' => $this->exists(...),
         'source' => ['name'],
       ],
       '#disabled' => !$format->isNew(),
@@ -48,7 +48,7 @@ abstract class FilterFormatFormBase extends EntityForm {
     $form['roles'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Roles'),
-      '#options' => array_map(fn(RoleInterface $role) => Html::escape($role->label()), Role::loadMultiple()),
+      '#options' => array_map(fn(RoleInterface $role): string => Html::escape($role->label()), Role::loadMultiple()),
       '#disabled' => $is_fallback,
       '#weight' => -10,
     ];
@@ -188,12 +188,12 @@ abstract class FilterFormatFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     // @todo Move trimming upstream.
-    $format_format = trim($form_state->getValue('format'));
-    $format_name = trim($form_state->getValue('name'));
+    $format_format = trim((string) $form_state->getValue('format'));
+    $format_name = trim((string) $form_state->getValue('name'));
 
     // Ensure that the values to be saved later are exactly the ones validated.
     $form_state->setValueForElement($form['format'], $format_format);
@@ -213,7 +213,7 @@ abstract class FilterFormatFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     parent::submitForm($form, $form_state);
 
     // Add the submitted form values to the text format, and save it.

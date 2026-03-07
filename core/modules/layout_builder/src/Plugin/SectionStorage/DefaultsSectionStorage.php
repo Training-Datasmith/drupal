@@ -49,35 +49,19 @@ use Symfony\Component\Routing\RouteCollection;
 class DefaultsSectionStorage extends SectionStorageBase implements ContainerFactoryPluginInterface, DefaultsSectionStorageInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity type bundle info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
-   */
-  protected $entityTypeBundleInfo;
-
-  /**
-   * The sample entity generator.
-   *
-   * @var \Drupal\layout_builder\Entity\SampleEntityGeneratorInterface
-   */
-  protected $sampleEntityGenerator;
-
-  /**
    * {@inheritdoc}
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, SampleEntityGeneratorInterface $sample_entity_generator) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * The entity type manager.
+   */
+  protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, /**
+   * The entity type bundle info.
+   */
+  protected \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo, /**
+   * The sample entity generator.
+   */
+  protected \Drupal\layout_builder\Entity\SampleEntityGeneratorInterface $sampleEntityGenerator) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
-    $this->sampleEntityGenerator = $sample_entity_generator;
   }
 
   /**
@@ -107,14 +91,14 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function getRedirectUrl() {
+  public function getRedirectUrl(): \Drupal\Core\Url {
     return Url::fromRoute("entity.entity_view_display.{$this->getDisplay()->getTargetEntityTypeId()}.view_mode", $this->getRouteParameters());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getLayoutBuilderUrl($rel = 'view') {
+  public function getLayoutBuilderUrl($rel = 'view'): \Drupal\Core\Url {
     return Url::fromRoute("layout_builder.{$this->getStorageType()}.{$this->getDisplay()->getTargetEntityTypeId()}.$rel", $this->getRouteParameters());
   }
 
@@ -124,7 +108,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    * @return mixed[]
    *   An associative array of parameter names and values.
    */
-  protected function getRouteParameters() {
+  protected function getRouteParameters(): array {
     $display = $this->getDisplay();
     $entity_type = $this->entityTypeManager->getDefinition($display->getTargetEntityTypeId());
     $bundle_parameter_key = $entity_type->getBundleEntityType() ?: 'bundle';
@@ -137,7 +121,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function buildRoutes(RouteCollection $collection) {
+  public function buildRoutes(RouteCollection $collection): void {
     if (!\Drupal::moduleHandler()->moduleExists('field_ui')) {
       return;
     }
@@ -204,10 +188,8 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
    * @return \Drupal\Core\Entity\EntityTypeInterface[]
    *   An array of entity types.
    */
-  protected function getEntityTypes() {
-    return array_filter($this->entityTypeManager->getDefinitions(), function (EntityTypeInterface $entity_type) {
-      return $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->get('field_ui_base_route');
-    });
+  protected function getEntityTypes(): array {
+    return array_filter($this->entityTypeManager->getDefinitions(), fn(EntityTypeInterface $entity_type) => $entity_type->entityClassImplements(FieldableEntityInterface::class) && $entity_type->hasHandlerClass('form', 'layout_builder') && $entity_type->hasViewBuilderClass() && $entity_type->get('field_ui_base_route'));
   }
 
   /**
@@ -226,8 +208,9 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function deriveContextsFromRoute($value, $definition, $name, array $defaults) {
+  public function deriveContextsFromRoute($value, $definition, $name, array $defaults): array {
     $contexts = [];
 
     if ($entity = $this->extractEntityFromRoute($value, $defaults)) {
@@ -273,7 +256,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
     $storage = $this->entityTypeManager->getStorage('entity_view_display');
     // If the display does not exist, create a new one.
     if (!$display = $storage->load($value)) {
-      $display = $storage->create([
+      return $storage->create([
         'targetEntityType' => $entity_type_id,
         'bundle' => $bundle,
         'mode' => $view_mode,
@@ -307,7 +290,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function setOverridable($overridable = TRUE) {
+  public function setOverridable($overridable = TRUE): static {
     $this->getDisplay()->setOverridable($overridable);
     return $this;
   }
@@ -315,7 +298,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function setThirdPartySetting($module, $key, $value) {
+  public function setThirdPartySetting($module, $key, $value): static {
     $this->getDisplay()->setThirdPartySetting($module, $key, $value);
     return $this;
   }
@@ -330,7 +313,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function enableLayoutBuilder() {
+  public function enableLayoutBuilder(): static {
     $this->getDisplay()->enableLayoutBuilder();
     return $this;
   }
@@ -338,7 +321,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function disableLayoutBuilder() {
+  public function disableLayoutBuilder(): static {
     $this->getDisplay()->disableLayoutBuilder();
     return $this;
   }
@@ -360,7 +343,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function unsetThirdPartySetting($module, $key) {
+  public function unsetThirdPartySetting($module, $key): static {
     $this->getDisplay()->unsetThirdPartySetting($module, $key);
     return $this;
   }
@@ -391,7 +374,7 @@ class DefaultsSectionStorage extends SectionStorageBase implements ContainerFact
   /**
    * {@inheritdoc}
    */
-  public function setContext($name, ComponentContextInterface $context) {
+  public function setContext($name, ComponentContextInterface $context): void {
     // Set the view mode context based on the display context.
     if ($name === 'display') {
       $this->setContextValue('view_mode', $context->getContextValue()->getMode());

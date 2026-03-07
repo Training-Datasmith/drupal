@@ -51,11 +51,11 @@ class NodeSelection extends DefaultSelection {
   /**
    * {@inheritdoc}
    */
-  public function validateReferenceableNewEntities(array $entities) {
+  public function validateReferenceableNewEntities(array $entities): array {
     $entities = parent::validateReferenceableNewEntities($entities);
     // Mirror the conditions checked in buildEntityQuery().
     if (!$this->currentUser->hasPermission('bypass node access') && !$this->moduleHandler->hasImplementations('node_grants')) {
-      $entities = array_filter($entities, function ($node) {
+      return array_filter($entities, function (\Drupal\Core\Entity\EntityInterface $node) {
         /** @var \Drupal\node\NodeInterface $node */
         return $node->isPublished();
       });

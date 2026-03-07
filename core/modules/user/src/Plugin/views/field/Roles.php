@@ -18,13 +18,6 @@ use Drupal\user\Entity\Role;
 class Roles extends PrerenderList {
 
   /**
-   * Database Service Object.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
    * Constructs a \Drupal\user\Plugin\views\field\Roles object.
    *
    * @param array $configuration
@@ -36,16 +29,14 @@ class Roles extends PrerenderList {
    * @param \Drupal\Core\Database\Connection $database
    *   Database Service Object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, Connection $database) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Database\Connection $database) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->database = $database;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->additional_fields['uid'] = ['table' => 'users_field_data', 'field' => 'uid'];
@@ -54,7 +45,7 @@ class Roles extends PrerenderList {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->addAdditionalFields();
     $this->field_alias = $this->aliases['uid'];
   }
@@ -62,7 +53,7 @@ class Roles extends PrerenderList {
   /**
    * {@inheritdoc}
    */
-  public function preRender(&$values) {
+  public function preRender(&$values): void {
     $uids = [];
     $this->items = [];
 

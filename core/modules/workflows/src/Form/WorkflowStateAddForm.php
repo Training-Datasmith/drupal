@@ -18,26 +18,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkflowStateAddForm extends EntityForm {
 
   /**
-   * The plugin form factory.
-   *
-   * @var \Drupal\Core\Plugin\PluginFormFactoryInterface
-   */
-  protected $pluginFormFactory;
-
-  /**
    * Creates an instance of WorkflowStateEditForm.
    *
    * @param \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory
    *   The plugin form factory.
    */
-  public function __construct(PluginFormFactoryInterface $pluginFormFactory) {
-    $this->pluginFormFactory = $pluginFormFactory;
+  public function __construct(protected \Drupal\Core\Plugin\PluginFormFactoryInterface $pluginFormFactory)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin_form.factory')
     );
@@ -46,14 +39,14 @@ class WorkflowStateAddForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'workflow_state_add_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
@@ -71,7 +64,7 @@ class WorkflowStateAddForm extends EntityForm {
     $form['id'] = [
       '#type' => 'machine_name',
       '#machine_name' => [
-        'exists' => [$this, 'exists'],
+        'exists' => $this->exists(...),
       ],
     ];
 
@@ -128,7 +121,7 @@ class WorkflowStateAddForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
     /** @var \Drupal\workflows\WorkflowTypeInterface $workflow_type */
     $workflow = $this->entity;
@@ -145,7 +138,7 @@ class WorkflowStateAddForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     /** @var \Drupal\workflows\WorkflowInterface $workflow */
     $workflow = $this->entity;
     $workflow_type = $workflow->getTypePlugin();
@@ -169,7 +162,7 @@ class WorkflowStateAddForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  protected function actions(array $form, FormStateInterface $form_state) {
+  protected function actions(array $form, FormStateInterface $form_state): array {
     $actions['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Save'),

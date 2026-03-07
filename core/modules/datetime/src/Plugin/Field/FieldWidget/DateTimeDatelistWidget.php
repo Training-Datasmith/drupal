@@ -124,8 +124,9 @@ class DateTimeDatelistWidget extends DateTimeWidgetBase {
 
   /**
    * {@inheritdoc}
+   * @return list<\Drupal\Core\StringTranslation\TranslatableMarkup>
    */
-  public function settingsSummary() {
+  public function settingsSummary(): array {
     $summary = [];
 
     $summary[] = $this->t('Date part order: @order', ['@order' => $this->getSetting('date_order')]);

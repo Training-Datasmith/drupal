@@ -25,8 +25,6 @@ final class CollectResourceObjectMetaEvent extends Event implements RefinableCac
 
   /**
    * The metadata.
-   *
-   * @var array
    */
   private array $meta = [];
 

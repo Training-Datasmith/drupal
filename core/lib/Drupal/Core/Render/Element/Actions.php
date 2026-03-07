@@ -29,7 +29,7 @@ class Actions extends Container {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#process' => [
         // @todo Move this to #pre_render.
@@ -56,7 +56,7 @@ class Actions extends Container {
    * @return array
    *   The processed element.
    */
-  public static function processActions(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processActions(array &$element, FormStateInterface $form_state, &$complete_form): array {
     $element['#attributes']['class'][] = 'form-actions';
     return $element;
   }
@@ -87,7 +87,7 @@ class Actions extends Container {
    *   The processed #type 'actions' element, including individual buttons
    *   grouped into new #type 'dropbutton' elements.
    */
-  public static function preRenderActionsDropbutton(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function preRenderActionsDropbutton(array &$element, FormStateInterface $form_state, &$complete_form) {
     $dropbuttons = [];
     foreach (Element::children($element, TRUE) as $key) {
       if (isset($element[$key]['#dropbutton'])) {

@@ -15,20 +15,13 @@ use Drupal\Core\Pager\PagerParametersInterface;
 class PagersCacheContext implements CalculatedCacheContextInterface {
 
   /**
-   * The pager parameters.
-   *
-   * @var \Drupal\Core\Pager\PagerParametersInterface
-   */
-  protected $pagerParams;
-
-  /**
    * Constructs a new PagersCacheContext object.
    *
-   * @param \Drupal\Core\Pager\PagerParametersInterface $pager_params
+   * @param \Drupal\Core\Pager\PagerParametersInterface $pagerParams
    *   The pager parameters.
    */
-  public function __construct(PagerParametersInterface $pager_params) {
-    $this->pagerParams = $pager_params;
+  public function __construct(protected \Drupal\Core\Pager\PagerParametersInterface $pagerParams)
+  {
   }
 
   /**
@@ -56,7 +49,7 @@ class PagersCacheContext implements CalculatedCacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($pager_id = NULL) {
+  public function getCacheableMetadata($pager_id = NULL): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

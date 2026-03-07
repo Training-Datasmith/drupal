@@ -20,21 +20,12 @@ namespace Drupal\Component\Gettext;
  * "Content-Transfer-Encoding: 8bit\n"
  * "Plural-Forms: nplurals=2; plural=(n>1);\n"
  */
-class PoHeader {
-
-  /**
-   * Language code.
-   *
-   * @var string
-   */
-  protected $langcode;
+class PoHeader implements \Stringable {
 
   /**
    * Formula for the plural form.
-   *
-   * @var string
    */
-  protected $pluralForms;
+  protected string $pluralForms;
 
   /**
    * Author(s) of the file.
@@ -45,10 +36,8 @@ class PoHeader {
 
   /**
    * Date the po file got created.
-   *
-   * @var string
    */
-  protected $poDate;
+  protected string $poDate;
 
   /**
    * Human readable language name.
@@ -70,8 +59,10 @@ class PoHeader {
    * @param string $langcode
    *   Language code.
    */
-  public function __construct($langcode = NULL) {
-    $this->langcode = $langcode;
+  public function __construct(/**
+   * Language code.
+   */
+  protected $langcode = NULL) {
     // Ignore errors when run during site installation before
     // date_default_timezone_set() is called.
     $this->poDate = @date("Y-m-d H:iO");
@@ -95,7 +86,7 @@ class PoHeader {
    * @param string $languageName
    *   Human readable language name.
    */
-  public function setLanguageName($languageName) {
+  public function setLanguageName($languageName): void {
     $this->languageName = $languageName;
   }
 
@@ -115,7 +106,7 @@ class PoHeader {
    * @param string $projectName
    *   Human readable project name.
    */
-  public function setProjectName($projectName) {
+  public function setProjectName($projectName): void {
     $this->projectName = $projectName;
   }
 
@@ -135,7 +126,7 @@ class PoHeader {
    * @param string $header
    *   Full header string with key-value pairs.
    */
-  public function setFromString($header) {
+  public function setFromString($header): void {
     // Get an array of all header values for processing.
     $values = $this->parseHeader($header);
 
@@ -149,7 +140,7 @@ class PoHeader {
   /**
    * Generate a Gettext PO formatted header string based on data set earlier.
    */
-  public function __toString() {
+  public function __toString(): string {
     $output = '';
 
     $isTemplate = empty($this->languageName);
@@ -172,9 +163,8 @@ class PoHeader {
     $output .= "\"Content-Type: text/plain; charset=utf-8\\n\"\n";
     $output .= "\"Content-Transfer-Encoding: 8bit\\n\"\n";
     $output .= "\"Plural-Forms: " . $this->pluralForms . "\\n\"\n";
-    $output .= "\n";
 
-    return $output;
+    return $output . "\n";
   }
 
   /**
@@ -191,7 +181,7 @@ class PoHeader {
    *
    * @throws \Exception
    */
-  public function parsePluralForms($plural_forms) {
+  public function parsePluralForms($plural_forms): false|array {
     $plurals = [];
     // First, delete all whitespace.
     $plural_forms = strtr($plural_forms, [" " => "", "\t" => ""]);
@@ -229,16 +219,12 @@ class PoHeader {
         $plurals[$i] = $this->evaluatePlural($element_stack, $i);
       }
       $default = $plurals[$i - 1];
-      $plurals = array_filter($plurals, function ($value) use ($default) {
-        return ($value != $default);
-      });
+      $plurals = array_filter($plurals, fn($value) => $value != $default);
       $plurals['default'] = $default;
 
       return [$nplurals, $plurals];
     }
-    else {
-      throw new \Exception('The plural formula could not be parsed.');
-    }
+    throw new \Exception('The plural formula could not be parsed.');
   }
 
   /**
@@ -250,9 +236,9 @@ class PoHeader {
    * @return array
    *   An associative array of key-value pairs.
    */
-  private function parseHeader($header) {
+  private function parseHeader($header): array {
     $header_parsed = [];
-    $lines = array_map('trim', explode("\n", $header));
+    $lines = array_map(trim(...), explode("\n", $header));
     foreach ($lines as $line) {
       if ($line) {
         [$tag, $contents] = explode(":", $line, 2);
@@ -275,7 +261,7 @@ class PoHeader {
    *   A stack of values and operations to be evaluated. False if the formula
    *   could not be parsed.
    */
-  private function parseArithmetic($string) {
+  private function parseArithmetic(string $string) {
     // Operator precedence table.
     $precedence = [
       "(" => -1,
@@ -391,7 +377,7 @@ class PoHeader {
    * @return array
    *   List of arithmetic tokens identified in the formula.
    */
-  private function tokenizeFormula($formula) {
+  private function tokenizeFormula($formula): array {
     $formula = str_replace(" ", "", $formula);
     $tokens = [];
     for ($i = 0; $i < strlen($formula); $i++) {
@@ -504,7 +490,7 @@ class PoHeader {
    *
    * @throws \Exception
    */
-  protected function evaluatePlural($element_stack, $n) {
+  protected function evaluatePlural(array $element_stack, $n): int {
     $count = count($element_stack);
     $limit = $count;
     // Replace the '$n' value in the formula by the plural value.
@@ -521,8 +507,11 @@ class PoHeader {
       for ($i = 2; $i < $count; $i++) {
         // There's no point in checking non-symbols. Also, switch(TRUE) would
         // match any case and so it would break.
-        if (is_bool($element_stack[$i]) || is_numeric($element_stack[$i])) {
-          continue;
+        if (is_bool($element_stack[$i])) {
+            continue;
+        }
+        if (is_numeric($element_stack[$i])) {
+            continue;
         }
         $f = NULL;
         $length = 3;

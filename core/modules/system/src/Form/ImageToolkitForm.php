@@ -44,7 +44,7 @@ class ImageToolkitForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('config.factory'),
       $container->get('config.typed'),
@@ -55,14 +55,14 @@ class ImageToolkitForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_image_toolkit_settings';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getEditableConfigNames() {
+  protected function getEditableConfigNames(): array {
     return ['system.image'];
   }
 
@@ -102,7 +102,7 @@ class ImageToolkitForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     // Call the form validation handler for each of the toolkits.
@@ -114,7 +114,7 @@ class ImageToolkitForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Call the form submit handler for each of the toolkits.
     foreach ($this->availableToolkits as $toolkit) {
       $toolkit->submitConfigurationForm($form, $form_state);

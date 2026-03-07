@@ -9,7 +9,7 @@ use Drupal\Component\Serialization\Yaml;
 /**
  * A value object that represents an installed Composer package.
  */
-final class InstalledPackage {
+final readonly class InstalledPackage {
 
   /**
    * Constructs an InstalledPackage object.
@@ -24,10 +24,10 @@ final class InstalledPackage {
    *   The package type.
    */
   private function __construct(
-    public readonly string $name,
-    public readonly string $version,
-    public readonly ?string $path,
-    public readonly string $type,
+    public string $name,
+    public string $version,
+    public ?string $path,
+    public string $type,
   ) {}
 
   /**
@@ -35,8 +35,6 @@ final class InstalledPackage {
    *
    * @param array $data
    *   The package data.
-   *
-   * @return static
    */
   public static function createFromArray(array $data): static {
     $path = isset($data['path']) ? realpath($data['path']) : NULL;

@@ -85,7 +85,7 @@ abstract class DateElementBase extends FormElementBase {
    * @return string
    *   The title.
    */
-  protected static function getElementTitle($element, $complete_form) {
+  protected static function getElementTitle(array $element, array $complete_form) {
     $title = '';
     if (!empty($element['#title'])) {
       $title = $element['#title'];

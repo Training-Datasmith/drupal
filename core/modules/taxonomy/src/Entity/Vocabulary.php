@@ -92,7 +92,7 @@ class Vocabulary extends ConfigEntityBundleBase implements VocabularyInterface {
    *
    * @var string|null
    */
-  protected $description = NULL;
+  protected $description;
 
   /**
    * The weight of this vocabulary in relation to other vocabularies.
@@ -125,7 +125,7 @@ class Vocabulary extends ConfigEntityBundleBase implements VocabularyInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     // Only load terms without a parent, child terms will get deleted too.
@@ -137,7 +137,7 @@ class Vocabulary extends ConfigEntityBundleBase implements VocabularyInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     // Reset caches.
@@ -182,7 +182,7 @@ class Vocabulary extends ConfigEntityBundleBase implements VocabularyInterface {
   /**
    * {@inheritdoc}
    */
-  public function setNewRevision($new_revision) {
+  public function setNewRevision($new_revision): void {
     $this->new_revision = $new_revision;
   }
 

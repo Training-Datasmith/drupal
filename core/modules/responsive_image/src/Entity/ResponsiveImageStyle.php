@@ -117,7 +117,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public function addImageStyleMapping($breakpoint_id, $multiplier, array $image_style_mapping) {
+  public function addImageStyleMapping($breakpoint_id, $multiplier, array $image_style_mapping): static {
     // If there is an existing mapping, overwrite it.
     foreach ($this->image_style_mappings as &$mapping) {
       if ($mapping['breakpoint_id'] === $breakpoint_id && $mapping['multiplier'] === $multiplier) {
@@ -149,8 +149,8 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
     usort($this->image_style_mappings, static function (array $a, array $b) use ($breakpoints): int {
       $breakpoint_a = $breakpoints[$a['breakpoint_id']] ?? NULL;
       $breakpoint_b = $breakpoints[$b['breakpoint_id']] ?? NULL;
-      $first = ((float) mb_substr($a['multiplier'], 0, -1)) * 100;
-      $second = ((float) mb_substr($b['multiplier'], 0, -1)) * 100;
+      $first = ((float) mb_substr((string) $a['multiplier'], 0, -1)) * 100;
+      $second = ((float) mb_substr((string) $b['multiplier'], 0, -1)) * 100;
       return [$breakpoint_b ? $breakpoint_b->getWeight() : 0, $first] <=> [$breakpoint_a ? $breakpoint_a->getWeight() : 0, $second];
     });
   }
@@ -158,7 +158,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public function hasImageStyleMappings() {
+  public function hasImageStyleMappings(): bool {
     $mappings = $this->getKeyedImageStyleMappings();
     return !empty($mappings);
   }
@@ -188,7 +188,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public function setBreakpointGroup($breakpoint_group) {
+  public function setBreakpointGroup($breakpoint_group): static {
     // If the breakpoint group is changed then the image style mappings are
     // invalid.
     if ($breakpoint_group !== $this->breakpoint_group) {
@@ -208,7 +208,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public function setFallbackImageStyle($fallback_image_style) {
+  public function setFallbackImageStyle($fallback_image_style): static {
     $this->fallback_image_style = $fallback_image_style;
     return $this;
   }
@@ -223,7 +223,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public function removeImageStyleMappings() {
+  public function removeImageStyleMappings(): static {
     $this->image_style_mappings = [];
     $this->keyedImageStyleMappings = NULL;
     return $this;
@@ -232,7 +232,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
     $providers = \Drupal::service('breakpoint.manager')->getGroupProviders($this->breakpoint_group);
     foreach ($providers as $provider => $type) {
@@ -240,7 +240,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
     }
     // Extract all the styles from the image style mappings.
     $styles = ImageStyle::loadMultiple($this->getImageStyleIds());
-    array_walk($styles, function ($style) {
+    array_walk($styles, function (\Drupal\image\Entity\ImageStyle $style): void {
       $this->addDependency('config', $style->getConfigDependencyName());
     });
     return $this;
@@ -249,7 +249,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public static function isEmptyImageStyleMapping(array $image_style_mapping) {
+  public static function isEmptyImageStyleMapping(array $image_style_mapping): bool {
     if (!empty($image_style_mapping)) {
       switch ($image_style_mapping['image_mapping_type']) {
         case 'sizes':
@@ -284,7 +284,7 @@ class ResponsiveImageStyle extends ConfigEntityBase implements ResponsiveImageSt
   /**
    * {@inheritdoc}
    */
-  public function getImageStyleIds() {
+  public function getImageStyleIds(): array {
     $image_styles = [$this->getFallbackImageStyle()];
     foreach ($this->getImageStyleMappings() as $image_style_mapping) {
       // Only image styles of non-empty mappings should be loaded.

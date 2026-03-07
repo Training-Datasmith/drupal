@@ -18,80 +18,25 @@ use Drupal\Core\Theme\ThemeManagerInterface;
 class AssetResolver implements AssetResolverInterface {
 
   /**
-   * The library discovery service.
-   *
-   * @var \Drupal\Core\Asset\LibraryDiscoveryInterface
-   */
-  protected $libraryDiscovery;
-
-  /**
-   * The library dependency resolver.
-   *
-   * @var \Drupal\Core\Asset\LibraryDependencyResolverInterface
-   */
-  protected $libraryDependencyResolver;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The cache backend.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected $cache;
-
-  /**
-   * The theme handler service.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
    * Constructs a new AssetResolver instance.
    *
-   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $library_discovery
+   * @param \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery
    *   The library discovery service.
-   * @param \Drupal\Core\Asset\LibraryDependencyResolverInterface $library_dependency_resolver
+   * @param \Drupal\Core\Asset\LibraryDependencyResolverInterface $libraryDependencyResolver
    *   The library dependency resolver.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler service.
    */
-  public function __construct(LibraryDiscoveryInterface $library_discovery, LibraryDependencyResolverInterface $library_dependency_resolver, ModuleHandlerInterface $module_handler, ThemeManagerInterface $theme_manager, LanguageManagerInterface $language_manager, CacheBackendInterface $cache, ThemeHandlerInterface $theme_handler) {
-    $this->libraryDiscovery = $library_discovery;
-    $this->libraryDependencyResolver = $library_dependency_resolver;
-    $this->moduleHandler = $module_handler;
-    $this->themeManager = $theme_manager;
-    $this->languageManager = $language_manager;
-    $this->cache = $cache;
-    $this->themeHandler = $theme_handler;
+  public function __construct(protected \Drupal\Core\Asset\LibraryDiscoveryInterface $libraryDiscovery, protected \Drupal\Core\Asset\LibraryDependencyResolverInterface $libraryDependencyResolver, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\Cache\CacheBackendInterface $cache, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler)
+  {
   }
 
   /**
@@ -120,7 +65,7 @@ class AssetResolver implements AssetResolverInterface {
    *   A list of libraries and their dependencies, in the order they should be
    *   loaded, excluding any libraries that have already been loaded.
    */
-  protected function getLibrariesToLoad(AttachedAssetsInterface $assets, ?string $asset_type = NULL) {
+  protected function getLibrariesToLoad(AttachedAssetsInterface $assets, ?string $asset_type = NULL): array {
     // @see Drupal\FunctionalTests\Core\Asset\AssetOptimizationTestUmami
     // @todo https://www.drupal.org/project/drupal/issues/1945262
     $libraries_to_load = array_diff(
@@ -147,7 +92,7 @@ class AssetResolver implements AssetResolverInterface {
     // Now remove any libraries without the relevant asset type again, since
     // they have been brought back in via dependencies.
     if ($asset_type) {
-      $libraries_to_load = $this->filterLibrariesByType($libraries_to_load, $asset_type);
+      return $this->filterLibrariesByType($libraries_to_load, $asset_type);
     }
 
     return $libraries_to_load;
@@ -166,7 +111,7 @@ class AssetResolver implements AssetResolverInterface {
    */
   protected function filterLibrariesByType(array $libraries, string $asset_type): array {
     foreach ($libraries as $key => $library) {
-      [$extension, $name] = explode('/', $library, 2);
+      [$extension, $name] = explode('/', (string) $library, 2);
       $definition = $this->libraryDiscovery->getLibraryByName($extension, $name);
       if (empty($definition[$asset_type])) {
         unset($libraries[$key]);
@@ -221,7 +166,7 @@ class AssetResolver implements AssetResolverInterface {
         $options['license'] = $definition['license'];
 
         // Files with a query string cannot be preprocessed.
-        if ($options['type'] === 'file' && $options['preprocess'] && str_contains($options['data'], '?')) {
+        if ($options['type'] === 'file' && $options['preprocess'] && str_contains((string) $options['data'], '?')) {
           $options['preprocess'] = FALSE;
         }
 
@@ -280,7 +225,7 @@ class AssetResolver implements AssetResolverInterface {
   /**
    * {@inheritdoc}
    */
-  public function getJsAssets(AttachedAssetsInterface $assets, $optimize, ?LanguageInterface $language = NULL) {
+  public function getJsAssets(AttachedAssetsInterface $assets, $optimize, ?LanguageInterface $language = NULL): array {
     $asset_settings = $assets->getSettings();
     if (!$assets->getLibraries() && !$asset_settings) {
       return [[], []];
@@ -390,7 +335,7 @@ class AssetResolver implements AssetResolverInterface {
       // requested.
       $settings = $this->getJsSettingsAssets($assets);
       // Allow modules to add cached JavaScript settings.
-      $this->moduleHandler->invokeAllWith('js_settings_build', function (callable $hook, string $module) use (&$settings, $assets) {
+      $this->moduleHandler->invokeAllWith('js_settings_build', function (callable $hook, string $module) use (&$settings, $assets): void {
         $hook($settings, $assets);
       });
       $settings_in_header = in_array('core/drupalSettings', $header_js_libraries);
@@ -460,26 +405,24 @@ class AssetResolver implements AssetResolverInterface {
    * @return int
    *   The comparison result for uasort().
    */
-  public static function sort(array $a, array $b) {
+  public static function sort(array $a, array $b): int {
     // First order by group, so that all items in the CSS_AGGREGATE_DEFAULT
     // group appear before items in the CSS_AGGREGATE_THEME group. Modules may
     // create additional groups by defining their own constants.
     if ($a['group'] < $b['group']) {
-      return -1;
+        return -1;
     }
-    elseif ($a['group'] > $b['group']) {
-      return 1;
+    if ($a['group'] > $b['group']) {
+        return 1;
     }
     // Finally, order by weight.
-    elseif ($a['weight'] < $b['weight']) {
-      return -1;
+    if ($a['weight'] < $b['weight']) {
+        return -1;
     }
-    elseif ($a['weight'] > $b['weight']) {
-      return 1;
+    if ($a['weight'] > $b['weight']) {
+        return 1;
     }
-    else {
-      return 0;
-    }
+    return 0;
   }
 
 }

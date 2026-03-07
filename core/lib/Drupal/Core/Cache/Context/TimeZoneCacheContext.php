@@ -23,7 +23,7 @@ class TimeZoneCacheContext implements CacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getContext() {
+  public function getContext(): string {
     // date_default_timezone_set() is called in AccountProxy::setAccount(), so
     // we can safely retrieve the timezone.
     return date_default_timezone_get();
@@ -32,7 +32,7 @@ class TimeZoneCacheContext implements CacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

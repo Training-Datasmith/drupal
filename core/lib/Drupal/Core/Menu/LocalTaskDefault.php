@@ -76,7 +76,7 @@ class LocalTaskDefault extends PluginBase implements LocalTaskInterface, Cacheab
   /**
    * {@inheritdoc}
    */
-  public function getTitle(?Request $request = NULL) {
+  public function getTitle(?Request $request = NULL): string {
     // The title from YAML file discovery may be a TranslatableMarkup object.
     return (string) $this->pluginDefinition['title'];
   }
@@ -88,7 +88,7 @@ class LocalTaskDefault extends PluginBase implements LocalTaskInterface, Cacheab
    *   The weight of the task. If not defined in the annotation returns 0 by
    *   default or -10 for the root tab.
    */
-  public function getWeight() {
+  public function getWeight(): int {
     // By default the weight is 0, or -10 for the root tab.
     if (!isset($this->pluginDefinition['weight'])) {
       if ($this->pluginDefinition['base_route'] == $this->pluginDefinition['route_name']) {
@@ -104,7 +104,7 @@ class LocalTaskDefault extends PluginBase implements LocalTaskInterface, Cacheab
   /**
    * {@inheritdoc}
    */
-  public function getOptions(RouteMatchInterface $route_match) {
+  public function getOptions(RouteMatchInterface $route_match): array {
     $options = $this->pluginDefinition['options'];
     if ($this->active) {
       if (empty($options['attributes']['class']) || !in_array('is-active', $options['attributes']['class'])) {
@@ -117,7 +117,7 @@ class LocalTaskDefault extends PluginBase implements LocalTaskInterface, Cacheab
   /**
    * {@inheritdoc}
    */
-  public function setActive($active = TRUE) {
+  public function setActive($active = TRUE): static {
     $this->active = $active;
     return $this;
   }

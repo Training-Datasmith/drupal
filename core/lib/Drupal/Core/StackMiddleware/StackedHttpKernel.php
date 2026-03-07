@@ -29,7 +29,7 @@ class StackedHttpKernel implements HttpKernelInterface, TerminableInterface {
    *
    * @var iterable<\Symfony\Component\HttpKernel\HttpKernelInterface>
    */
-  private $middlewares = [];
+  private readonly iterable $middlewares;
 
   /**
    * Constructs a stacked HTTP kernel.

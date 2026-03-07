@@ -10,20 +10,18 @@ use Drupal\Component\EventDispatcher\Event;
 class ConfigCrudEvent extends Event {
 
   /**
-   * Configuration object.
-   *
-   * @var \Drupal\Core\Config\Config
-   */
-  protected $config;
-
-  /**
    * Constructs a configuration event object.
    *
    * @param \Drupal\Core\Config\StorableConfigBase $config
    *   Configuration object.
    */
-  public function __construct(StorableConfigBase $config) {
-    $this->config = $config;
+  public function __construct(
+      /**
+       * Configuration object.
+       */
+      protected \Drupal\Core\Config\StorableConfigBase $config
+  )
+  {
   }
 
   /**
@@ -45,7 +43,7 @@ class ConfigCrudEvent extends Event {
    * @return bool
    *   TRUE if the value of the given key has changed, FALSE otherwise.
    */
-  public function isChanged($key) {
+  public function isChanged($key): bool {
     return $this->config->get($key) !== $this->config->getOriginal($key);
   }
 

@@ -20,20 +20,6 @@ use Drupal\views\Plugin\views\area\AreaPluginBase;
 class ListingEmpty extends AreaPluginBase {
 
   /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * Constructs a new ListingEmpty.
    *
    * @param array $configuration
@@ -42,26 +28,24 @@ class ListingEmpty extends AreaPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, AccessManagerInterface $access_manager, AccountInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $currentUser) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    @trigger_error(__CLASS__ . ' is deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. See https://www.drupal.org/node/3336219', E_USER_DEPRECATED);
-    $this->accessManager = $access_manager;
-    $this->currentUser = $current_user;
+    @trigger_error(self::class . ' is deprecated in drupal:11.3.0 and is removed from drupal:13.0.0. See https://www.drupal.org/node/3336219', E_USER_DEPRECATED);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function render($empty = FALSE) {
+  public function render($empty = FALSE): array {
     if (!$empty || !empty($this->options['empty'])) {
       /** @var \Drupal\Core\Access\AccessResultInterface|\Drupal\Core\Cache\CacheableDependencyInterface $access_result */
       $access_result = $this->accessManager->checkNamedRoute('block_content.add_page', [], $this->currentUser, TRUE);
-      $element = [
+      return [
         '#markup' => $this->t('Add a <a href=":url">content block</a>.', [':url' => Url::fromRoute('block_content.add_page')->toString()]),
         '#access' => $access_result->isAllowed(),
         '#cache' => [
@@ -70,7 +54,6 @@ class ListingEmpty extends AreaPluginBase {
           'max-age' => $access_result->getCacheMaxAge(),
         ],
       ];
-      return $element;
     }
     return [];
   }

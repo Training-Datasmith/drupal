@@ -19,26 +19,19 @@ use Symfony\Component\Routing\RouteCollection;
 class EntityPermissionsRouteProvider implements EntityRouteProviderInterface, EntityHandlerInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a new EntityPermissionsRouteProvider.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $container->get('entity_type.manager')
     );
@@ -47,7 +40,7 @@ class EntityPermissionsRouteProvider implements EntityRouteProviderInterface, En
   /**
    * {@inheritdoc}
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
+  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
     $collection = new RouteCollection();
 
     $entity_type_id = $entity_type->id();
@@ -81,11 +74,12 @@ class EntityPermissionsRouteProvider implements EntityRouteProviderInterface, En
     }
 
     $entity_type_id = $entity_type->id();
-    $route = new Route(
+
+    return new Route(
       $entity_type->getLinkTemplate('entity-permissions-form'),
       [
         '_title' => 'Manage permissions',
-        '_form' => 'Drupal\user\Form\EntityPermissionsForm',
+        '_form' => \Drupal\user\Form\EntityPermissionsForm::class,
         'entity_type_id' => $bundle_of_id,
         'bundle_entity_type' => $entity_type_id,
       ],
@@ -105,8 +99,6 @@ class EntityPermissionsRouteProvider implements EntityRouteProviderInterface, En
         '_admin_route' => TRUE,
       ]
     );
-
-    return $route;
   }
 
 }

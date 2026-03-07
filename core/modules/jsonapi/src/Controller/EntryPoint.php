@@ -28,30 +28,15 @@ use Symfony\Component\Routing\Exception\RouteNotFoundException;
 class EntryPoint extends ControllerBase {
 
   /**
-   * The JSON:API resource type repository.
-   *
-   * @var \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface
-   */
-  protected $resourceTypeRepository;
-
-  /**
-   * The account object.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $user;
-
-  /**
    * EntryPoint constructor.
    *
-   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resource_type_repository
+   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository
    *   The resource type repository.
    * @param \Drupal\Core\Session\AccountInterface $user
    *   The current user.
    */
-  public function __construct(ResourceTypeRepositoryInterface $resource_type_repository, AccountInterface $user) {
-    $this->resourceTypeRepository = $resource_type_repository;
-    $this->user = $user;
+  public function __construct(protected \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository, protected \Drupal\Core\Session\AccountInterface $user)
+  {
   }
 
   /**
@@ -66,9 +51,7 @@ class EntryPoint extends ControllerBase {
       ->addCacheTags(['jsonapi_resource_types']);
 
     // Only build URLs for exposed resources.
-    $resources = array_filter($this->resourceTypeRepository->all(), function ($resource) {
-      return !$resource->isInternal();
-    });
+    $resources = array_filter($this->resourceTypeRepository->all(), fn(\Drupal\jsonapi\ResourceType\ResourceType $resource) => !$resource->isInternal());
 
     $self_link = new Link(new CacheableMetadata(), Url::fromRoute('jsonapi.resource_list'), 'self');
     $urls = array_reduce($resources, function (LinkCollection $carry, ResourceType $resource_type) {

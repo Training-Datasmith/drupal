@@ -26,7 +26,7 @@ class DateFormatDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('date.formatter'),
       $container->get('datetime.time'),
@@ -36,7 +36,7 @@ class DateFormatDeleteForm extends EntityDeleteForm {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Are you sure you want to delete the format %name : %format?', [
       '%name' => $this->entity->label(),
       '%format' => $this->dateFormatter->format($this->time->getRequestTime(), $this->entity->id()),

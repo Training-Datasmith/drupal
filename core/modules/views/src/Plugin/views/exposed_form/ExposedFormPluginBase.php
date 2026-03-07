@@ -38,7 +38,7 @@ abstract class ExposedFormPluginBase extends PluginBase implements CacheableDepe
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['submit_button'] = [
       '#type' => 'textfield',
@@ -131,7 +131,7 @@ abstract class ExposedFormPluginBase extends PluginBase implements CacheableDepe
       $form_state->set('ajax', TRUE);
     }
 
-    $form = \Drupal::formBuilder()->buildForm('\Drupal\views\Form\ViewsExposedForm', $form_state);
+    $form = \Drupal::formBuilder()->buildForm(\Drupal\views\Form\ViewsExposedForm::class, $form_state);
     $errors = $form_state->getErrors();
 
     // If the exposed form had errors, do not build the view.
@@ -142,15 +142,13 @@ abstract class ExposedFormPluginBase extends PluginBase implements CacheableDepe
     if (!$this->view->display_handler->displaysExposed() || (!$block && $this->view->display_handler->getOption('exposed_block'))) {
       return [];
     }
-    else {
-      return $form;
-    }
+    return $form;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $view = $this->view;
     $exposed_data = $view->exposed_data ?? [];
     $sort_by = $exposed_data['sort_by'] ?? NULL;
@@ -196,7 +194,7 @@ abstract class ExposedFormPluginBase extends PluginBase implements CacheableDepe
   /**
    * {@inheritdoc}
    */
-  public function exposedFormAlter(&$form, FormStateInterface $form_state) {
+  public function exposedFormAlter(&$form, FormStateInterface $form_state): void {
     if (!empty($this->options['submit_button'])) {
       $form['actions']['submit']['#value'] = $this->options['submit_button'];
     }
@@ -278,7 +276,7 @@ abstract class ExposedFormPluginBase extends PluginBase implements CacheableDepe
   /**
    * {@inheritdoc}
    */
-  public function exposedFormValidate(&$form, FormStateInterface $form_state) {
+  public function exposedFormValidate(&$form, FormStateInterface $form_state): void {
     if ($pager_plugin = $form_state->get('pager_plugin')) {
       $pager_plugin->exposedFormValidate($form, $form_state);
     }
@@ -287,7 +285,7 @@ abstract class ExposedFormPluginBase extends PluginBase implements CacheableDepe
   /**
    * {@inheritdoc}
    */
-  public function exposedFormSubmit(&$form, FormStateInterface $form_state, &$exclude) {
+  public function exposedFormSubmit(&$form, FormStateInterface $form_state, &$exclude): void {
     if (!$form_state->isValueEmpty('op') && $form_state->getValue('op') == $this->options['reset_button_label']) {
       $this->resetForm($form, $form_state);
     }
@@ -308,7 +306,7 @@ abstract class ExposedFormPluginBase extends PluginBase implements CacheableDepe
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function resetForm(&$form, FormStateInterface $form_state) {
+  public function resetForm(&$form, FormStateInterface $form_state): void {
     // _SESSION is not defined for users who are not logged in.
 
     // If filters are not overridden, store the 'remember' settings on the

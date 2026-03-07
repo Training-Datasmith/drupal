@@ -32,15 +32,13 @@ class CookiesCacheContext extends RequestStackCacheContextBase implements Calcul
       // Use http_build_query() to get a short string from the cookies array.
       return http_build_query($cookies);
     }
-    else {
-      return $this->requestStack->getCurrentRequest()->cookies->get($cookie);
-    }
+    return $this->requestStack->getCurrentRequest()->cookies->get($cookie);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($cookie = NULL) {
+  public function getCacheableMetadata($cookie = NULL): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

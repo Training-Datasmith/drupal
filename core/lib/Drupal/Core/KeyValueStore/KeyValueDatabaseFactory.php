@@ -11,20 +11,6 @@ use Drupal\Core\Database\Connection;
 class KeyValueDatabaseFactory implements KeyValueFactoryInterface {
 
   /**
-   * The serialization class to use.
-   *
-   * @var \Drupal\Component\Serialization\SerializationInterface
-   */
-  protected $serializer;
-
-  /**
-   * The database connection to use.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $connection;
-
-  /**
    * Constructs this factory object.
    *
    * @param \Drupal\Component\Serialization\SerializationInterface $serializer
@@ -32,15 +18,14 @@ class KeyValueDatabaseFactory implements KeyValueFactoryInterface {
    * @param \Drupal\Core\Database\Connection $connection
    *   The Connection object containing the key-value tables.
    */
-  public function __construct(SerializationInterface $serializer, Connection $connection) {
-    $this->serializer = $serializer;
-    $this->connection = $connection;
+  public function __construct(protected \Drupal\Component\Serialization\SerializationInterface $serializer, protected \Drupal\Core\Database\Connection $connection)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function get($collection) {
+  public function get($collection): \Drupal\Core\KeyValueStore\DatabaseStorage {
     return new DatabaseStorage($collection, $this->serializer, $this->connection);
   }
 

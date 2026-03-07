@@ -24,10 +24,8 @@ class YamlDiscovery implements DiscoveryInterface {
 
   /**
    * YAML file discovery and parsing handler.
-   *
-   * @var \Drupal\Core\Discovery\YamlDiscovery
    */
-  protected $discovery;
+  protected \Drupal\Core\Discovery\YamlDiscovery $discovery;
 
   /**
    * Contains an array of translatable properties passed along to t().
@@ -63,15 +61,16 @@ class YamlDiscovery implements DiscoveryInterface {
    *
    * @return $this
    */
-  public function addTranslatableProperty($value_key, $context_key = '') {
+  public function addTranslatableProperty($value_key, $context_key = ''): static {
     $this->translatableProperties[$value_key] = $context_key;
     return $this;
   }
 
   /**
    * {@inheritdoc}
+   * @return non-empty-array[]
    */
-  public function getDefinitions() {
+  public function getDefinitions(): array {
     $plugins = $this->discovery->findAll();
 
     // Flatten definitions into what's expected from plugins.

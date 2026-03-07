@@ -51,8 +51,7 @@ class LinkHooks {
         $output .= '<dd>' . $this->t('You can add attributes to links, by changing the <em>Format settings</em> in the <em>Manage display</em> page. Adding <em>rel="nofollow"</em> notifies search engines that links should not be followed.') . '</dd>';
         $output .= '<dt>' . $this->t('Validating URLs') . '</dt>';
         $output .= '<dd>' . $this->t('All links are validated after a link field is filled in. They can include anchors or query strings.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -61,7 +60,7 @@ class LinkHooks {
    * Implements hook_field_type_category_info_alter().
    */
   #[Hook('field_type_category_info_alter')]
-  public function fieldTypeCategoryInfoAlter(&$definitions): void {
+  public function fieldTypeCategoryInfoAlter(array &$definitions): void {
     // The `link` field type belongs in the `general` category, so the libraries
     // need to be attached using an alter hook.
     $definitions[FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY]['libraries'][] = 'link/drupal.link-icon';

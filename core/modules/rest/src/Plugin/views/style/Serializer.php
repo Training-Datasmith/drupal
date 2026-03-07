@@ -42,23 +42,9 @@ class Serializer extends StylePluginBase implements CacheableDependencyInterface
   protected $serializer;
 
   /**
-   * The available serialization formats.
-   *
-   * @var array
-   */
-  protected $formats = [];
-
-  /**
-   * The serialization format providers, keyed by format.
-   *
-   * @var string[]
-   */
-  protected $formatProviders;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -72,13 +58,19 @@ class Serializer extends StylePluginBase implements CacheableDependencyInterface
   /**
    * Constructs a Plugin object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, SerializerInterface $serializer, array $serializer_formats, array $serializer_format_providers) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, SerializerInterface $serializer, /**
+   * The available serialization formats.
+   */
+  protected array $formats, /**
+   * The serialization format providers, keyed by format.
+   *
+   * @var string[]
+   */
+  protected array $formatProviders) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->definition = $plugin_definition + $configuration;
     $this->serializer = $serializer;
-    $this->formats = $serializer_formats;
-    $this->formatProviders = $serializer_format_providers;
   }
 
   /**
@@ -94,7 +86,7 @@ class Serializer extends StylePluginBase implements CacheableDependencyInterface
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['formats'] = [
@@ -109,7 +101,7 @@ class Serializer extends StylePluginBase implements CacheableDependencyInterface
   /**
    * {@inheritdoc}
    */
-  public function submitOptionsForm(&$form, FormStateInterface $form_state) {
+  public function submitOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::submitOptionsForm($form, $form_state);
 
     $formats = $form_state->getValue(['style_options', 'formats']);
@@ -159,21 +151,21 @@ class Serializer extends StylePluginBase implements CacheableDependencyInterface
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return ['request_format'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return [];
   }
 
@@ -198,7 +190,7 @@ class Serializer extends StylePluginBase implements CacheableDependencyInterface
    * @return string[]
    *   An array of format options. Both key and value are the same.
    */
-  protected function getFormatOptions() {
+  protected function getFormatOptions(): array {
     $formats = array_keys($this->formatProviders);
     return array_combine($formats, $formats);
   }

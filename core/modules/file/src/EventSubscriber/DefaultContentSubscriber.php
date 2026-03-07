@@ -38,7 +38,7 @@ class DefaultContentSubscriber implements EventSubscriberInterface {
     if ($entity instanceof FileInterface) {
       $uri = $entity->getFileUri();
       // Ensure the file has a name (`getFilename()` may return NULL).
-      $name = $entity->getFilename() ?? basename($uri);
+      $name = $entity->getFilename() ?? basename((string) $uri);
       $entity->setFilename($name);
 
       if (file_exists($uri)) {

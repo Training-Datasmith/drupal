@@ -16,13 +16,6 @@ use Drupal\views\ResultRow;
 class TimeInterval extends FieldPluginBase {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
    * Constructs a TimeInterval plugin object.
    *
    * @param array $configuration
@@ -31,11 +24,10 @@ class TimeInterval extends FieldPluginBase {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date formatter service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, DateFormatterInterface $date_formatter) {
-    $this->dateFormatter = $date_formatter;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
@@ -53,7 +45,7 @@ class TimeInterval extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['granularity'] = [

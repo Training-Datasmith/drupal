@@ -12,26 +12,19 @@ use Symfony\Component\Routing\Route;
 class RouteProcessorCurrent implements OutboundRouteProcessorInterface {
 
   /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructs a new RouteProcessorCurrent.
    *
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
    */
-  public function __construct(RouteMatchInterface $route_match) {
-    $this->routeMatch = $route_match;
+  public function __construct(protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function processOutbound($route_name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = NULL) {
+  public function processOutbound($route_name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = NULL): void {
     if ($route_name === '<current>') {
       if ($current_route = $this->routeMatch->getRouteObject()) {
         $requirements = $current_route->getRequirements();

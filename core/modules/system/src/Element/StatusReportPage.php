@@ -16,7 +16,7 @@ class StatusReportPage extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#theme' => 'status_report_page',
       '#pre_render' => [
@@ -32,7 +32,7 @@ class StatusReportPage extends RenderElementBase {
    *
    * This function is assigned as a #pre_render callback.
    */
-  public static function preRenderGeneralInfo($element) {
+  public static function preRenderGeneralInfo(array $element): array {
     $element['#general_info'] = [
       '#theme' => 'status_report_general_info',
     ];
@@ -73,7 +73,7 @@ class StatusReportPage extends RenderElementBase {
   /**
    * The #pre_render callback to create counter elements.
    */
-  public static function preRenderCounters($element) {
+  public static function preRenderCounters(array $element): array {
     // Count number of items with different severity for summary.
     $counters = [
       'error' => [
@@ -130,7 +130,7 @@ class StatusReportPage extends RenderElementBase {
    *
    * This function is assigned as a #pre_render callback.
    */
-  public static function preRenderRequirements($element) {
+  public static function preRenderRequirements(array $element): array {
     $element['#requirements'] = [
       '#type' => 'status_report',
       '#requirements' => $element['#requirements'],

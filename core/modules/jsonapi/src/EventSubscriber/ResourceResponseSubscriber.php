@@ -74,7 +74,7 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ResponseEvent $event
    *   The event to process.
    */
-  public function onResponse(ResponseEvent $event) {
+  public function onResponse(ResponseEvent $event): void {
     $response = $event->getResponse();
     if (!$response instanceof ResourceResponse) {
       return;
@@ -83,7 +83,7 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
     $request = $event->getRequest();
     $format = 'api_json';
     $this->renderResponseBody($request, $response, $this->serializer, $format);
-    $event->setResponse($this->flattenResponse($response, $request));
+    $event->setResponse(static::flattenResponse($response, $request));
   }
 
   /**
@@ -140,16 +140,14 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
    * @return array
    *   The generated context.
    */
-  protected static function generateContext(Request $request) {
+  protected static function generateContext(Request $request): array {
     // Build the expanded context.
     $context = [
       'account' => NULL,
       'sparse_fieldset' => NULL,
     ];
     if ($request->query->has('fields')) {
-      $context['sparse_fieldset'] = array_map(function ($item) {
-        return explode(',', $item);
-      }, $request->query->all('fields'));
+      $context['sparse_fieldset'] = array_map(fn($item) => explode(',', (string) $item), $request->query->all('fields'));
     }
     return $context;
   }
@@ -170,7 +168,7 @@ class ResourceResponseSubscriber implements EventSubscriberInterface {
    * @return \Drupal\Core\Cache\CacheableResponse|\Symfony\Component\HttpFoundation\Response
    *   The flattened response.
    */
-  protected static function flattenResponse(ResourceResponse $response, Request $request) {
+  protected static function flattenResponse(ResourceResponse $response, Request $request): \Symfony\Component\HttpFoundation\Response|\Drupal\Core\Cache\CacheableResponse {
     $final_response = ($response instanceof CacheableResponseInterface && $request->isMethodCacheable()) ? new CacheableResponse() : new Response();
     $final_response->setContent($response->getContent());
     $final_response->setStatusCode($response->getStatusCode());

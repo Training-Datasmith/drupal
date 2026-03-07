@@ -47,7 +47,7 @@ class Batch extends DatabaseQueue {
    * @return array
    *   An array of queue items.
    */
-  public function getAllItems() {
+  public function getAllItems(): array {
     $result = [];
     try {
       $items = $this->connection->select('queue', 'q')

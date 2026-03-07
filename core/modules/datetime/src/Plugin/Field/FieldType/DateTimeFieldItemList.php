@@ -30,7 +30,7 @@ class DateTimeFieldItemList extends FieldItemList {
     if (empty($this->getFieldDefinition()->getDefaultValueCallback())) {
       $default_value = $this->getFieldDefinition()->getDefaultValueLiteral();
 
-      $element = [
+      return [
         '#parents' => ['default_value_input'],
         'default_date_type' => [
           '#type' => 'select',
@@ -55,17 +55,15 @@ class DateTimeFieldItemList extends FieldItemList {
           ],
         ],
       ];
-
-      return $element;
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state) {
+  public function defaultValuesFormValidate(array $element, array &$form, FormStateInterface $form_state): void {
     if ($form_state->getValue(['default_value_input', 'default_date_type']) == static::DEFAULT_VALUE_CUSTOM) {
-      $is_strtotime = @strtotime($form_state->getValue(['default_value_input', 'default_date']));
+      $is_strtotime = @strtotime((string) $form_state->getValue(['default_value_input', 'default_date']));
       if (!$is_strtotime) {
         $form_state->setErrorByName('default_value_input][default_date', $this->t('The relative date value entered is invalid.'));
       }
@@ -75,7 +73,7 @@ class DateTimeFieldItemList extends FieldItemList {
   /**
    * {@inheritdoc}
    */
-  public function defaultValuesFormSubmit(array $element, array &$form, FormStateInterface $form_state) {
+  public function defaultValuesFormSubmit(array $element, array &$form, FormStateInterface $form_state): array {
     if ($form_state->getValue(['default_value_input', 'default_date_type'])) {
       if ($form_state->getValue(['default_value_input', 'default_date_type']) == static::DEFAULT_VALUE_NOW) {
         $form_state->setValueForElement($element['default_date'], static::DEFAULT_VALUE_NOW);

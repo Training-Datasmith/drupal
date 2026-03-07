@@ -60,7 +60,7 @@ class ExceptionHandler {
       // debug information.
       $message = $exception->getMessage() . ": " . $statement->getQueryString() . "; " . print_r($arguments, TRUE);
       // Match all SQLSTATE 23xxx errors.
-      if (substr($exception->getCode(), -6, -3) == '23') {
+      if (substr((string) $exception->getCode(), -6, -3) == '23') {
         throw new IntegrityConstraintViolationException($message, $exception->getCode(), $exception);
       }
       throw new DatabaseExceptionWrapper($message, 0, $exception);

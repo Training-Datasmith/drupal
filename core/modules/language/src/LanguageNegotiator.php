@@ -18,34 +18,6 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   use LoggerChannelTrait;
 
   /**
-   * The language negotiation method plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $negotiatorManager;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\language\ConfigurableLanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
-   * The settings instance.
-   *
-   * @var \Drupal\Core\Site\Settings
-   */
-  protected $settings;
-
-  /**
    * The request stack object.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
@@ -76,22 +48,18 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   /**
    * Constructs a new LanguageNegotiator object.
    *
-   * @param \Drupal\language\ConfigurableLanguageManagerInterface $language_manager
+   * @param \Drupal\language\ConfigurableLanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $negotiator_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $negotiatorManager
    *   The language negotiation methods plugin manager.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The configuration factory.
    * @param \Drupal\Core\Site\Settings $settings
    *   The settings instance.
    * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
    *   The request stack service.
    */
-  public function __construct(ConfigurableLanguageManagerInterface $language_manager, PluginManagerInterface $negotiator_manager, ConfigFactoryInterface $config_factory, Settings $settings, RequestStack $requestStack) {
-    $this->languageManager = $language_manager;
-    $this->negotiatorManager = $negotiator_manager;
-    $this->configFactory = $config_factory;
-    $this->settings = $settings;
+  public function __construct(protected \Drupal\language\ConfigurableLanguageManagerInterface $languageManager, protected \Drupal\Component\Plugin\PluginManagerInterface $negotiatorManager, protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory, protected \Drupal\Core\Site\Settings $settings, RequestStack $requestStack) {
     $this->requestStack = $requestStack;
   }
 
@@ -102,14 +70,14 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
    * available to the language manager without introducing a circular
    * dependency.
    */
-  public function initLanguageManager() {
+  public function initLanguageManager(): void {
     $this->languageManager->setNegotiator($this);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function reset() {
+  public function reset(): void {
     $this->negotiatedLanguages = [];
     $this->methods = [];
   }
@@ -117,7 +85,7 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCurrentUser(AccountInterface $current_user) {
+  public function setCurrentUser(AccountInterface $current_user): void {
     $this->currentUser = $current_user;
     $this->reset();
   }
@@ -125,7 +93,7 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function initializeType($type) {
+  public function initializeType($type): array {
     $language = NULL;
 
     if ($this->currentUser) {
@@ -173,7 +141,7 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
    * @return array
    *   An array of enabled detection methods for the provided language type.
    */
-  protected function getEnabledNegotiators($type) {
+  protected function getEnabledNegotiators(string $type) {
     return $this->configFactory->get('language.types')->get('negotiation.' . $type . '.enabled') ?: [];
   }
 
@@ -234,7 +202,7 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function getPrimaryNegotiationMethod($type) {
+  public function getPrimaryNegotiationMethod($type): int|string|null {
     $enabled_methods = $this->getEnabledNegotiators($type);
     return empty($enabled_methods) ? LanguageNegotiatorInterface::METHOD_ID : key($enabled_methods);
   }
@@ -260,14 +228,14 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function saveConfiguration($type, $enabled_methods) {
+  public function saveConfiguration($type, $enabled_methods): void {
     // As configurable language types might have changed, we reset the cache.
     $this->languageManager->reset();
     $definitions = $this->getNegotiationMethods();
     $default_types = $this->languageManager->getLanguageTypes();
 
     // Ensure that the weights are integers.
-    $enabled_methods = array_map('intval', $enabled_methods);
+    $enabled_methods = array_map(intval(...), $enabled_methods);
 
     // Order the language negotiation method list by weight.
     asort($enabled_methods);
@@ -292,7 +260,7 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function purgeConfiguration() {
+  public function purgeConfiguration(): void {
     // Ensure that we are getting the defined language negotiation information.
     // An invocation of \Drupal\Core\Extension\ModuleInstaller::install() or
     // \Drupal\Core\Extension\ModuleInstaller::uninstall() could invalidate the
@@ -307,7 +275,7 @@ class LanguageNegotiator implements LanguageNegotiatorInterface {
   /**
    * {@inheritdoc}
    */
-  public function updateConfiguration(array $types) {
+  public function updateConfiguration(array $types): void {
     // Ensure that we are getting the defined language negotiation information.
     // An invocation of \Drupal\Core\Extension\ModuleInstaller::install() or
     // \Drupal\Core\Extension\ModuleInstaller::uninstall() could invalidate the

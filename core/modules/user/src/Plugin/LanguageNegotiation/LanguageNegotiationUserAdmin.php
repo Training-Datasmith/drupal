@@ -35,13 +35,6 @@ class LanguageNegotiationUserAdmin extends LanguageNegotiationMethodBase impleme
   const METHOD_ID = 'language-user-admin';
 
   /**
-   * The admin context.
-   *
-   * @var \Drupal\Core\Routing\AdminContext
-   */
-  protected $adminContext;
-
-  /**
    * The router.
    *
    * This is only used when called from an event subscriber, before the request
@@ -52,42 +45,25 @@ class LanguageNegotiationUserAdmin extends LanguageNegotiationMethodBase impleme
   protected $router;
 
   /**
-   * The path processor manager.
-   *
-   * @var \Drupal\Core\PathProcessor\PathProcessorManager
-   */
-  protected $pathProcessorManager;
-
-  /**
-   * The stacked route match.
-   *
-   * @var \Drupal\Core\Routing\StackedRouteMatchInterface
-   */
-  protected $stackedRouteMatch;
-
-  /**
    * Constructs a new LanguageNegotiationUserAdmin instance.
    *
-   * @param \Drupal\Core\Routing\AdminContext $admin_context
+   * @param \Drupal\Core\Routing\AdminContext $adminContext
    *   The admin context.
    * @param \Symfony\Component\Routing\Matcher\UrlMatcherInterface $router
    *   The router.
-   * @param \Drupal\Core\PathProcessor\PathProcessorManager $path_processor_manager
+   * @param \Drupal\Core\PathProcessor\PathProcessorManager $pathProcessorManager
    *   The path processor manager.
-   * @param \Drupal\Core\Routing\StackedRouteMatchInterface $stacked_route_match
+   * @param \Drupal\Core\Routing\StackedRouteMatchInterface $stackedRouteMatch
    *   The stacked route match.
    */
-  public function __construct(AdminContext $admin_context, UrlMatcherInterface $router, PathProcessorManager $path_processor_manager, StackedRouteMatchInterface $stacked_route_match) {
-    $this->adminContext = $admin_context;
+  public function __construct(protected \Drupal\Core\Routing\AdminContext $adminContext, UrlMatcherInterface $router, protected \Drupal\Core\PathProcessor\PathProcessorManager $pathProcessorManager, protected \Drupal\Core\Routing\StackedRouteMatchInterface $stackedRouteMatch) {
     $this->router = $router;
-    $this->pathProcessorManager = $path_processor_manager;
-    $this->stackedRouteMatch = $stacked_route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get('router.admin_context'),
       $container->get('router'),
@@ -100,15 +76,13 @@ class LanguageNegotiationUserAdmin extends LanguageNegotiationMethodBase impleme
    * {@inheritdoc}
    */
   public function getLangcode(?Request $request = NULL) {
-    $langcode = NULL;
-
     // User preference (only for administrators).
     if (($this->currentUser->hasPermission('access administration pages') || $this->currentUser->hasPermission('view the administration theme')) && ($preferred_admin_langcode = $this->currentUser->getPreferredAdminLangcode(FALSE)) && $this->isAdminPath($request)) {
-      $langcode = $preferred_admin_langcode;
+      return $preferred_admin_langcode;
     }
 
     // Not an admin, no admin language preference or not on an admin path.
-    return $langcode;
+    return NULL;
   }
 
   /**

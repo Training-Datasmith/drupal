@@ -19,16 +19,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class WorkflowAccessControlHandler extends EntityAccessControlHandler implements EntityHandlerInterface {
 
   /**
-   * The workflow type plugin manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $workflowTypeManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('plugin.manager.workflows.type')
@@ -40,12 +33,11 @@ class WorkflowAccessControlHandler extends EntityAccessControlHandler implements
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $workflow_type_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $workflowTypeManager
    *   The workflow type plugin manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, PluginManagerInterface $workflow_type_manager) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\Component\Plugin\PluginManagerInterface $workflowTypeManager) {
     parent::__construct($entity_type);
-    $this->workflowTypeManager = $workflow_type_manager;
   }
 
   /**

@@ -48,7 +48,7 @@ class HtmlList extends StylePluginBase {
   /**
    * Render the given style.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['type'] = [
       '#type' => 'radios',

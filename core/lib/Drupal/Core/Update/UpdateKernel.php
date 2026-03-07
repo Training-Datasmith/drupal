@@ -26,10 +26,10 @@ class UpdateKernel extends DrupalKernel {
   /**
    * {@inheritdoc}
    */
-  public function discoverServiceProviders() {
+  public function discoverServiceProviders(): void {
     parent::discoverServiceProviders();
 
-    $this->serviceProviderClasses['app']['update_kernel'] = 'Drupal\Core\Update\UpdateServiceProvider';
+    $this->serviceProviderClasses['app']['update_kernel'] = \Drupal\Core\Update\UpdateServiceProvider::class;
   }
 
   /**
@@ -39,14 +39,13 @@ class UpdateKernel extends DrupalKernel {
     // Always force a container rebuild, in order to be able to override some
     // services, see \Drupal\Core\Update\UpdateServiceProvider.
     $this->containerNeedsRebuild = TRUE;
-    $container = parent::initializeContainer();
-    return $container;
+    return parent::initializeContainer();
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function cacheDrupalContainer(array $container_definition) {
+  protected function cacheDrupalContainer(array $container_definition): bool {
     // Don't save this particular container to cache, so it does not leak into
     // the main site at all.
     return FALSE;
@@ -96,7 +95,7 @@ class UpdateKernel extends DrupalKernel {
    *
    * @see \Drupal\system\Controller\DbUpdateController
    */
-  protected function handleRaw(Request $request) {
+  protected function handleRaw(Request $request): mixed {
     $container = $this->getContainer();
 
     $this->handleAccess($request);

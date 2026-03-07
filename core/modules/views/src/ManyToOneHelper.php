@@ -27,26 +27,25 @@ class ManyToOneHelper {
   /**
    * Should the field use formula or alias.
    *
-   * @var bool
    *
    * @see \Drupal\views\Plugin\views\argument\StringArgument::query()
    */
   public bool $formula = FALSE;
 
-  /**
-   * The handler.
-   */
-  public ViewsHandlerInterface $handler;
-
-  public function __construct($handler) {
-    $this->handler = $handler;
+  public function __construct(
+      /**
+       * The handler.
+       */
+      public ViewsHandlerInterface $handler
+  )
+  {
   }
 
-  public static function defineOptions(&$options) {
+  public static function defineOptions(array &$options): void {
     $options['reduce_duplicates'] = ['default' => FALSE];
   }
 
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(array &$form, FormStateInterface $form_state): void {
     $form['reduce_duplicates'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Reduce duplicates'),
@@ -67,9 +66,7 @@ class ManyToOneHelper {
     if (!empty($this->formula)) {
       return $this->handler->getFormula();
     }
-    else {
-      return $this->handler->tableAlias . '.' . $this->handler->realField;
-    }
+    return $this->handler->tableAlias . '.' . $this->handler->realField;
   }
 
   /**
@@ -152,21 +149,19 @@ class ManyToOneHelper {
     if (empty($options['add_table']) || empty($view->many_to_one_tables[$field])) {
       return $query->ensureTable($this->handler->table, $this->handler->relationship, $join);
     }
-    else {
-      if (!empty($view->many_to_one_tables[$field])) {
-        foreach ($view->many_to_one_tables[$field] as $value) {
-          $join->extra = [
-            [
-              'field' => $this->handler->realField,
-              'operator' => '!=',
-              'value' => $value,
-              'numeric' => !empty($this->handler->definition['numeric']),
-            ],
-          ];
-        }
+    if (!empty($view->many_to_one_tables[$field])) {
+      foreach ($view->many_to_one_tables[$field] as $value) {
+        $join->extra = [
+          [
+            'field' => $this->handler->realField,
+            'operator' => '!=',
+            'value' => $value,
+            'numeric' => !empty($this->handler->definition['numeric']),
+          ],
+        ];
       }
-      return $this->addTable($join);
     }
+    return $this->addTable($join);
   }
 
   /**
@@ -278,7 +273,7 @@ class ManyToOneHelper {
     return $this->handler->query->placeholder($this->handler->options['table'] . '_' . $this->handler->options['field']);
   }
 
-  public function addFilter() {
+  public function addFilter(): void {
     if (empty($this->handler->value)) {
       return;
     }

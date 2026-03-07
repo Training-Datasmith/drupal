@@ -47,7 +47,7 @@ class Yaml implements SerializationInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getFileExtension() {
+  public static function getFileExtension(): string {
     return 'yml';
   }
 

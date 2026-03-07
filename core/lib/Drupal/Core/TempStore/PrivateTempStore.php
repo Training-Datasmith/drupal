@@ -32,41 +32,11 @@ class PrivateTempStore {
   use DependencySerializationTrait;
 
   /**
-   * The key/value storage object used for this data.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
-   */
-  protected $storage;
-
-  /**
-   * The lock object used for this data.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected $lockBackend;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountProxyInterface
-   */
-  protected $currentUser;
-
-  /**
    * The request stack.
    *
    * @var \Symfony\Component\HttpFoundation\RequestStack
    */
   protected $requestStack;
-
-  /**
-   * The time to live for items in seconds.
-   *
-   * By default, data is stored for one week (604800 seconds) before expiring.
-   *
-   * @var int
-   */
-  protected $expire;
 
   /**
    * Constructs a new object for accessing data from a key/value store.
@@ -75,21 +45,22 @@ class PrivateTempStore {
    *   The key/value storage object used for this data. Each storage object
    *   represents a particular collection of data and will contain any number
    *   of key/value pairs.
-   * @param \Drupal\Core\Lock\LockBackendInterface $lock_backend
+   * @param \Drupal\Core\Lock\LockBackendInterface $lockBackend
    *   The lock object used for this data.
-   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   * @param \Drupal\Core\Session\AccountProxyInterface $currentUser
    *   The current user account.
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request stack.
    * @param int $expire
    *   The time to live for items, in seconds.
    */
-  public function __construct(KeyValueStoreExpirableInterface $storage, LockBackendInterface $lock_backend, AccountProxyInterface $current_user, RequestStack $request_stack, $expire = 604800) {
-    $this->storage = $storage;
-    $this->lockBackend = $lock_backend;
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $storage, protected \Drupal\Core\Lock\LockBackendInterface $lockBackend, protected \Drupal\Core\Session\AccountProxyInterface $currentUser, RequestStack $request_stack, /**
+   * The time to live for items in seconds.
+   *
+   * By default, data is stored for one week (604800 seconds) before expiring.
+   */
+  protected $expire = 604800) {
     $this->requestStack = $request_stack;
-    $this->expire = $expire;
   }
 
   /**
@@ -119,7 +90,7 @@ class PrivateTempStore {
    * @throws \Drupal\Core\TempStore\TempStoreException
    *   Thrown when a lock for the backend storage could not be acquired.
    */
-  public function set($key, $value) {
+  public function set($key, $value): void {
     if ($this->currentUser->isAnonymous()) {
       $session = $this->requestStack->getSession();
       if (!$session->has('core.tempstore.private.owner')) {
@@ -178,13 +149,13 @@ class PrivateTempStore {
    * @throws \Drupal\Core\TempStore\TempStoreException
    *   Thrown when a lock for the backend storage could not be acquired.
    */
-  public function delete($key) {
+  public function delete($key): bool {
     $key = $this->createKey($key);
     if (!$object = $this->storage->get($key)) {
-      return TRUE;
+        return TRUE;
     }
-    elseif ($object->owner != $this->getOwner()) {
-      return FALSE;
+    if ($object->owner != $this->getOwner()) {
+        return FALSE;
     }
     if (!$this->lockBackend->acquire($key)) {
       $this->lockBackend->wait($key);
@@ -206,7 +177,7 @@ class PrivateTempStore {
    * @return string
    *   The unique key for the user.
    */
-  protected function createKey($key) {
+  protected function createKey(string $key): string {
     return $this->getOwner() . ':' . $key;
   }
 

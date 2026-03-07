@@ -22,7 +22,7 @@ class DefaultLanguageItem extends LanguageItem {
   /**
    * {@inheritdoc}
    */
-  public function applyDefaultValue($notify = TRUE) {
+  public function applyDefaultValue($notify = TRUE): static {
     // Default to LANGCODE_NOT_SPECIFIED.
     $langcode = Language::LANGCODE_NOT_SPECIFIED;
     if ($entity = $this->getEntity()) {

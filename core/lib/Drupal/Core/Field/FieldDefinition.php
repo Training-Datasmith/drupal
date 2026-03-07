@@ -49,10 +49,8 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @param \Drupal\Core\Field\FieldStorageDefinitionInterface $storageDefinition
    *   The associated field storage definition.
-   *
-   * @return static
    */
-  public static function createFromFieldStorageDefinition(FieldStorageDefinitionInterface $storageDefinition) {
+  public static function createFromFieldStorageDefinition(FieldStorageDefinitionInterface $storageDefinition): static {
     $field_definition = new static();
     $field_definition->setFieldStorageDefinition($storageDefinition);
     return $field_definition;
@@ -87,7 +85,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @return $this
    */
-  public function setTargetBundle($bundle) {
+  public function setTargetBundle($bundle): static {
     $this->definition['bundle'] = $bundle;
     return $this;
   }
@@ -111,7 +109,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @return $this
    */
-  public function setDisplayConfigurable($display_context, $configurable) {
+  public function setDisplayConfigurable($display_context, $configurable): static {
     // If no explicit display options have been specified, default to 'hidden'.
     if (empty($this->definition['display'][$display_context])) {
       $this->definition['display'][$display_context]['options'] = ['region' => 'hidden'];
@@ -148,7 +146,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @return $this
    */
-  public function setDisplayOptions($display_context, array $options) {
+  public function setDisplayOptions($display_context, array $options): static {
     $this->definition['display'][$display_context]['options'] = $options;
     return $this;
   }
@@ -175,7 +173,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @return $this
    */
-  public function setDefaultValueCallback($callback) {
+  public function setDefaultValueCallback($callback): static {
     if (isset($callback) && !is_string($callback)) {
       throw new \InvalidArgumentException('Default value callback must be a string, like "function_name" or "ClassName::methodName"');
     }
@@ -198,7 +196,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @return $this
    */
-  public function setDefaultValue($value) {
+  public function setDefaultValue($value): static {
     $this->definition['default_value'] = $this->normalizeValue($value, $this->getFieldStorageDefinition()->getMainPropertyName());
     return $this;
   }
@@ -228,7 +226,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @return $this
    */
-  public function setTranslatable($translatable) {
+  public function setTranslatable($translatable): static {
     $this->definition['translatable'] = $translatable;
     return $this;
   }
@@ -236,7 +234,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
   /**
    * {@inheritdoc}
    */
-  public function isTranslatable() {
+  public function isTranslatable(): bool {
     return !empty($this->definition['translatable']) && $this->getFieldStorageDefinition()->isTranslatable();
   }
 
@@ -248,7 +246,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
    *
    * @return $this
    */
-  public function setFieldStorageDefinition(FieldStorageDefinitionInterface $storageDefinition) {
+  public function setFieldStorageDefinition(FieldStorageDefinitionInterface $storageDefinition): static {
     $this->fieldStorageDefinition = $storageDefinition;
     $this->itemDefinition = FieldItemDataDefinition::create($this);
     // Create a definition for the items, and initialize it with the default
@@ -269,7 +267,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
   /**
    * {@inheritdoc}
    */
-  public function getConfig($bundle) {
+  public function getConfig($bundle): never {
     // @todo provide a FieldDefinitionOverride config entity in
     // https://www.drupal.org/project/drupal/issues/2935978.
     throw new \Exception('Field definitions do not currently have an override config entity.');
@@ -278,7 +276,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
   /**
    * {@inheritdoc}
    */
-  public function getUniqueIdentifier() {
+  public function getUniqueIdentifier(): string {
     return $this->getTargetEntityTypeId() . '-' . $this->getTargetBundle() . '-' . $this->getName();
   }
 
@@ -289,22 +287,20 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
     if (array_key_exists($setting_name, $this->itemDefinition->getSettings())) {
       return $this->itemDefinition->getSetting($setting_name);
     }
-    else {
-      return $this->getFieldStorageDefinition()->getSetting($setting_name);
-    }
+    return $this->getFieldStorageDefinition()->getSetting($setting_name);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getSettings() {
+  public function getSettings(): float|int|array {
     return $this->getItemDefinition()->getSettings() + $this->getFieldStorageDefinition()->getSettings();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setSetting($setting_name, $value) {
+  public function setSetting($setting_name, $value): static {
     $this->getItemDefinition()->setSetting($setting_name, $value);
     return $this;
   }
@@ -312,7 +308,7 @@ class FieldDefinition extends ListDataDefinition implements FieldDefinitionInter
   /**
    * {@inheritdoc}
    */
-  public function setSettings(array $settings) {
+  public function setSettings(array $settings): static {
     // Assign settings individually, in order to keep the current values
     // of settings not specified in $settings.
     foreach ($settings as $setting_name => $setting) {

@@ -16,7 +16,7 @@ class ConfigOverride implements ServiceProviderInterface, ConfigFactoryOverrideI
   /**
    * {@inheritdoc}
    */
-  public function register(ContainerBuilder $container) {
+  public function register(ContainerBuilder $container): void {
     // Register this class so that it can override configuration.
     $container
       ->register('core.install_config_override', static::class)
@@ -25,8 +25,9 @@ class ConfigOverride implements ServiceProviderInterface, ConfigFactoryOverrideI
 
   /**
    * {@inheritdoc}
+   * @return array{name: mixed}[]
    */
-  public function loadOverrides($names) {
+  public function loadOverrides($names): array {
     $overrides = [];
     if (InstallerKernel::installationAttempted() && function_exists('drupal_install_profile_distribution_name')) {
       // Early in the installer the site name is unknown. In this case we need
@@ -41,21 +42,21 @@ class ConfigOverride implements ServiceProviderInterface, ConfigFactoryOverrideI
   /**
    * {@inheritdoc}
    */
-  public function getCacheSuffix() {
+  public function getCacheSuffix(): string {
     return 'core.install_config_override';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION) {
+  public function createConfigObject($name, $collection = StorageInterface::DEFAULT_COLLECTION): null {
     return NULL;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata($name) {
+  public function getCacheableMetadata($name): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

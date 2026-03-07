@@ -34,20 +34,6 @@ class Node extends WizardPluginBase {
   protected $createdColumn = 'node_field_data-created';
 
   /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
    * Node constructor.
    *
    * @param array $configuration
@@ -58,24 +44,21 @@ class Node extends WizardPluginBase {
    *   The plugin definition.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $bundle_info_service
    *   The entity bundle info service.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository service.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
    * @param \Drupal\Core\Menu\MenuParentFormSelectorInterface $parent_form_selector
    *   The parent form selector service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeBundleInfoInterface $bundle_info_service, EntityDisplayRepositoryInterface $entity_display_repository, EntityFieldManagerInterface $entity_field_manager, MenuParentFormSelectorInterface $parent_form_selector) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeBundleInfoInterface $bundle_info_service, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager, MenuParentFormSelectorInterface $parent_form_selector) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $bundle_info_service, $parent_form_selector);
-
-    $this->entityDisplayRepository = $entity_display_repository;
-    $this->entityFieldManager = $entity_field_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getAvailableSorts() {
+  public function getAvailableSorts(): array {
     // You can't execute functions in properties, so override the method.
     return [
       'node_field_data-title:ASC' => $this->t('Title'),
@@ -85,7 +68,7 @@ class Node extends WizardPluginBase {
   /**
    * {@inheritdoc}
    */
-  protected function rowStyleOptions() {
+  protected function rowStyleOptions(): array {
     $options = [];
     $options['teasers'] = $this->t('teasers');
     $options['full_posts'] = $this->t('full posts');
@@ -193,7 +176,7 @@ class Node extends WizardPluginBase {
   /**
    * Set the row style and row style plugins to the display_options.
    */
-  protected function display_options_row(&$display_options, $row_plugin, $row_options) {
+  protected function display_options_row(array &$display_options, $row_plugin, $row_options) {
     switch ($row_plugin) {
       case 'full_posts':
         $display_options['row']['type'] = 'entity:node';
@@ -255,7 +238,7 @@ class Node extends WizardPluginBase {
     $tag_fields = [];
     foreach ($bundles as $bundle) {
       $display = $this->entityDisplayRepository->getFormDisplay($this->entityTypeId, $bundle);
-      $tag_fields += array_filter($this->entityFieldManager->getFieldDefinitions($this->entityTypeId, $bundle), function (FieldDefinitionInterface $field_definition) use ($display) {
+      $tag_fields += array_filter($this->entityFieldManager->getFieldDefinitions($this->entityTypeId, $bundle), function (FieldDefinitionInterface $field_definition) use ($display): bool {
         if ($field_definition->getType() == 'entity_reference' && $field_definition->getSetting('target_type') == 'taxonomy_term') {
           $widget = $display->getComponent($field_definition->getName());
           return isset($widget['type']) && $widget['type'] == 'entity_reference_autocomplete_tags';

@@ -15,7 +15,7 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
  *   This API is experimental.
  */
 #[\Attribute(\Attribute::TARGET_METHOD)]
-final class ActionMethod {
+final readonly class ActionMethod {
 
   /**
    * @param \Drupal\Core\Config\Action\Exists $exists
@@ -41,10 +41,10 @@ final class ActionMethod {
    * @see https://www.php.net/manual/en/functions.user-defined.php
    */
   public function __construct(
-    public readonly Exists $exists = Exists::ErrorIfNotExists,
-    public readonly TranslatableMarkup|string $adminLabel = '',
-    public readonly bool|string $pluralize = TRUE,
-    public readonly ?string $name = NULL,
+    public Exists $exists = Exists::ErrorIfNotExists,
+    public TranslatableMarkup|string $adminLabel = '',
+    public bool|string $pluralize = TRUE,
+    public ?string $name = NULL,
   ) {
     if ($name && !preg_match(ExtensionDiscovery::PHP_FUNCTION_PATTERN, $name)) {
       throw new InvalidPluginDefinitionException('entity_method', sprintf("'%s' is not a valid PHP function name.", $name));

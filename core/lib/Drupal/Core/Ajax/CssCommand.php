@@ -18,23 +18,6 @@ namespace Drupal\Core\Ajax;
 class CssCommand implements CommandInterface {
 
   /**
-   * A CSS selector string.
-   *
-   * If the command is a response to a request from an #ajax form element then
-   * this value can be NULL.
-   *
-   * @var string
-   */
-  protected $selector;
-
-  /**
-   * An array of property/value pairs to set in the CSS for the selector.
-   *
-   * @var array
-   */
-  protected $css = [];
-
-  /**
    * Constructs a CssCommand object.
    *
    * @param string $selector
@@ -42,9 +25,17 @@ class CssCommand implements CommandInterface {
    * @param array $css
    *   An array of CSS property/value pairs to set.
    */
-  public function __construct($selector, array $css = []) {
-    $this->selector = $selector;
-    $this->css = $css;
+  public function __construct(
+      /**
+       * A CSS selector string.
+       *
+       * If the command is a response to a request from an #ajax form element then
+       * this value can be NULL.
+       */
+      protected $selector,
+      protected array $css = []
+  )
+  {
   }
 
   /**
@@ -57,7 +48,7 @@ class CssCommand implements CommandInterface {
    *
    * @return $this
    */
-  public function setProperty($property, $value) {
+  public function setProperty($property, $value): static {
     $this->css[$property] = $value;
     return $this;
   }
@@ -65,7 +56,7 @@ class CssCommand implements CommandInterface {
   /**
    * Implements Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
 
     return [
       'command' => 'css',

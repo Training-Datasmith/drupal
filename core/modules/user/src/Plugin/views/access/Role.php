@@ -33,13 +33,6 @@ class Role extends AccessPluginBase implements CacheableDependencyInterface {
   protected $usesOptions = TRUE;
 
   /**
-   * The role storage.
-   *
-   * @var \Drupal\user\RoleStorageInterface
-   */
-  protected $roleStorage;
-
-  /**
    * Constructs a Role object.
    *
    * @param array $configuration
@@ -48,18 +41,17 @@ class Role extends AccessPluginBase implements CacheableDependencyInterface {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\user\RoleStorageInterface $role_storage
+   * @param \Drupal\user\RoleStorageInterface $roleStorage
    *   The role storage.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, RoleStorageInterface $role_storage) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\user\RoleStorageInterface $roleStorage) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->roleStorage = $role_storage;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -71,16 +63,16 @@ class Role extends AccessPluginBase implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function access(AccountInterface $account) {
+  public function access(AccountInterface $account): bool {
     return !empty(array_intersect(array_filter($this->options['role']), $account->getRoles()));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function alterRouteDefinition(Route $route) {
+  public function alterRouteDefinition(Route $route): void {
     if ($this->options['role']) {
-      $route->setRequirement('_role', (string) implode('+', $this->options['role']));
+      $route->setRequirement('_role', implode('+', $this->options['role']));
     }
   }
 
@@ -90,15 +82,13 @@ class Role extends AccessPluginBase implements CacheableDependencyInterface {
   public function summaryTitle() {
     $count = count($this->options['role']);
     if ($count < 1) {
-      return $this->t('No role(s) selected');
+        return $this->t('No role(s) selected');
     }
-    elseif ($count > 1) {
-      return $this->t('Multiple roles');
+    if ($count > 1) {
+        return $this->t('Multiple roles');
     }
-    else {
-      $rid = reset($this->options['role']);
-      return $this->roleStorage->load($rid)->label();
-    }
+    $rid = reset($this->options['role']);
+    return $this->roleStorage->load($rid)->label();
   }
 
   /**
@@ -114,13 +104,13 @@ class Role extends AccessPluginBase implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['role'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Role'),
       '#default_value' => $this->options['role'],
-      '#options' => array_map(fn(RoleInterface $role) => Html::escape($role->label()), $this->roleStorage->loadMultiple()),
+      '#options' => array_map(fn(RoleInterface $role): string => Html::escape($role->label()), $this->roleStorage->loadMultiple()),
       '#description' => $this->t('Only the checked roles will be able to access this display.'),
     ];
   }
@@ -128,7 +118,7 @@ class Role extends AccessPluginBase implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateOptionsForm(&$form, FormStateInterface $form_state) {
+  public function validateOptionsForm(&$form, FormStateInterface $form_state): void {
     $role = $form_state->getValue(['access_options', 'role']);
     $role = array_filter($role);
 
@@ -157,21 +147,21 @@ class Role extends AccessPluginBase implements CacheableDependencyInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return Cache::PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return ['user.roles'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return [];
   }
 

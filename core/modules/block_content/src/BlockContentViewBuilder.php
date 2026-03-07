@@ -27,7 +27,7 @@ class BlockContentViewBuilder extends EntityViewBuilder {
   /**
    * {@inheritdoc}
    */
-  public function viewMultiple(array $entities = [], $view_mode = 'full', $langcode = NULL) {
+  public function viewMultiple(array $entities = [], $view_mode = 'full', $langcode = NULL): array {
     $build_list = parent::viewMultiple($entities, $view_mode, $langcode);
     // Apply the buildMultiple() #pre_render callback immediately, to make
     // bubbling of attributes and contextual links to the actual block work.
@@ -39,7 +39,7 @@ class BlockContentViewBuilder extends EntityViewBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getBuildDefaults(EntityInterface $entity, $view_mode) {
+  protected function getBuildDefaults(EntityInterface $entity, $view_mode): array {
     $build = parent::getBuildDefaults($entity, $view_mode);
     // The content block will be rendered in the wrapped block template already
     // and thus has no entity template itself.

@@ -18,7 +18,7 @@ class LinkApprove extends LinkBase {
   /**
    * {@inheritdoc}
    */
-  protected function getUrlInfo(ResultRow $row) {
+  protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url {
     $entity = $this->getEntity($row);
     if (!$entity) {
       return NULL;
@@ -37,7 +37,7 @@ class LinkApprove extends LinkBase {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultLabel() {
+  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Approve');
   }
 

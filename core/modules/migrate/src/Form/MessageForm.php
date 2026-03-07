@@ -17,7 +17,7 @@ class MessageForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $form = new static();
     $form->setStringTranslation($container->get('string_translation'));
     return $form;
@@ -26,14 +26,14 @@ class MessageForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'migrate_messages_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $session_filters = $this->getRequest()->getSession()->get('migration_messages_overview_filter', []);
     $form['filters'] = [
       '#type' => 'details',
@@ -79,7 +79,7 @@ class MessageForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $filters['message'] = [
       'title' => $this->t('message'),
       'field' => 'msg.message',

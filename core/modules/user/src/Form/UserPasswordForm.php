@@ -25,39 +25,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UserPasswordForm extends FormBase implements WorkspaceSafeFormInterface {
 
   /**
-   * The user storage.
-   *
-   * @var \Drupal\user\UserStorageInterface
-   */
-  protected $userStorage;
-
-  /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The flood service.
-   *
-   * @var \Drupal\Core\Flood\FloodInterface
-   */
-  protected $flood;
-
-  /**
-   * The email validator service.
-   *
-   * @var \Drupal\Component\Utility\EmailValidatorInterface
-   */
-  protected $emailValidator;
-
-  /**
    * Constructs a UserPasswordForm object.
    *
-   * @param \Drupal\user\UserStorageInterface $user_storage
+   * @param \Drupal\user\UserStorageInterface $userStorage
    *   The user storage.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param \Drupal\Core\Config\ConfigFactory $config_factory
    *   The config factory.
@@ -65,28 +37,24 @@ class UserPasswordForm extends FormBase implements WorkspaceSafeFormInterface {
    *   The flood service.
    * @param \Drupal\user\UserNameValidator $userNameValidator
    *   The user validator service.
-   * @param \Drupal\Component\Utility\EmailValidatorInterface $email_validator
+   * @param \Drupal\Component\Utility\EmailValidatorInterface $emailValidator
    *   The email validator service.
    */
   public function __construct(
-    UserStorageInterface $user_storage,
-    LanguageManagerInterface $language_manager,
+    protected \Drupal\user\UserStorageInterface $userStorage,
+    protected \Drupal\Core\Language\LanguageManagerInterface $languageManager,
     ConfigFactory $config_factory,
-    FloodInterface $flood,
+    protected \Drupal\Core\Flood\FloodInterface $flood,
     protected UserNameValidator $userNameValidator,
-    EmailValidatorInterface $email_validator,
+    protected \Drupal\Component\Utility\EmailValidatorInterface $emailValidator,
   ) {
-    $this->userStorage = $user_storage;
-    $this->languageManager = $language_manager;
     $this->configFactory = $config_factory;
-    $this->flood = $flood;
-    $this->emailValidator = $email_validator;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('user'),
       $container->get('language_manager'),
@@ -100,14 +68,14 @@ class UserPasswordForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'user_pass';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $form['name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Username or email address'),
@@ -151,7 +119,7 @@ class UserPasswordForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     $flood_config = $this->configFactory->get('user.flood');
     if (!$this->flood->isAllowed('user.password_request_ip', $flood_config->get('ip_limit'), $flood_config->get('ip_window'))) {
       $form_state->setErrorByName('name', $this->t('Too many password recovery requests from your IP address. It is temporarily blocked. Try again later or contact the site administrator.'));
@@ -159,7 +127,7 @@ class UserPasswordForm extends FormBase implements WorkspaceSafeFormInterface {
     }
     $this->flood->register('user.password_request_ip', $flood_config->get('ip_window'));
     // First, see if the input is possibly valid as a username.
-    $name = trim($form_state->getValue('name'));
+    $name = trim((string) $form_state->getValue('name'));
     $violations = $this->userNameValidator->validateName($name);
     // Usernames have a maximum length shorter than email addresses. Only print
     // this error if the input is not valid as a username or email address.
@@ -192,7 +160,7 @@ class UserPasswordForm extends FormBase implements WorkspaceSafeFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $account = $form_state->getValue('account');
     if ($account) {
       // Mail one time login URL and instructions using current language.

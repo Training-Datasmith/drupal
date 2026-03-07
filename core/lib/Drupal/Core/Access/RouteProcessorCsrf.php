@@ -33,7 +33,7 @@ class RouteProcessorCsrf implements OutboundRouteProcessorInterface, TrustedCall
   /**
    * {@inheritdoc}
    */
-  public function processOutbound($route_name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = NULL) {
+  public function processOutbound($route_name, Route $route, array &$parameters, ?BubbleableMetadata $bubbleable_metadata = NULL): void {
     if ($route->hasRequirement('_csrf_token')) {
       $path = $this->generateRoutePath($route, $parameters);
       // Adding this to the parameters means it will get merged into the query
@@ -67,7 +67,7 @@ class RouteProcessorCsrf implements OutboundRouteProcessorInterface, TrustedCall
    * @return array
    *   A renderable array representing the CSRF token.
    */
-  public function renderPlaceholderCsrfToken($path) {
+  public function renderPlaceholderCsrfToken($path): array {
     return [
       '#markup' => $this->csrfToken->get($path),
       // Tokens are per session.
@@ -82,7 +82,7 @@ class RouteProcessorCsrf implements OutboundRouteProcessorInterface, TrustedCall
   /**
    * {@inheritdoc}
    */
-  public static function trustedCallbacks() {
+  public static function trustedCallbacks(): array {
     return ['renderPlaceholderCsrfToken'];
   }
 

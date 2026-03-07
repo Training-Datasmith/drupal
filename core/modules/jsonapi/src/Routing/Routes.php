@@ -48,18 +48,11 @@ class Routes implements ContainerInjectionInterface {
   const RESOURCE_TYPE_KEY = 'resource_type';
 
   /**
-   * The JSON:API resource type repository.
-   *
-   * @var \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface
-   */
-  protected $resourceTypeRepository;
-
-  /**
    * List of providers.
    *
    * @var string[]
    */
-  protected $providerIds;
+  protected array $providerIds;
 
   /**
    * The JSON:API base path.
@@ -71,15 +64,14 @@ class Routes implements ContainerInjectionInterface {
   /**
    * Instantiates a Routes object.
    *
-   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resource_type_repository
+   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository
    *   The JSON:API resource type repository.
    * @param string[] $authentication_providers
    *   The authentication providers, keyed by ID.
    * @param string $jsonapi_base_path
    *   The JSON:API base path.
    */
-  public function __construct(ResourceTypeRepositoryInterface $resource_type_repository, array $authentication_providers, $jsonapi_base_path) {
-    $this->resourceTypeRepository = $resource_type_repository;
+  public function __construct(protected \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository, array $authentication_providers, $jsonapi_base_path) {
     $this->providerIds = array_keys($authentication_providers);
     assert(is_string($jsonapi_base_path));
     assert(
@@ -96,7 +88,7 @@ class Routes implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('jsonapi.resource_type.repository'),
       $container->getParameter('authentication_providers'),
@@ -107,7 +99,7 @@ class Routes implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public function routes() {
+  public function routes(): \Symfony\Component\Routing\RouteCollection {
     $routes = new RouteCollection();
     $upload_routes = new RouteCollection();
 
@@ -205,7 +197,7 @@ class Routes implements ContainerInjectionInterface {
    * @return \Symfony\Component\Routing\RouteCollection
    *   The route collection.
    */
-  protected static function getFileUploadRoutesForResourceType(ResourceType $resource_type, $path_prefix) {
+  protected static function getFileUploadRoutesForResourceType(ResourceType $resource_type, $path_prefix): \Symfony\Component\Routing\RouteCollection {
     $routes = new RouteCollection();
 
     // Internal resources have no routes; individual routes require locations.
@@ -215,9 +207,7 @@ class Routes implements ContainerInjectionInterface {
 
     // File upload routes are only necessary for resource types that have file
     // fields.
-    $has_file_field = array_reduce($resource_type->getRelatableResourceTypes(), function ($carry, array $target_resource_types) {
-      return $carry || static::hasNonInternalFileTargetResourceTypes($target_resource_types);
-    }, FALSE);
+    $has_file_field = array_reduce($resource_type->getRelatableResourceTypes(), fn(false $carry, array $target_resource_types) => $carry || static::hasNonInternalFileTargetResourceTypes($target_resource_types), FALSE);
     if (!$has_file_field) {
       return $routes;
     }
@@ -263,7 +253,7 @@ class Routes implements ContainerInjectionInterface {
    * @return bool
    *   Whether the request targets a generated route.
    */
-  public static function isJsonApiRequest(array $defaults) {
+  public static function isJsonApiRequest(array $defaults): bool {
     return isset($defaults[RouteObjectInterface::CONTROLLER_NAME])
       && str_starts_with($defaults[RouteObjectInterface::CONTROLLER_NAME], static::CONTROLLER_SERVICE_NAME);
   }
@@ -363,7 +353,7 @@ class Routes implements ContainerInjectionInterface {
    * @return \Symfony\Component\Routing\Route
    *   The entry point route.
    */
-  protected function getEntryPointRoute($path_prefix) {
+  protected function getEntryPointRoute($path_prefix): \Symfony\Component\Routing\Route {
     $entry_point = new Route("/{$path_prefix}");
     $entry_point->addDefaults([RouteObjectInterface::CONTROLLER_NAME => EntryPoint::class . '::index']);
     $entry_point->setRequirement('_access', 'TRUE');
@@ -402,7 +392,7 @@ class Routes implements ContainerInjectionInterface {
    * @return string
    *   The generated route name.
    */
-  public static function getRouteName(ResourceType $resource_type, $route_type) {
+  public static function getRouteName(ResourceType $resource_type, $route_type): string {
     return sprintf('jsonapi.%s.%s', $resource_type->getTypeName(), $route_type);
   }
 
@@ -417,7 +407,7 @@ class Routes implements ContainerInjectionInterface {
    * @return string
    *   The generated route name.
    */
-  protected static function getFileUploadRouteName(ResourceType $resource_type, $route_type) {
+  protected static function getFileUploadRouteName(ResourceType $resource_type, $route_type): string {
     return sprintf('jsonapi.%s.%s.%s', $resource_type->getTypeName(), 'file_upload', $route_type);
   }
 
@@ -431,10 +421,8 @@ class Routes implements ContainerInjectionInterface {
    *   TRUE if there is at least one non-internal resource type in the given
    *   array; FALSE otherwise.
    */
-  protected static function hasNonInternalTargetResourceTypes(array $resource_types) {
-    return array_reduce($resource_types, function ($carry, ResourceType $target) {
-      return $carry || !$target->isInternal();
-    }, FALSE);
+  protected static function hasNonInternalTargetResourceTypes(array $resource_types): bool {
+    return array_reduce($resource_types, fn(false $carry, ResourceType $target) => $carry || !$target->isInternal(), FALSE);
   }
 
   /**
@@ -447,10 +435,8 @@ class Routes implements ContainerInjectionInterface {
    *   TRUE if there is at least one non-internal "file" resource type in the
    *   given array; FALSE otherwise.
    */
-  protected static function hasNonInternalFileTargetResourceTypes(array $resource_types) {
-    return array_reduce($resource_types, function ($carry, ResourceType $target) {
-      return $carry || (!$target->isInternal() && $target->getEntityTypeId() === 'file');
-    }, FALSE);
+  protected static function hasNonInternalFileTargetResourceTypes(array $resource_types): bool {
+    return array_reduce($resource_types, fn(false $carry, ResourceType $target) => $carry || (!$target->isInternal() && $target->getEntityTypeId() === 'file'), FALSE);
   }
 
   /**
@@ -473,7 +459,7 @@ class Routes implements ContainerInjectionInterface {
   /**
    * Invalidates any JSON:API resource type dependent responses and routes.
    */
-  public static function rebuild() {
+  public static function rebuild(): void {
     \Drupal::service('cache_tags.invalidator')->invalidateTags(['jsonapi_resource_types']);
     \Drupal::service('router.builder')->setRebuildNeeded();
   }

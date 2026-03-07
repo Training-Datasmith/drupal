@@ -60,7 +60,7 @@ class Action extends ConfigEntityBase implements ActionConfigEntityInterface, En
    *
    * @var string|null
    */
-  protected $type = NULL;
+  protected $type;
 
   /**
    * The configuration of the action.
@@ -120,7 +120,7 @@ class Action extends ConfigEntityBase implements ActionConfigEntityInterface, En
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return ['configuration' => $this->getPluginCollection()];
   }
 
@@ -134,7 +134,7 @@ class Action extends ConfigEntityBase implements ActionConfigEntityInterface, En
   /**
    * {@inheritdoc}
    */
-  public function setPlugin($plugin_id) {
+  public function setPlugin($plugin_id): void {
     $this->plugin = $plugin_id;
     $this->getPluginCollection()->addInstanceId($plugin_id);
   }
@@ -156,7 +156,7 @@ class Action extends ConfigEntityBase implements ActionConfigEntityInterface, En
   /**
    * {@inheritdoc}
    */
-  public function isConfigurable() {
+  public function isConfigurable(): bool {
     return $this->getPlugin() instanceof ConfigurableInterface;
   }
 

@@ -22,14 +22,14 @@ class None extends AccessPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Unrestricted');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function access(AccountInterface $account) {
+  public function access(AccountInterface $account): bool {
     // No access control.
     return TRUE;
   }
@@ -37,7 +37,7 @@ class None extends AccessPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function alterRouteDefinition(Route $route) {
+  public function alterRouteDefinition(Route $route): void {
     $route->setRequirement('_access', 'TRUE');
   }
 

@@ -17,7 +17,7 @@ class ConfigTranslationEntityListBuilder extends ConfigEntityListBuilder impleme
    * @return array
    *   An associative array of facing strings.
    */
-  protected function getFilterLabels() {
+  protected function getFilterLabels(): array {
     return [
       'placeholder' => $this->t('Enter label'),
       'description' => $this->t('Enter a part of the label or description to filter by.'),
@@ -27,11 +27,11 @@ class ConfigTranslationEntityListBuilder extends ConfigEntityListBuilder impleme
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = parent::render();
     $filter = $this->getFilterLabels();
 
-    usort($build['table']['#rows'], [$this, 'sortRows']);
+    usort($build['table']['#rows'], $this->sortRows(...));
 
     $build['filters'] = [
       '#type' => 'container',
@@ -124,13 +124,13 @@ class ConfigTranslationEntityListBuilder extends ConfigEntityListBuilder impleme
       return $this->sortRowsMultiple($a, $b, $keys);
     }
 
-    return strnatcasecmp($a_value, $b_value);
+    return strnatcasecmp((string) $a_value, (string) $b_value);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setMapperDefinition($mapper_definition) {
+  public function setMapperDefinition($mapper_definition): static {
     // @todo Why is this method called on all config list controllers?
     return $this;
   }

@@ -20,9 +20,7 @@ abstract class RevisionableContentEntityBase extends ContentEntityBase implement
    */
   public static function baseFieldDefinitions(EntityTypeInterface $entity_type) {
     $fields = parent::baseFieldDefinitions($entity_type);
-
-    $fields += static::revisionLogBaseFieldDefinitions($entity_type);
-    return $fields;
+    return $fields + static::revisionLogBaseFieldDefinitions($entity_type);
   }
 
 }

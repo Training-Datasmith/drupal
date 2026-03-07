@@ -44,7 +44,7 @@ class OpmlFields extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $initial_labels = ['' => $this->t('- None -')];
@@ -170,7 +170,7 @@ class OpmlFields extends RowPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render($row) {
+  public function render($row): array {
     // Create the OPML item array.
     $item = [];
     $row_index = $this->view->row_index;
@@ -190,15 +190,13 @@ class OpmlFields extends RowPluginBase {
     }
     // Remove empty attributes.
     $item = array_filter($item);
-
-    $build = [
+    return [
       '#theme' => $this->themeFunctions(),
       '#view' => $this->view,
       '#options' => $this->options,
       '#row' => $item,
       '#field_alias' => $this->field_alias ?? '',
     ];
-    return $build;
   }
 
   /**
@@ -212,7 +210,7 @@ class OpmlFields extends RowPluginBase {
    * @return string
    *   The rendered field value.
    */
-  public function getField($index, $field_id) {
+  public function getField($index, $field_id): string {
     if (empty($this->view->style_plugin) || !is_object($this->view->style_plugin) || empty($field_id)) {
       return '';
     }

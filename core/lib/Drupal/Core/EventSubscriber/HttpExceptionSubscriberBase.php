@@ -85,7 +85,7 @@ abstract class HttpExceptionSubscriberBase implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event to process.
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
 
     // Make the exception available for example when rendering a block.

@@ -35,13 +35,6 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   use RefinableDependentAccessTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * The block content entity.
    *
    * @var \Drupal\block_content\BlockContentInterface
@@ -49,25 +42,11 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   protected $blockContent;
 
   /**
-   * The entity display repository.
-   *
-   * @var \Drupal\Core\Entity\EntityDisplayRepositoryInterface
-   */
-  protected $entityDisplayRepository;
-
-  /**
    * Whether a new block is being created.
    *
    * @var bool
    */
   protected $isNew = TRUE;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
 
   /**
    * Constructs a new InlineBlock.
@@ -78,19 +57,15 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
-   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entity_display_repository
+   * @param \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository
    *   The entity display repository.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EntityDisplayRepositoryInterface $entity_display_repository, AccountInterface $current_user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Entity\EntityDisplayRepositoryInterface $entityDisplayRepository, protected \Drupal\Core\Session\AccountInterface $currentUser) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->entityTypeManager = $entity_type_manager;
-    $this->entityDisplayRepository = $entity_display_repository;
-    $this->currentUser = $current_user;
     if (!empty($this->configuration['block_revision_id']) || !empty($this->configuration['block_serialized'])) {
       $this->isNew = FALSE;
     }
@@ -99,7 +74,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'view_mode' => 'full',
       'block_id' => NULL,
@@ -111,7 +86,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     $block = $this->getEntity();
 
     // Add the entity form display in a process callback so that #parents can
@@ -147,7 +122,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    * @return array
    *   The containing element, with the Content Block form inserted.
    */
-  public static function processBlockForm(array $element, FormStateInterface $form_state) {
+  public static function processBlockForm(array $element, FormStateInterface $form_state): array {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $element['#block'];
     EntityFormDisplay::collectRenderDisplay($block, 'edit')->buildForm($block, $element, $form_state);
@@ -159,7 +134,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   /**
    * {@inheritdoc}
    */
-  public function blockValidate($form, FormStateInterface $form_state) {
+  public function blockValidate($form, FormStateInterface $form_state): void {
     $block_form = $form['block_form'];
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = $block_form['#block'];
@@ -174,7 +149,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     $this->configuration['view_mode'] = $form_state->getValue('view_mode');
 
     // @todo Remove when https://www.drupal.org/project/drupal/issues/2948549 is closed.
@@ -255,7 +230,7 @@ class InlineBlock extends BlockBase implements ContainerFactoryPluginInterface, 
    * @param bool $duplicate_block
    *   Whether to duplicate the "block_content" entity.
    */
-  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE) {
+  public function saveBlockContent($new_revision = FALSE, $duplicate_block = FALSE): void {
     /** @var \Drupal\block_content\BlockContentInterface $block */
     $block = NULL;
     if (!empty($this->configuration['block_serialized'])) {

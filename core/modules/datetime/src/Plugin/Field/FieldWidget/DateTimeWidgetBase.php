@@ -17,7 +17,7 @@ class DateTimeWidgetBase extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
+  public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state): array {
     $element['value'] = [
       '#type' => 'datetime',
       '#default_value' => NULL,
@@ -42,7 +42,7 @@ class DateTimeWidgetBase extends WidgetBase {
   /**
    * {@inheritdoc}
    */
-  public function massageFormValues(array $values, array $form, FormStateInterface $form_state) {
+  public function massageFormValues(array $values, array $form, FormStateInterface $form_state): array {
     // The widget form element type has transformed the value to a
     // DrupalDateTime object at this point. We need to convert it back to the
     // storage timezone and format.
@@ -59,7 +59,6 @@ class DateTimeWidgetBase extends WidgetBase {
 
     foreach ($values as &$item) {
       if (!empty($item['value']) && $item['value'] instanceof DrupalDateTime) {
-        /** @var \Drupal\Core\Datetime\DrupalDateTime $date */
         $date = $item['value'];
 
         // Adjust the date for storage.

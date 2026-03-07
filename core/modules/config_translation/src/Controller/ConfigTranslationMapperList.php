@@ -14,26 +14,24 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ConfigTranslationMapperList extends ControllerBase {
 
   /**
-   * An array of configuration mapper instances.
-   *
-   * @var \Drupal\config_translation\ConfigMapperInterface[]
-   */
-  protected $mappers;
-
-  /**
    * Constructs a new ConfigTranslationMapperList object.
    *
    * @param \Drupal\config_translation\ConfigMapperInterface[] $mappers
    *   The configuration mapper manager.
    */
-  public function __construct(array $mappers) {
-    $this->mappers = $mappers;
+  public function __construct(
+      /**
+       * An array of configuration mapper instances.
+       */
+      protected array $mappers
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.config_translation.mapper')->getMappers()
     );
@@ -45,7 +43,7 @@ class ConfigTranslationMapperList extends ControllerBase {
    * @return array
    *   Renderable array with config translation mappers.
    */
-  public function render() {
+  public function render(): array {
     $build = [
       '#type' => 'table',
       '#header' => $this->buildHeader(),
@@ -63,9 +61,9 @@ class ConfigTranslationMapperList extends ControllerBase {
     // Group by mapper weight and sort by label.
     ksort($mappers);
     foreach ($mappers as $weight => $mapper) {
-      usort($mapper, function ($a, $b) {
-        $a_title = (isset($a['label'])) ? $a['label'] : '';
-        $b_title = (isset($b['label'])) ? $b['label'] : '';
+      usort($mapper, function (array $a, array $b): int {
+        $a_title = $a['label'] ?? '';
+        $b_title = $b['label'] ?? '';
         return strnatcasecmp($a_title, $b_title);
       });
       $mappers[$weight] = $mapper;
@@ -114,15 +112,14 @@ class ConfigTranslationMapperList extends ControllerBase {
    *
    * @see \Drupal\Core\Entity\EntityList::buildOperations()
    */
-  protected function buildOperations(ConfigMapperInterface $mapper) {
+  protected function buildOperations(ConfigMapperInterface $mapper): array {
     // Retrieve and sort operations.
     $operations = $mapper->getOperations();
-    uasort($operations, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
-    $build = [
+    uasort($operations, Drupal\Component\Utility\SortArray::sortByWeightElement(...));
+    return [
       '#type' => 'operations',
       '#links' => $operations,
     ];
-    return $build;
   }
 
 }

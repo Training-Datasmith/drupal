@@ -16,7 +16,7 @@ class LayoutBuilderThemeHooks {
    * Implements hook_preprocess_HOOK() for language-content-settings-table.html.twig.
    */
   #[Hook('preprocess_language_content_settings_table')]
-  public function preprocessLanguageContentSettingsTable(&$variables): void {
+  public function preprocessLanguageContentSettingsTable(array &$variables): void {
     foreach ($variables['build']['#rows'] as &$row) {
       if (isset($row['#field_name']) && $row['#field_name'] === OverridesSectionStorage::FIELD_NAME) {
         // Rebuild the label to include a warning about using translations with

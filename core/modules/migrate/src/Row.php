@@ -11,20 +11,6 @@ use Drupal\migrate\Plugin\MigrateIdMapInterface;
 class Row {
 
   /**
-   * The actual values of the source row.
-   *
-   * @var array
-   */
-  protected $source = [];
-
-  /**
-   * The source identifiers.
-   *
-   * @var array
-   */
-  protected $sourceIds = [];
-
-  /**
    * The destination values.
    *
    * @var array
@@ -71,13 +57,6 @@ class Row {
   protected $rawDestination = [];
 
   /**
-   * TRUE when this row is a stub.
-   *
-   * @var bool
-   */
-  protected $isStub = FALSE;
-
-  /**
    * The empty destination properties.
    *
    * @var array
@@ -87,22 +66,22 @@ class Row {
   /**
    * Constructs a \Drupal\migrate\Row object.
    *
-   * @param array $values
+   * @param array $source
    *   An array of values to add as properties on the object.
-   * @param array $source_ids
+   * @param array $sourceIds
    *   An array containing the IDs of the source using the keys as the field
    *   names.
-   * @param bool $is_stub
+   * @param bool $isStub
    *   TRUE if the row being created is a stub.
    *
    * @throws \InvalidArgumentException
    *   Thrown when a source ID property does not exist.
    */
-  public function __construct(array $values = [], array $source_ids = [], $is_stub = FALSE) {
-    $this->source = $values;
-    $this->sourceIds = $source_ids;
-    $this->isStub = $is_stub;
-    foreach (array_keys($source_ids) as $id) {
+  public function __construct(protected array $source = [], protected array $sourceIds = [], /**
+   * TRUE when this row is a stub.
+   */
+  protected $isStub = FALSE) {
+    foreach (array_keys($this->sourceIds) as $id) {
       if (!$this->hasSourceProperty($id)) {
         throw new \InvalidArgumentException("'$id' is defined as a source ID but has no value.");
       }
@@ -116,7 +95,7 @@ class Row {
    *   An array containing the values of the source identifiers. Returns values
    *   in the same order as defined in $this->sourceIds.
    */
-  public function getSourceIdValues() {
+  public function getSourceIdValues(): array {
     return array_merge($this->sourceIds, array_intersect_key($this->source, $this->sourceIds));
   }
 
@@ -129,7 +108,7 @@ class Row {
    * @return bool
    *   TRUE if the source has property; FALSE otherwise.
    */
-  public function hasSourceProperty($property) {
+  public function hasSourceProperty($property): ?bool {
     return NestedArray::keyExists($this->source, explode(static::PROPERTY_SEPARATOR, $property));
   }
 
@@ -181,13 +160,11 @@ class Row {
    *
    * @see \Drupal\migrate\Plugin\migrate\source\SourcePluginBase::next
    */
-  public function setSourceProperty($property, $data) {
+  public function setSourceProperty($property, $data): void {
     if ($this->frozen) {
       throw new \Exception("The source is frozen and can't be changed any more");
     }
-    else {
-      NestedArray::setValue($this->source, explode(static::PROPERTY_SEPARATOR, $property), $data, TRUE);
-    }
+    NestedArray::setValue($this->source, explode(static::PROPERTY_SEPARATOR, $property), $data, TRUE);
   }
 
   /**
@@ -195,7 +172,7 @@ class Row {
    *
    * @return $this
    */
-  public function freezeSource() {
+  public function freezeSource(): static {
     $this->frozen = TRUE;
     return $this;
   }
@@ -218,7 +195,7 @@ class Row {
    * @return bool
    *   TRUE if the destination property exists.
    */
-  public function hasDestinationProperty($property) {
+  public function hasDestinationProperty($property): ?bool {
     return NestedArray::keyExists($this->destination, explode(static::PROPERTY_SEPARATOR, $property));
   }
 
@@ -230,7 +207,7 @@ class Row {
    * @param mixed $value
    *   The property value to set on the destination.
    */
-  public function setDestinationProperty($property, $value) {
+  public function setDestinationProperty($property, $value): void {
     $this->rawDestination[$property] = $value;
     NestedArray::setValue($this->destination, explode(static::PROPERTY_SEPARATOR, $property), $value, TRUE);
   }
@@ -241,7 +218,7 @@ class Row {
    * @param string $property
    *   The name of the destination property.
    */
-  public function removeDestinationProperty($property) {
+  public function removeDestinationProperty($property): void {
     unset($this->rawDestination[$property]);
     NestedArray::unsetValue($this->destination, explode(static::PROPERTY_SEPARATOR, $property));
   }
@@ -252,7 +229,7 @@ class Row {
    * @param string $property
    *   The destination property.
    */
-  public function setEmptyDestinationProperty($property) {
+  public function setEmptyDestinationProperty($property): void {
     $this->emptyDestinationProperties[] = $property;
   }
 
@@ -350,7 +327,7 @@ class Row {
    * @return mixed|null
    *   The requested property.
    */
-  public function get($property) {
+  public function get($property): mixed {
     $values = $this->getMultiple([$property]);
     return reset($values);
   }
@@ -364,13 +341,13 @@ class Row {
    * @return array
    *   An array of property values, keyed by property name.
    */
-  public function getMultiple(array $properties) {
+  public function getMultiple(array $properties): array {
     $return = [];
     foreach ($properties as $orig_property) {
       $property = $orig_property;
       $is_source = TRUE;
       if ($property[0] == '@') {
-        $property = preg_replace_callback('/^(@?)((?:@@)*)([^@]|$)/', function ($matches) use (&$is_source) {
+        $property = preg_replace_callback('/^(@?)((?:@@)*)([^@]|$)/', function (array $matches) use (&$is_source) {
           // If there are an odd number of @ in the beginning, it's a
           // destination.
           $is_source = empty($matches[1]);
@@ -395,7 +372,7 @@ class Row {
    * @param array $id_map
    *   An array of mappings between source ID and destination ID.
    */
-  public function setIdMap(array $id_map) {
+  public function setIdMap(array $id_map): void {
     $this->idMap = $id_map;
   }
 
@@ -412,7 +389,7 @@ class Row {
   /**
    * Recalculates the hash for the row.
    */
-  public function rehash() {
+  public function rehash(): void {
     $this->idMap['original_hash'] = $this->idMap['hash'];
     $this->idMap['hash'] = hash('sha256', serialize($this->source));
   }
@@ -424,7 +401,7 @@ class Row {
    *   TRUE if the row has changed, FALSE otherwise. If setIdMap() was not
    *   called, this always returns FALSE.
    */
-  public function changed() {
+  public function changed(): bool {
     return $this->idMap['original_hash'] != $this->idMap['hash'];
   }
 
@@ -434,7 +411,7 @@ class Row {
    * @return bool
    *   TRUE if the row needs updating, FALSE otherwise.
    */
-  public function needsUpdate() {
+  public function needsUpdate(): bool {
     return $this->idMap['source_row_status'] == MigrateIdMapInterface::STATUS_NEEDS_UPDATE;
   }
 

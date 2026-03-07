@@ -17,25 +17,11 @@ use Drupal\Core\Routing\RouteMatchInterface;
 class MenuActiveTrail extends CacheCollector implements MenuActiveTrailInterface {
 
   /**
-   * The menu link plugin manager.
-   *
-   * @var \Drupal\Core\Menu\MenuLinkManagerInterface
-   */
-  protected $menuLinkManager;
-
-  /**
-   * The route match object for the current page.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Constructs a \Drupal\Core\Menu\MenuActiveTrail object.
    *
-   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menu_link_manager
+   * @param \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager
    *   The menu link plugin manager.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   A route match object for finding the active link.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The cache backend.
@@ -45,15 +31,13 @@ class MenuActiveTrail extends CacheCollector implements MenuActiveTrailInterface
    *   The path.matcher service.
    */
   public function __construct(
-    MenuLinkManagerInterface $menu_link_manager,
-    RouteMatchInterface $route_match,
+    protected \Drupal\Core\Menu\MenuLinkManagerInterface $menuLinkManager,
+    protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch,
     CacheBackendInterface $cache,
     LockBackendInterface $lock,
     protected PathMatcherInterface $pathMatcher,
   ) {
     parent::__construct(NULL, $cache, $lock);
-    $this->menuLinkManager = $menu_link_manager;
-    $this->routeMatch = $route_match;
   }
 
   /**
@@ -107,14 +91,15 @@ class MenuActiveTrail extends CacheCollector implements MenuActiveTrailInterface
   public function getActiveTrailIds($menu_name) {
     // A NULL menu name correlates to cache entry keyed by an empty string. See
     // ::doGetActiveTrailIds().
-    $menu_name = $menu_name ?? '';
+    $menu_name ??= '';
     return $this->get($menu_name);
   }
 
   /**
    * Helper method for ::getActiveTrailIds().
+   * @return mixed[]
    */
-  protected function doGetActiveTrailIds($menu_name) {
+  protected function doGetActiveTrailIds($menu_name): array {
     // Parent ids; used both as key and value to ensure uniqueness.
     // We always want all the top-level links with parent == ''.
     $active_trail = ['' => ''];
@@ -133,7 +118,7 @@ class MenuActiveTrail extends CacheCollector implements MenuActiveTrailInterface
   /**
    * {@inheritdoc}
    */
-  public function getActiveLink($menu_name = NULL) {
+  public function getActiveLink($menu_name = NULL): ?\Drupal\Core\Menu\MenuLinkInterface {
     // Note: this is a very simple implementation. If you need more control
     // over the return value, such as matching a prioritized list of menu names,
     // you should substitute your own implementation for the 'menu.active_trail'
@@ -165,7 +150,7 @@ class MenuActiveTrail extends CacheCollector implements MenuActiveTrailInterface
 
     // Select the first matching link.
     if ($links) {
-      $found = reset($links);
+      return reset($links);
     }
     return $found;
   }

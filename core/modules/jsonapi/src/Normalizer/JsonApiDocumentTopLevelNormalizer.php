@@ -47,36 +47,21 @@ class JsonApiDocumentTopLevelNormalizer extends NormalizerBase implements Denorm
   use SchematicNormalizerTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The JSON:API resource type repository.
-   *
-   * @var \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface
-   */
-  protected $resourceTypeRepository;
-
-  /**
    * Constructs a JsonApiDocumentTopLevelNormalizer object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resource_type_repository
+   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository
    *   The JSON:API resource type repository.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ResourceTypeRepositoryInterface $resource_type_repository) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->resourceTypeRepository = $resource_type_repository;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function denormalize($data, $class, $format = NULL, array $context = []): mixed {
+  public function denormalize(array $data, $class, $format = NULL, array $context = []): mixed {
     $resource_type = $context['resource_type'];
 
     // Validate a few common errors in document formatting.
@@ -96,17 +81,15 @@ class JsonApiDocumentTopLevelNormalizer extends NormalizerBase implements Denorm
     if (!empty($data['data']['relationships'])) {
       // Turn all single object relationship data fields into an array of
       // objects.
-      $relationships = array_map(function ($relationship) {
+      $relationships = array_map(function (array $relationship): array {
         if (isset($relationship['data']['type']) && isset($relationship['data']['id'])) {
           return ['data' => [$relationship['data']]];
         }
-        else {
-          return $relationship;
-        }
+        return $relationship;
       }, $data['data']['relationships']);
 
       // Get an array of ids for every relationship.
-      $relationships = array_map(function ($relationship) {
+      $relationships = array_map(function (array $relationship): array {
         if (empty($relationship['data'])) {
           return [];
         }
@@ -156,9 +139,7 @@ class JsonApiDocumentTopLevelNormalizer extends NormalizerBase implements Denorm
           if (isset($relationship['data'][$delta]['meta'])) {
             $reference_item += $relationship['data'][$delta]['meta'];
           }
-          $canonical_ids[] = array_filter($reference_item, function ($key) {
-            return !str_starts_with($key, 'drupal_internal__');
-          }, ARRAY_FILTER_USE_KEY);
+          $canonical_ids[] = array_filter($reference_item, fn($key) => !str_starts_with($key, 'drupal_internal__'), ARRAY_FILTER_USE_KEY);
         }
 
         return array_filter($canonical_ids);
@@ -227,10 +208,8 @@ class JsonApiDocumentTopLevelNormalizer extends NormalizerBase implements Denorm
    *
    * @todo Refactor this to use CacheableNormalization::aggregate in https://www.drupal.org/project/drupal/issues/3036284.
    */
-  protected function normalizeErrorDocument(JsonApiDocumentTopLevel $document, $format, array $context = []) {
-    $normalized_values = array_map(function (HttpExceptionInterface $exception) use ($format, $context) {
-      return $this->serializer->normalize($exception, $format, $context);
-    }, (array) $document->getData()->getIterator());
+  protected function normalizeErrorDocument(JsonApiDocumentTopLevel $document, $format, array $context = []): \Drupal\jsonapi\Normalizer\Value\CacheableNormalization {
+    $normalized_values = array_map(fn(HttpExceptionInterface $exception) => $this->serializer->normalize($exception, $format, $context), (array) $document->getData()->getIterator());
     $cacheability = new CacheableMetadata();
     $errors = [];
     foreach ($normalized_values as $normalized_error) {
@@ -255,10 +234,8 @@ class JsonApiDocumentTopLevelNormalizer extends NormalizerBase implements Denorm
    *
    * @todo Refactor this to use link collections in https://www.drupal.org/project/drupal/issues/3036279.
    */
-  protected function normalizeOmissionsLinks(OmittedData $omissions, $format, array $context = []) {
-    $normalized_omissions = array_map(function (HttpExceptionInterface $exception) use ($format, $context) {
-      return $this->serializer->normalize($exception, $format, $context);
-    }, $omissions->toArray());
+  protected function normalizeOmissionsLinks(OmittedData $omissions, $format, array $context = []): \Drupal\jsonapi\Normalizer\Value\CacheableOmission|\Drupal\jsonapi\Normalizer\Value\CacheableNormalization {
+    $normalized_omissions = array_map(fn(HttpExceptionInterface $exception) => $this->serializer->normalize($exception, $format, $context), $omissions->toArray());
     $cacheability = CacheableMetadata::createFromObject(CacheableNormalization::aggregate($normalized_omissions));
     if (empty($normalized_omissions)) {
       return new CacheableOmission($cacheability);
@@ -334,7 +311,7 @@ class JsonApiDocumentTopLevelNormalizer extends NormalizerBase implements Denorm
    * @return string
    *   A 7 character hash.
    */
-  protected static function getLinkHash($salt, $link_href) {
+  protected static function getLinkHash(string $salt, string $link_href): string {
     return substr(str_replace(['-', '_'], '', Crypt::hashBase64($salt . $link_href)), 0, 7);
   }
 

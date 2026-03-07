@@ -112,8 +112,7 @@ class Ckeditor5Hooks {
         $output .= '<dd>' . $this->t('CKEditor 5 requires the &lt;p&gt; and &lt;br &gt; tags to achieve basic functionality. They will be automatically added to “Allowed HTML tags" on formats that previously did not allow them.') . '</dd>';
         $output .= '<dt id="source-editing">' . $this->t('Tags/attributes that are not explicitly supported by any plugin are supported by Source Editing') . '</dt>';
         $output .= '<dd>' . $this->t('When a necessary tag/attribute is not directly supported by an available plugin, the "Source Editing" plugin is enabled. This plugin is typically used for by passing the CKEditor 5 UI and editing contents as HTML source. In the settings for Source Editing, tags/attributes that aren\'t available via other plugins are added to Source Editing\'s "Manually editable HTML tags" setting so they are supported by the text format.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -236,7 +235,7 @@ class Ckeditor5Hooks {
    * Implements hook_library_info_alter().
    */
   #[Hook('library_info_alter')]
-  public function libraryInfoAlter(&$libraries, $extension): void {
+  public function libraryInfoAlter(array &$libraries, $extension): void {
     if ($extension === 'filter') {
       $libraries['drupal.filter.admin']['dependencies'][] = 'ckeditor5/internal.drupal.ckeditor5.filter.admin';
     }
@@ -298,8 +297,14 @@ class Ckeditor5Hooks {
     foreach ($libraries as &$library) {
       // The way to know if a library has a translation is to depend on the
       // special "core/ckeditor5.translations" library.
-      if (empty($library['js']) || empty($library['dependencies']) || !in_array('core/ckeditor5.translations', $library['dependencies'])) {
-        continue;
+      if (empty($library['js'])) {
+          continue;
+      }
+      if (empty($library['dependencies'])) {
+          continue;
+      }
+      if (!in_array('core/ckeditor5.translations', $library['dependencies'])) {
+          continue;
       }
       foreach ($library['js'] as $file => $options) {
         // Only look for translations on libraries defined with a relative path.
@@ -307,7 +312,7 @@ class Ckeditor5Hooks {
           continue;
         }
         // Path relative to the current extension folder.
-        $dirname = dirname($file);
+        $dirname = dirname((string) $file);
         // Path of the folder in the filesystem relative to the Drupal root.
         $dir = $path . '/' . $dirname;
         // Exclude protocol-free URI.
@@ -342,7 +347,7 @@ class Ckeditor5Hooks {
    * Implements hook_js_alter().
    */
   #[Hook('js_alter')]
-  public function jsAlter(&$javascript, AttachedAssetsInterface $assets, LanguageInterface $language): void {
+  public function jsAlter(array &$javascript, AttachedAssetsInterface $assets, LanguageInterface $language): void {
     $placeholder_file = 'core/assets/vendor/ckeditor5/translation.js';
     // When the locale module isn't installed there are no translations.
     if (!$this->moduleHandler->moduleExists('locale')) {
@@ -396,7 +401,7 @@ class Ckeditor5Hooks {
    * Implements hook_config_schema_info_alter().
    */
   #[Hook('config_schema_info_alter')]
-  public function configSchemaInfoAlter(&$definitions): void {
+  public function configSchemaInfoAlter(array &$definitions): void {
     // In \Drupal\Tests\config\Functional\ConfigImportAllTest, this hook may be
     // called without ckeditor5.pair.schema.yml being active.
     if (!isset($definitions['ckeditor5_valid_pair__format_and_editor'])) {
@@ -412,7 +417,7 @@ class Ckeditor5Hooks {
    * Implements hook_field_widget_single_element_form_alter().
    */
   #[Hook('field_widget_single_element_form_alter')]
-  public function fieldWidgetSingleElementFormAlter(&$element, FormStateInterface $form_state, $context): void {
+  public function fieldWidgetSingleElementFormAlter(array &$element, FormStateInterface $form_state, array $context): void {
     // Add an attribute so that CKEditor 5 plugins can vary their behavior based
     // on host entity type, host entity bundle and host entity language.
     if (!empty($element['#type']) && $element['#type'] == 'text_format') {
@@ -507,8 +512,8 @@ class Ckeditor5Hooks {
       // "Manually editable tags" to update without triggering the AJAX rebuild.
       // That value is recalculated here on save to ensure it happens even if
       // the AJAX rebuild doesn't happen.
-      $manually_editable_tags_restrictions = HTMLRestrictions::fromString(implode($manually_editable_tags ?? []));
-      $styles_restrictions = HTMLRestrictions::fromString(implode($styles ? array_column($styles, 'element') : []));
+      $manually_editable_tags_restrictions = HTMLRestrictions::fromString(implode('', $manually_editable_tags ?? []));
+      $styles_restrictions = HTMLRestrictions::fromString(implode('', $styles ? array_column($styles, 'element') : []));
       $format = $form_state->get('ckeditor5_validated_pair')->getFilterFormat();
       $allowed_html = HTMLRestrictions::fromTextFormat($format);
       $combined_tags_string = $allowed_html

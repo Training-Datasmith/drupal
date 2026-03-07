@@ -26,7 +26,7 @@ class ViewsMenuLinkForm extends MenuLinkDefaultForm {
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
 
     // Put the title field first.
     $form['title'] = [

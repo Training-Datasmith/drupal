@@ -16,10 +16,8 @@ class HtmlEscapedText implements MarkupInterface, \Countable {
 
   /**
    * The string to escape.
-   *
-   * @var string
    */
-  protected $string;
+  protected string $string;
 
   /**
    * Constructs an HtmlEscapedText object.
@@ -34,7 +32,7 @@ class HtmlEscapedText implements MarkupInterface, \Countable {
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     return Html::escape($this->string);
   }
 

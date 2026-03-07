@@ -25,9 +25,7 @@ class FilterFormatAccessControlHandler extends EntityAccessControlHandler {
       if ($filter_format->isFallbackFormat()) {
         return AccessResult::allowed();
       }
-      else {
-        return AccessResult::allowedIfHasPermission($account, $filter_format->getPermissionName());
-      }
+      return AccessResult::allowedIfHasPermission($account, $filter_format->getPermissionName());
     }
 
     // The fallback format may not be disabled.

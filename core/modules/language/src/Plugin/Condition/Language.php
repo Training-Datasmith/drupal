@@ -28,16 +28,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class Language extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The Language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Creates a new Language instance.
    *
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    * @param array $configuration
    *   The plugin configuration, i.e. an array with configuration values keyed
@@ -49,15 +42,14 @@ class Language extends ConditionPluginBase implements ContainerFactoryPluginInte
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
    */
-  public function __construct(LanguageManagerInterface $language_manager, array $configuration, $plugin_id, $plugin_definition) {
+  public function __construct(protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->languageManager = $language_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get('language_manager'),
       $configuration,
@@ -97,7 +89,7 @@ class Language extends ConditionPluginBase implements ContainerFactoryPluginInte
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration['langcodes'] = array_filter($form_state->getValue('langcodes'));
     parent::submitConfigurationForm($form, $form_state);
   }
@@ -105,11 +97,11 @@ class Language extends ConditionPluginBase implements ContainerFactoryPluginInte
   /**
    * {@inheritdoc}
    */
-  public function summary() {
+  public function summary(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $language_list = $this->languageManager->getLanguages(LanguageInterface::STATE_ALL);
     $selected = $this->configuration['langcodes'];
     // Reduce the language list to an array of language names.
-    $language_names = array_reduce($language_list, function ($result, $item) use ($selected) {
+    $language_names = array_reduce($language_list, function (array $result, \Drupal\Core\Language\LanguageInterface $item) use ($selected): array {
       // If the current item of the $language_list array is one of the selected
       // languages, add it to the $results array.
       if (!empty($selected[$item->getId()])) {

@@ -69,7 +69,7 @@ class UpdateRequirements {
         // status constants are numbered in the right order of precedence, so
         // we just need to make sure the projects are sorted in ascending
         // order of status, and we can look at the first project we find.
-        uasort($data, '_update_project_status_sort');
+        uasort($data, _update_project_status_sort(...));
         $first_project = reset($data);
         $requirements['update_contrib'] = $this->requirementCheck($first_project, 'contrib');
       }
@@ -103,7 +103,7 @@ class UpdateRequirements {
    * @see update_requirements()
    * @see update_calculate_project_data()
    */
-  protected function requirementCheck($project, $type): array {
+  protected function requirementCheck(array $project, $type): array {
     $requirement = [];
     if ($type == 'core') {
       $requirement['title'] = $this->t('Drupal core update status');

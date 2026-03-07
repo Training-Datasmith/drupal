@@ -105,7 +105,7 @@ abstract class ImageEffectFormBase extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // The image effect configuration is stored in the 'data' key in the form,
     // pass that through for validation.
     $this->imageEffect->validateConfigurationForm($form['data'], SubformState::createForSubform($form['data'], $form, $form_state));
@@ -114,7 +114,7 @@ abstract class ImageEffectFormBase extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $form_state->cleanValues();
 
     // The image effect configuration is stored in the 'data' key in the form,

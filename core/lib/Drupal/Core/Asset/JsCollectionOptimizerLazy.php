@@ -58,8 +58,9 @@ class JsCollectionOptimizerLazy implements AssetCollectionGroupOptimizerInterfac
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function optimize(array $js_assets, array $libraries) {
+  public function optimize(array $js_assets, array $libraries): array {
     // File names are generated based on library/asset definitions. This
     // includes a hash of the assets and the group index. Additionally, the full
     // set of libraries, already loaded libraries and theme are sent as query
@@ -116,7 +117,7 @@ class JsCollectionOptimizerLazy implements AssetCollectionGroupOptimizerInterfac
         'include' => UrlHelper::compressQueryParameter(implode(',', $this->dependencyResolver->getMinimalRepresentativeSubset($libraries))),
       ];
       $ajax_page_state = $this->requestStack->getCurrentRequest()->attributes->get('ajax_page_state');
-      $already_loaded = isset($ajax_page_state) ? explode(',', $ajax_page_state['libraries']) : [];
+      $already_loaded = isset($ajax_page_state) ? explode(',', (string) $ajax_page_state['libraries']) : [];
       if ($already_loaded) {
         $query_args['exclude'] = UrlHelper::compressQueryParameter(implode(',', $this->dependencyResolver->getMinimalRepresentativeSubset($already_loaded)));
       }
@@ -145,7 +146,7 @@ class JsCollectionOptimizerLazy implements AssetCollectionGroupOptimizerInterfac
   /**
    * {@inheritdoc}
    */
-  public function deleteAll() {
+  public function deleteAll(): void {
     if (!\is_dir('assets://js')) {
       return;
     }

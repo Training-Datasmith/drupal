@@ -32,8 +32,6 @@ abstract class ProcessPluginBase extends PluginBase implements MigrateProcessInt
 
   /**
    * Determines if processing of the pipeline is stopped.
-   *
-   * @var bool
    */
   protected bool $stopPipeline = FALSE;
 
@@ -48,9 +46,7 @@ abstract class ProcessPluginBase extends PluginBase implements MigrateProcessInt
       }
       throw new \BadMethodCallException(sprintf('The %s method does not exist in the %s plugin.', $this->configuration['method'], $this->pluginId));
     }
-    else {
-      throw new \BadMethodCallException(sprintf('The "method" key in the plugin configuration must to be set for the %s plugin.', $this->pluginId));
-    }
+    throw new \BadMethodCallException(sprintf('The "method" key in the plugin configuration must to be set for the %s plugin.', $this->pluginId));
   }
 
   /**

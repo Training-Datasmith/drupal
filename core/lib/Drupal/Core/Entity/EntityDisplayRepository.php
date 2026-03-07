@@ -25,43 +25,19 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
   protected $displayModeInfo = [];
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * Constructs a new EntityDisplayRepository.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend, LanguageManagerInterface $language_manager) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, CacheBackendInterface $cache_backend, protected \Drupal\Core\Language\LanguageManagerInterface $languageManager) {
     $this->cacheBackend = $cache_backend;
-    $this->languageManager = $language_manager;
   }
 
   /**
@@ -101,7 +77,7 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
    * @return array
    *   The display mode info for all entity types.
    */
-  protected function getAllDisplayModesByEntityType($display_type) {
+  protected function getAllDisplayModesByEntityType(string $display_type) {
     if (!isset($this->displayModeInfo[$display_type])) {
       $key = 'entity_' . $display_type . '_info';
       $entity_type_id = 'entity_' . $display_type;
@@ -112,7 +88,7 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
       else {
         $this->displayModeInfo[$display_type] = [];
         foreach ($this->entityTypeManager->getStorage($entity_type_id)->loadMultiple() as $display_mode) {
-          [$display_mode_entity_type, $display_mode_name] = explode('.', $display_mode->id(), 2);
+          [$display_mode_entity_type, $display_mode_name] = explode('.', (string) $display_mode->id(), 2);
           $this->displayModeInfo[$display_type][$display_mode_entity_type][$display_mode_name] = $display_mode->toArray();
         }
         $this->moduleHandler->alter($key, $this->displayModeInfo[$display_type]);
@@ -141,13 +117,8 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
     if (isset($this->displayModeInfo[$display_type][$entity_type_id])) {
       return $this->displayModeInfo[$display_type][$entity_type_id];
     }
-    else {
-      $display_modes = $this->getAllDisplayModesByEntityType($display_type);
-      if (isset($display_modes[$entity_type_id])) {
-        return $display_modes[$entity_type_id];
-      }
-    }
-    return [];
+    $display_modes = $this->getAllDisplayModesByEntityType($display_type);
+    return $display_modes[$entity_type_id] ?? [];
   }
 
   /**
@@ -189,7 +160,7 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
    * @return array
    *   An array of display mode labels, keyed by the display mode ID.
    */
-  protected function getDisplayModeOptions($display_type, $entity_type_id) {
+  protected function getDisplayModeOptions($display_type, $entity_type_id): array {
     $options = ['default' => $this->t('Default')];
     foreach ($this->getDisplayModesByEntityType($display_type, $entity_type_id) as $mode => $settings) {
       $options[$mode] = $settings['label'];
@@ -210,7 +181,7 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
    * @return array
    *   An array of display mode labels, keyed by the display mode ID.
    */
-  protected function getDisplayModeOptionsByBundle($display_type, $entity_type_id, $bundle) {
+  protected function getDisplayModeOptionsByBundle($display_type, string $entity_type_id, string $bundle) {
     // Collect all the entity's display modes.
     $options = $this->getDisplayModeOptions($display_type, $entity_type_id);
 
@@ -241,7 +212,7 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
   /**
    * {@inheritdoc}
    */
-  public function clearDisplayModeInfo() {
+  public function clearDisplayModeInfo(): static {
     $this->displayModeInfo = [];
     return $this;
   }
@@ -259,7 +230,7 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
     // created when a display object is explicitly configured and saved.
     $entity_view_display = $storage->load($entity_type . '.' . $bundle . '.' . $view_mode);
     if (!$entity_view_display) {
-      $entity_view_display = $storage->create([
+      return $storage->create([
         'targetEntityType' => $entity_type,
         'bundle' => $bundle,
         'mode' => $view_mode,
@@ -282,7 +253,7 @@ class EntityDisplayRepository implements EntityDisplayRepositoryInterface {
     // created when an entity form display is explicitly configured and saved.
     $entity_form_display = $storage->load($entity_type . '.' . $bundle . '.' . $form_mode);
     if (!$entity_form_display) {
-      $entity_form_display = $storage->create([
+      return $storage->create([
         'targetEntityType' => $entity_type,
         'bundle' => $bundle,
         'mode' => $form_mode,

@@ -49,35 +49,30 @@ final class ProjectSecurityData {
   const SECURITY_COVERAGE_ENDING_WARN_DATE_9_5 = '2023-05-14';
 
   /**
-   * The existing (currently installed) version of the project.
-   *
-   * Because this class only handles the Drupal core project, values will be
-   * semantic version numbers such as 8.8.0, 8.8.0-alpha1, or 9.0.0.
-   *
-   * @var string|null
-   */
-  protected $existingVersion;
-
-  /**
-   * Releases as returned by update_get_available().
-   *
-   * @var array
-   *
-   * @see update_get_available()
-   */
-  protected $releases;
-
-  /**
    * Constructs a ProjectSecurityData object.
    *
-   * @param string $existing_version
+   * @param string $existingVersion
    *   The existing (currently installed) version of the project.
    * @param array $releases
    *   Project releases as returned by update_get_available().
    */
-  private function __construct($existing_version = NULL, array $releases = []) {
-    $this->existingVersion = $existing_version;
-    $this->releases = $releases;
+  private function __construct(
+      /**
+       * The existing (currently installed) version of the project.
+       *
+       * Because this class only handles the Drupal core project, values will be
+       * semantic version numbers such as 8.8.0, 8.8.0-alpha1, or 9.0.0.
+       */
+      protected $existingVersion = NULL,
+      /**
+       * Releases as returned by update_get_available().
+       *
+       *
+       * @see update_get_available()
+       */
+      protected array $releases = []
+  )
+  {
   }
 
   /**
@@ -88,10 +83,8 @@ final class ProjectSecurityData {
    *   processed by update_process_project_info().
    * @param array $releases
    *   Project releases as returned by update_get_available().
-   *
-   * @return static
    */
-  public static function createFromProjectDataAndReleases(array $project_data, array $releases) {
+  public static function createFromProjectDataAndReleases(array $project_data, array $releases): static {
     if (!($project_data['project_type'] === 'core' && $project_data['name'] === 'drupal')) {
       // Only Drupal core has an explicit coverage range.
       return new static();
@@ -122,7 +115,7 @@ final class ProjectSecurityData {
    *     the format 'YYYY-MM-DD', after which a warning should be displayed
    *     about upgrading to another version.
    */
-  public function getCoverageInfo() {
+  public function getCoverageInfo(): array {
     if (empty($this->releases[$this->existingVersion])) {
       // If the existing version does not have a release, we cannot get the
       // security coverage information.
@@ -164,7 +157,7 @@ final class ProjectSecurityData {
    *   The version the existing version will receive security coverage until or
    *   NULL if this cannot be determined.
    */
-  private function getSecurityCoverageUntilVersion() {
+  private function getSecurityCoverageUntilVersion(): ?string {
     $existing_release_version = ExtensionVersion::createFromVersionString($this->existingVersion);
     if (!empty($existing_release_version->getVersionExtra())) {
       // Only full releases receive security coverage.
@@ -214,7 +207,7 @@ final class ProjectSecurityData {
    *
    * @see \Drupal\update\ProjectSecurityData\getSecurityCoverageUntilVersion()
    */
-  private function getAdditionalSecurityCoveredMinors($security_covered_version) {
+  private function getAdditionalSecurityCoveredMinors($security_covered_version): int|float|null {
     $security_covered_version_major = ExtensionVersion::createFromVersionString($security_covered_version)->getMajorVersion();
     $security_covered_version_minor = $this->getSemanticMinorVersion($security_covered_version);
     foreach ($this->releases as $release_info) {
@@ -253,7 +246,7 @@ final class ProjectSecurityData {
    * @return int
    *   The minor version as an integer.
    */
-  private function getSemanticMinorVersion($version) {
+  private function getSemanticMinorVersion($version): int {
     return (int) (explode('.', $version)[1]);
   }
 

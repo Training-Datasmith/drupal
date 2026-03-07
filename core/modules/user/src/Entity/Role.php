@@ -115,7 +115,7 @@ class Role extends ConfigEntityBase implements RoleInterface {
   /**
    * {@inheritdoc}
    */
-  public function setWeight($weight) {
+  public function setWeight($weight): static {
     $this->set('weight', $weight);
     return $this;
   }
@@ -134,7 +134,7 @@ class Role extends ConfigEntityBase implements RoleInterface {
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Add permission to role'))]
-  public function grantPermission($permission) {
+  public function grantPermission($permission): static {
     if ($this->isAdmin()) {
       return $this;
     }
@@ -147,7 +147,7 @@ class Role extends ConfigEntityBase implements RoleInterface {
   /**
    * {@inheritdoc}
    */
-  public function revokePermission($permission) {
+  public function revokePermission($permission): static {
     if ($this->isAdmin()) {
       return $this;
     }
@@ -158,14 +158,14 @@ class Role extends ConfigEntityBase implements RoleInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAdmin() {
+  public function isAdmin(): bool {
     return (bool) $this->is_admin;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setIsAdmin($is_admin) {
+  public function setIsAdmin($is_admin): static {
     $this->is_admin = $is_admin;
     return $this;
   }
@@ -173,7 +173,7 @@ class Role extends ConfigEntityBase implements RoleInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postLoad(EntityStorageInterface $storage, array &$entities) {
+  public static function postLoad(EntityStorageInterface $storage, array &$entities): void {
     parent::postLoad($storage, $entities);
     // Sort the queried roles by their weight.
     // See \Drupal\Core\Config\Entity\ConfigEntityBase::sort().
@@ -183,14 +183,12 @@ class Role extends ConfigEntityBase implements RoleInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     if (!isset($this->weight)) {
       // Set a role weight to make this new role last.
-      $this->weight = array_reduce($storage->loadMultiple(), function ($max, $role) {
-        return $max > $role->weight ? $max : $role->weight + 1;
-      }, 0);
+      $this->weight = array_reduce($storage->loadMultiple(), fn($max, \Drupal\Core\Entity\EntityInterface $role) => $max > $role->weight ? $max : $role->weight + 1, 0);
     }
 
     if (!$this->isSyncing() && $this->hasTrustedData()) {
@@ -204,7 +202,7 @@ class Role extends ConfigEntityBase implements RoleInterface {
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
     // Load all permission definitions.
     $permission_definitions = \Drupal::service('user.permissions')->getPermissions();

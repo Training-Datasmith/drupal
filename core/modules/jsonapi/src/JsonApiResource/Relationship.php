@@ -22,39 +22,6 @@ use Drupal\jsonapi\Routing\Routes;
 class Relationship implements TopLevelDataInterface {
 
   /**
-   * The context resource object of the relationship.
-   *
-   * A relationship object represents references from a resource object in
-   * which it’s defined to other resource objects. Respectively, the "context"
-   * of the relationship and the "target(s)" of the relationship.
-   *
-   * A relationship object's context either comes from the resource object that
-   * contains it or, in the case that the relationship object is accessed
-   * directly via a relationship URL, from its `self` URL, which should identify
-   * the resource to which it belongs.
-   *
-   * @var \Drupal\jsonapi\JsonApiResource\ResourceObject
-   *
-   * @see https://jsonapi.org/format/#document-resource-object-relationships
-   * @see https://jsonapi.org/recommendations/#urls-relationships
-   */
-  protected $context;
-
-  /**
-   * The data of the relationship object.
-   *
-   * @var \Drupal\jsonapi\JsonApiResource\RelationshipData
-   */
-  protected $data;
-
-  /**
-   * The relationship's public field name.
-   *
-   * @var string
-   */
-  protected $fieldName;
-
-  /**
    * The relationship object's links.
    *
    * @var \Drupal\jsonapi\JsonApiResource\LinkCollection
@@ -62,19 +29,12 @@ class Relationship implements TopLevelDataInterface {
   protected $links;
 
   /**
-   * The relationship object's meta member.
-   *
-   * @var array
-   */
-  protected $meta;
-
-  /**
    * Relationship constructor.
    *
    * This constructor is protected by design. To create a new relationship, use
    * static::createFromEntityReferenceField().
    *
-   * @param string $public_field_name
+   * @param string $fieldName
    *   The public field name of the relationship field.
    * @param \Drupal\jsonapi\JsonApiResource\RelationshipData $data
    *   The relationship data.
@@ -90,12 +50,11 @@ class Relationship implements TopLevelDataInterface {
    *
    * @see \Drupal\jsonapi\JsonApiResource\Relationship::createFromEntityReferenceField()
    */
-  protected function __construct($public_field_name, RelationshipData $data, LinkCollection $links, array $meta, ResourceObject $context) {
-    $this->fieldName = $public_field_name;
-    $this->data = $data;
+  protected function __construct(/**
+   * The relationship's public field name.
+   */
+  protected $fieldName, protected \Drupal\jsonapi\JsonApiResource\RelationshipData $data, LinkCollection $links, protected array $meta, protected \Drupal\jsonapi\JsonApiResource\ResourceObject $context) {
     $this->links = $links->withContext($this);
-    $this->meta = $meta;
-    $this->context = $context;
   }
 
   /**
@@ -115,7 +74,7 @@ class Relationship implements TopLevelDataInterface {
    * @return static
    *   An instantiated relationship object.
    */
-  public static function createFromEntityReferenceField(ResourceObject $context, EntityReferenceFieldItemListInterface $field, ?LinkCollection $links = NULL, array $meta = []) {
+  public static function createFromEntityReferenceField(ResourceObject $context, EntityReferenceFieldItemListInterface $field, ?LinkCollection $links = NULL, array $meta = []): static {
     $context_resource_type = $context->getResourceType();
     $resource_field = $context_resource_type->getFieldByInternalName($field->getName());
     return new static(
@@ -182,7 +141,7 @@ class Relationship implements TopLevelDataInterface {
   /**
    * {@inheritdoc}
    */
-  public function getOmissions() {
+  public function getOmissions(): \Drupal\jsonapi\JsonApiResource\OmittedData {
     return new OmittedData([]);
   }
 
@@ -198,9 +157,7 @@ class Relationship implements TopLevelDataInterface {
     // be lost otherwise.
     // See https://jsonapi.org/format/#fetching-relationships-responses-200 and
     // https://jsonapi.org/format/#document-top-level.
-    return LinkCollection::merge($top_level_links, $this->getLinks()->filter(function ($key) use ($top_level_links) {
-      return !$top_level_links->hasLinkWithKey($key);
-    })->withContext($top_level_links->getContext()));
+    return LinkCollection::merge($top_level_links, $this->getLinks()->filter(fn($key) => !$top_level_links->hasLinkWithKey($key))->withContext($top_level_links->getContext()));
   }
 
   /**
@@ -238,9 +195,7 @@ class Relationship implements TopLevelDataInterface {
         }
         $links = $links->withLink('self', new Link(new CacheableMetadata(), $self_link, 'self'));
       }
-      $has_non_internal_resource_type = array_reduce($context_resource_type->getRelatableResourceTypesByField($public_field_name), function ($carry, ResourceType $target) {
-        return $carry ?: !$target->isInternal();
-      }, FALSE);
+      $has_non_internal_resource_type = array_reduce($context_resource_type->getRelatableResourceTypesByField($public_field_name), fn($carry, ResourceType $target) => $carry ?: !$target->isInternal(), FALSE);
       // If a `related` link was not provided, automatically generate one from
       // the relationship object to the collection resource with all of the
       // resources targeted by this relationship. However, that link should

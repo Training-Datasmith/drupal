@@ -18,7 +18,7 @@ class AddRoleUser extends ChangeUserRoleBase {
   /**
    * {@inheritdoc}
    */
-  public function execute($account = NULL) {
+  public function execute($account = NULL): void {
     $rid = $this->configuration['rid'];
     // Skip adding the role to the user if they already have it.
     if ($account !== FALSE && !$account->hasRole($rid)) {

@@ -112,21 +112,21 @@ class ConfigurableLanguage extends ConfigEntityBase implements ConfigurableLangu
   /**
    * {@inheritdoc}
    */
-  public function isDefault() {
+  public function isDefault(): bool {
     return static::getDefaultLangcode() == $this->id();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isLocked() {
+  public function isLocked(): bool {
     return (bool) $this->locked;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     // Store whether or not the site is already multilingual so that we can
     // rebuild services if necessary during
@@ -137,7 +137,7 @@ class ConfigurableLanguage extends ConfigEntityBase implements ConfigurableLangu
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     $language_manager = \Drupal::languageManager();
@@ -177,7 +177,7 @@ class ConfigurableLanguage extends ConfigEntityBase implements ConfigurableLangu
    *   Exception thrown if we're trying to delete the default language entity.
    *   This is not allowed as a site must have a default language.
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     $default_langcode = static::getDefaultLangcode();
     foreach ($entities as $entity) {
       if ($entity->id() == $default_langcode && !$entity->isUninstalling()) {
@@ -189,7 +189,7 @@ class ConfigurableLanguage extends ConfigEntityBase implements ConfigurableLangu
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
     $language_manager = \Drupal::languageManager();
     $language_manager->reset();
@@ -232,7 +232,7 @@ class ConfigurableLanguage extends ConfigEntityBase implements ConfigurableLangu
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Set Language name'), pluralize: FALSE)]
-  public function setName($name) {
+  public function setName($name): static {
     $this->label = $name;
 
     return $this;
@@ -263,7 +263,7 @@ class ConfigurableLanguage extends ConfigEntityBase implements ConfigurableLangu
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Set weight'), pluralize: FALSE)]
-  public function setWeight($weight) {
+  public function setWeight($weight): static {
     $this->weight = $weight;
     return $this;
   }
@@ -288,14 +288,12 @@ class ConfigurableLanguage extends ConfigEntityBase implements ConfigurableLangu
         'label' => $langcode,
       ]);
     }
-    else {
-      // A known predefined language, details will be filled in properly.
-      return static::create([
-        'id' => $langcode,
-        'label' => $standard_languages[$langcode][0],
-        'direction' => $standard_languages[$langcode][2] ?? static::DIRECTION_LTR,
-      ]);
-    }
+    // A known predefined language, details will be filled in properly.
+    return static::create([
+      'id' => $langcode,
+      'label' => $standard_languages[$langcode][0],
+      'direction' => $standard_languages[$langcode][2] ?? static::DIRECTION_LTR,
+    ]);
   }
 
 }

@@ -30,7 +30,7 @@ class BatchController implements ContainerInjectionInterface {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->getParameter('app.root'),
       $container->get('batch.storage'),
@@ -50,31 +50,29 @@ class BatchController implements ContainerInjectionInterface {
    */
   public function batchPage(Request $request) {
     $output = _batch_page($request);
-
     if ($output === FALSE) {
-      throw new AccessDeniedHttpException();
+        throw new AccessDeniedHttpException();
     }
-    elseif ($output instanceof Response) {
-      return $output;
+    if ($output instanceof Response) {
+        return $output;
     }
-    elseif (isset($output)) {
-      $title = $output['#title'] ?? NULL;
-      $page = [
-        '#type' => 'page',
-        '#title' => $title,
-        '#show_messages' => FALSE,
-        'content' => $output,
-      ];
 
-      // Also inject title as a page header (if available).
-      if ($title) {
-        $page['header'] = [
-          '#type' => 'page_title',
+    if (isset($output)) {
+        $title = $output['#title'] ?? NULL;
+        $page = [
+          '#type' => 'page',
           '#title' => $title,
+          '#show_messages' => FALSE,
+          'content' => $output,
         ];
-      }
-
-      return $page;
+        // Also inject title as a page header (if available).
+        if ($title) {
+          $page['header'] = [
+            '#type' => 'page_title',
+            '#title' => $title,
+          ];
+        }
+        return $page;
     }
   }
 

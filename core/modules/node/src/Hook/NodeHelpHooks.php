@@ -70,8 +70,7 @@ class NodeHelpHooks {
             'modules' => 'node',
           ])->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'node.type_add':
         return '<p>' . $this->t('Individual content types can have different fields, behaviors, and permissions assigned to them.') . '</p>';

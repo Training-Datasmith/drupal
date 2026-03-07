@@ -52,7 +52,7 @@ class CacheableNormalization extends TemporaryArrayObjectThrowingExceptions impl
    * @return static
    *   The CacheableNormalization.
    */
-  public static function permanent($normalization) {
+  public static function permanent($normalization): static {
     return new static(new CacheableMetadata(), $normalization);
   }
 
@@ -73,7 +73,7 @@ class CacheableNormalization extends TemporaryArrayObjectThrowingExceptions impl
    *   A CacheableOmission if the normalization is considered empty, self
    *   otherwise.
    */
-  public function omitIfEmpty() {
+  public function omitIfEmpty(): \Drupal\jsonapi\Normalizer\Value\CacheableOmission|self {
     return empty($this->normalization) ? new CacheableOmission($this) : $this;
   }
 
@@ -87,7 +87,7 @@ class CacheableNormalization extends TemporaryArrayObjectThrowingExceptions impl
    *   A new object based on the current value with an additional cacheable
    *   dependency.
    */
-  public function withCacheableDependency(CacheableDependencyInterface $dependency) {
+  public function withCacheableDependency(CacheableDependencyInterface $dependency): static {
     return new static(CacheableMetadata::createFromObject($this)->addCacheableDependency($dependency), $this->normalization);
   }
 
@@ -103,13 +103,11 @@ class CacheableNormalization extends TemporaryArrayObjectThrowingExceptions impl
    *   normalization will be an array of the input's normalizations. This method
    *   does *not* behave like array_merge() or NestedArray::mergeDeep().
    */
-  public static function aggregate(array $cacheable_normalizations) {
+  public static function aggregate(array $cacheable_normalizations): static {
     assert(Inspector::assertAllObjects($cacheable_normalizations, CacheableNormalization::class));
     return new static(
-      array_reduce($cacheable_normalizations, function (CacheableMetadata $merged, CacheableNormalization $item) {
-        return $merged->addCacheableDependency($item);
-      }, new CacheableMetadata()),
-      array_reduce(array_keys($cacheable_normalizations), function ($merged, $key) use ($cacheable_normalizations) {
+      array_reduce($cacheable_normalizations, fn(CacheableMetadata $merged, CacheableNormalization $item) => $merged->addCacheableDependency($item), new CacheableMetadata()),
+      array_reduce(array_keys($cacheable_normalizations), function (array $merged, int|string $key) use ($cacheable_normalizations): array {
         if (!$cacheable_normalizations[$key] instanceof CacheableOmission) {
           $merged[$key] = $cacheable_normalizations[$key]->getNormalization();
         }
@@ -128,7 +126,7 @@ class CacheableNormalization extends TemporaryArrayObjectThrowingExceptions impl
    *   Whether the given object or its children have CacheableNormalizations in
    *   them.
    */
-  protected static function hasNoNestedInstances($array) {
+  protected static function hasNoNestedInstances($array): bool {
     foreach ($array as $value) {
       if (is_iterable($value) && !static::hasNoNestedInstances($value) || $value instanceof static) {
         return FALSE;

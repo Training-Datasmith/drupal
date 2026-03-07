@@ -75,7 +75,7 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFilename($filename) {
+  public function setFilename($filename): void {
     $this->get('filename')->value = $filename;
   }
 
@@ -89,7 +89,7 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFileUri($uri) {
+  public function setFileUri($uri): void {
     $this->get('uri')->value = $uri;
   }
 
@@ -112,14 +112,14 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public function setMimeType($mime) {
+  public function setMimeType($mime): void {
     $this->get('filemime')->value = $mime;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getSize() {
+  public function getSize(): ?int {
     $filesize = $this->get('filesize')->value;
     return isset($filesize) ? (int) $filesize : NULL;
   }
@@ -127,14 +127,14 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public function setSize($size) {
+  public function setSize($size): void {
     $this->get('filesize')->value = $size;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCreatedTime() {
+  public function getCreatedTime(): ?int {
     $created = $this->get('created')->value;
     return isset($created) ? (int) $created : NULL;
   }
@@ -142,38 +142,38 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public function isPermanent() {
+  public function isPermanent(): bool {
     return $this->get('status')->value == static::STATUS_PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isTemporary() {
+  public function isTemporary(): bool {
     return $this->get('status')->value == 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setPermanent() {
+  public function setPermanent(): void {
     $this->get('status')->value = static::STATUS_PERMANENT;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setTemporary() {
+  public function setTemporary(): void {
     $this->get('status')->value = 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function preCreate(EntityStorageInterface $storage, array &$values) {
+  public static function preCreate(EntityStorageInterface $storage, array &$values): void {
     // Automatically detect filename if not set.
     if (!isset($values['filename']) && isset($values['uri'])) {
-      $values['filename'] = basename($values['uri']);
+      $values['filename'] = basename((string) $values['uri']);
     }
 
     // Automatically detect filemime if not set.
@@ -185,7 +185,7 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // The file itself might not exist or be available right now.
@@ -201,7 +201,7 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     foreach ($entities as $entity) {
@@ -284,7 +284,7 @@ class File extends ContentEntityBase implements FileInterface {
   /**
    * {@inheritdoc}
    */
-  public static function getDefaultEntityOwner() {
+  public static function getDefaultEntityOwner(): null {
     return NULL;
   }
 

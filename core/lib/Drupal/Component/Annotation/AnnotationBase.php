@@ -38,7 +38,7 @@ abstract class AnnotationBase implements AnnotationInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProvider($provider) {
+  public function setProvider($provider): void {
     $this->provider = $provider;
   }
 
@@ -59,7 +59,7 @@ abstract class AnnotationBase implements AnnotationInterface {
   /**
    * {@inheritdoc}
    */
-  public function setClass($class) {
+  public function setClass($class): void {
     $this->class = $class;
   }
 

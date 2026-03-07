@@ -42,7 +42,7 @@ class ListFloatItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  public static function schema(FieldStorageDefinitionInterface $field_definition) {
+  public static function schema(FieldStorageDefinitionInterface $field_definition): array {
     return [
       'columns' => [
         'value' => [
@@ -58,25 +58,23 @@ class ListFloatItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  protected function allowedValuesDescription() {
+  protected function allowedValuesDescription(): string {
     $description = '<p>' . $this->t('The name will be used in displayed options and edit forms. The value is the stored value, and must be numeric.') . '</p>';
-    $description .= '<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>';
-    return $description;
+    return $description . ('<p>' . $this->t('Allowed HTML tags in labels: @tags', ['@tags' => FieldFilteredMarkup::displayAllowedTags()]) . '</p>');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected static function extractAllowedValues($string, $has_data) {
+  protected static function extractAllowedValues(array $string, bool $has_data): array|int|float|string|false|null {
     $values = parent::extractAllowedValues($string, $has_data);
     if ($values) {
       $keys = array_keys($values);
       $labels = array_values($values);
-      $keys = array_map(function ($key) {
-        // Float keys are represented as strings and need to be disambiguated
-        // ('.5' is '0.5').
-        return is_numeric($key) ? (string) (float) $key : $key;
-      }, $keys);
+      $keys = array_map(
+          // Float keys are represented as strings and need to be disambiguated
+          // ('.5' is '0.5').
+          fn($key) => is_numeric($key) ? (string) (float) $key : $key, $keys);
 
       return array_combine($keys, $labels);
     }
@@ -86,7 +84,7 @@ class ListFloatItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  protected static function validateAllowedValue($option) {
+  protected static function validateAllowedValue($option): ?\Drupal\Core\StringTranslation\TranslatableMarkup {
     if (!is_numeric($option)) {
       return new TranslatableMarkup('Allowed values list: each key must be a valid integer or decimal.');
     }
@@ -95,8 +93,9 @@ class ListFloatItem extends ListItemBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public static function simplifyAllowedValues(array $structured_values) {
+  public static function simplifyAllowedValues(array $structured_values): array {
     $values = [];
     foreach ($structured_values as $item) {
       // Nested elements are embedded in the label.
@@ -115,7 +114,7 @@ class ListFloatItem extends ListItemBase {
   /**
    * {@inheritdoc}
    */
-  protected static function castAllowedValue($value) {
+  protected static function castAllowedValue($value): float {
     return (float) $value;
   }
 

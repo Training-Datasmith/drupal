@@ -12,26 +12,20 @@ use Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface;
 class EntityAutocompleteMatcher implements EntityAutocompleteMatcherInterface {
 
   /**
-   * The entity reference selection handler plugin manager.
-   *
-   * @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface
-   */
-  protected $selectionManager;
-
-  /**
    * Constructs an EntityAutocompleteMatcher object.
    *
-   * @param \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selection_manager
+   * @param \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selectionManager
    *   The entity reference selection handler plugin manager.
    */
-  public function __construct(SelectionPluginManagerInterface $selection_manager) {
-    $this->selectionManager = $selection_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selectionManager)
+  {
   }
 
   /**
    * {@inheritdoc}
+   * @return array{value: mixed, label: mixed}[]
    */
-  public function getMatches($target_type, $selection_handler, $selection_settings, $string = '') {
+  public function getMatches($target_type, $selection_handler, $selection_settings, $string = ''): array {
     $matches = [];
 
     $options = $selection_settings + [

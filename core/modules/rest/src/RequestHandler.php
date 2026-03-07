@@ -24,26 +24,24 @@ use Symfony\Component\Serializer\SerializerInterface;
 class RequestHandler implements ContainerInjectionInterface {
 
   /**
-   * The serializer.
-   *
-   * @var \Symfony\Component\Serializer\SerializerInterface|\Symfony\Component\Serializer\Encoder\DecoderInterface
-   */
-  protected $serializer;
-
-  /**
    * Creates a new RequestHandler instance.
    *
    * @param \Symfony\Component\Serializer\SerializerInterface|\Symfony\Component\Serializer\Encoder\DecoderInterface $serializer
    *   The serializer.
    */
-  public function __construct(SerializerInterface $serializer) {
-    $this->serializer = $serializer;
+  public function __construct(
+      /**
+       * The serializer.
+       */
+      protected \Symfony\Component\Serializer\SerializerInterface $serializer
+  )
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('serializer')
     );
@@ -116,7 +114,7 @@ class RequestHandler implements ContainerInjectionInterface {
    * @return string
    *   The normalized HTTP request method.
    */
-  protected static function getNormalizedRequestMethod(RouteMatchInterface $route_match) {
+  protected static function getNormalizedRequestMethod(RouteMatchInterface $route_match): string {
     // Symfony is built to transparently map HEAD requests to a GET request. In
     // the case of the REST module's RequestHandler though, we essentially have
     // our own light-weight routing system on top of the Drupal/symfony routing
@@ -128,7 +126,7 @@ class RequestHandler implements ContainerInjectionInterface {
     // @see https://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.4
     // @see \Symfony\Component\Routing\Matcher\UrlMatcher::matchCollection()
     // @see \Symfony\Component\HttpFoundation\Response::prepare()
-    $method = strtolower($route_match->getRouteObject()->getMethods()[0]);
+    $method = strtolower((string) $route_match->getRouteObject()->getMethods()[0]);
     assert(count($route_match->getRouteObject()->getMethods()) === 1);
     return $method;
   }
@@ -178,12 +176,7 @@ class RequestHandler implements ContainerInjectionInterface {
         try {
           $unserialized = $this->serializer->denormalize($unserialized, $definition['serialization_class'], $format, ['request_method' => $method]);
         }
-        // These two serialization exception types mean there was a problem
-        // with the structure of the decoded data and it's not valid.
-        catch (UnexpectedValueException $e) {
-          throw new UnprocessableEntityHttpException($e->getMessage());
-        }
-        catch (InvalidArgumentException $e) {
+        catch (UnexpectedValueException|InvalidArgumentException $e) {
           throw new UnprocessableEntityHttpException($e->getMessage());
         }
       }
@@ -207,7 +200,7 @@ class RequestHandler implements ContainerInjectionInterface {
    * @return \Symfony\Component\HttpFoundation\Response|\Drupal\rest\ResourceResponseInterface
    *   The REST resource response.
    */
-  protected function delegateToRestResourcePlugin(RouteMatchInterface $route_match, Request $request, $unserialized, ResourceInterface $resource) {
+  protected function delegateToRestResourcePlugin(RouteMatchInterface $route_match, Request $request, $unserialized, ResourceInterface $resource): mixed {
     $method = static::getNormalizedRequestMethod($route_match);
 
     // Determine the request parameters that should be passed to the resource
@@ -233,7 +226,7 @@ class RequestHandler implements ContainerInjectionInterface {
    *   An instance of the argument resolver containing information like the
    *   'entity' we process and the 'unserialized' content from the request body.
    */
-  protected function createArgumentResolver(RouteMatchInterface $route_match, $unserialized, Request $request) {
+  protected function createArgumentResolver(RouteMatchInterface $route_match, $unserialized, Request $request): \Drupal\Component\Utility\ArgumentsResolver {
     $route = $route_match->getRouteObject();
 
     // Defaults for the parameters defined on the route object need to be added

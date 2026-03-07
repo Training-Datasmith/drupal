@@ -13,26 +13,20 @@ use Drupal\migrate\Plugin\MigrationPluginManagerInterface;
 class MigrateLookup implements MigrateLookupInterface {
 
   /**
-   * The migration plugin manager.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationPluginManagerInterface
-   */
-  protected $migrationPluginManager;
-
-  /**
    * Constructs a MigrateLookup object.
    *
-   * @param \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migration_plugin_manager
+   * @param \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migrationPluginManager
    *   The migration plugin manager.
    */
-  public function __construct(MigrationPluginManagerInterface $migration_plugin_manager) {
-    $this->migrationPluginManager = $migration_plugin_manager;
+  public function __construct(protected \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migrationPluginManager)
+  {
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function lookup($migration_id, array $source_id_values) {
+  public function lookup($migration_id, array $source_id_values): array {
     $results = [];
     $migrations = $this->migrationPluginManager->createInstances($migration_id);
     if (!$migrations) {
@@ -67,7 +61,7 @@ class MigrateLookup implements MigrateLookupInterface {
    *   Thrown when $source_id_values contains unknown keys, or the wrong number
    *   of keys.
    */
-  protected function doLookup(MigrationInterface $migration, array $source_id_values) {
+  protected function doLookup(MigrationInterface $migration, array $source_id_values): array {
     $destination_keys = array_keys($migration->getDestinationPlugin()->getIds());
     $indexed_ids = $migration->getIdMap()
       ->lookupDestinationIds($source_id_values);

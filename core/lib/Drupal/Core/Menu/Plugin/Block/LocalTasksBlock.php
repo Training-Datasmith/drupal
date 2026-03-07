@@ -23,20 +23,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 class LocalTasksBlock extends BlockBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The local task manager.
-   *
-   * @var \Drupal\Core\Menu\LocalTaskManagerInterface
-   */
-  protected $localTaskManager;
-
-  /**
-   * The route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * Creates a LocalTasksBlock instance.
    *
    * @param array $configuration
@@ -45,21 +31,19 @@ class LocalTasksBlock extends BlockBase implements ContainerFactoryPluginInterfa
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Menu\LocalTaskManagerInterface $local_task_manager
+   * @param \Drupal\Core\Menu\LocalTaskManagerInterface $localTaskManager
    *   The local task manager.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The route match.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, LocalTaskManagerInterface $local_task_manager, RouteMatchInterface $route_match) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Menu\LocalTaskManagerInterface $localTaskManager, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->localTaskManager = $local_task_manager;
-    $this->routeMatch = $route_match;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'label_display' => '0',
       'primary' => TRUE,
@@ -69,8 +53,9 @@ class LocalTasksBlock extends BlockBase implements ContainerFactoryPluginInterfa
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function build() {
+  public function build(): array {
     $config = $this->configuration;
     $cacheability = new CacheableMetadata();
     $cacheability->addCacheableDependency($this->localTaskManager);
@@ -117,7 +102,7 @@ class LocalTasksBlock extends BlockBase implements ContainerFactoryPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function blockForm($form, FormStateInterface $form_state) {
+  public function blockForm($form, FormStateInterface $form_state): array {
     $config = $this->configuration;
     $defaults = $this->defaultConfiguration();
 
@@ -145,7 +130,7 @@ class LocalTasksBlock extends BlockBase implements ContainerFactoryPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     $levels = $form_state->getValue('levels');
     $this->configuration['primary'] = $levels['primary'];
     $this->configuration['secondary'] = $levels['secondary'];

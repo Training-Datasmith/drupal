@@ -36,7 +36,7 @@ class AliasPathMatcher implements PathMatcherInterface {
   /**
    * {@inheritdoc}
    */
-  public function isFrontPage() {
+  public function isFrontPage(): bool {
     // Cache the result as this is called often.
     $this->isCurrentFrontPage ??= $this->decorated->isFrontPage() || $this->isAliasFrontPage();
     return $this->isCurrentFrontPage;

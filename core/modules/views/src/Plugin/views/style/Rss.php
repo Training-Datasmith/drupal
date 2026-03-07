@@ -40,7 +40,7 @@ class Rss extends StylePluginBase {
   /**
    * Attaches the RSS icon and feed link to the view.
    */
-  public function attachTo(array &$build, $display_id, Url $feed_url, $title) {
+  public function attachTo(array &$build, $display_id, Url $feed_url, $title): void {
     $url_options = [];
     $input = $this->view->getExposedInput();
     if ($input) {
@@ -80,7 +80,7 @@ class Rss extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $form['description'] = [
@@ -98,7 +98,7 @@ class Rss extends StylePluginBase {
    * @return array
    *   A render array.
    */
-  protected function getChannelElements() {
+  protected function getChannelElements(): array {
     return [];
   }
 
@@ -120,7 +120,7 @@ class Rss extends StylePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $rows = [];
 
     // This will be filled in by the row plugin and is used later on in the

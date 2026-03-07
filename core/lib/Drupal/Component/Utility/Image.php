@@ -31,7 +31,7 @@ class Image {
    * @return bool
    *   TRUE if $dimensions was modified, FALSE otherwise.
    */
-  public static function scaleDimensions(array &$dimensions, $width = NULL, $height = NULL, $upscale = FALSE) {
+  public static function scaleDimensions(array &$dimensions, $width = NULL, $height = NULL, $upscale = FALSE): bool {
     $aspect = $dimensions['height'] / $dimensions['width'];
 
     // Calculate one of the dimensions from the other target dimension,

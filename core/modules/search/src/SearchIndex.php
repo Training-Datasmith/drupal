@@ -41,8 +41,9 @@ class SearchIndex implements SearchIndexInterface {
 
   /**
    * {@inheritdoc}
+   * @return true[]
    */
-  public function index($type, $sid, $langcode, $text, $update_weights = TRUE) {
+  public function index($type, $sid, $langcode, $text, $update_weights = TRUE): array {
     $settings = $this->configFactory->get('search.settings');
     $minimum_word_size = $settings->get('index.minimum_word_size');
 
@@ -124,7 +125,7 @@ class SearchIndex implements SearchIndexInterface {
             // Add word to accumulator.
             $accumulator .= $word . ' ';
             // Check word length.
-            if (is_numeric($word) || mb_strlen($word) >= $minimum_word_size) {
+            if (is_numeric($word) || mb_strlen((string) $word) >= $minimum_word_size) {
               if (!isset($scored_words[$word])) {
                 $scored_words[$word] = 0;
               }
@@ -195,7 +196,7 @@ class SearchIndex implements SearchIndexInterface {
   /**
    * {@inheritdoc}
    */
-  public function clear($type = NULL, $sid = NULL, $langcode = NULL) {
+  public function clear($type = NULL, $sid = NULL, $langcode = NULL): void {
 
     try {
       $query_index = $this->connection->delete('search_index');
@@ -231,7 +232,7 @@ class SearchIndex implements SearchIndexInterface {
   /**
    * {@inheritdoc}
    */
-  public function markForReindex($type = NULL, $sid = NULL, $langcode = NULL) {
+  public function markForReindex($type = NULL, $sid = NULL, $langcode = NULL): void {
 
     try {
       $query = $this->connection->update('search_dataset')
@@ -258,7 +259,7 @@ class SearchIndex implements SearchIndexInterface {
   /**
    * {@inheritdoc}
    */
-  public function updateWordWeights(array $words) {
+  public function updateWordWeights(array $words): void {
     try {
       // Update word IDF (Inverse Document Frequency) counts for new/changed
       // words.

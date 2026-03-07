@@ -18,20 +18,6 @@ use Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface;
 class ScaffoldFileInfo {
 
   /**
-   * The path to the destination.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath
-   */
-  protected $destination;
-
-  /**
-   * The operation used to create the destination.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface
-   */
-  protected $op;
-
-  /**
    * Constructs a ScaffoldFileInfo object.
    *
    * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $destination
@@ -40,9 +26,8 @@ class ScaffoldFileInfo {
    * @param \Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface $op
    *   Operations object that will handle scaffolding operations.
    */
-  public function __construct(ScaffoldFilePath $destination, OperationInterface $op) {
-    $this->destination = $destination;
-    $this->op = $op;
+  public function __construct(protected \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $destination, protected \Drupal\Composer\Plugin\Scaffold\Operations\OperationInterface $op)
+  {
   }
 
   /**
@@ -85,7 +70,7 @@ class ScaffoldFileInfo {
    * @return bool
    *   Whether this scaffold file if overridden or removed.
    */
-  public function overridden($providing_package) {
+  public function overridden($providing_package): bool {
     return $this->packageName() !== $providing_package;
   }
 
@@ -102,7 +87,7 @@ class ScaffoldFileInfo {
    * @return string
    *   Interpolated string with placeholders replaced.
    */
-  public function interpolate($message, array $extra = [], $default = FALSE) {
+  public function interpolate($message, array $extra = [], $default = FALSE): string {
     $interpolator = $this->destination->getInterpolator();
     return $interpolator->interpolate($message, $extra, $default);
   }

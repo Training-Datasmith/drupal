@@ -33,9 +33,7 @@ function block_content_post_update_remove_block_content_status_info_keys(array &
   $blockConfigUpdater = \Drupal::service(BlockConfigUpdater::class);
   $blockConfigUpdater->setDeprecationsEnabled(FALSE);
   \Drupal::classResolver(ConfigEntityUpdater::class)
-    ->update($sandbox, 'block', function (BlockInterface $block) use ($blockConfigUpdater): bool {
-      return $blockConfigUpdater->needsInfoStatusSettingsRemoved($block);
-    });
+    ->update($sandbox, 'block', fn(BlockInterface $block): bool => $blockConfigUpdater->needsInfoStatusSettingsRemoved($block));
 }
 
 /**
@@ -49,7 +47,5 @@ function block_content_post_update_remove_block_content_listing_empty(?array &$s
   /** @var \Drupal\views\ViewsConfigUpdater $view_config_updater */
   $view_config_updater = \Drupal::classResolver(ViewsConfigUpdater::class);
   $view_config_updater->setDeprecationsEnabled(FALSE);
-  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', function (ViewEntityInterface $view) use ($view_config_updater): bool {
-    return $view_config_updater->needsBlockContentListingEmptyUpdate($view);
-  });
+  \Drupal::classResolver(ConfigEntityUpdater::class)->update($sandbox, 'view', fn(ViewEntityInterface $view): bool => $view_config_updater->needsBlockContentListingEmptyUpdate($view));
 }

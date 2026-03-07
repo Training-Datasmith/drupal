@@ -32,12 +32,10 @@ class Plugin implements AnnotationInterface {
    * Builds up the plugin definition and invokes the get() method for any
    * classed annotations that were used.
    */
-  public function __construct($values) {
+  public function __construct(array $values) {
     $reflection = new \ReflectionClass($this);
     // Only keep actual default values by ignoring NULL values.
-    $defaults = array_filter($reflection->getDefaultProperties(), function ($value) {
-      return $value !== NULL;
-    });
+    $defaults = array_filter($reflection->getDefaultProperties(), fn($value) => $value !== NULL);
     $parsed_values = $this->parse($values);
     $this->definition = NestedArray::mergeDeepArray([$defaults, $parsed_values], TRUE);
   }
@@ -51,7 +49,7 @@ class Plugin implements AnnotationInterface {
    * @return array
    *   The parsed annotation as a definition.
    */
-  protected function parse(array $values) {
+  protected function parse(array $values): array {
     $definitions = [];
     foreach ($values as $key => $value) {
       if ($value instanceof AnnotationInterface) {
@@ -84,7 +82,7 @@ class Plugin implements AnnotationInterface {
   /**
    * {@inheritdoc}
    */
-  public function setProvider($provider) {
+  public function setProvider($provider): void {
     $this->definition['provider'] = $provider;
   }
 
@@ -105,7 +103,7 @@ class Plugin implements AnnotationInterface {
   /**
    * {@inheritdoc}
    */
-  public function setClass($class) {
+  public function setClass($class): void {
     $this->definition['class'] = $class;
   }
 

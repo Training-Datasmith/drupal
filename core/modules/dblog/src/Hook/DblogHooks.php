@@ -35,8 +35,7 @@ class DblogHooks {
         $output .= '<dd>' . $this->t('In case of errors or problems with the site, the <a href=":dblog">Recent log messages</a> page can be useful for debugging, since it shows the sequence of events. The log messages include usage information, warnings, and errors.', [':dblog' => Url::fromRoute('dblog.overview')->toString()]) . '</dd>';
         $output .= '<dt>' . $this->t('This log is not persistent') . '</dt>';
         $output .= '<dd>' . $this->t('The Database Logging module logs may be cleared by administrators and automated cron tasks, so they should not be used for <a href=":audit_trail_wiki">forensic logging</a>. For forensic purposes, use the Syslog module.', [':audit_trail_wiki' => 'https://en.wikipedia.org/wiki/Audit_trail']) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'dblog.overview':
         return '<p>' . $this->t('The Database Logging module logs system events in the Drupal database. Monitor your site or debug site problems on this page.') . '</p>';
@@ -48,7 +47,7 @@ class DblogHooks {
    * Implements hook_menu_links_discovered_alter().
    */
   #[Hook('menu_links_discovered_alter')]
-  public function menuLinksDiscoveredAlter(&$links): void {
+  public function menuLinksDiscoveredAlter(array &$links): void {
     if (\Drupal::moduleHandler()->moduleExists('search')) {
       $links['dblog.search'] = [
         'title' => new TranslatableMarkup('Top search phrases'),
@@ -86,7 +85,7 @@ class DblogHooks {
    * Implements hook_form_FORM_ID_alter() for system_logging_settings().
    */
   #[Hook('form_system_logging_settings_alter')]
-  public function formSystemLoggingSettingsAlter(&$form, FormStateInterface $form_state) : void {
+  public function formSystemLoggingSettingsAlter(array &$form, FormStateInterface $form_state) : void {
     $row_limits = [100, 1000, 10000, 100000, 1000000];
     $form['dblog_row_limit'] = [
       '#type' => 'select',
@@ -106,7 +105,7 @@ class DblogHooks {
    */
   #[Hook('views_pre_render')]
   public function viewsPreRender(ViewExecutable $view): void {
-    if (isset($view) && $view->storage->get('base_table') == 'watchdog') {
+    if ($view->storage->get('base_table') == 'watchdog') {
       $view->element['#attached']['library'][] = 'dblog/drupal.dblog';
     }
   }

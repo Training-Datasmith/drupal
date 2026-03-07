@@ -113,7 +113,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     if ($update) {
@@ -135,7 +135,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     /** @var \Drupal\image\ImageStyleInterface[] $entities */
@@ -182,7 +182,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function buildUri($uri) {
+  public function buildUri($uri): string {
     $source_scheme = $scheme = StreamWrapperManager::getScheme($uri);
     $default_scheme = $this->fileDefaultScheme();
 
@@ -273,7 +273,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function flush($path = NULL) {
+  public function flush($path = NULL): static {
     // A specific image path has been provided. Flush only that derivative.
     /** @var \Drupal\Core\File\FileSystemInterface $file_system */
     $file_system = \Drupal::service('file_system');
@@ -320,7 +320,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function createDerivative($original_uri, $derivative_uri) {
+  public function createDerivative($original_uri, $derivative_uri): bool {
     // If the source file doesn't exist, return FALSE without creating folders.
     $image = $this->getImageFactory()->get($original_uri);
     if (!$image->isValid()) {
@@ -353,7 +353,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function transformDimensions(array &$dimensions, $uri) {
+  public function transformDimensions(array &$dimensions, $uri): void {
     foreach ($this->getEffects() as $effect) {
       $effect->transformDimensions($dimensions, $uri);
     }
@@ -372,7 +372,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function getPathToken($uri) {
+  public function getPathToken($uri): string {
     // Return the first 8 characters.
     return substr(Crypt::hmacBase64($this->id() . ':' . $this->addExtension($uri), $this->getPrivateKey() . $this->getHashSalt()), 0, 8);
   }
@@ -380,7 +380,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function deleteImageEffect(ImageEffectInterface $effect) {
+  public function deleteImageEffect(ImageEffectInterface $effect): static {
     $this->getEffects()->removeInstanceId($effect->getUuid());
     $this->save();
     return $this;
@@ -389,7 +389,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function supportsUri($uri) {
+  public function supportsUri($uri): bool {
     // Only support the URI if its extension is supported by the current image
     // toolkit.
     return in_array(
@@ -419,7 +419,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     return ['effects' => $this->getEffects()];
   }
 
@@ -427,7 +427,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Add an image effect'))]
-  public function addImageEffect(array $configuration) {
+  public function addImageEffect(array $configuration): string {
     $configuration['uuid'] = $this->uuidGenerator()->generate();
     $this->getEffects()->addInstanceId($configuration['uuid'], $configuration);
     return $configuration['uuid'];
@@ -443,7 +443,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
   /**
    * {@inheritdoc}
    */
-  public function setName($name) {
+  public function setName($name): static {
     $this->set('name', $name);
     return $this;
   }
@@ -454,7 +454,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
    * @return \Drupal\Component\Plugin\PluginManagerInterface
    *   The image effect plugin manager.
    */
-  protected function getImageEffectPluginManager() {
+  protected function getImageEffectPluginManager(): object {
     return \Drupal::service('plugin.manager.image.effect');
   }
 
@@ -464,7 +464,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
    * @return \Drupal\Core\Image\ImageFactory
    *   The image factory.
    */
-  protected function getImageFactory() {
+  protected function getImageFactory(): object {
     return \Drupal::service('image.factory');
   }
 
@@ -504,7 +504,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
    *   The given path if this image style doesn't change its extension, or the
    *   path with the added extension if it does.
    */
-  protected function addExtension($path) {
+  protected function addExtension(string $path): string {
     $original_extension = pathinfo($path, PATHINFO_EXTENSION);
     $extension = $this->getDerivativeExtension($original_extension);
     if ($original_extension !== $extension) {
@@ -533,7 +533,7 @@ class ImageStyle extends ConfigEntityBase implements ImageStyleInterface, Entity
    *
    * @todo Properly inject this service in Drupal 9.0.x.
    */
-  protected function getStreamWrapperManager() {
+  protected function getStreamWrapperManager(): object {
     return \Drupal::service('stream_wrapper_manager');
   }
 

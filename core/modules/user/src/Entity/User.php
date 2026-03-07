@@ -89,7 +89,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function isNew() {
+  public function isNew(): bool {
     return !empty($this->enforceIsNew) || $this->id() === NULL;
   }
 
@@ -103,7 +103,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // Make sure that the authenticated/anonymous roles are not persisted.
@@ -132,7 +132,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     if ($update) {
@@ -175,7 +175,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     $uids = array_keys($entities);
@@ -184,8 +184,9 @@ class User extends ContentEntityBase implements UserInterface {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getRoles($exclude_locked_roles = FALSE) {
+  public function getRoles($exclude_locked_roles = FALSE): array {
     $roles = [];
 
     // Users with an ID always have the authenticated user role.
@@ -210,14 +211,14 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasRole(string $rid) {
+  public function hasRole(string $rid): bool {
     return in_array($rid, $this->getRoles());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function addRole($rid) {
+  public function addRole($rid): static {
 
     if (in_array($rid, [RoleInterface::AUTHENTICATED_ID, RoleInterface::ANONYMOUS_ID])) {
       throw new \InvalidArgumentException('Anonymous or authenticated role ID must not be assigned manually.');
@@ -233,7 +234,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function removeRole($rid) {
+  public function removeRole($rid): static {
     $this->set('roles', array_diff($this->getRoles(TRUE), [$rid]));
 
     return $this;
@@ -256,7 +257,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPassword(#[\SensitiveParameter] $password) {
+  public function setPassword(#[\SensitiveParameter] $password): static {
     $this->get('pass')->value = $password;
     return $this;
   }
@@ -271,7 +272,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function setEmail($mail) {
+  public function setEmail($mail): static {
     $this->get('mail')->value = $mail;
     return $this;
   }
@@ -293,7 +294,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLastAccessTime($timestamp) {
+  public function setLastAccessTime($timestamp): static {
     $this->get('access')->value = $timestamp;
     return $this;
   }
@@ -308,7 +309,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function setLastLoginTime($timestamp) {
+  public function setLastLoginTime($timestamp): static {
     $this->get('login')->value = $timestamp;
     return $this;
   }
@@ -316,21 +317,21 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function isActive() {
+  public function isActive(): bool {
     return $this->get('status')->value == 1;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isBlocked() {
+  public function isBlocked(): bool {
     return $this->get('status')->value == 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function activate() {
+  public function activate(): static {
     if ($this->isAnonymous()) {
       throw new \LogicException('The anonymous user account should remain blocked at all times.');
     }
@@ -341,7 +342,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function block() {
+  public function block(): static {
     $this->get('status')->value = 0;
     return $this;
   }
@@ -362,9 +363,7 @@ class User extends ContentEntityBase implements UserInterface {
     if (!empty($preferred_langcode) && isset($language_list[$preferred_langcode])) {
       return $language_list[$preferred_langcode]->getId();
     }
-    else {
-      return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
-    }
+    return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
   }
 
   /**
@@ -376,9 +375,7 @@ class User extends ContentEntityBase implements UserInterface {
     if (!empty($preferred_langcode) && isset($language_list[$preferred_langcode])) {
       return $language_list[$preferred_langcode]->getId();
     }
-    else {
-      return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
-    }
+    return $fallback_to_default ? $this->languageManager()->getDefaultLanguage()->getId() : '';
   }
 
   /**
@@ -391,15 +388,19 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAuthenticated() {
+  public function isAuthenticated(): bool {
     return $this->id() > 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function isAnonymous() {
-    return $this->id() === 0 || $this->id() === '0';
+  public function isAnonymous(): bool
+  {
+      if ($this->id() === 0) {
+          return true;
+      }
+      return $this->id() === '0';
   }
 
   /**
@@ -421,7 +422,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function setUsername($username) {
+  public function setUsername($username): static {
     $this->set('name', $username);
     return $this;
   }
@@ -429,7 +430,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function setExistingPassword(#[\SensitiveParameter] $password) {
+  public function setExistingPassword(#[\SensitiveParameter] $password): static {
     $this->get('pass')->existing = $password;
     return $this;
   }
@@ -437,7 +438,7 @@ class User extends ContentEntityBase implements UserInterface {
   /**
    * {@inheritdoc}
    */
-  public function checkExistingPassword(UserInterface $account_unchanged) {
+  public function checkExistingPassword(UserInterface $account_unchanged): bool {
     $existing = $this->get('pass')->existing;
     return $existing !== NULL && strlen($existing) > 0 &&
       \Drupal::service('password')->check(trim($existing), $account_unchanged->getPassword());
@@ -491,7 +492,7 @@ class User extends ContentEntityBase implements UserInterface {
       // @todo Define this via an options provider once
       //   https://www.drupal.org/node/2329937 is completed.
       ->addPropertyConstraints('value', [
-        'AllowedValues' => ['callback' => __CLASS__ . '::getAllowedConfigurableLanguageCodes'],
+        'AllowedValues' => ['callback' => self::class . '::getAllowedConfigurableLanguageCodes'],
       ]);
 
     $fields['preferred_admin_langcode'] = BaseFieldDefinition::create('language')
@@ -504,7 +505,7 @@ class User extends ContentEntityBase implements UserInterface {
       // @todo Define this via an options provider once
       //   https://www.drupal.org/node/2329937 is completed.
       ->addPropertyConstraints('value', [
-        'AllowedValues' => ['callback' => __CLASS__ . '::getAllowedConfigurableLanguageCodes'],
+        'AllowedValues' => ['callback' => self::class . '::getAllowedConfigurableLanguageCodes'],
       ]);
 
     // The name should not vary per language. The username is the visual
@@ -519,7 +520,7 @@ class User extends ContentEntityBase implements UserInterface {
         'UserName' => [],
         'UserNameUnique' => [],
       ]);
-    $fields['name']->getItemDefinition()->setClass('\Drupal\user\UserNameItem');
+    $fields['name']->getItemDefinition()->setClass(\Drupal\user\UserNameItem::class);
 
     $fields['pass'] = BaseFieldDefinition::create('password')
       ->setLabel(t('Password'))
@@ -541,7 +542,7 @@ class User extends ContentEntityBase implements UserInterface {
       // @todo Define this via an options provider once
       //   https://www.drupal.org/node/2329937 is completed.
       ->addPropertyConstraints('value', [
-        'AllowedValues' => ['callback' => __CLASS__ . '::getAllowedTimezones'],
+        'AllowedValues' => ['callback' => self::class . '::getAllowedTimezones'],
       ]);
     $fields['timezone']->getItemDefinition()->setClass(TimeZoneItem::class);
 
@@ -600,7 +601,7 @@ class User extends ContentEntityBase implements UserInterface {
    * @return string[]
    *   The allowed values.
    */
-  public static function getAllowedTimezones() {
+  public static function getAllowedTimezones(): array {
     return \DateTimeZone::listIdentifiers();
   }
 
@@ -610,7 +611,7 @@ class User extends ContentEntityBase implements UserInterface {
    * @return string[]
    *   The allowed values.
    */
-  public static function getAllowedConfigurableLanguageCodes() {
+  public static function getAllowedConfigurableLanguageCodes(): array {
     return array_keys(\Drupal::languageManager()->getLanguages(LanguageInterface::STATE_CONFIGURABLE));
   }
 

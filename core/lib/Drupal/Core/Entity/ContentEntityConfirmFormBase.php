@@ -82,7 +82,7 @@ abstract class ContentEntityConfirmFormBase extends ContentEntityForm implements
         '#type' => 'submit',
         '#value' => $this->getConfirmText(),
         '#submit' => [
-          [$this, 'submitForm'],
+          $this->submitForm(...),
         ],
       ],
       'cancel' => ConfirmFormHelper::buildCancelLink($this, $this->getRequest()),

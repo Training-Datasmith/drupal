@@ -25,27 +25,6 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
   use StringTranslationTrait;
 
   /**
-   * Entity type for this views data handler instance.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeInterface
-   */
-  protected $entityType;
-
-  /**
-   * The storage used for this entity type.
-   *
-   * @var \Drupal\Core\Entity\Sql\SqlEntityStorageInterface
-   */
-  protected $storage;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
    * The translation manager.
    *
    * @var \Drupal\Core\StringTranslation\TranslationInterface
@@ -65,48 +44,29 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
   protected $fieldStorageDefinitions;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The entity field manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
    * Constructs an EntityViewsData object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
+   * @param \Drupal\Core\Entity\EntityTypeInterface $entityType
    *   The entity type to provide views integration for.
-   * @param \Drupal\Core\Entity\Sql\SqlEntityStorageInterface $storage_controller
+   * @param \Drupal\Core\Entity\Sql\SqlEntityStorageInterface $storage
    *   The storage handler used for this entity type.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $translation_manager
    *   The translation manager.
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, SqlEntityStorageInterface $storage_controller, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, TranslationInterface $translation_manager, EntityFieldManagerInterface $entity_field_manager) {
-    $this->entityType = $entity_type;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->storage = $storage_controller;
-    $this->moduleHandler = $module_handler;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeInterface $entityType, protected \Drupal\Core\Entity\Sql\SqlEntityStorageInterface $storage, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, TranslationInterface $translation_manager, protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager) {
     $this->setStringTranslation($translation_manager);
-    $this->entityFieldManager = $entity_field_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -138,8 +98,9 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getViewsData() {
+  public function getViewsData(): array {
     $data = [];
 
     $base_table = $this->entityType->getBaseTable() ?: $this->entityType->id();
@@ -325,9 +286,7 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
     // the entity base, revision, data tables.
     $field_definitions = $this->entityFieldManager->getBaseFieldDefinitions($this->entityType->id());
 
-    $field_storage_definitions = array_map(function (FieldDefinitionInterface $definition) {
-      return $definition->getFieldStorageDefinition();
-    }, $field_definitions);
+    $field_storage_definitions = array_map(fn(FieldDefinitionInterface $definition) => $definition->getFieldStorageDefinition(), $field_definitions);
 
     /** @var \Drupal\Core\Entity\Sql\DefaultTableMapping $table_mapping */
     $table_mapping = $this->storage->getTableMapping($field_storage_definitions);
@@ -390,7 +349,7 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
 
     // Add the entity type key to each table generated.
     $entity_type_id = $this->entityType->id();
-    array_walk($data, function (&$table_data) use ($entity_type_id) {
+    array_walk($data, function (array &$table_data) use ($entity_type_id): void {
       $table_data['table']['entity type'] = $entity_type_id;
     });
 
@@ -450,7 +409,7 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
    *   A reference to a specific entity table (for example data_table) inside
    *   the views data.
    */
-  protected function mapFieldDefinition($table, $field_name, FieldDefinitionInterface $field_definition, TableMappingInterface $table_mapping, &$table_data) {
+  protected function mapFieldDefinition($table, $field_name, FieldDefinitionInterface $field_definition, TableMappingInterface $table_mapping, array &$table_data) {
     // Create a dummy instance to retrieve property definitions.
     $field_column_mapping = $table_mapping->getColumnNames($field_name);
     $field_schema = $field_definition->getFieldStorageDefinition()->getSchema();
@@ -493,7 +452,7 @@ class EntityViewsData implements EntityHandlerInterface, EntityViewsDataInterfac
    * @return array
    *   The modified views data field definition.
    */
-  protected function mapSingleFieldViewsData($table, $field_name, $field_type, $column_name, $column_type, $first, FieldDefinitionInterface $field_definition) {
+  protected function mapSingleFieldViewsData($table, $field_name, $field_type, $column_name, $column_type, $first, FieldDefinitionInterface $field_definition): array {
     $views_field = [];
 
     // Provide a nicer, less verbose label for the first column within a field.

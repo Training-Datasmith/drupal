@@ -44,7 +44,7 @@ class RoutePreloader implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\KernelEvent $event
    *   The event to process.
    */
-  public function onRequest(KernelEvent $event) {
+  public function onRequest(KernelEvent $event): void {
     // Only preload on normal HTML pages, as they will display menu links.
     if ($this->routeProvider instanceof PreloadableRouteProviderInterface && $event->getRequest()->getRequestFormat() == 'html') {
 
@@ -62,10 +62,10 @@ class RoutePreloader implements EventSubscriberInterface {
    * @param \Drupal\Core\Routing\RouteBuildEvent $event
    *   The route build event.
    */
-  public function onAlterRoutes(RouteBuildEvent $event) {
+  public function onAlterRoutes(RouteBuildEvent $event): void {
     $collection = $event->getRouteCollection();
     foreach ($collection->all() as $name => $route) {
-      if (!str_starts_with($route->getPath(), '/admin/') && $route->getPath() != '/admin' && static::isGetAndHtmlRoute($route)) {
+      if (!str_starts_with((string) $route->getPath(), '/admin/') && $route->getPath() != '/admin' && static::isGetAndHtmlRoute($route)) {
         $this->nonAdminRoutesOnRebuild[] = $name;
       }
     }
@@ -75,7 +75,7 @@ class RoutePreloader implements EventSubscriberInterface {
   /**
    * Store the non admin routes in state when the route building is finished.
    */
-  public function onFinishedRoutes() {
+  public function onFinishedRoutes(): void {
     $this->state->set('routing.non_admin_routes', $this->nonAdminRoutesOnRebuild);
     $this->nonAdminRoutesOnRebuild = [];
   }
@@ -102,7 +102,7 @@ class RoutePreloader implements EventSubscriberInterface {
    * @return bool
    *   TRUE if GET is a valid method and HTML is a valid format for this route.
    */
-  protected static function isGetAndHtmlRoute(Route $route) {
+  protected static function isGetAndHtmlRoute(Route $route): bool {
     $methods = $route->getMethods() ?: ['GET'];
     // If a route has no explicit format, then HTML is valid.
     // @see \Drupal\Core\Routing\RequestFormatRouteFilter::getAvailableFormats()

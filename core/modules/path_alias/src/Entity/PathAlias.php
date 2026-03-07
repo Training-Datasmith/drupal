@@ -93,7 +93,7 @@ class PathAlias extends ContentEntityBase implements PathAliasInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     // Trim the alias value of whitespace and slashes. Ensure to not trim the
@@ -105,7 +105,7 @@ class PathAlias extends ContentEntityBase implements PathAliasInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
 
     $alias_manager = \Drupal::service('path_alias.manager');
@@ -118,7 +118,7 @@ class PathAlias extends ContentEntityBase implements PathAliasInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     $alias_manager = \Drupal::service('path_alias.manager');
@@ -137,7 +137,7 @@ class PathAlias extends ContentEntityBase implements PathAliasInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPath($path) {
+  public function setPath($path): static {
     $this->set('path', $path);
     return $this;
   }
@@ -152,7 +152,7 @@ class PathAlias extends ContentEntityBase implements PathAliasInterface {
   /**
    * {@inheritdoc}
    */
-  public function setAlias($alias) {
+  public function setAlias($alias): static {
     $this->set('alias', $alias);
     return $this;
   }
@@ -167,7 +167,7 @@ class PathAlias extends ContentEntityBase implements PathAliasInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheTagsToInvalidate() {
+  public function getCacheTagsToInvalidate(): array {
     return ['route_match'];
   }
 

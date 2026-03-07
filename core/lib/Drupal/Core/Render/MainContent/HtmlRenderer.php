@@ -35,91 +35,27 @@ use Symfony\Component\HttpFoundation\Request;
 class HtmlRenderer implements MainContentRendererInterface {
 
   /**
-   * The title resolver.
-   *
-   * @var \Drupal\Core\Controller\TitleResolverInterface
-   */
-  protected $titleResolver;
-
-  /**
-   * The display variant manager.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $displayVariantManager;
-
-  /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected $renderer;
-
-  /**
-   * The render cache service.
-   *
-   * @var \Drupal\Core\Render\RenderCacheInterface
-   */
-  protected $renderCache;
-
-  /**
-   * The renderer configuration array.
-   *
-   * @var array
-   *
-   * @see sites/default/default.services.yml
-   */
-  protected $rendererConfig;
-
-  /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
    * Constructs a new HtmlRenderer.
    *
-   * @param \Drupal\Core\Controller\TitleResolverInterface $title_resolver
+   * @param \Drupal\Core\Controller\TitleResolverInterface $titleResolver
    *   The title resolver.
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $display_variant_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $displayVariantManager
    *   The display variant manager.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service.
-   * @param \Drupal\Core\Render\RenderCacheInterface $render_cache
+   * @param \Drupal\Core\Render\RenderCacheInterface $renderCache
    *   The render cache service.
-   * @param array $renderer_config
+   * @param array $rendererConfig
    *   The renderer configuration array.
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
    */
-  public function __construct(TitleResolverInterface $title_resolver, PluginManagerInterface $display_variant_manager, EventDispatcherInterface $event_dispatcher, ModuleHandlerInterface $module_handler, RendererInterface $renderer, RenderCacheInterface $render_cache, array $renderer_config, ThemeManagerInterface $theme_manager) {
-    $this->titleResolver = $title_resolver;
-    $this->displayVariantManager = $display_variant_manager;
-    $this->eventDispatcher = $event_dispatcher;
-    $this->moduleHandler = $module_handler;
-    $this->renderer = $renderer;
-    $this->renderCache = $render_cache;
-    $this->rendererConfig = $renderer_config;
-    $this->themeManager = $theme_manager;
+  public function __construct(protected \Drupal\Core\Controller\TitleResolverInterface $titleResolver, protected \Drupal\Component\Plugin\PluginManagerInterface $displayVariantManager, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Render\RendererInterface $renderer, protected \Drupal\Core\Render\RenderCacheInterface $renderCache, protected array $rendererConfig, protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager)
+  {
   }
 
   /**
@@ -127,7 +63,7 @@ class HtmlRenderer implements MainContentRendererInterface {
    *
    * The entire HTML: takes a #type 'page' and wraps it in a #type 'html'.
    */
-  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match) {
+  public function renderResponse(array $main_content, Request $request, RouteMatchInterface $route_match): \Drupal\Core\Render\HtmlResponse {
     [$page, $title] = $this->prepare($main_content, $request, $route_match);
 
     if (!isset($page['#type']) || $page['#type'] !== 'page') {
@@ -154,7 +90,7 @@ class HtmlRenderer implements MainContentRendererInterface {
     // RendererInterface::render() instead of RendererInterface::renderRoot().
     // @see \Drupal\Core\Render\HtmlResponseAttachmentsProcessor.
     $render_context = new RenderContext();
-    $this->renderer->executeInRenderContext($render_context, function () use (&$html) {
+    $this->renderer->executeInRenderContext($render_context, function () use (&$html): void {
       // RendererInterface::render() renders the $html render array and updates
       // it in place. We don't care about the return value (which is just
       // $html['#markup']), but about the resulting render array.
@@ -176,11 +112,9 @@ class HtmlRenderer implements MainContentRendererInterface {
     // entire render cache, regardless of the cache bin.
     $content['#cache']['tags'][] = 'rendered';
 
-    $response = new HtmlResponse($content, 200, [
+    return new HtmlResponse($content, 200, [
       'Content-Type' => 'text/html; charset=utf-8',
     ]);
-
-    return $response;
   }
 
   /**
@@ -201,12 +135,10 @@ class HtmlRenderer implements MainContentRendererInterface {
    * @throws \LogicException
    *   If the selected display variant does not implement PageVariantInterface.
    */
-  protected function prepare(array $main_content, Request $request, RouteMatchInterface $route_match) {
+  protected function prepare(array $main_content, Request $request, RouteMatchInterface $route_match): array {
     // Determine the title: use the title provided by the main content if any,
     // otherwise get it from the routing information.
-    $get_title = function (array $main_content) use ($request, $route_match) {
-      return $main_content['#title'] ?? $this->titleResolver->getTitle($request, $route_match->getRouteObject());
-    };
+    $get_title = (fn(array $main_content) => $main_content['#title'] ?? $this->titleResolver->getTitle($request, $route_match->getRouteObject()));
 
     // If the _controller result already is #type => page,
     // we have no work to do: The "main content" already is an entire "page"
@@ -285,7 +217,7 @@ class HtmlRenderer implements MainContentRendererInterface {
     }
 
     // Allow hooks to add attachments to $page['#attached'].
-    $this->renderer->executeInRenderContext(new RenderContext(), function () use (&$page) {
+    $this->renderer->executeInRenderContext(new RenderContext(), function () use (&$page): void {
       $this->invokePageAttachmentHooks($page);
     });
 
@@ -306,12 +238,12 @@ class HtmlRenderer implements MainContentRendererInterface {
    * @see hook_page_attachments()
    * @see hook_page_attachments_alter()
    */
-  public function invokePageAttachmentHooks(array &$page) {
+  public function invokePageAttachmentHooks(array &$page): void {
     // Modules can add attachments.
     $attachments = [];
     $this->moduleHandler->invokeAllWith(
       'page_attachments',
-      function (callable $hook, string $module) use (&$attachments) {
+      function (callable $hook, string $module) use (&$attachments): void {
         $hook($attachments);
       }
     );
@@ -350,17 +282,17 @@ class HtmlRenderer implements MainContentRendererInterface {
    * @see hook_page_bottom()
    * @see html.html.twig
    */
-  public function buildPageTopAndBottom(array &$html, array $page_top = [], array $page_bottom = []) {
+  public function buildPageTopAndBottom(array &$html, array $page_top = [], array $page_bottom = []): void {
     // Modules can add render arrays to the top and bottom of the page.
     $this->moduleHandler->invokeAllWith(
       'page_top',
-      function (callable $hook, string $module) use (&$page_top) {
+      function (callable $hook, string $module) use (&$page_top): void {
         $hook($page_top);
       }
     );
     $this->moduleHandler->invokeAllWith(
       'page_bottom',
-      function (callable $hook, string $module) use (&$page_bottom) {
+      function (callable $hook, string $module) use (&$page_bottom): void {
         $hook($page_bottom);
       }
     );

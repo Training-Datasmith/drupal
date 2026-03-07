@@ -61,8 +61,12 @@ class CalculatedPermissionsItem implements CalculatedPermissionsItemInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasPermission(string $permission): bool {
-    return $this->isAdmin() || in_array($permission, $this->permissions, TRUE);
+  public function hasPermission(string $permission): bool
+  {
+      if ($this->isAdmin()) {
+          return true;
+      }
+      return in_array($permission, $this->permissions, TRUE);
   }
 
 }

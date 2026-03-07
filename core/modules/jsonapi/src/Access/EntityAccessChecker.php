@@ -33,32 +33,11 @@ use Symfony\Component\Routing\RouterInterface;
 class EntityAccessChecker {
 
   /**
-   * The JSON:API resource type repository.
-   *
-   * @var \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface
-   */
-  protected $resourceTypeRepository;
-
-  /**
    * The router.
    *
    * @var \Symfony\Component\Routing\RouterInterface
    */
   protected $router;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
 
   /**
    * The latest revision check service.
@@ -69,25 +48,22 @@ class EntityAccessChecker {
    *
    * @var \Drupal\content_moderation\Access\LatestRevisionCheck
    */
-  protected $latestRevisionCheck = NULL;
+  protected $latestRevisionCheck;
 
   /**
    * EntityAccessChecker constructor.
    *
-   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resource_type_repository
+   * @param \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository
    *   The JSON:API resource type repository.
    * @param \Symfony\Component\Routing\RouterInterface $router
    *   The router.
-   * @param \Drupal\Core\Session\AccountInterface $account
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
    */
-  public function __construct(ResourceTypeRepositoryInterface $resource_type_repository, RouterInterface $router, AccountInterface $account, EntityRepositoryInterface $entity_repository) {
-    $this->resourceTypeRepository = $resource_type_repository;
+  public function __construct(protected \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resourceTypeRepository, RouterInterface $router, protected \Drupal\Core\Session\AccountInterface $currentUser, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository) {
     $this->router = $router;
-    $this->currentUser = $account;
-    $this->entityRepository = $entity_repository;
   }
 
   /**
@@ -101,7 +77,7 @@ class EntityAccessChecker {
    *
    * @see self::$latestRevisionCheck
    */
-  public function setLatestRevisionCheck(LatestRevisionCheck $latest_revision_check) {
+  public function setLatestRevisionCheck(LatestRevisionCheck $latest_revision_check): void {
     $this->latestRevisionCheck = $latest_revision_check;
   }
 

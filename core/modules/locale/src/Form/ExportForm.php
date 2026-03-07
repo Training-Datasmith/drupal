@@ -20,36 +20,21 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class ExportForm extends FormBase {
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * Constructs a new ExportForm.
    *
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
    *   The language manager.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
    */
-  public function __construct(LanguageManagerInterface $language_manager, FileSystemInterface $file_system) {
-    $this->languageManager = $language_manager;
-    $this->fileSystem = $file_system;
+  public function __construct(protected \Drupal\Core\Language\LanguageManagerInterface $languageManager, protected \Drupal\Core\File\FileSystemInterface $fileSystem)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('language_manager'),
       $container->get('file_system')
@@ -59,14 +44,14 @@ class ExportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'locale_translate_export_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     $languages = $this->languageManager->getLanguages();
     $language_options = [];
     foreach ($languages as $langcode => $language) {
@@ -136,7 +121,7 @@ class ExportForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // If template is required, language code is not given.
     if ($form_state->getValue('langcode') != LanguageInterface::LANGCODE_SYSTEM) {
       $language = $this->languageManager->getLanguage($form_state->getValue('langcode'));

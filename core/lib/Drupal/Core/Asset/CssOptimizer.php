@@ -19,20 +19,13 @@ class CssOptimizer implements AssetOptimizerInterface {
   public $rewriteFileURIBasePath;
 
   /**
-   * The file URL generator.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected $fileUrlGenerator;
-
-  /**
    * Constructs a CssOptimizer.
    *
-   * @param \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator
+   * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
    *   The file URL generator.
    */
-  public function __construct(FileUrlGeneratorInterface $file_url_generator) {
-    $this->fileUrlGenerator = $file_url_generator;
+  public function __construct(protected \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator)
+  {
   }
 
   /**
@@ -58,7 +51,7 @@ class CssOptimizer implements AssetOptimizerInterface {
    * @return string
    *   Contents of the CSS asset.
    */
-  public function clean($contents) {
+  public function clean($contents): string|array|null {
     // Remove multiple charset declarations for standards compliance (and fixing
     // Safari problems).
     $contents = preg_replace('/^@charset\s+[\'"](\S*?)\b[\'"];/i', '', $contents);
@@ -78,7 +71,7 @@ class CssOptimizer implements AssetOptimizerInterface {
    * @return string
    *   The asset's cleaned/optimized contents.
    */
-  protected function processFile($css_asset) {
+  protected function processFile(array $css_asset): ?string {
     $contents = $this->loadFile($css_asset['data'], TRUE);
     if ($css_asset['media'] !== 'print' && $css_asset['media'] !== 'all') {
       $contents = '@media ' . $css_asset['media'] . '{' . $contents . '}' . "\n";
@@ -86,7 +79,7 @@ class CssOptimizer implements AssetOptimizerInterface {
     $contents = $this->clean($contents);
 
     // Get the parent directory of this file, relative to the Drupal root.
-    $css_base_path = substr($css_asset['data'], 0, strrpos($css_asset['data'], '/'));
+    $css_base_path = substr((string) $css_asset['data'], 0, strrpos((string) $css_asset['data'], '/'));
     // Store base path.
     $this->rewriteFileURIBasePath = $css_base_path . '/';
 
@@ -94,7 +87,7 @@ class CssOptimizer implements AssetOptimizerInterface {
     // absolute paths and paths starting with '#'.
     return preg_replace_callback(
       '/url\(\s*[\'"]?(?![a-z]+:|\/+|#|%23)([^\'")]+)[\'"]?\s*\)/i',
-      [$this, 'rewriteFileURI'],
+      $this->rewriteFileURI(...),
       $contents
     );
   }
@@ -188,14 +181,14 @@ class CssOptimizer implements AssetOptimizerInterface {
    *
    * @see \Drupal\Core\Asset\AssetOptimizerInterface::loadFile()
    */
-  protected function loadNestedFile($matches) {
+  protected function loadNestedFile(array $matches): ?string {
     $filename = $matches[1];
     // Load the imported stylesheet and replace @import commands in there as
     // well.
     $file = $this->loadFile($filename, NULL, FALSE);
 
     // Determine the file's directory.
-    $directory = dirname($filename);
+    $directory = dirname((string) $filename);
     // If the file is in the current directory, make sure '.' doesn't appear in
     // the url() path.
     $directory = $directory == '.' ? '' : $directory . '/';
@@ -217,7 +210,7 @@ class CssOptimizer implements AssetOptimizerInterface {
    * @return string
    *   Contents of the stylesheet including the imported stylesheets.
    */
-  protected function processCss($contents, $optimize = FALSE) {
+  protected function processCss($contents, $optimize = FALSE): string|array|null {
     // Remove unwanted CSS code that cause issues.
     $contents = $this->clean($contents);
 
@@ -256,10 +249,10 @@ class CssOptimizer implements AssetOptimizerInterface {
         // will contain the wanted value and the references for the
         // two non-matching groups will be replaced with empty strings.
         '$1$2$3$4',
-        $contents
+        (string) $contents
       );
       // End the file with a new line.
-      $contents = trim($contents);
+      $contents = trim((string) $contents);
       $contents .= "\n";
     }
 
@@ -268,10 +261,7 @@ class CssOptimizer implements AssetOptimizerInterface {
     // with supports- or media-query qualifiers, as those are conditionally
     // loaded depending on the user agent.
     $contents = preg_replace_callback(
-      '/@import\s*(?:url\(\s*)?[\'"]?(?![a-z]+:)(?!\/\/)([^\'"\()]+)[\'"]?\s*\)?\s*;/', [
-        $this,
-        'loadNestedFile',
-      ],
+      '/@import\s*(?:url\(\s*)?[\'"]?(?![a-z]+:)(?!\/\/)([^\'"\()]+)[\'"]?\s*\)?\s*;/', $this->loadNestedFile(...),
       $contents);
 
     return $contents;
@@ -291,13 +281,13 @@ class CssOptimizer implements AssetOptimizerInterface {
    * @return string
    *   The file path.
    */
-  public function rewriteFileURI($matches) {
+  public function rewriteFileURI(array $matches): string {
     // Prefix with base and remove '../' segments where possible.
     $path = $this->rewriteFileURIBasePath . $matches[1];
     $last = '';
     while ($path != $last) {
       $last = $path;
-      $path = preg_replace('`(^|/)(?!\.\./)([^/]+)/\.\./`', '$1', $path);
+      $path = preg_replace('`(^|/)(?!\.\./)([^/]+)/\.\./`', '$1', (string) $path);
     }
     return 'url(' . $this->fileUrlGenerator->generateString($path) . ')';
   }

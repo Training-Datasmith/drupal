@@ -19,13 +19,6 @@ class ManageGitIgnore {
   protected $io;
 
   /**
-   * The directory where the project is located.
-   *
-   * @var string
-   */
-  protected $dir;
-
-  /**
    * ManageGitIgnore constructor.
    *
    * @param \Composer\IO\IOInterface $io
@@ -33,9 +26,11 @@ class ManageGitIgnore {
    * @param string $dir
    *   The directory where the project is located.
    */
-  public function __construct(IOInterface $io, $dir) {
+  public function __construct(IOInterface $io, /**
+   * The directory where the project is located.
+   */
+  protected $dir) {
     $this->io = $io;
-    $this->dir = $dir;
   }
 
   /**
@@ -47,7 +42,7 @@ class ManageGitIgnore {
    * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldOptions $options
    *   Configuration options from the composer.json extras section.
    */
-  public function manageIgnored(array $files, ScaffoldOptions $options) {
+  public function manageIgnored(array $files, ScaffoldOptions $options): void {
     if (!$this->managementOfGitIgnoreEnabled($options)) {
       return;
     }
@@ -107,7 +102,7 @@ class ManageGitIgnore {
    * @param string[] $entries
    *   Entries to write to .gitignore file.
    */
-  protected function addToGitIgnore($dir, array $entries) {
+  protected function addToGitIgnore(string $dir, array $entries) {
     sort($entries);
     $git_ignore_path = $dir . '/.gitignore';
     $contents = '';

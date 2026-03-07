@@ -21,7 +21,7 @@ class ScaleImageEffect extends ResizeImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function applyEffect(ImageInterface $image) {
+  public function applyEffect(ImageInterface $image): bool {
     if (!$image->scale($this->configuration['width'], $this->configuration['height'], $this->configuration['upscale'])) {
       $this->logger->error('Image scale failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', [
         '%toolkit' => $image->getToolkitId(),
@@ -37,7 +37,7 @@ class ScaleImageEffect extends ResizeImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function transformDimensions(array &$dimensions, $uri) {
+  public function transformDimensions(array &$dimensions, $uri): void {
     if ($dimensions['width'] && $dimensions['height']) {
       Image::scaleDimensions($dimensions, $this->configuration['width'], $this->configuration['height'], $this->configuration['upscale']);
     }
@@ -51,15 +51,14 @@ class ScaleImageEffect extends ResizeImageEffect {
       '#theme' => 'image_scale_summary',
       '#data' => $this->configuration,
     ];
-    $summary += parent::getSummary();
 
-    return $summary;
+    return $summary + parent::getSummary();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return parent::defaultConfiguration() + [
       'upscale' => FALSE,
     ];
@@ -84,7 +83,7 @@ class ScaleImageEffect extends ResizeImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::validateConfigurationForm($form, $form_state);
     if ($form_state->isValueEmpty('width') && $form_state->isValueEmpty('height')) {
       $form_state->setErrorByName('data', $this->t('Width and height can not both be blank.'));
@@ -94,7 +93,7 @@ class ScaleImageEffect extends ResizeImageEffect {
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     parent::submitConfigurationForm($form, $form_state);
 
     $this->configuration['upscale'] = $form_state->getValue('upscale');

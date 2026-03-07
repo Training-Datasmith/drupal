@@ -26,7 +26,7 @@ class ResourceObjectData extends Data implements TopLevelDataInterface {
    *
    * @see \Drupal\jsonapi\JsonApiResource\Data::__construct
    */
-  public function __construct($data, $cardinality = -1) {
+  public function __construct(array $data, $cardinality = -1) {
     assert(Inspector::assertAllObjects($data, ResourceObject::class, EntityAccessDeniedHttpException::class));
     parent::__construct($data, $cardinality);
   }
@@ -40,10 +40,8 @@ class ResourceObjectData extends Data implements TopLevelDataInterface {
 
   /**
    * Gets only data to be exposed.
-   *
-   * @return static
    */
-  public function getAccessible() {
+  public function getAccessible(): static {
     $accessible_data = [];
     foreach ($this->data as $resource_object) {
       if (!$resource_object instanceof EntityAccessDeniedHttpException) {
@@ -58,7 +56,7 @@ class ResourceObjectData extends Data implements TopLevelDataInterface {
    *
    * @return static
    */
-  public function getOmissions() {
+  public function getOmissions(): \Drupal\jsonapi\JsonApiResource\OmittedData {
     $omitted_data = [];
     foreach ($this->data as $resource_object) {
       if ($resource_object instanceof EntityAccessDeniedHttpException) {
@@ -71,14 +69,14 @@ class ResourceObjectData extends Data implements TopLevelDataInterface {
   /**
    * {@inheritdoc}
    */
-  public function getMergedLinks(LinkCollection $top_level_links) {
+  public function getMergedLinks(LinkCollection $top_level_links): LinkCollection {
     return $top_level_links;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getMergedMeta(array $top_level_meta) {
+  public function getMergedMeta(array $top_level_meta): array {
     return $top_level_meta;
   }
 

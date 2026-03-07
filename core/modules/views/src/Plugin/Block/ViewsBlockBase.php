@@ -40,13 +40,6 @@ abstract class ViewsBlockBase extends BlockBase implements ContainerFactoryPlugi
   protected $displaySet;
 
   /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $user;
-
-  /**
    * Constructs a \Drupal\views\Plugin\Block\ViewsBlockBase object.
    *
    * @param array $configuration
@@ -62,15 +55,14 @@ abstract class ViewsBlockBase extends BlockBase implements ContainerFactoryPlugi
    * @param \Drupal\Core\Session\AccountInterface $user
    *   The current user.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, ViewExecutableFactory $executable_factory, EntityStorageInterface $storage, AccountInterface $user) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, ViewExecutableFactory $executable_factory, EntityStorageInterface $storage, protected \Drupal\Core\Session\AccountInterface $user) {
     $this->pluginId = $plugin_id;
     $delta = $this->getDerivativeId();
-    [$name, $this->displayID] = explode('-', $delta, 2);
+    [$name, $this->displayID] = explode('-', (string) $delta, 2);
     // Load the view.
     $view = $storage->load($name);
     $this->view = $executable_factory->get($view);
     $this->displaySet = $this->view->setDisplay($this->displayID);
-    $this->user = $user;
 
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
@@ -90,7 +82,7 @@ abstract class ViewsBlockBase extends BlockBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     $contexts = $this->view->display_handler->getCacheMetadata()->getCacheContexts();
     return Cache::mergeContexts(parent::getCacheContexts(), $contexts);
   }
@@ -98,7 +90,7 @@ abstract class ViewsBlockBase extends BlockBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     $tags = $this->view->display_handler->getCacheMetadata()->getCacheTags();
     return Cache::mergeTags(parent::getCacheTags(), $tags);
   }
@@ -116,18 +108,15 @@ abstract class ViewsBlockBase extends BlockBase implements ContainerFactoryPlugi
    */
   protected function blockAccess(AccountInterface $account) {
     if ($this->view->access($this->displayID)) {
-      $access = AccessResult::allowed();
+      return AccessResult::allowed();
     }
-    else {
-      $access = AccessResult::forbidden();
-    }
-    return $access;
+    return AccessResult::forbidden();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return ['views_label' => ''];
   }
 
@@ -138,9 +127,7 @@ abstract class ViewsBlockBase extends BlockBase implements ContainerFactoryPlugi
     if (!empty($this->pluginDefinition["admin_label"])) {
       return $this->t('"@view" views block', ['@view' => $this->pluginDefinition["admin_label"]]);
     }
-    else {
-      return $this->t('"@view" views block', ['@view' => $this->view->storage->label() . '::' . $this->displayID]);
-    }
+    return $this->t('"@view" views block', ['@view' => $this->view->storage->label() . '::' . $this->displayID]);
   }
 
   /**
@@ -211,7 +198,7 @@ abstract class ViewsBlockBase extends BlockBase implements ContainerFactoryPlugi
   /**
    * {@inheritdoc}
    */
-  public function blockSubmit($form, FormStateInterface $form_state) {
+  public function blockSubmit($form, FormStateInterface $form_state): void {
     if (!$form_state->isValueEmpty('views_label_checkbox')) {
       $this->configuration['views_label'] = $form_state->getValue('views_label');
     }

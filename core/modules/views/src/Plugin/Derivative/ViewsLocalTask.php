@@ -16,46 +16,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ViewsLocalTask extends DeriverBase implements ContainerDeriverInterface {
 
   /**
-   * The route provider.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
-   * The state key value store.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * The view storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $viewStorage;
-
-  /**
    * Constructs a \Drupal\views\Plugin\Derivative\ViewsLocalTask instance.
    *
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider.
    * @param \Drupal\Core\State\StateInterface $state
    *   The state key value store.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $view_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $viewStorage
    *   The view storage.
    */
-  public function __construct(RouteProviderInterface $route_provider, StateInterface $state, EntityStorageInterface $view_storage) {
-    $this->routeProvider = $route_provider;
-    $this->state = $state;
-    $this->viewStorage = $view_storage;
+  public function __construct(protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, protected \Drupal\Core\State\StateInterface $state, protected \Drupal\Core\Entity\EntityStorageInterface $viewStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('router.route_provider'),
       $container->get('state'),
@@ -105,7 +82,7 @@ class ViewsLocalTask extends DeriverBase implements ContainerDeriverInterface {
   /**
    * Alters base_route and parent_id into the views local tasks.
    */
-  public function alterLocalTasks(&$local_tasks) {
+  public function alterLocalTasks(array &$local_tasks): void {
     $view_route_names = $this->state->get('views.view_route_names');
 
     foreach ($this->getApplicableMenuViews() as $pair) {
@@ -130,7 +107,7 @@ class ViewsLocalTask extends DeriverBase implements ContainerDeriverInterface {
         // Find out the parent route.
         // @todo Find out how to find both the root and parent tab.
         $path = $executable->display_handler->getPath();
-        $split = explode('/', $path);
+        $split = explode('/', (string) $path);
         array_pop($split);
         $path = implode('/', $split);
 

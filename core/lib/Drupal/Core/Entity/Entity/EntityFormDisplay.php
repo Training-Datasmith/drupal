@@ -91,7 +91,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
    * @see \Drupal\Core\Entity\EntityDisplayRepositoryInterface::getFormDisplay()
    * @see hook_entity_form_display_alter()
    */
-  public static function collectRenderDisplay(FieldableEntityInterface $entity, $form_mode, $default_fallback = TRUE) {
+  public static function collectRenderDisplay(FieldableEntityInterface $entity, string $form_mode, $default_fallback = TRUE) {
     $entity_type = $entity->getEntityTypeId();
     $bundle = $entity->bundle();
 
@@ -187,7 +187,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
   /**
    * {@inheritdoc}
    */
-  public function buildForm(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state) {
+  public function buildForm(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state): void {
     // Set #parents to 'top-level' by default.
     $form += ['#parents' => []];
 
@@ -221,7 +221,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
     $form['#cache']['max-age'] = 0;
 
     // Add a process callback so we can assign weights and hide extra fields.
-    $form['#process'][] = [$this, 'processForm'];
+    $form['#process'][] = $this->processForm(...);
   }
 
   /**
@@ -229,7 +229,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
    *
    * @see \Drupal\Core\Entity\Entity\EntityFormDisplay::buildForm()
    */
-  public function processForm($element, FormStateInterface $form_state, $form) {
+  public function processForm(array $element, FormStateInterface $form_state, $form): array {
     // Assign the weights configured in the form display.
     foreach ($this->getComponents() as $name => $options) {
       if (isset($element[$name])) {
@@ -250,8 +250,9 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function extractFormValues(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state) {
+  public function extractFormValues(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state): array {
     $extracted = [];
     foreach ($entity as $name => $items) {
       if ($widget = $this->getRenderer($name)) {
@@ -265,7 +266,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
   /**
    * {@inheritdoc}
    */
-  public function validateFormValues(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state) {
+  public function validateFormValues(FieldableEntityInterface $entity, array &$form, FormStateInterface $form_state): void {
     $violations = $entity->validate();
     $violations->filterByFieldAccess();
 
@@ -281,7 +282,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
   /**
    * {@inheritdoc}
    */
-  public function flagWidgetsErrorsFromViolations(EntityConstraintViolationListInterface $violations, array &$form, FormStateInterface $form_state) {
+  public function flagWidgetsErrorsFromViolations(EntityConstraintViolationListInterface $violations, array &$form, FormStateInterface $form_state): void {
     $entity = $violations->getEntity();
     foreach ($violations->getFieldNames() as $field_name) {
       // Only show violations for fields that actually appear in the form, and
@@ -304,7 +305,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
    * @return \Symfony\Component\Validator\ConstraintViolationList
    *   A new constraint violation list with the changed property path.
    */
-  protected function movePropertyPathViolationsRelativeToField($field_name, ConstraintViolationListInterface $violations) {
+  protected function movePropertyPathViolationsRelativeToField($field_name, ConstraintViolationListInterface $violations): \Symfony\Component\Validator\ConstraintViolationList {
     $new_violations = new ConstraintViolationList();
     foreach ($violations as $violation) {
       // All the logic below is necessary to change the property path of the
@@ -314,7 +315,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
       /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */
       // Create a new violation object with just a different property path.
       $violation_path = $violation->getPropertyPath();
-      $path_parts = explode('.', $violation_path);
+      $path_parts = explode('.', (string) $violation_path);
       if ($path_parts[0] === $field_name) {
         unset($path_parts[0]);
       }
@@ -351,7 +352,7 @@ class EntityFormDisplay extends EntityDisplayBase implements EntityFormDisplayIn
   /**
    * {@inheritdoc}
    */
-  public function getPluginCollections() {
+  public function getPluginCollections(): array {
     $configurations = [];
     foreach ($this->getComponents() as $field_name => $configuration) {
       if (!empty($configuration['type']) && ($field_definition = $this->getFieldDefinition($field_name))) {

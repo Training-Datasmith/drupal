@@ -96,7 +96,7 @@ class StackedKernelPass extends AbstractRecursivePass implements CompilerPassInt
     $params = $constructor->getParameters();
     $innerType = $params[0]->getType();
     $innerParamTypes = ($innerType instanceof \ReflectionUnionType || $innerType instanceof \ReflectionIntersectionType) ? $innerType->getTypes() : [$innerType];
-    $paramTypeNames = array_map(fn ($param) => (string) $param, $innerParamTypes);
+    $paramTypeNames = array_map(fn ($param): string => (string) $param, $innerParamTypes);
 
     $inner = new Reference($this->currentId . '.http_middleware_inner');
     if (in_array(\Closure::class, $paramTypeNames, TRUE)) {

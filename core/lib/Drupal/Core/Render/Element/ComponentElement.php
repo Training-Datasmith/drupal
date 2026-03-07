@@ -63,7 +63,7 @@ class ComponentElement extends RenderElementBase {
     // tokens in the props.
     $props = array_reduce(
       $props_alter_callbacks,
-      fn(array $carry, callable $callback) => $this->doTrustedCallback(
+      fn(array $carry, callable $callback): mixed => $this->doTrustedCallback(
         $callback,
         [$carry],
         '%s is not trusted',
@@ -136,7 +136,7 @@ class ComponentElement extends RenderElementBase {
       }
       $context[$slot_name] = array_reduce(
         $slots_alter_callbacks,
-        fn(array $carry, callable $callback) => $this->doTrustedCallback(
+        fn(array $carry, callable $callback): mixed => $this->doTrustedCallback(
           $callback,
           [$carry, $context],
           '%s is not trusted',
@@ -147,8 +147,7 @@ class ComponentElement extends RenderElementBase {
         . "    {{ $slot_name }}" . PHP_EOL
         . "  {% endblock %}" . PHP_EOL;
     }
-    $template .= '{% endembed %}' . PHP_EOL;
-    return $template;
+    return $template . ('{% endembed %}' . PHP_EOL);
   }
 
   /**
@@ -186,7 +185,7 @@ class ComponentElement extends RenderElementBase {
   public function getInfo(): array {
     return [
       '#pre_render' => [
-        [$this, 'preRenderComponent'],
+        $this->preRenderComponent(...),
       ],
       '#component' => '',
       '#variant' => '',

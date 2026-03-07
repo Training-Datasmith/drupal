@@ -19,7 +19,7 @@ class UserName extends User {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $entity_type = $this->entityTypeManager->getDefinition('user');
@@ -33,11 +33,11 @@ class UserName extends User {
   /**
    * {@inheritdoc}
    */
-  public function validateArgument($argument) {
+  public function validateArgument($argument): bool {
     if ($this->multipleCapable && $this->options['multiple']) {
       // At this point only interested in individual IDs no matter what type,
       // just splitting by the allowed delimiters.
-      $names = array_filter(preg_split('/[,+ ]/', $argument));
+      $names = array_filter(preg_split('/[,+ ]/', (string) $argument));
     }
     elseif ($argument) {
       $names = [$argument];
@@ -68,7 +68,7 @@ class UserName extends User {
   /**
    * {@inheritdoc}
    */
-  public function processSummaryArguments(&$args) {
+  public function processSummaryArguments(&$args): void {
     // If the validation says the input is a username, we should reverse the
     // argument so it works for example for generation summary URLs.
     $uids_arg_keys = array_flip($args);

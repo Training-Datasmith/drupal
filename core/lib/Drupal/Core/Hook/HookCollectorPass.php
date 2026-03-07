@@ -120,7 +120,7 @@ class HookCollectorPass implements CompilerPassInterface {
     $order_operations = $this->getOrderOperations();
     foreach (preg_grep('@_alter$@', array_keys($order_operations)) as $alter_hook) {
       $packed_order_operations[$alter_hook] = array_map(
-        fn (OrderOperation $operation) => $operation->pack(),
+        fn (OrderOperation $operation): array => $operation->pack(),
         $order_operations[$alter_hook],
       );
     }
@@ -300,7 +300,7 @@ class HookCollectorPass implements CompilerPassInterface {
     $parameters = $container->getParameterBag()->all();
     $skip_procedural_modules = array_filter(
       array_keys($module_list),
-      static fn (string $module) => !empty($parameters["$module.skip_procedural_hook_scan"]),
+      static fn (string $module): bool => !empty($parameters["$module.skip_procedural_hook_scan"]),
     );
 
     $modules = array_keys($module_list);
@@ -309,7 +309,7 @@ class HookCollectorPass implements CompilerPassInterface {
     foreach ($module_list as $module => $info) {
       $skip_procedural = in_array($module, $skip_procedural_modules);
       $current_module_preg = static::getModuleListPattern([$module]);
-      $collector->collectModuleHookImplementations(dirname($info['pathname']), $module, $current_module_preg, $all_modules_preg, $skip_procedural);
+      $collector->collectModuleHookImplementations(dirname((string) $info['pathname']), $module, $current_module_preg, $all_modules_preg, $skip_procedural);
     }
     return $collector;
   }
@@ -327,9 +327,9 @@ class HookCollectorPass implements CompilerPassInterface {
    *   The pattern used to match hooks for the given module list.
    */
   protected static function getModuleListPattern(array $module_list): string {
-    usort($module_list, static fn ($a, $b) => strlen($b) - strlen($a));
+    usort($module_list, static fn ($a, $b): int => strlen((string) $b) - strlen((string) $a));
     $module_pattern = implode('|', array_map(
-      static fn ($x) => preg_quote($x, '/'),
+      static fn (string $x): string => preg_quote($x, '/'),
       $module_list,
     ));
     return '/^(?<function>(?<module>' . $module_pattern . ')_(?!update_\d)(?<hook>[a-zA-Z0-9_\x80-\xff]+$))/';
@@ -424,7 +424,7 @@ class HookCollectorPass implements CompilerPassInterface {
             }
 
             $legacy_attributes = [LegacyHook::class, LegacyRequirementsHook::class];
-            if (!static::hasAnyAttribute($attributes, $legacy_attributes) && (preg_match($current_module_preg, $function, $matches) || preg_match($all_modules_preg, $function, $matches))) {
+            if (!static::hasAnyAttribute($attributes, $legacy_attributes) && (preg_match($current_module_preg, (string) $function, $matches) || preg_match($all_modules_preg, (string) $function, $matches))) {
               // Skip hooks that are not supported by the new hook system, they
               // do not need to be added to the BC layer. Note that is different
               // from static::checkForProceduralOnlyHooks(). hook_requirements
@@ -442,8 +442,11 @@ class HookCollectorPass implements CompilerPassInterface {
                 'update_last_removed',
                 'update_dependencies',
               ];
-              if (in_array($matches['hook'], $staticDenyHooks) || preg_match('/update_\d+$/', $function)) {
-                continue;
+              if (in_array($matches['hook'], $staticDenyHooks)) {
+                  continue;
+              }
+              if (preg_match('/update_\d+$/', (string) $function)) {
+                  continue;
               }
 
               assert($function === $matches['module'] . '_' . $matches['hook']);
@@ -489,14 +492,17 @@ class HookCollectorPass implements CompilerPassInterface {
     $sub_path_name = $iterator->getSubPathname();
     $extension = $fileInfo->getExtension();
     if (str_starts_with($sub_path_name, 'src/Hook/')) {
-      return $iterator->isDir() || $extension === 'php';
+        if ($iterator->isDir()) {
+            return true;
+        }
+        return $extension === 'php';
     }
     if ($iterator->isDir()) {
       if ($sub_path_name === 'src' || $sub_path_name === 'src/Hook') {
         return TRUE;
       }
       // glob() doesn't support streams but scandir() does.
-      return !in_array($fileInfo->getFilename(), ['tests', 'js', 'css']) && !array_filter(scandir($key), static fn ($filename) => str_ends_with($filename, '.info.yml'));
+      return !in_array($fileInfo->getFilename(), ['tests', 'js', 'css']) && !array_filter(scandir($key), static fn ($filename): bool => str_ends_with((string) $filename, '.info.yml'));
     }
     return in_array($extension, ['inc', 'module', 'profile', 'install']);
   }
@@ -562,7 +568,7 @@ class HookCollectorPass implements CompilerPassInterface {
     foreach ($reflections as $reflection) {
       if ($reflectionAttributes = $reflection->getAttributes(HookAttributeInterface::class, \ReflectionAttribute::IS_INSTANCEOF)) {
         $method = $reflection instanceof \ReflectionMethod ? $reflection->getName() : '__invoke';
-        $attributes[$method] = array_map(static fn (\ReflectionAttribute $ra) => $ra->newInstance(), $reflectionAttributes);
+        $attributes[$method] = array_map(static fn (\ReflectionAttribute $ra): \Drupal\Core\Hook\Attribute\HookAttributeInterface => $ra->newInstance(), $reflectionAttributes);
       }
     }
     return $attributes;

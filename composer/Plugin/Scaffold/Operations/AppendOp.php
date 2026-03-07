@@ -19,39 +19,9 @@ class AppendOp extends AbstractOperation {
   const ID = 'append';
 
   /**
-   * Path to the source file to prepend, if any.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath
-   */
-  protected $prepend;
-
-  /**
-   * Path to the source file to append, if any.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath
-   */
-  protected $append;
-
-  /**
-   * Path to the default data to use when appending to an empty file.
-   *
-   * @var \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath
-   */
-  protected $default;
-
-  /**
    * An indicator of whether the file we are appending to is managed or not.
-   *
-   * @var bool
    */
-  protected $managed;
-
-  /**
-   * An indicator of whether we are allowed to append to a non-scaffolded file.
-   *
-   * @var bool
-   */
-  protected $forceAppend;
+  protected bool $managed;
 
   /**
    * The contents from the file that we are prepending / appending to.
@@ -63,32 +33,31 @@ class AppendOp extends AbstractOperation {
   /**
    * Constructs an AppendOp.
    *
-   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath|null $prepend_path
+   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath|null $prepend
    *   (optional) The relative path to the prepend file.
-   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath|null $append_path
+   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath|null $append
    *   (optional) The relative path to the append file.
-   * @param bool $force_append
+   * @param bool $forceAppend
    *   (optional) TRUE if is okay to append to a file that was not scaffolded.
-   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath|null $default_path
+   * @param \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath|null $default
    *   (optional) The relative path to the default data.
    */
   public function __construct(
-    ?ScaffoldFilePath $prepend_path = NULL,
-    ?ScaffoldFilePath $append_path = NULL,
-    $force_append = FALSE,
-    ?ScaffoldFilePath $default_path = NULL,
+    protected ?\Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $prepend = NULL,
+    protected ?\Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $append = NULL,
+    /**
+     * An indicator of whether we are allowed to append to a non-scaffolded file.
+     */
+    protected $forceAppend = FALSE,
+    protected ?\Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath $default = NULL,
   ) {
-    $this->forceAppend = $force_append;
-    $this->prepend = $prepend_path;
-    $this->append = $append_path;
-    $this->default = $default_path;
     $this->managed = TRUE;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function generateContents() {
+  protected function generateContents(): string {
     // Fetch the prepend contents, if provided.
     $prepend_contents = '';
     if (!empty($this->prepend)) {
@@ -113,7 +82,7 @@ class AppendOp extends AbstractOperation {
   /**
    * {@inheritdoc}
    */
-  public function process(ScaffoldFilePath $destination, IOInterface $io, ScaffoldOptions $options) {
+  public function process(ScaffoldFilePath $destination, IOInterface $io, ScaffoldOptions $options): \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult {
     $destination_path = $destination->fullPath();
     $interpolator = $destination->getInterpolator();
 
@@ -150,7 +119,7 @@ class AppendOp extends AbstractOperation {
   /**
    * {@inheritdoc}
    */
-  public function scaffoldOverExistingTarget(OperationInterface $existing_target) {
+  public function scaffoldOverExistingTarget(OperationInterface $existing_target): static {
     $this->originalContents = $existing_target->contents();
     return $this;
   }
@@ -158,7 +127,7 @@ class AppendOp extends AbstractOperation {
   /**
    * {@inheritdoc}
    */
-  public function scaffoldAtNewLocation(ScaffoldFilePath $destination) {
+  public function scaffoldAtNewLocation(ScaffoldFilePath $destination): \Drupal\Composer\Plugin\Scaffold\Operations\SkipOp|self {
     // If there is no existing scaffold file at the target location, then any
     // append we do will be to an unmanaged file.
     $this->managed = FALSE;

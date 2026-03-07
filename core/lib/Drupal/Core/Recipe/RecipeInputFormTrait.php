@@ -112,7 +112,7 @@ trait RecipeInputFormTrait {
       $data = $e->getValue();
 
       if ($data instanceof TypedDataInterface) {
-        $element = NestedArray::getValue($form, explode('.', $data->getName(), 2));
+        $element = NestedArray::getValue($form, explode('.', (string) $data->getName(), 2));
         $form_state->setError($element, $e->getMessage());
       }
       else {

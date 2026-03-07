@@ -61,7 +61,7 @@ class UserAgent {
         // RFC2616 mandates that the decimal part is no more than three digits,
         // so we multiply the qvalue by 1000 to avoid floating point
         // comparisons.
-        $langcode = strtolower($match[1]);
+        $langcode = strtolower((string) $match[1]);
         $qvalue = isset($match[2]) ? (float) $match[2] : 1;
         // Take the highest qvalue for this langcode. Although the request
         // supposedly contains unique langcodes, our mapping possibly resolves
@@ -109,7 +109,7 @@ class UserAgent {
     $max_qvalue = 0;
     foreach ($langcodes as $langcode_case_sensitive) {
       // Language tags are case insensitive (RFC2616, sec 3.10).
-      $langcode = strtolower($langcode_case_sensitive);
+      $langcode = strtolower((string) $langcode_case_sensitive);
 
       // If nothing matches below, the default qvalue is the one of the wildcard
       // language, if set, or is 0 (which will never match).

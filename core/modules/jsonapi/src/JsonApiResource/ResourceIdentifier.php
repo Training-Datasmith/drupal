@@ -54,18 +54,9 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
   protected $resourceType;
 
   /**
-   * The resource ID.
-   *
-   * @var string
-   */
-  protected $id;
-
-  /**
    * The relationship's metadata.
-   *
-   * @var array
    */
-  protected $meta;
+  protected array $meta;
 
   /**
    * ResourceIdentifier constructor.
@@ -77,11 +68,13 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    * @param array $meta
    *   Any metadata for the ResourceIdentifier.
    */
-  public function __construct($resource_type, $id, array $meta = []) {
+  public function __construct($resource_type, /**
+   * The resource ID.
+   */
+  protected $id, array $meta = []) {
     assert(is_string($resource_type) || $resource_type instanceof ResourceType);
     assert(!isset($meta[static::ARITY_KEY]) || is_int($meta[static::ARITY_KEY]) && $meta[static::ARITY_KEY] >= 0);
     $this->resourceTypeName = is_string($resource_type) ? $resource_type : $resource_type->getTypeName();
-    $this->id = $id;
     $this->meta = $meta;
     if (!is_string($resource_type)) {
       $this->resourceType = $resource_type;
@@ -126,7 +119,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    * @return bool
    *   TRUE if the ResourceIdentifier has an arity, FALSE otherwise.
    */
-  public function hasArity() {
+  public function hasArity(): bool {
     return isset($this->meta[static::ARITY_KEY]);
   }
 
@@ -153,7 +146,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    *   A newly created ResourceIdentifier with the given arity, otherwise
    *   the same.
    */
-  public function withArity($arity) {
+  public function withArity($arity): static {
     return new static($this->getResourceType(), $this->getId(), [static::ARITY_KEY => $arity] + $this->getMeta());
   }
 
@@ -187,7 +180,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    *   are not the same. If $a or $b does not have an arity, they will be
    *   considered duplicates.
    */
-  public static function isDuplicate(ResourceIdentifier $a, ResourceIdentifier $b) {
+  public static function isDuplicate(ResourceIdentifier $a, ResourceIdentifier $b): bool {
     return static::compare($a, $b) === 0;
   }
 
@@ -205,7 +198,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    *   TRUE if both relationships reference the same resource, even when they
    *   have different arity values, FALSE otherwise.
    */
-  public static function isParallel(ResourceIdentifier $a, ResourceIdentifier $b) {
+  public static function isParallel(ResourceIdentifier $a, ResourceIdentifier $b): bool {
     return static::compare($a->withArity(0), $b->withArity(0)) === 0;
   }
 
@@ -222,7 +215,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    *   identify the same resource but have distinct arity values, then the
    *   return value will be arity $a minus arity $b. -1 otherwise.
    */
-  public static function compare(ResourceIdentifier $a, ResourceIdentifier $b) {
+  public static function compare(ResourceIdentifier $a, ResourceIdentifier $b): int|float {
     $result = strcmp(sprintf('%s:%s', $a->getTypeName(), $a->getId()), sprintf('%s:%s', $b->getTypeName(), $b->getId()));
     // If type and ID do not match, return their ordering.
     if ($result !== 0) {
@@ -246,12 +239,10 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    *
    * @see self::isDuplicate()
    */
-  public static function deduplicate(array $resource_identifiers) {
-    return array_reduce(array_slice($resource_identifiers, 1), function ($deduplicated, $current) {
+  public static function deduplicate(array $resource_identifiers): array {
+    return array_reduce(array_slice($resource_identifiers, 1), function (array $deduplicated, \Drupal\jsonapi\JsonApiResource\ResourceIdentifier $current): array {
       assert($current instanceof static);
-      return array_merge($deduplicated, array_reduce($deduplicated, function ($duplicate, $previous) use ($current) {
-        return $duplicate ?: static::isDuplicate($previous, $current);
-      }, FALSE) ? [] : [$current]);
+      return array_merge($deduplicated, array_reduce($deduplicated, fn($duplicate, $previous) => $duplicate ?: static::isDuplicate($previous, $current), FALSE) ? [] : [$current]);
     }, array_slice($resource_identifiers, 0, 1));
   }
 
@@ -264,7 +255,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    * @return bool
    *   Whether all the given resource identifiers are unique.
    */
-  public static function areResourceIdentifiersUnique(array $resource_identifiers) {
+  public static function areResourceIdentifiersUnique(array $resource_identifiers): bool {
     return count($resource_identifiers) === count(static::deduplicate($resource_identifiers));
   }
 
@@ -311,7 +302,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    * @return self[]
    *   An array of new ResourceIdentifier objects with appropriate arity values.
    */
-  public static function toResourceIdentifiers(EntityReferenceFieldItemListInterface $items) {
+  public static function toResourceIdentifiers(EntityReferenceFieldItemListInterface $items): array {
     $relationships = [];
     foreach ($items->filterEmptyItems() as $item) {
       // Create a ResourceIdentifier from the field item. This will make it
@@ -361,10 +352,8 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    *   Unlike self::toResourceIdentifiers(), this method does not omit arity
    *   when an identifier is not parallel to any other identifier.
    */
-  public static function toResourceIdentifiersWithArityRequired(EntityReferenceFieldItemListInterface $items) {
-    return array_map(function (ResourceIdentifier $identifier) {
-      return $identifier->hasArity() ? $identifier : $identifier->withArity(0);
-    }, static::toResourceIdentifiers($items));
+  public static function toResourceIdentifiersWithArityRequired(EntityReferenceFieldItemListInterface $items): array {
+    return array_map(fn(ResourceIdentifier $identifier) => $identifier->hasArity() ? $identifier : $identifier->withArity(0), static::toResourceIdentifiers($items));
   }
 
   /**
@@ -376,7 +365,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    * @return self
    *   A new ResourceIdentifier object.
    */
-  public static function fromEntity(EntityInterface $entity) {
+  public static function fromEntity(EntityInterface $entity): static {
     /** @var \Drupal\jsonapi\ResourceType\ResourceTypeRepositoryInterface $resource_type_repository */
     $resource_type_repository = \Drupal::service('jsonapi.resource_type.repository');
     $resource_type = $resource_type_repository->get($entity->getEntityTypeId(), $entity->bundle());
@@ -411,7 +400,7 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
    * @return self
    *   A new ResourceIdentifier object.
    */
-  protected static function getVirtualOrMissingResourceIdentifier(EntityReferenceItem $item) {
+  protected static function getVirtualOrMissingResourceIdentifier(EntityReferenceItem $item): static {
     $resource_type_repository = \Drupal::service('jsonapi.resource_type.repository');
     $property_name = static::getDataReferencePropertyName($item);
     $value = $item->get($property_name)->getValue();
@@ -424,18 +413,16 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
     assert($resource_type instanceof ResourceType);
     $relatable_resource_types = $resource_type->getRelatableResourceTypesByField($resource_type->getPublicName($field->getName()));
     assert(!empty($relatable_resource_types));
-    $get_metadata = function ($type) {
-      return [
-        'links' => [
-          'help' => [
-            'href' => "https://www.drupal.org/docs/8/modules/json-api/core-concepts#$type",
-            'meta' => [
-              'about' => "Usage and meaning of the '$type' resource identifier.",
-            ],
+    $get_metadata = (fn($type) => [
+      'links' => [
+        'help' => [
+          'href' => "https://www.drupal.org/docs/8/modules/json-api/core-concepts#$type",
+          'meta' => [
+            'about' => "Usage and meaning of the '$type' resource identifier.",
           ],
         ],
-      ];
-    };
+      ],
+    ]);
     $resource_type = reset($relatable_resource_types);
     // A non-empty entity reference field that refers to a non-existent entity
     // is not a data integrity problem. For example, Term entities' "parent"
@@ -448,18 +435,16 @@ class ResourceIdentifier implements ResourceIdentifierInterface {
       }
       return new static($resource_type, 'virtual', $get_metadata('virtual'));
     }
-    else {
-      // In case of a dangling reference, it is impossible to determine which
-      // resource type it used to reference, because that requires knowing the
-      // referenced bundle, which Drupal does not store.
-      // If we can reliably determine the resource type of the dangling
-      // reference, use it; otherwise conjure a fake resource type out of thin
-      // air, one that indicates we don't know the bundle.
-      $resource_type = count($relatable_resource_types) > 1
-        ? new ResourceType('?', '?', '')
-        : reset($relatable_resource_types);
-      return new static($resource_type, 'missing', $get_metadata('missing'));
-    }
+    // In case of a dangling reference, it is impossible to determine which
+    // resource type it used to reference, because that requires knowing the
+    // referenced bundle, which Drupal does not store.
+    // If we can reliably determine the resource type of the dangling
+    // reference, use it; otherwise conjure a fake resource type out of thin
+    // air, one that indicates we don't know the bundle.
+    $resource_type = count($relatable_resource_types) > 1
+      ? new ResourceType('?', '?', '')
+      : reset($relatable_resource_types);
+    return new static($resource_type, 'missing', $get_metadata('missing'));
   }
 
 }

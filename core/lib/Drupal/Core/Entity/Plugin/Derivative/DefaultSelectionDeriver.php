@@ -21,26 +21,19 @@ class DefaultSelectionDeriver extends DeriverBase implements ContainerDeriverInt
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Creates a DefaultSelectionDeriver object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager) {
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('entity_type.manager')
     );
@@ -65,7 +58,7 @@ class DefaultSelectionDeriver extends DeriverBase implements ContainerDeriverInt
       // of whether a limit has been passed.
       // @see \Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection
       if (!$entity_type->hasKey('label')) {
-        $this->derivatives[$entity_type_id]['class'] = 'Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection';
+        $this->derivatives[$entity_type_id]['class'] = \Drupal\Core\Entity\Plugin\EntityReferenceSelection\PhpSelection::class;
       }
     }
 

@@ -15,8 +15,6 @@ final class PreApplyEvent extends SandboxValidationEvent {
 
   /**
    * The list of paths to ignore in the active and stage directories.
-   *
-   * @var \Drupal\package_manager\ImmutablePathList
    */
   public readonly ImmutablePathList $excludedPaths;
 

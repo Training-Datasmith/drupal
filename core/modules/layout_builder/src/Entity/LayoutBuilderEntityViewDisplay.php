@@ -39,7 +39,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    *
    * @var \Drupal\Core\Entity\EntityFieldManagerInterface
    */
-  protected $entityFieldManager;
+  protected object $entityFieldManager;
 
   /**
    * {@inheritdoc}
@@ -55,7 +55,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   /**
    * {@inheritdoc}
    */
-  public function isOverridable() {
+  public function isOverridable(): bool {
     return $this->isLayoutBuilderEnabled() && $this->getThirdPartySetting('layout_builder', 'allow_custom', FALSE);
   }
 
@@ -63,7 +63,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Toggle overridable layouts'), pluralize: FALSE, name: 'allowLayoutOverrides')]
-  public function setOverridable($overridable = TRUE) {
+  public function setOverridable($overridable = TRUE): static {
     $this->setThirdPartySetting('layout_builder', 'allow_custom', $overridable);
     // Enable Layout Builder if it's not already enabled and overriding.
     if ($overridable && !$this->isLayoutBuilderEnabled()) {
@@ -88,7 +88,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Enable Layout Builder'), pluralize: FALSE)]
-  public function enableLayoutBuilder() {
+  public function enableLayoutBuilder(): static {
     $this->setThirdPartySetting('layout_builder', 'enabled', TRUE);
     return $this;
   }
@@ -97,7 +97,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * {@inheritdoc}
    */
   #[ActionMethod(adminLabel: new TranslatableMarkup('Disable Layout Builder'), pluralize: FALSE)]
-  public function disableLayoutBuilder() {
+  public function disableLayoutBuilder(): static {
     $this->setOverridable(FALSE);
     $this->setThirdPartySetting('layout_builder', 'enabled', FALSE);
     return $this;
@@ -113,7 +113,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   /**
    * {@inheritdoc}
    */
-  protected function setSections(array $sections) {
+  protected function setSections(array $sections): static {
     // Third-party settings must be completely unset instead of stored as an
     // empty array.
     if (!$sections) {
@@ -128,7 +128,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
 
     $original_value = $this->getOriginal()?->isOverridable() ?? FALSE;
     $new_value = $this->isOverridable();
@@ -154,7 +154,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         // section-based components.
         $components = $this->getComponents();
         // Sort the components by weight.
-        uasort($components, 'Drupal\Component\Utility\SortArray::sortByWeightElement');
+        uasort($components, Drupal\Component\Utility\SortArray::sortByWeightElement(...));
         foreach ($components as $name => $component) {
           // We need to call setComponent so fields are added to the default
           // section if enabled. However, this also adds the fields to the
@@ -223,7 +223,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * @param string $field_name
    *   The name for the layout section field.
    */
-  protected function addSectionField($entity_type_id, $bundle, $field_name) {
+  protected function addSectionField(string $entity_type_id, string $bundle, string $field_name) {
     $field = FieldConfig::loadByName($entity_type_id, $bundle, $field_name);
     if (!$field) {
       $field_storage = FieldStorageConfig::loadByName($entity_type_id, $field_name);
@@ -275,7 +275,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * @return \Drupal\Core\Plugin\Context\ContextRepositoryInterface
    *   The context repository service.
    */
-  protected function contextRepository() {
+  protected function contextRepository(): object {
     return \Drupal::service('context.repository');
   }
 
@@ -285,14 +285,14 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * @return bool
    *   TRUE if this display is using the '_custom' view mode, FALSE otherwise.
    */
-  protected function isCustomMode() {
+  protected function isCustomMode(): bool {
     return $this->getOriginalMode() === static::CUSTOM_MODE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildMultiple(array $entities) {
+  public function buildMultiple(array $entities): array {
     $build_list = parent::buildMultiple($entities);
 
     // Layout Builder can not be enabled for the '_custom' view mode that is
@@ -333,7 +333,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * @return array
    *   The render array representing the sections of the entity.
    */
-  protected function buildSections(FieldableEntityInterface $entity) {
+  protected function buildSections(FieldableEntityInterface $entity): array {
     $contexts = $this->getContextsForEntity($entity);
     $label = new TranslatableMarkup('@entity being viewed', [
       '@entity' => $entity->getEntityType()->getSingularLabel(),
@@ -379,7 +379,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    *
    * @todo Move this upstream in https://www.drupal.org/node/2939931.
    */
-  public function label() {
+  public function label(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo($this->getTargetEntityTypeId());
     $bundle_label = $bundle_info[$this->getTargetBundle()]['label'];
     $target_entity_type = $this->entityTypeManager()->getDefinition($this->getTargetEntityTypeId());
@@ -389,7 +389,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): static {
     parent::calculateDependencies();
 
     foreach ($this->getSections() as $section) {
@@ -439,7 +439,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
   /**
    * {@inheritdoc}
    */
-  public function setComponent($name, array $options = []) {
+  public function setComponent($name, array $options = []): static {
     parent::setComponent($name, $options);
 
     // Only continue if Layout Builder is enabled.
@@ -497,7 +497,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
    * @return \Drupal\layout_builder\SectionStorage\SectionStorageManagerInterface
    *   The section storage manager.
    */
-  private function sectionStorageManager() {
+  private function sectionStorageManager(): object {
     return \Drupal::service('plugin.manager.layout_builder.section_storage');
   }
 
@@ -534,7 +534,7 @@ class LayoutBuilderEntityViewDisplay extends BaseEntityViewDisplay implements La
         if ($plugin instanceof DerivativeInspectionInterface && in_array($plugin->getBaseId(), ['field_block', 'extra_field_block'], TRUE)) {
           // FieldBlock derivative IDs are in the format
           // [entity_type]:[bundle]:[field].
-          [, , $field_block_field_name] = explode(PluginBase::DERIVATIVE_SEPARATOR, $plugin->getDerivativeId());
+          [, , $field_block_field_name] = explode(PluginBase::DERIVATIVE_SEPARATOR, (string) $plugin->getDerivativeId());
           if ($field_block_field_name === $field_name) {
             return $component;
           }

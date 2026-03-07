@@ -175,7 +175,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
    *   thumbnails. We need to decide on what the API will be for this.
    *   https://www.drupal.org/node/2878119
    */
-  protected function updateThumbnail($from_queue = FALSE) {
+  protected function updateThumbnail($from_queue = FALSE): static {
     $this->thumbnail->target_id = $this->loadThumbnail($this->getThumbnailUri($from_queue))->id();
     $this->thumbnail->width = $this->getThumbnailWidth($from_queue);
     $this->thumbnail->height = $this->getThumbnailHeight($from_queue);
@@ -233,7 +233,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
    * @return string
    *   The default thumbnail URI.
    */
-  protected function getDefaultThumbnailUri() {
+  protected function getDefaultThumbnailUri(): string {
     $default_thumbnail_filename = $this->getSource()->getPluginDefinition()['default_thumbnail_filename'];
     return \Drupal::config('media.settings')->get('icon_base_uri') . '/' . $default_thumbnail_filename;
   }
@@ -249,7 +249,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
    * @todo If the need arises in contrib, consider making this a public API,
    *   by adding an interface that extends MediaInterface.
    */
-  public function updateQueuedThumbnail() {
+  public function updateQueuedThumbnail(): static {
     $this->updateThumbnail(TRUE);
     return $this;
   }
@@ -273,10 +273,10 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
   protected function getThumbnailUri($from_queue) {
     $thumbnails_queued = $this->bundle->entity->thumbnailDownloadsAreQueued();
     if ($thumbnails_queued && $this->isNew()) {
-      return $this->getDefaultThumbnailUri();
+        return $this->getDefaultThumbnailUri();
     }
-    elseif ($thumbnails_queued && !$from_queue) {
-      return $this->get('thumbnail')->entity->getFileUri();
+    if ($thumbnails_queued && !$from_queue) {
+        return $this->get('thumbnail')->entity->getFileUri();
     }
 
     $source = $this->getSource();
@@ -298,10 +298,10 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
   protected function getThumbnailWidth(bool $from_queue): ?int {
     $thumbnails_queued = $this->bundle->entity->thumbnailDownloadsAreQueued();
     if ($thumbnails_queued && $this->isNew()) {
-      return NULL;
+        return NULL;
     }
-    elseif ($thumbnails_queued && !$from_queue) {
-      return $this->get('thumbnail')->width;
+    if ($thumbnails_queued && !$from_queue) {
+        return $this->get('thumbnail')->width;
     }
 
     $source = $this->getSource();
@@ -323,10 +323,10 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
   protected function getThumbnailHeight(bool $from_queue): ?int {
     $thumbnails_queued = $this->bundle->entity->thumbnailDownloadsAreQueued();
     if ($thumbnails_queued && $this->isNew()) {
-      return NULL;
+        return NULL;
     }
-    elseif ($thumbnails_queued && !$from_queue) {
-      return $this->get('thumbnail')->height;
+    if ($thumbnails_queued && !$from_queue) {
+        return $this->get('thumbnail')->height;
     }
 
     $source = $this->getSource();
@@ -346,7 +346,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
    *
    * @internal
    */
-  protected function hasSourceFieldChanged() {
+  protected function hasSourceFieldChanged(): bool {
     $source = $this->getSource();
     return $this->getOriginal() && $source->getSourceFieldValue($this) !== $source->getSourceFieldValue($this->getOriginal());
   }
@@ -360,7 +360,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
    * @return bool
    *   TRUE if the thumbnail should be updated, FALSE otherwise.
    */
-  protected function shouldUpdateThumbnail($is_new = FALSE) {
+  protected function shouldUpdateThumbnail($is_new = FALSE): bool {
     // Update thumbnail if we don't have a thumbnail yet or when the source
     // field value changes.
     return !$this->get('thumbnail')->entity || $is_new || $this->hasSourceFieldChanged();
@@ -369,7 +369,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
 
     if (!$this->getOwner()) {
@@ -385,7 +385,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
   /**
    * {@inheritdoc}
    */
-  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+  public function postSave(EntityStorageInterface $storage, $update = TRUE): void {
     parent::postSave($storage, $update);
     $is_new = !$update;
     foreach ($this->translations as $langcode => $data) {
@@ -401,7 +401,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record) {
+  public function preSaveRevision(EntityStorageInterface $storage, \stdClass $record): void {
     parent::preSaveRevision($storage, $record);
 
     if (!$this->isNewRevision() && $this->getOriginal() && empty($record->revision_log_message)) {
@@ -426,7 +426,7 @@ class Media extends EditorialContentEntityBase implements MediaInterface {
    *   Expose this as an API in
    *   https://www.drupal.org/project/drupal/issues/2992426.
    */
-  public function prepareSave() {
+  public function prepareSave(): void {
     // @todo If the source plugin talks to a remote API (e.g. oEmbed), this code
     // might be performing a fair number of HTTP requests. This is dangerously
     // brittle and should probably be handled by a queue, to avoid doing HTTP

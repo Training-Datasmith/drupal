@@ -24,8 +24,6 @@ final class LinearHistory implements CheckpointListInterface {
    * The active checkpoint.
    *
    * In our implementation this is always the last in the list.
-   *
-   * @var \Drupal\Core\Config\Checkpoint\Checkpoint|null
    */
   private ?Checkpoint $activeCheckpoint;
 

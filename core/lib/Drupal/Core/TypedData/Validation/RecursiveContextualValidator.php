@@ -55,11 +55,6 @@ class RecursiveContextualValidator implements ContextualValidatorInterface {
   protected $constraintValidatorFactory;
 
   /**
-   * The typed data manager.
-   */
-  protected TypedDataManagerInterface $typedDataManager;
-
-  /**
    * Creates a validator for the given context.
    *
    * @param \Symfony\Component\Validator\Context\ExecutionContextInterface $context
@@ -68,14 +63,13 @@ class RecursiveContextualValidator implements ContextualValidatorInterface {
    *   The metadata factory.
    * @param \Symfony\Component\Validator\ConstraintValidatorFactoryInterface $validator_factory
    *   The constraint validator factory.
-   * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typed_data_manager
+   * @param \Drupal\Core\TypedData\TypedDataManagerInterface $typedDataManager
    *   The typed data manager.
    */
-  public function __construct(ExecutionContextInterface $context, MetadataFactoryInterface $metadata_factory, ConstraintValidatorFactoryInterface $validator_factory, TypedDataManagerInterface $typed_data_manager) {
+  public function __construct(ExecutionContextInterface $context, MetadataFactoryInterface $metadata_factory, ConstraintValidatorFactoryInterface $validator_factory, protected TypedDataManagerInterface $typedDataManager) {
     $this->context = $context;
     $this->metadataFactory = $metadata_factory;
     $this->constraintValidatorFactory = $validator_factory;
-    $this->typedDataManager = $typed_data_manager;
   }
 
   /**
@@ -137,7 +131,7 @@ class RecursiveContextualValidator implements ContextualValidatorInterface {
    *
    * @return $this
    */
-  protected function validateNode(TypedDataInterface $data, $constraints = NULL, $is_root_call = FALSE) {
+  protected function validateNode(TypedDataInterface $data, $constraints = NULL, $is_root_call = FALSE): static {
     $previous_value = $this->context->getValue();
     $previous_object = $this->context->getObject();
     $previous_metadata = $this->context->getMetadata();
@@ -247,13 +241,13 @@ class RecursiveContextualValidator implements ContextualValidatorInterface {
       throw new \LogicException('Passing custom groups is not supported.');
     }
     if (!is_object($object)) {
-      throw new \InvalidArgumentException('Passing class name is not supported.');
+        throw new \InvalidArgumentException('Passing class name is not supported.');
     }
-    elseif (!$object instanceof TypedDataInterface) {
-      throw new \InvalidArgumentException('The passed in object has to be typed data.');
+    if (!$object instanceof TypedDataInterface) {
+        throw new \InvalidArgumentException('The passed in object has to be typed data.');
     }
-    elseif (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
-      throw new \InvalidArgumentException('Passed data does not contain properties.');
+    if (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
+        throw new \InvalidArgumentException('Passed data does not contain properties.');
     }
     return $this->validateNode($object->get($propertyName), NULL, TRUE);
   }
@@ -263,13 +257,13 @@ class RecursiveContextualValidator implements ContextualValidatorInterface {
    */
   public function validatePropertyValue($object, $property_name, $value, $groups = NULL): static {
     if (!is_object($object)) {
-      throw new \InvalidArgumentException('Passing class name is not supported.');
+        throw new \InvalidArgumentException('Passing class name is not supported.');
     }
-    elseif (!$object instanceof TypedDataInterface) {
-      throw new \InvalidArgumentException('The passed in object has to be typed data.');
+    if (!$object instanceof TypedDataInterface) {
+        throw new \InvalidArgumentException('The passed in object has to be typed data.');
     }
-    elseif (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
-      throw new \InvalidArgumentException('Passed data does not contain properties.');
+    if (!$object instanceof ListInterface && !$object instanceof ComplexDataInterface) {
+        throw new \InvalidArgumentException('Passed data does not contain properties.');
     }
     $data = $object->get($property_name);
     $metadata = $this->metadataFactory->getMetadataFor($data);

@@ -33,7 +33,7 @@ class ImageStyleListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $flush = [
@@ -50,7 +50,7 @@ class ImageStyleListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $build = parent::render();
     $build['table']['#empty'] = $this->t('There are currently no styles. <a href=":url">Add a new one</a>.', [
       ':url' => Url::fromRoute('image.style_add')->toString(),

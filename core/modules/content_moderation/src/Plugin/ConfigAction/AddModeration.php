@@ -21,13 +21,13 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   entity_types: ['workflow'],
   deriver: AddModerationDeriver::class,
 )]
-final class AddModeration implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class AddModeration implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigManagerInterface $configManager,
-    private readonly EntityTypeManagerInterface $entityTypeManager,
-    private readonly string $pluginId,
-    private readonly string $targetEntityType,
+    private ConfigManagerInterface $configManager,
+    private EntityTypeManagerInterface $entityTypeManager,
+    private string $pluginId,
+    private string $targetEntityType,
   ) {}
 
   /**

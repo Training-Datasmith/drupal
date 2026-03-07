@@ -24,7 +24,7 @@ class Search extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#size' => 60,
@@ -53,7 +53,7 @@ class Search extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for input.html.twig.
    */
-  public static function preRenderSearch($element) {
+  public static function preRenderSearch(array $element): array {
     $element['#attributes']['type'] = 'search';
     Element::setAttributes($element, ['id', 'name', 'value', 'size', 'maxlength', 'placeholder']);
     static::setAttributes($element, ['form-search']);

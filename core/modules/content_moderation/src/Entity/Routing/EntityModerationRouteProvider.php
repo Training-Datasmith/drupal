@@ -22,26 +22,19 @@ use Symfony\Component\Routing\RouteCollection;
 class EntityModerationRouteProvider implements EntityRouteProviderInterface, EntityHandlerInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
    * Constructs a new DefaultHtmlRouteProvider.
    *
-   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
    *   The entity field manager.
    */
-  public function __construct(EntityFieldManagerInterface $entity_field_manager) {
-    $this->entityFieldManager = $entity_field_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $container->get('entity_field.manager')
     );
@@ -50,7 +43,7 @@ class EntityModerationRouteProvider implements EntityRouteProviderInterface, Ent
   /**
    * {@inheritdoc}
    */
-  public function getRoutes(EntityTypeInterface $entity_type) {
+  public function getRoutes(EntityTypeInterface $entity_type): \Symfony\Component\Routing\RouteCollection {
     $collection = new RouteCollection();
 
     if ($moderation_route = $this->getLatestVersionRoute($entity_type)) {

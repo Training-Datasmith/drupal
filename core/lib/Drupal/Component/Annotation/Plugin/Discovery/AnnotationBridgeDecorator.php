@@ -13,32 +13,23 @@ class AnnotationBridgeDecorator implements DiscoveryInterface {
   use DiscoveryTrait;
 
   /**
-   * The decorated plugin discovery.
-   *
-   * @var \Drupal\Component\Plugin\Discovery\DiscoveryInterface
-   */
-  protected $decorated;
-
-  /**
-   * The name of the annotation that contains the plugin definition.
-   *
-   * @var string|null
-   */
-  protected $pluginDefinitionAnnotationName;
-
-  /**
    * ObjectDefinitionDiscoveryDecorator constructor.
    *
    * @param \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated
    *   The discovery object that is being decorated.
-   * @param string $plugin_definition_annotation_name
+   * @param string $pluginDefinitionAnnotationName
    *   The name of the annotation that contains the plugin definition. The class
    *   corresponding to this name must implement
    *   \Drupal\Component\Annotation\AnnotationInterface.
    */
-  public function __construct(DiscoveryInterface $decorated, $plugin_definition_annotation_name) {
-    $this->decorated = $decorated;
-    $this->pluginDefinitionAnnotationName = $plugin_definition_annotation_name;
+  public function __construct(
+      protected \Drupal\Component\Plugin\Discovery\DiscoveryInterface $decorated,
+      /**
+       * The name of the annotation that contains the plugin definition.
+       */
+      protected $pluginDefinitionAnnotationName
+  )
+  {
   }
 
   /**
@@ -68,7 +59,7 @@ class AnnotationBridgeDecorator implements DiscoveryInterface {
    * @return mixed
    *   The method result.
    */
-  public function __call($method, $args) {
+  public function __call(string $method, array $args) {
     return call_user_func_array([$this->decorated, $method], $args);
   }
 

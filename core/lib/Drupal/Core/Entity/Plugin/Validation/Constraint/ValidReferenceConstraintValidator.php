@@ -16,30 +16,15 @@ use Symfony\Component\Validator\ConstraintValidator;
 class ValidReferenceConstraintValidator extends ConstraintValidator implements ContainerInjectionInterface {
 
   /**
-   * The selection plugin manager.
-   *
-   * @var \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface
-   */
-  protected $selectionManager;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructs a ValidReferenceConstraintValidator object.
    *
-   * @param \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selection_manager
+   * @param \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selectionManager
    *   The selection plugin manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(SelectionPluginManagerInterface $selection_manager, EntityTypeManagerInterface $entity_type_manager) {
-    $this->selectionManager = $selection_manager;
-    $this->entityTypeManager = $entity_type_manager;
+  public function __construct(protected \Drupal\Core\Entity\EntityReferenceSelection\SelectionPluginManagerInterface $selectionManager, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager)
+  {
   }
 
   /**
@@ -113,7 +98,7 @@ class ValidReferenceConstraintValidator extends ConstraintValidator implements C
         $this->context->buildViolation($constraint->invalidAutocreateMessage)
           ->setParameter('%type', $target_type_id)
           ->setParameter('%label', $entity->label())
-          ->atPath((string) $delta . '.entity')
+          ->atPath($delta . '.entity')
           ->setInvalidValue($entity)
           ->addViolation();
       }
@@ -147,7 +132,7 @@ class ValidReferenceConstraintValidator extends ConstraintValidator implements C
           $this->context->buildViolation($message)
             ->setParameter('%type', $target_type_id)
             ->setParameter('%id', $target_id)
-            ->atPath((string) $delta . '.target_id')
+            ->atPath($delta . '.target_id')
             ->setInvalidValue($target_id)
             ->addViolation();
         }

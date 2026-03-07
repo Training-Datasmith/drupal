@@ -17,7 +17,7 @@ class Item extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       // Forms that show author fields to both anonymous and authenticated users
       // need to dynamically switch between #type 'textfield' and #type 'item'

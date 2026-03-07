@@ -52,7 +52,7 @@ class VerticalTabs extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#default_tab' => '',
       '#process' => [
@@ -75,7 +75,7 @@ class VerticalTabs extends RenderElementBase {
    * @return array
    *   The modified element.
    */
-  public static function preRenderVerticalTabs($element) {
+  public static function preRenderVerticalTabs(array $element): array {
     // Do not render the vertical tabs element if it is empty.
     $group = implode('][', $element['#parents']);
     if (!Element::getVisibleChildren($element['group']['#groups'][$group])) {
@@ -98,7 +98,7 @@ class VerticalTabs extends RenderElementBase {
    * @return array
    *   The processed element.
    */
-  public static function processVerticalTabs(&$element, FormStateInterface $form_state, &$complete_form) {
+  public static function processVerticalTabs(array &$element, FormStateInterface $form_state, &$complete_form) {
     if (isset($element['#access']) && !$element['#access']) {
       return $element;
     }

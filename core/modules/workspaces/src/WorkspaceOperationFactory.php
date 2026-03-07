@@ -39,7 +39,7 @@ class WorkspaceOperationFactory {
    * @return \Drupal\workspaces\WorkspacePublisherInterface
    *   A workspace publisher object.
    */
-  public function getPublisher(WorkspaceInterface $source) {
+  public function getPublisher(WorkspaceInterface $source): \Drupal\workspaces\WorkspacePublisher {
     return new WorkspacePublisher($this->entityTypeManager, $this->database, $this->workspaceManager, $this->workspaceTracker, $this->eventDispatcher, $source, $this->logger, $this->time);
   }
 
@@ -54,7 +54,7 @@ class WorkspaceOperationFactory {
    * @return \Drupal\workspaces\WorkspaceMergerInterface
    *   A workspace merger object.
    */
-  public function getMerger(WorkspaceInterface $source, WorkspaceInterface $target) {
+  public function getMerger(WorkspaceInterface $source, WorkspaceInterface $target): \Drupal\workspaces\WorkspaceMerger {
     return new WorkspaceMerger($this->entityTypeManager, $this->database, $this->workspaceTracker, $source, $target, $this->logger);
   }
 

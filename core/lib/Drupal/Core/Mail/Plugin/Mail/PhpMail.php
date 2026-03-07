@@ -60,7 +60,7 @@ class PhpMail implements MailInterface {
    * @return array
    *   The formatted $message.
    */
-  public function format(array $message) {
+  public function format(array $message): array {
     // Join the body array into one string.
     $message['body'] = implode("\n\n", $message['body']);
 
@@ -95,10 +95,10 @@ class PhpMail implements MailInterface {
 
     $headers = new Headers();
     foreach ($message['headers'] as $name => $value) {
-      if (in_array(strtolower($name), self::MAILBOX_LIST_HEADERS, TRUE)) {
+      if (in_array(strtolower((string) $name), self::MAILBOX_LIST_HEADERS, TRUE)) {
         // Split values by comma, but ignore commas encapsulated in double
         // quotes.
-        $value = str_getcsv($value, escape: '\\');
+        $value = str_getcsv((string) $value, escape: '\\');
       }
       $headers->addHeader($name, $value);
     }
@@ -109,10 +109,10 @@ class PhpMail implements MailInterface {
     // on Unix and CRLF on Windows. Drupal automatically guesses the
     // line-ending format appropriate for your system. If you need to
     // override this, adjust $settings['mail_line_endings'] in settings.php.
-    $mail_body = preg_replace('@\r?\n@', $line_endings, $message['body']);
+    $mail_body = preg_replace('@\r?\n@', $line_endings, (string) $message['body']);
     $mail_headers = $headers->toString();
 
-    if (!$this->request->server->has('WINDIR') && !str_contains($this->request->server->get('SERVER_SOFTWARE'), 'Win32')) {
+    if (!$this->request->server->has('WINDIR') && !str_contains((string) $this->request->server->get('SERVER_SOFTWARE'), 'Win32')) {
       // On most non-Windows systems, the "-f" option to the sendmail command
       // is used to set the Return-Path. There is no space between -f and
       // the value of the return path.
@@ -194,7 +194,7 @@ class PhpMail implements MailInterface {
    * @todo Rename to ::isShellSafe() and/or discuss whether this is the correct
    *   location for this helper.
    */
-  protected static function _isShellSafe($string) {
+  protected static function _isShellSafe($string): bool {
     if (escapeshellcmd($string) !== $string || !in_array(escapeshellarg($string), ["'$string'", "\"$string\""])) {
       return FALSE;
     }

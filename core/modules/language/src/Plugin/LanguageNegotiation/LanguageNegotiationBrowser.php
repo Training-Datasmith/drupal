@@ -37,7 +37,7 @@ class LanguageNegotiationBrowser extends LanguageNegotiationMethodBase implement
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = new static();
     $instance->pageCacheKillSwitch = $container->get('page_cache_kill_switch');
     return $instance;

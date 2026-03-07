@@ -17,13 +17,6 @@ class EntityConstraintViolationList extends ConstraintViolationList implements E
   use StringTranslationTrait;
 
   /**
-   * The entity that has been validated.
-   *
-   * @var \Drupal\Core\Entity\FieldableEntityInterface
-   */
-  protected $entity;
-
-  /**
    * Violations offsets of entity level violations.
    *
    * @var int[]|null
@@ -47,9 +40,8 @@ class EntityConstraintViolationList extends ConstraintViolationList implements E
    * @param iterable $violations
    *   The set of violations.
    */
-  public function __construct(FieldableEntityInterface $entity, iterable $violations = []) {
+  public function __construct(protected \Drupal\Core\Entity\FieldableEntityInterface $entity, iterable $violations = []) {
     parent::__construct($violations);
-    $this->entity = $entity;
   }
 
   /**
@@ -64,7 +56,7 @@ class EntityConstraintViolationList extends ConstraintViolationList implements E
       foreach ($this as $offset => $violation) {
         if ($path = $violation->getPropertyPath()) {
           // An example of $path might be 'title.0.value'.
-          [$field_name] = explode('.', $path, 2);
+          [$field_name] = explode('.', (string) $path, 2);
           if ($this->entity->hasField($field_name)) {
             $this->violationOffsetsByField[$field_name][$offset] = $offset;
           }

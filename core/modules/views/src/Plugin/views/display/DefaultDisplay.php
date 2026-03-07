@@ -29,7 +29,7 @@ class DefaultDisplay extends DisplayPluginBase {
   /**
    * Determine if this display is the default which contains fallback settings.
    */
-  public function isDefaultDisplay() {
+  public function isDefaultDisplay(): bool {
     return TRUE;
   }
 

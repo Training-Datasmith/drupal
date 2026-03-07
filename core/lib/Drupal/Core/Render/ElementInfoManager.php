@@ -58,7 +58,7 @@ class ElementInfoManager extends DefaultPluginManager implements ElementInfoMana
     protected ThemeManagerInterface $themeManager,
   ) {
     $this->setCacheBackend($cache_backend, 'element_info');
-    parent::__construct('Element', $namespaces, $module_handler, ElementInterface::class, RenderElement::class, 'Drupal\Core\Render\Annotation\RenderElement');
+    parent::__construct('Element', $namespaces, $module_handler, ElementInterface::class, RenderElement::class, \Drupal\Core\Render\Annotation\RenderElement::class);
     $this->alterInfo('element_plugin');
   }
 
@@ -152,7 +152,7 @@ class ElementInfoManager extends DefaultPluginManager implements ElementInfoMana
   /**
    * {@inheritdoc}
    */
-  public function clearCachedDefinitions() {
+  public function clearCachedDefinitions(): void {
     $this->elementInfo = NULL;
 
     $cids = [];
@@ -174,7 +174,7 @@ class ElementInfoManager extends DefaultPluginManager implements ElementInfoMana
    * @return string
    *   The cache ID.
    */
-  protected function getCid($theme_name) {
+  protected function getCid(string $theme_name): string {
     return 'element_info_build:' . $theme_name;
   }
 

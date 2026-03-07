@@ -60,12 +60,10 @@ class CommentHooks {
           ':comment-approval' => Url::fromRoute('comment.admin_approval')->toString(),
           ':admin-comment' => Url::fromRoute('comment.admin')->toString(),
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
 
       case 'entity.comment_type.collection':
-        $output = '<p>' . $this->t('This page provides a list of all comment types on the site and allows you to manage the fields, form and display settings for each.') . '</p>';
-        return $output;
+        return '<p>' . $this->t('This page provides a list of all comment types on the site and allows you to manage the fields, form and display settings for each.') . '</p>';
     }
     return NULL;
   }
@@ -214,7 +212,7 @@ class CommentHooks {
    * @see \Drupal\comment\Plugin\Field\FieldType\CommentItem::propertyDefinitions()
    */
   #[Hook('entity_storage_load')]
-  public function entityStorageLoad($entities, $entity_type): void {
+  public function entityStorageLoad(array $entities, $entity_type): void {
     // Comments can only be attached to content entities, so skip others.
     if (!\Drupal::entityTypeManager()->getDefinition($entity_type)->entityClassImplements(FieldableEntityInterface::class)) {
       return;
@@ -296,12 +294,17 @@ class CommentHooks {
       $roles = \Drupal::entityTypeManager()->getStorage('user_role')->loadMultiple();
       $authenticated_can_access = $roles[RoleInterface::AUTHENTICATED_ID]->hasPermission('access comments');
       foreach ($roles as $rid => $role) {
-        if ($role->hasPermission('search content') && !$role->hasPermission('access comments')) {
-          if ($rid == RoleInterface::AUTHENTICATED_ID || $rid == RoleInterface::ANONYMOUS_ID || !$authenticated_can_access) {
-            $index_comments = FALSE;
-            break;
+          if (!$role->hasPermission('search content')) {
+              continue;
           }
-        }
+          if ($role->hasPermission('access comments')) {
+              continue;
+          }
+          if (!($rid == RoleInterface::AUTHENTICATED_ID || $rid == RoleInterface::ANONYMOUS_ID || !$authenticated_can_access)) {
+              continue;
+          }
+          $index_comments = FALSE;
+          break;
       }
     }
     $build = [];
@@ -444,21 +447,26 @@ class CommentHooks {
       $changed = FALSE;
       /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $view_display */
       foreach ($view_display->getComponents() as $field => $component) {
-        if (isset($component['type']) && $component['type'] === 'comment_default') {
-          if ($component['settings']['view_mode'] === $display->getMode()) {
-            $view_display->removeComponent($field);
-            /** @var \Drupal\Core\Entity\EntityViewModeInterface $mode */
-            $mode = EntityViewMode::load($display->getTargetEntityTypeId() . '.' . $display->getMode());
-            $arguments = [
-              '@id' => $view_display->id(),
-              '@name' => $field,
-              '@display' => $mode->label(),
-              '@mode' => $display->getMode(),
-            ];
-            \Drupal::logger('system')->warning("View display '@id': Comment field formatter '@name' was disabled because it is using the comment view display '@display' (@mode) that was just disabled.", $arguments);
-            $changed = TRUE;
+          if (!isset($component['type'])) {
+              continue;
           }
-        }
+          if (!($component['type'] === 'comment_default')) {
+              continue;
+          }
+          if ($component['settings']['view_mode'] !== $display->getMode()) {
+              continue;
+          }
+          $view_display->removeComponent($field);
+          /** @var \Drupal\Core\Entity\EntityViewModeInterface $mode */
+          $mode = EntityViewMode::load($display->getTargetEntityTypeId() . '.' . $display->getMode());
+          $arguments = [
+            '@id' => $view_display->id(),
+            '@name' => $field,
+            '@display' => $mode->label(),
+            '@mode' => $display->getMode(),
+          ];
+          \Drupal::logger('system')->warning("View display '@id': Comment field formatter '@name' was disabled because it is using the comment view display '@display' (@mode) that was just disabled.", $arguments);
+          $changed = TRUE;
       }
       if ($changed) {
         $view_display->save();
@@ -470,7 +478,7 @@ class CommentHooks {
    * Implements hook_field_type_category_info_alter().
    */
   #[Hook('field_type_category_info_alter')]
-  public function fieldTypeCategoryInfoAlter(&$definitions): void {
+  public function fieldTypeCategoryInfoAlter(array &$definitions): void {
     // The `comment` field type belongs in the `general` category, so the
     // libraries need to be attached using an alter hook.
     $definitions[FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY]['libraries'][] = 'comment/drupal.comment-icon';

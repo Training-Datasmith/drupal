@@ -23,25 +23,22 @@ class ContextualLinks extends FieldPluginBase {
 
   use RedirectDestinationTrait;
 
-  /**
-   * The contextual links serializer service.
-   */
-  protected ContextualLinksSerializer $contextualLinksSerializer;
-
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ContextualLinksSerializer $contextual_links_serializer ,
+    /**
+     * The contextual links serializer service.
+     */
+    protected ContextualLinksSerializer $contextualLinksSerializer ,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->contextualLinksSerializer = $contextual_links_serializer;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function usesGroupBy() {
+  public function usesGroupBy(): bool {
     return FALSE;
   }
 
@@ -60,7 +57,7 @@ class ContextualLinks extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $all_fields = $this->view->display_handler->getFieldLabels();
     // Offer to include only those fields that follow this one.
     $field_options = array_slice($all_fields, 0, array_search($this->options['id'], array_keys($all_fields)));
@@ -86,7 +83,7 @@ class ContextualLinks extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function preRender(&$values) {
+  public function preRender(&$values): void {
     // Add a row plugin css class for the contextual link.
     $class = 'contextual-region';
     if (!empty($this->view->style_plugin->options['row_class'])) {
@@ -156,9 +153,7 @@ class ContextualLinks extends FieldPluginBase {
       ];
       return $this->getRenderer()->render($element);
     }
-    else {
-      return '';
-    }
+    return '';
   }
 
   /**

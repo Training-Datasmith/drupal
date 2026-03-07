@@ -75,28 +75,26 @@ class EmbeddedDataSource extends SourcePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function fields() {
+  public function fields(): array {
     if ($this->count() > 0) {
       $first_row = reset($this->dataRows);
       $field_names = array_keys($first_row);
       return array_combine($field_names, $field_names);
     }
-    else {
-      return [];
-    }
+    return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function initializeIterator() {
+  public function initializeIterator(): \ArrayIterator {
     return new \ArrayIterator($this->dataRows);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     return 'Embedded data';
   }
 

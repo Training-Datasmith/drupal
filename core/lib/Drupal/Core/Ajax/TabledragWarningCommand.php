@@ -34,7 +34,7 @@ class TabledragWarningCommand implements CommandInterface, CommandWithAttachedAs
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     return [
       'command' => 'tabledragChanged',
       'id' => $this->id,
@@ -45,7 +45,7 @@ class TabledragWarningCommand implements CommandInterface, CommandWithAttachedAs
   /**
    * {@inheritdoc}
    */
-  public function getAttachedAssets() {
+  public function getAttachedAssets(): \Drupal\Core\Asset\AttachedAssets {
     $assets = new AttachedAssets();
     $assets->setLibraries(['core/drupal.tabledrag.ajax']);
     return $assets;

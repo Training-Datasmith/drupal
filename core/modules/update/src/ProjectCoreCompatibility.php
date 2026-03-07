@@ -79,16 +79,16 @@ final class ProjectCoreCompatibility {
    * @return string[]
    *   The core version numbers that are possible to update the site to.
    */
-  protected function getPossibleCoreUpdateVersions(array $core_releases, array $supported_branches) {
+  protected function getPossibleCoreUpdateVersions(array $core_releases, array $supported_branches): array {
     if (!isset($core_releases[$this->existingCoreVersion])) {
       // If we can't determine the existing version of core then we can't
       // calculate the core compatibility of a given release based on core
       // versions after the existing version.
       return [];
     }
-    $supported_versions = array_filter(array_keys($core_releases), function ($version) use ($supported_branches) {
+    $supported_versions = array_filter(array_keys($core_releases), function (int|string $version) use ($supported_branches): bool {
       foreach ($supported_branches as $supported_branch) {
-        if (strpos($version, $supported_branch) === 0) {
+        if (str_starts_with($version, $supported_branch)) {
           return TRUE;
         }
       }
@@ -96,10 +96,7 @@ final class ProjectCoreCompatibility {
     });
     $possible_core_update_versions = Semver::satisfiedBy($supported_versions, '>= ' . $this->existingCoreVersion);
     $possible_core_update_versions = Semver::sort($possible_core_update_versions);
-    $possible_core_update_versions = array_filter($possible_core_update_versions, function ($version) {
-      return VersionParser::parseStability($version) === 'stable';
-    });
-    return $possible_core_update_versions;
+    return array_filter($possible_core_update_versions, fn(string $version) => VersionParser::parseStability($version) === 'stable');
   }
 
   /**
@@ -122,7 +119,7 @@ final class ProjectCoreCompatibility {
    * @see update_process_project_info()
    * @see update_calculate_project_update_status()
    */
-  public function setReleaseMessage(array &$project_data) {
+  public function setReleaseMessage(array &$project_data): void {
     if (empty($this->possibleCoreUpdateVersions)) {
       return;
     }
@@ -215,7 +212,7 @@ final class ProjectCoreCompatibility {
    *   the range has 1 element then it denotes compatibility with a single
    *   version.
    */
-  protected function getCompatibilityRanges($core_compatibility_constraint) {
+  protected function getCompatibilityRanges($core_compatibility_constraint): array {
     $compatibility_ranges = [];
     foreach ($this->possibleCoreUpdateVersions as $possible_core_update_version) {
       if (Semver::satisfies($possible_core_update_version, $core_compatibility_constraint)) {

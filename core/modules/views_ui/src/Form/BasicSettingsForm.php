@@ -17,7 +17,7 @@ class BasicSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'views_ui_admin_settings_basic';
   }
 

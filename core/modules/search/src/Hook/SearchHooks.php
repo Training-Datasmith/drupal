@@ -67,8 +67,7 @@ class SearchHooks {
           ':solr_url' => 'https://www.drupal.org/project/apachesolr',
           ':sphinx_url' => 'https://www.drupal.org/project/sphinx',
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -99,7 +98,7 @@ class SearchHooks {
    * @see \Drupal\search\Form\SearchBlockForm
    */
   #[Hook('form_search_block_form_alter')]
-  public function formSearchBlockFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formSearchBlockFormAlter(array &$form, FormStateInterface $form_state) : void {
     $form['form_build_id']['#access'] = FALSE;
     $form['form_token']['#access'] = FALSE;
     $form['form_id']['#access'] = FALSE;

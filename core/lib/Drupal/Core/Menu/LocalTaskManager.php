@@ -45,7 +45,7 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
     // The default link options.
     'options' => [],
     // Default class for local task implementations.
-    'class' => 'Drupal\Core\Menu\LocalTaskDefault',
+    'class' => \Drupal\Core\Menu\LocalTaskDefault::class,
     // The plugin id. Set by the plugin system based on the top-level YAML key.
     'id' => '',
   ];
@@ -65,13 +65,6 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
   protected $requestStack;
 
   /**
-   * The current route match.
-   *
-   * @var \Drupal\Core\Routing\RouteMatchInterface
-   */
-  protected $routeMatch;
-
-  /**
    * The plugin instances.
    *
    * @var array
@@ -86,27 +79,6 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
   protected $taskData;
 
   /**
-   * The route provider to load routes by name.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
-   */
-  protected $accessManager;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
    * Flag that indicates if local tasks are currently being loaded.
    */
   protected bool $loadingLocalTasks = FALSE;
@@ -119,9 +91,9 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
    * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
    *   The request object to use for building titles and paths for plugin
    *   instances.
-   * @param \Drupal\Core\Routing\RouteMatchInterface $route_match
+   * @param \Drupal\Core\Routing\RouteMatchInterface $routeMatch
    *   The current route match.
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider to load routes by name.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
@@ -129,19 +101,15 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
    *   The cache backend.
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
    *   The language manager.
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
+   * @param \Drupal\Core\Access\AccessManagerInterface $accessManager
    *   The access manager.
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The current user.
    */
-  public function __construct(ArgumentResolverInterface $argument_resolver, RequestStack $request_stack, RouteMatchInterface $route_match, RouteProviderInterface $route_provider, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, AccessManagerInterface $access_manager, AccountInterface $account) {
-    $this->factory = new ContainerFactory($this, '\Drupal\Core\Menu\LocalTaskInterface');
+  public function __construct(ArgumentResolverInterface $argument_resolver, RequestStack $request_stack, protected \Drupal\Core\Routing\RouteMatchInterface $routeMatch, protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache, LanguageManagerInterface $language_manager, protected \Drupal\Core\Access\AccessManagerInterface $accessManager, protected \Drupal\Core\Session\AccountInterface $account) {
+    $this->factory = new ContainerFactory($this, \Drupal\Core\Menu\LocalTaskInterface::class);
     $this->argumentResolver = $argument_resolver;
     $this->requestStack = $request_stack;
-    $this->routeMatch = $route_match;
-    $this->routeProvider = $route_provider;
-    $this->accessManager = $access_manager;
-    $this->account = $account;
     $this->moduleHandler = $module_handler;
     $this->alterInfo('local_tasks');
     $this->setCacheBackend($cache, 'local_task_plugins:' . $language_manager->getCurrentLanguage()->getId(), ['local_task']);
@@ -162,7 +130,7 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     parent::processDefinition($definition, $plugin_id);
     // If there is no route name, this is a broken definition.
     if (empty($definition['route_name'])) {
@@ -173,8 +141,8 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
   /**
    * {@inheritdoc}
    */
-  public function getTitle(LocalTaskInterface $local_task) {
-    $controller = [$local_task, 'getTitle'];
+  public function getTitle(LocalTaskInterface $local_task): mixed {
+    $controller = $local_task->getTitle(...);
     $request = $this->requestStack->getCurrentRequest();
     $arguments = $this->argumentResolver->getArguments($request, $controller);
     return call_user_func_array($controller, $arguments);
@@ -291,8 +259,9 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
 
   /**
    * {@inheritdoc}
+   * @return non-empty-array<array{'#theme': 'menu_local_task', '#link': array{title: mixed, url: mixed, localized_options: mixed}, '#active': bool, '#weight': mixed, '#access': mixed}>[]
    */
-  public function getTasksBuild($current_route_name, RefinableCacheableDependencyInterface &$cacheability) {
+  public function getTasksBuild($current_route_name, RefinableCacheableDependencyInterface &$cacheability): array {
     $tree = $this->getLocalTasksForRoute($current_route_name);
     $build = [];
 
@@ -348,7 +317,7 @@ class LocalTaskManager extends DefaultPluginManager implements LocalTaskManagerI
   /**
    * {@inheritdoc}
    */
-  public function getLocalTasks($route_name, $level = 0) {
+  public function getLocalTasks($route_name, $level = 0): array {
 
     if ($this->loadingLocalTasks && \Fiber::getCurrent() !== NULL) {
       // Primary and secondary task are rendered in separate blocks, each within

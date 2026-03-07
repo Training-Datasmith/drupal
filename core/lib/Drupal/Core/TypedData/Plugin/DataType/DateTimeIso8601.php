@@ -25,20 +25,17 @@ class DateTimeIso8601 extends StringData implements DateTimeInterface {
     if ($this->value) {
       if (is_array($this->value)) {
         // Data of this type must always be stored in UTC.
-        $datetime = DrupalDateTime::createFromArray($this->value, 'UTC');
+        return DrupalDateTime::createFromArray($this->value, 'UTC');
       }
-      else {
-        // Data of this type must always be stored in UTC.
-        $datetime = new DrupalDateTime($this->value, 'UTC');
-      }
-      return $datetime;
+      // Data of this type must always be stored in UTC.
+      return new DrupalDateTime($this->value, 'UTC');
     }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setDateTime(DrupalDateTime $dateTime, $notify = TRUE) {
+  public function setDateTime(DrupalDateTime $dateTime, $notify = TRUE): void {
     $this->value = $dateTime->format('c');
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {

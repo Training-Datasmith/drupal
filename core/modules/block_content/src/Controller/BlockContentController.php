@@ -15,30 +15,9 @@ use Symfony\Component\HttpFoundation\Request;
 class BlockContentController extends ControllerBase {
 
   /**
-   * The content block storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $blockContentStorage;
-
-  /**
-   * The content block type storage.
-   *
-   * @var \Drupal\Core\Entity\EntityStorageInterface
-   */
-  protected $blockContentTypeStorage;
-
-  /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     $entity_type_manager = $container->get('entity_type.manager');
     return new static(
       $entity_type_manager->getStorage('block_content'),
@@ -50,17 +29,15 @@ class BlockContentController extends ControllerBase {
   /**
    * Constructs a BlockContent object.
    *
-   * @param \Drupal\Core\Entity\EntityStorageInterface $block_content_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $blockContentStorage
    *   The content block storage.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $block_content_type_storage
+   * @param \Drupal\Core\Entity\EntityStorageInterface $blockContentTypeStorage
    *   The block type storage.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    */
-  public function __construct(EntityStorageInterface $block_content_storage, EntityStorageInterface $block_content_type_storage, ThemeHandlerInterface $theme_handler) {
-    $this->blockContentStorage = $block_content_storage;
-    $this->blockContentTypeStorage = $block_content_type_storage;
-    $this->themeHandler = $theme_handler;
+  public function __construct(protected \Drupal\Core\Entity\EntityStorageInterface $blockContentStorage, protected \Drupal\Core\Entity\EntityStorageInterface $blockContentTypeStorage, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler)
+  {
   }
 
   /**
@@ -97,7 +74,7 @@ class BlockContentController extends ControllerBase {
    * @return string
    *   The page title.
    */
-  public function getAddFormTitle(BlockContentTypeInterface $block_content_type) {
+  public function getAddFormTitle(BlockContentTypeInterface $block_content_type): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Add %type content block', ['%type' => $block_content_type->label()]);
   }
 

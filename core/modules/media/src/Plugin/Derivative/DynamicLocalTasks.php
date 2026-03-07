@@ -18,13 +18,6 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
   use StringTranslationTrait;
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * The media settings config.
    *
    * @var \Drupal\Core\Config\ImmutableConfig
@@ -36,21 +29,20 @@ class DynamicLocalTasks extends DeriverBase implements ContainerDeriverInterface
    *
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The translation manager.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
    */
-  public function __construct(TranslationInterface $string_translation, EntityTypeManagerInterface $entity_type_manager, ConfigFactoryInterface $config_factory) {
+  public function __construct(TranslationInterface $string_translation, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, ConfigFactoryInterface $config_factory) {
     $this->stringTranslation = $string_translation;
-    $this->entityTypeManager = $entity_type_manager;
     $this->config = $config_factory->get('media.settings');
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, $base_plugin_id) {
+  public static function create(ContainerInterface $container, $base_plugin_id): static {
     return new static(
       $container->get('string_translation'),
       $container->get('entity_type.manager'),

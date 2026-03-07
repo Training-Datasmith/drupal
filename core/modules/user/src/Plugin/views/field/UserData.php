@@ -21,13 +21,6 @@ use Drupal\user\UserDataInterface;
 class UserData extends FieldPluginBase {
 
   /**
-   * Provides the user data service object.
-   *
-   * @var \Drupal\user\UserDataInterface
-   */
-  protected $userData;
-
-  /**
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -37,10 +30,11 @@ class UserData extends FieldPluginBase {
   /**
    * Constructs a UserData object.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, UserDataInterface $user_data, ModuleHandlerInterface $module_handler, protected ?ModuleExtensionList $moduleExtensionList = NULL) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, /**
+   * Provides the user data service object.
+   */
+  protected \Drupal\user\UserDataInterface $userData, ModuleHandlerInterface $module_handler, protected ?ModuleExtensionList $moduleExtensionList = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->userData = $user_data;
     $this->moduleHandler = $module_handler;
     if ($this->moduleExtensionList === NULL) {
       @trigger_error('Calling ' . __METHOD__ . '() without the $moduleExtensionList argument is deprecated in drupal:10.3.0 and will be required in drupal:12.0.0. See https://www.drupal.org/node/3310017', E_USER_DEPRECATED);
@@ -63,7 +57,7 @@ class UserData extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
 
     $modules = $this->moduleHandler->getModuleList();

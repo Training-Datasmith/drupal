@@ -26,14 +26,7 @@ class HandlerStackConfigurator {
    *
    * @var callable[]
    */
-  protected $middlewares = NULL;
-
-  /**
-   * A list of used middleware service IDs.
-   *
-   * @var string[]
-   */
-  protected $middlewareIds = [];
+  protected $middlewares;
 
   /**
    * The service container.
@@ -47,11 +40,13 @@ class HandlerStackConfigurator {
    *
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The service container.
-   * @param string[] $middleware_ids
+   * @param string[] $middlewareIds
    *   The middleware IDs.
    */
-  public function __construct(ContainerInterface $container, array $middleware_ids) {
-    $this->middlewareIds = $middleware_ids;
+  public function __construct(ContainerInterface $container, /**
+   * A list of used middleware service IDs.
+   */
+  protected array $middlewareIds) {
     $this->container = $container;
   }
 
@@ -79,7 +74,7 @@ class HandlerStackConfigurator {
    * @param \GuzzleHttp\HandlerStack $handler_stack
    *   The handler stack.
    */
-  public function configure(HandlerStack $handler_stack) {
+  public function configure(HandlerStack $handler_stack): void {
     $this->initializeMiddlewares();
     foreach ($this->middlewares as $middleware_id => $middleware) {
       $handler_stack->push($middleware, $middleware_id);

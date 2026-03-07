@@ -12,7 +12,7 @@ class EntityDataDefinition extends ComplexDataDefinitionBase implements EntityDa
   /**
    * The data type for this entity.
    */
-  protected ?string $dataType;
+  protected ?string $dataType = null;
 
   /**
    * Creates a new entity definition.
@@ -23,10 +23,8 @@ class EntityDataDefinition extends ComplexDataDefinitionBase implements EntityDa
    * @param string $bundle
    *   (optional) The bundle of the entity type, or NULL if the bundle is
    *   unknown. Defaults to NULL.
-   *
-   * @return static
    */
-  public static function create($entity_type_id = NULL, $bundle = NULL) {
+  public static function create($entity_type_id = NULL, $bundle = NULL): static {
     // If the entity type is known, use the derived definition.
     if (isset($entity_type_id)) {
       $data_type = "entity:{$entity_type_id}";
@@ -76,7 +74,7 @@ class EntityDataDefinition extends ComplexDataDefinitionBase implements EntityDa
       if ($entity_type_id = $this->getEntityTypeId()) {
         // Return an empty array for entities that are not content entities.
         $entity_type_class = \Drupal::entityTypeManager()->getDefinition($entity_type_id)->getClass();
-        if (!in_array('Drupal\Core\Entity\FieldableEntityInterface', class_implements($entity_type_class))) {
+        if (!in_array(\Drupal\Core\Entity\FieldableEntityInterface::class, class_implements($entity_type_class))) {
           $this->propertyDefinitions = [];
         }
         else {
@@ -102,7 +100,7 @@ class EntityDataDefinition extends ComplexDataDefinitionBase implements EntityDa
   /**
    * {@inheritdoc}
    */
-  public function getDataType() {
+  public function getDataType(): string {
     if (isset($this->dataType)) {
       return $this->dataType;
     }
@@ -132,7 +130,7 @@ class EntityDataDefinition extends ComplexDataDefinitionBase implements EntityDa
   /**
    * {@inheritdoc}
    */
-  public function setEntityTypeId($entity_type_id) {
+  public function setEntityTypeId($entity_type_id): \Drupal\Core\TypedData\DataDefinition {
     return $this->addConstraint('EntityType', ['type' => $entity_type_id]);
   }
 
@@ -147,7 +145,7 @@ class EntityDataDefinition extends ComplexDataDefinitionBase implements EntityDa
   /**
    * {@inheritdoc}
    */
-  public function setBundles(?array $bundles = NULL) {
+  public function setBundles(?array $bundles = NULL): static {
     if (isset($bundles)) {
       $this->addConstraint('Bundle', ['bundle' => $bundles]);
     }

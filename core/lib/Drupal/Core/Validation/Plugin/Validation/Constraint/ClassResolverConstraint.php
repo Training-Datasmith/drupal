@@ -37,8 +37,6 @@ class ClassResolverConstraint extends SymfonyConstraint {
 
   /**
    * Method to call.
-   *
-   * @var string
    */
   public string $method;
 

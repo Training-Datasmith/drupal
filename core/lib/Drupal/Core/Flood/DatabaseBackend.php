@@ -38,7 +38,7 @@ class DatabaseBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * {@inheritdoc}
    */
-  public function register($name, $window = 3600, $identifier = NULL) {
+  public function register($name, $window = 3600, $identifier = NULL): void {
     if (!isset($identifier)) {
       $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
     }
@@ -83,7 +83,7 @@ class DatabaseBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * {@inheritdoc}
    */
-  public function clear($name, $identifier = NULL) {
+  public function clear($name, $identifier = NULL): void {
     if (!isset($identifier)) {
       $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
     }
@@ -116,7 +116,7 @@ class DatabaseBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * {@inheritdoc}
    */
-  public function isAllowed($name, $threshold, $window = 3600, $identifier = NULL) {
+  public function isAllowed($name, $threshold, $window = 3600, $identifier = NULL): bool {
     if (!isset($identifier)) {
       $identifier = $this->requestStack->getCurrentRequest()->getClientIp();
     }
@@ -141,7 +141,7 @@ class DatabaseBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * {@inheritdoc}
    */
-  public function garbageCollection() {
+  public function garbageCollection(): void {
     try {
       $this->connection->delete(static::TABLE_NAME)
         ->condition('expiration', $this->time->getRequestTime(), '<')
@@ -155,7 +155,7 @@ class DatabaseBackend implements FloodInterface, PrefixFloodInterface {
   /**
    * Check if the flood table exists and create it if not.
    */
-  protected function ensureTableExists() {
+  protected function ensureTableExists(): bool {
     try {
       $database_schema = $this->connection->schema();
       $schema_definition = $this->schemaDefinition();
@@ -195,7 +195,7 @@ class DatabaseBackend implements FloodInterface, PrefixFloodInterface {
    *
    * @internal
    */
-  public function schemaDefinition() {
+  public function schemaDefinition(): array {
     return [
       'description' => 'Flood controls the threshold of events, such as the number of contact attempts.',
       'fields' => [

@@ -62,13 +62,6 @@ use GuzzleHttp\ClientInterface;
 class Download extends FileProcessBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected $fileSystem;
-
-  /**
    * The Guzzle HTTP Client service.
    *
    * @var \GuzzleHttp\Client
@@ -84,17 +77,16 @@ class Download extends FileProcessBase implements ContainerFactoryPluginInterfac
    *   The plugin ID.
    * @param array $plugin_definition
    *   The plugin definition.
-   * @param \Drupal\Core\File\FileSystemInterface $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
    * @param \GuzzleHttp\ClientInterface $http_client
    *   The HTTP client.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, FileSystemInterface $file_system, ClientInterface $http_client) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition, protected \Drupal\Core\File\FileSystemInterface $fileSystem, ClientInterface $http_client) {
     $configuration += [
       'guzzle_options' => [],
     ];
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->fileSystem = $file_system;
     $this->httpClient = $http_client;
   }
 

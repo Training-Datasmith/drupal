@@ -60,22 +60,22 @@ class Image extends CKEditor5PluginDefault implements CKEditor5PluginConfigurabl
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $form_state->setValue('status', (bool) $form_state->getValue('status'));
     $directory = $form_state->getValue(['directory']);
-    $form_state->setValue(['directory'], trim($directory) === '' ? NULL : $directory);
+    $form_state->setValue(['directory'], trim((string) $directory) === '' ? NULL : $directory);
     $max_size = $form_state->getValue(['max_size']);
-    $form_state->setValue(['max_size'], trim($max_size) === '' ? NULL : $max_size);
+    $form_state->setValue(['max_size'], trim((string) $max_size) === '' ? NULL : $max_size);
     $max_width = $form_state->getValue(['max_dimensions', 'width']);
-    $form_state->setValue(['max_dimensions', 'width'], trim($max_width) === '' ? NULL : (int) $max_width);
+    $form_state->setValue(['max_dimensions', 'width'], trim((string) $max_width) === '' ? NULL : (int) $max_width);
     $max_height = $form_state->getValue(['max_dimensions', 'height']);
-    $form_state->setValue(['max_dimensions', 'height'], trim($max_height) === '' ? NULL : (int) $max_height);
+    $form_state->setValue(['max_dimensions', 'height'], trim((string) $max_height) === '' ? NULL : (int) $max_height);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $settings = $form_state->getValues();
     if (!$settings['status']) {
       // Remove all other settings to comply with config schema.
@@ -90,7 +90,7 @@ class Image extends CKEditor5PluginDefault implements CKEditor5PluginConfigurabl
    *
    * This returns an empty array as image upload config is stored out of band.
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [];
   }
 

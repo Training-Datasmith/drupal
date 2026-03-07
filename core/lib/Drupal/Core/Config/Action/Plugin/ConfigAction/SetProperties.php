@@ -23,16 +23,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   admin_label: new TranslatableMarkup('Set property of a config entity'),
   entity_types: ['*'],
 )]
-final class SetProperties implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
+final readonly class SetProperties implements ConfigActionPluginInterface, ContainerFactoryPluginInterface {
 
   public function __construct(
-    private readonly ConfigManagerInterface $configManager,
+    private ConfigManagerInterface $configManager,
   ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get(ConfigManagerInterface::class),
     );
@@ -59,7 +59,7 @@ final class SetProperties implements ConfigActionPluginInterface, ContainerFacto
       if (in_array($property_name, $forbidden_keys, TRUE)) {
         throw new ConfigActionException("Entity key '$property_name' cannot be changed by the setProperties config action.");
       }
-      $parts = explode('.', $property_name);
+      $parts = explode('.', (string) $property_name);
 
       $property_value = $entity->get($parts[0]);
       if (count($parts) > 1) {

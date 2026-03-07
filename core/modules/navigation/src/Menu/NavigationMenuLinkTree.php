@@ -61,7 +61,6 @@ final class NavigationMenuLinkTree extends MenuLinkTree {
       return [];
     }
 
-    /** @var \Drupal\Core\Menu\MenuLinkInterface $link */
     $first_link = reset($tree)->link;
     // Get the menu name of the first link.
     $menu_name = $first_link->getMenuName();

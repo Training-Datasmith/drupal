@@ -34,13 +34,6 @@ class LayoutBuilder extends RenderElementBase implements ContainerFactoryPluginI
   use LayoutBuilderHighlightTrait;
 
   /**
-   * The event dispatcher.
-   *
-   * @var \Symfony\Contracts\EventDispatcher\EventDispatcherInterface
-   */
-  protected $eventDispatcher;
-
-  /**
    * Constructs a new LayoutBuilder.
    *
    * @param array $configuration
@@ -49,22 +42,21 @@ class LayoutBuilder extends RenderElementBase implements ContainerFactoryPluginI
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   * @param \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher
    *   The event dispatcher service.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EventDispatcherInterface $event_dispatcher) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Symfony\Contracts\EventDispatcher\EventDispatcherInterface $eventDispatcher) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->eventDispatcher = $event_dispatcher;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#section_storage' => NULL,
       '#pre_render' => [
-        [$this, 'preRender'],
+        $this->preRender(...),
       ],
       '#process' => [
         [static::class, 'layoutBuilderElementGetKeys'],
@@ -153,7 +145,7 @@ class LayoutBuilder extends RenderElementBase implements ContainerFactoryPluginI
   /**
    * Pre-render callback: Renders the Layout Builder UI.
    */
-  public function preRender($element) {
+  public function preRender(array $element): array {
     if ($element['#section_storage'] instanceof SectionStorageInterface) {
       $element['layout_builder'] = $this->layout($element['#section_storage']);
     }
@@ -169,7 +161,7 @@ class LayoutBuilder extends RenderElementBase implements ContainerFactoryPluginI
    * @return array
    *   A render array.
    */
-  protected function layout(SectionStorageInterface $section_storage) {
+  protected function layout(SectionStorageInterface $section_storage): array {
     $this->prepareLayout($section_storage);
 
     $output = [];
@@ -222,7 +214,7 @@ class LayoutBuilder extends RenderElementBase implements ContainerFactoryPluginI
    * @return array
    *   A render array for a link.
    */
-  protected function buildAddSectionLink(SectionStorageInterface $section_storage, $delta) {
+  protected function buildAddSectionLink(SectionStorageInterface $section_storage, $delta): array {
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
 
@@ -289,7 +281,7 @@ class LayoutBuilder extends RenderElementBase implements ContainerFactoryPluginI
    * @return array
    *   The render array for a given section.
    */
-  protected function buildAdministrativeSection(SectionStorageInterface $section_storage, $delta) {
+  protected function buildAdministrativeSection(SectionStorageInterface $section_storage, $delta): array {
     $storage_type = $section_storage->getStorageType();
     $storage_id = $section_storage->getStorageId();
     $section = $section_storage->getSection($delta);
@@ -370,9 +362,7 @@ class LayoutBuilder extends RenderElementBase implements ContainerFactoryPluginI
       ]);
 
       // Get weights of all children for use by the region label.
-      $weights = array_map(function ($a) {
-        return $a['#weight'] ?? 0;
-      }, $build[$region]);
+      $weights = array_map(fn(array $a) => $a['#weight'] ?? 0, $build[$region]);
 
       // The region label is made visible when the move block dialog is open.
       $build[$region]['region_label'] = [

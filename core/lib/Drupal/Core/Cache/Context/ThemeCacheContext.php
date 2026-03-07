@@ -13,20 +13,13 @@ use Drupal\Core\Theme\ThemeManagerInterface;
 class ThemeCacheContext implements CacheContextInterface {
 
   /**
-   * The theme manager.
-   *
-   * @var \Drupal\Core\Theme\ThemeManagerInterface
-   */
-  protected $themeManager;
-
-  /**
    * Constructs a new ThemeCacheContext service.
    *
-   * @param \Drupal\Core\Theme\ThemeManagerInterface $theme_manager
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
    *   The theme manager.
    */
-  public function __construct(ThemeManagerInterface $theme_manager) {
-    $this->themeManager = $theme_manager;
+  public function __construct(protected \Drupal\Core\Theme\ThemeManagerInterface $themeManager)
+  {
   }
 
   /**
@@ -46,7 +39,7 @@ class ThemeCacheContext implements CacheContextInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheableMetadata() {
+  public function getCacheableMetadata(): \Drupal\Core\Cache\CacheableMetadata {
     return new CacheableMetadata();
   }
 

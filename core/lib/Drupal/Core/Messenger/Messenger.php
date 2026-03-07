@@ -20,13 +20,6 @@ class Messenger implements MessengerInterface {
   protected $flashBag;
 
   /**
-   * The kill switch.
-   *
-   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
-   */
-  protected $killSwitch;
-
-  /**
    * Messenger constructor.
    *
    * @param \Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface $flash_bag
@@ -34,9 +27,8 @@ class Messenger implements MessengerInterface {
    * @param \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $killSwitch
    *   The kill switch.
    */
-  public function __construct(FlashBagInterface $flash_bag, KillSwitch $killSwitch) {
+  public function __construct(FlashBagInterface $flash_bag, protected \Drupal\Core\PageCache\ResponsePolicy\KillSwitch $killSwitch) {
     $this->flashBag = $flash_bag;
-    $this->killSwitch = $killSwitch;
   }
 
   /**
@@ -49,7 +41,7 @@ class Messenger implements MessengerInterface {
   /**
    * {@inheritdoc}
    */
-  public function addMessage($message, $type = self::TYPE_STATUS, $repeat = FALSE) {
+  public function addMessage($message, $type = self::TYPE_STATUS, $repeat = FALSE): static {
     if (!($message instanceof Markup) && $message instanceof MarkupInterface) {
       $message = Markup::create((string) $message);
     }

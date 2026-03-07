@@ -29,7 +29,7 @@ class PageTitleBlock extends BlockBase implements TitleBlockPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function setTitle($title) {
+  public function setTitle($title): static {
     $this->title = $title;
     return $this;
   }
@@ -37,14 +37,14 @@ class PageTitleBlock extends BlockBase implements TitleBlockPluginInterface {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return ['label_display' => '0'];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function build() {
+  public function build(): array {
     return [
       '#type' => 'page_title',
       '#title' => $this->title,

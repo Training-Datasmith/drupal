@@ -23,8 +23,6 @@ final class AnnounceFetcher {
 
   /**
    * The configuration settings of this module.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected ImmutableConfig $config;
 
@@ -149,9 +147,7 @@ final class AnnounceFetcher {
       $announcements = $announcements['items'] ?? [];
       // Ensure that announcements reference drupal.org and are applicable to
       // the current Drupal version.
-      $announcements = array_filter($announcements, function (array $announcement) {
-        return static::validateUrl($announcement['url'] ?? '') && static::isRelevantItem($announcement['_drupalorg']['version'] ?? '');
-      });
+      $announcements = array_filter($announcements, fn(array $announcement) => static::validateUrl($announcement['url'] ?? '') && static::isRelevantItem($announcement['_drupalorg']['version'] ?? ''));
 
       // Save the raw decoded and filtered array to temp store.
       $this->tempStore->setWithExpire('announcements', $announcements,
@@ -164,28 +160,23 @@ final class AnnounceFetcher {
 
     // For the remaining announcements, put all the featured announcements
     // before the rest.
-    uasort($announcements, function ($a, $b) {
+    uasort($announcements, function (array $a, array $b): int {
       $a_value = (int) $a['_drupalorg']['featured'];
       $b_value = (int) $b['_drupalorg']['featured'];
-      if ($a_value == $b_value) {
-        return 0;
-      }
-      return ($a_value < $b_value) ? -1 : 1;
+      return $a_value <=> $b_value;
     });
 
     // Map the multidimensional array into an array of Announcement objects.
-    $announcements = array_map(function ($announcement) {
-      return new Announcement(
-        $announcement['id'],
-        $announcement['title'],
-        $announcement['url'],
-        $announcement['date_modified'],
-        $announcement['date_published'],
-        $announcement['content_html'],
-        $announcement['_drupalorg']['version'],
-        (bool) $announcement['_drupalorg']['featured'],
-      );
-    }, $announcements);
+    $announcements = array_map(fn(array $announcement) => new Announcement(
+      $announcement['id'],
+      $announcement['title'],
+      $announcement['url'],
+      $announcement['date_modified'],
+      $announcement['date_published'],
+      $announcement['content_html'],
+      $announcement['_drupalorg']['version'],
+      (bool) $announcement['_drupalorg']['featured'],
+    ), $announcements);
 
     return $announcements;
   }

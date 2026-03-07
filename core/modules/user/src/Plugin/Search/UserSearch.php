@@ -24,37 +24,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UserSearch extends SearchPluginBase implements AccessibleInterface {
 
   /**
-   * The database connection.
-   *
-   * @var \Drupal\Core\Database\Connection
-   */
-  protected $database;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get('database'),
       $container->get('entity_type.manager'),
@@ -71,11 +43,11 @@ class UserSearch extends SearchPluginBase implements AccessibleInterface {
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
@@ -84,11 +56,7 @@ class UserSearch extends SearchPluginBase implements AccessibleInterface {
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
    */
-  public function __construct(Connection $database, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, AccountInterface $current_user, array $configuration, $plugin_id, $plugin_definition) {
-    $this->database = $database;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->moduleHandler = $module_handler;
-    $this->currentUser = $current_user;
+  public function __construct(protected \Drupal\Core\Database\Connection $database, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Session\AccountInterface $currentUser, array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->addCacheTags(['user_list']);
@@ -98,14 +66,15 @@ class UserSearch extends SearchPluginBase implements AccessibleInterface {
    * {@inheritdoc}
    */
   public function access($operation = 'view', ?AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = AccessResult::allowedIf(!empty($account) && $account->hasPermission('access user profiles'))->cachePerPermissions();
+    $result = AccessResult::allowedIf($account instanceof \Drupal\Core\Session\AccountInterface && $account->hasPermission('access user profiles'))->cachePerPermissions();
     return $return_as_object ? $result : $result->isAllowed();
   }
 
   /**
    * {@inheritdoc}
+   * @return array{title: mixed, link: mixed}[]
    */
-  public function execute() {
+  public function execute(): array {
     $results = [];
     if (!$this->isSearchExecutable()) {
       return $results;
@@ -163,8 +132,8 @@ class UserSearch extends SearchPluginBase implements AccessibleInterface {
   /**
    * {@inheritdoc}
    */
-  public function getHelp() {
-    $help = [
+  public function getHelp(): array {
+    return [
       'list' => [
         '#theme' => 'item_list',
         '#items' => [
@@ -173,8 +142,6 @@ class UserSearch extends SearchPluginBase implements AccessibleInterface {
         ],
       ],
     ];
-
-    return $help;
   }
 
 }

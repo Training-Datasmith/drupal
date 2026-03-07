@@ -16,23 +16,6 @@ namespace Drupal\Core\Ajax;
 class ChangedCommand implements CommandInterface {
 
   /**
-   * A CSS selector string.
-   *
-   * If the command is a response to a request from an #ajax form element then
-   * this value can be NULL.
-   *
-   * @var string
-   */
-  protected $selector;
-
-  /**
-   * An optional CSS selector for elements to which asterisks will be appended.
-   *
-   * @var string
-   */
-  protected $asterisk;
-
-  /**
    * Constructs a ChangedCommand object.
    *
    * @param string $selector
@@ -40,15 +23,26 @@ class ChangedCommand implements CommandInterface {
    * @param string $asterisk
    *   CSS selector for elements to which an asterisk will be appended.
    */
-  public function __construct($selector, $asterisk = '') {
-    $this->selector = $selector;
-    $this->asterisk = $asterisk;
+  public function __construct(
+      /**
+       * A CSS selector string.
+       *
+       * If the command is a response to a request from an #ajax form element then
+       * this value can be NULL.
+       */
+      protected $selector,
+      /**
+       * An optional CSS selector for elements to which asterisks will be appended.
+       */
+      protected $asterisk = ''
+  )
+  {
   }
 
   /**
    * Implements Drupal\Core\Ajax\CommandInterface:render().
    */
-  public function render() {
+  public function render(): array {
 
     return [
       'command' => 'changed',

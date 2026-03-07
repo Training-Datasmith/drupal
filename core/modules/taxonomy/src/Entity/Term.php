@@ -99,7 +99,7 @@ class Term extends EditorialContentEntityBase implements TermInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     // See if any of the term's children are about to be become orphans.
@@ -111,9 +111,7 @@ class Term extends EditorialContentEntityBase implements TermInterface {
         foreach ($children as $child) {
           $parent = $child->get('parent');
           // Update child parents item list.
-          $parent->filter(function ($item) use ($tid) {
-            return $item->target_id != $tid;
-          });
+          $parent->filter(fn($item) => $item->target_id != $tid);
 
           // If the term has multiple parents, we don't delete it.
           if ($parent->count()) {
@@ -134,7 +132,7 @@ class Term extends EditorialContentEntityBase implements TermInterface {
   /**
    * {@inheritdoc}
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     parent::preSave($storage);
     // Terms with no parents are mandatory children of <root>.
     if (!$this->get('parent')->count()) {
@@ -246,7 +244,7 @@ class Term extends EditorialContentEntityBase implements TermInterface {
   /**
    * {@inheritdoc}
    */
-  public function setDescription($description) {
+  public function setDescription($description): static {
     $this->set('description', $description);
     return $this;
   }
@@ -261,7 +259,7 @@ class Term extends EditorialContentEntityBase implements TermInterface {
   /**
    * {@inheritdoc}
    */
-  public function setFormat($format) {
+  public function setFormat($format): static {
     $this->get('description')->format = $format;
     return $this;
   }
@@ -276,7 +274,7 @@ class Term extends EditorialContentEntityBase implements TermInterface {
   /**
    * {@inheritdoc}
    */
-  public function setName($name) {
+  public function setName($name): static {
     $this->set('name', $name);
     return $this;
   }
@@ -284,14 +282,14 @@ class Term extends EditorialContentEntityBase implements TermInterface {
   /**
    * {@inheritdoc}
    */
-  public function getWeight() {
+  public function getWeight(): int {
     return (int) $this->get('weight')->value;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setWeight($weight) {
+  public function setWeight($weight): static {
     $this->set('weight', $weight);
     return $this;
   }

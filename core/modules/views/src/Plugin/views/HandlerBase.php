@@ -29,7 +29,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    *
    * @var \Drupal\views\Plugin\views\query\QueryPluginBase
    */
-  public $query = NULL;
+  public $query;
 
   /**
    * The table this handler is attached to.
@@ -67,7 +67,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    *
    * @var string
    */
-  public $relationship = NULL;
+  public $relationship;
 
   /**
    * The module handler.
@@ -107,7 +107,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     // Check to see if this handler type is defaulted. Note that
@@ -209,23 +209,12 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
     if ($value === NULL) {
       return '';
     }
-    switch ($type) {
-      case 'xss':
-        $value = Xss::filter($value);
-        break;
-
-      case 'xss_admin':
-        $value = Xss::filterAdmin($value);
-        break;
-
-      case 'url':
-        $value = Html::escape(UrlHelper::stripDangerousProtocols($value));
-        break;
-
-      default:
-        $value = Html::escape($value);
-        break;
-    }
+    $value = match ($type) {
+        'xss' => Xss::filter($value),
+        'xss_admin' => Xss::filterAdmin($value),
+        'url' => Html::escape(UrlHelper::stripDangerousProtocols($value)),
+        default => Html::escape($value),
+    };
     return ViewsRenderPipelineMarkup::create($value);
   }
 
@@ -245,27 +234,19 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    *   The transformed string.
    */
   protected function caseTransform($string, $option) {
-    switch ($option) {
-      default:
-        return $string;
-      case 'upper':
-        return mb_strtoupper($string);
-
-      case 'lower':
-        return mb_strtolower($string);
-
-      case 'ucfirst':
-        return Unicode::ucfirst($string);
-
-      case 'ucwords':
-        return Unicode::ucwords($string);
-    }
+    return match ($option) {
+        'upper' => mb_strtoupper($string),
+        'lower' => mb_strtolower($string),
+        'ucfirst' => Unicode::ucfirst($string),
+        'ucwords' => Unicode::ucwords($string),
+        default => $string,
+    };
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     // Some form elements belong in a fieldset for presentation, but can't be
     // moved into one because of the $form_state->getValues() hierarchy. Those
     // elements can add a #fieldset => 'fieldset_name' property, and they'll be
@@ -326,7 +307,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
    */
-  public function setModuleHandler(ModuleHandlerInterface $module_handler) {
+  public function setModuleHandler(ModuleHandlerInterface $module_handler): void {
     $this->moduleHandler = $module_handler;
   }
 
@@ -346,7 +327,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function buildGroupByForm(&$form, FormStateInterface $form_state) {
+  public function buildGroupByForm(array &$form, FormStateInterface $form_state): void {
     $display_id = $form_state->get('display_id');
     $type = $form_state->get('type');
     $id = $form_state->get('id');
@@ -379,7 +360,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitGroupByForm(&$form, FormStateInterface $form_state) {
+  public function submitGroupByForm(&$form, FormStateInterface $form_state): void {
     $form_state->get('handler')->options['group_type'] = $form_state->getValue(['options', 'group_type']);
   }
 
@@ -405,7 +386,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    *
    * @see https://www.drupal.org/node/3486781
    */
-  public function defineExtraOptions(&$option) {
+  public function defineExtraOptions(&$option): void {
     @trigger_error('defineExtraOptions() is deprecated in drupal:11.2.0 and is removed from drupal:12.0.0. This method is no longer in use and should not be called. See https://www.drupal.org/node/3486781', E_USER_DEPRECATED);
   }
 
@@ -545,7 +526,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function showExposeForm(&$form, FormStateInterface $form_state) {
+  public function showExposeForm(&$form, FormStateInterface $form_state): void {
     if (empty($this->options['exposed'])) {
       return;
     }
@@ -612,7 +593,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setRelationship() {
+  public function setRelationship(): void {
     // Ensure this gets set to something.
     $this->relationship = NULL;
 
@@ -714,7 +695,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
       $base_table = $this->query->relationships[$this->relationship]['base'];
     }
 
-    $join = $this->getTableJoin($this->table, $base_table);
+    $join = static::getTableJoin($this->table, $base_table);
     if ($join) {
       return clone $join;
     }
@@ -777,7 +758,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    * @param \Drupal\views\ViewsData $views_data
    *   The view to save.
    */
-  public function setViewsData(ViewsData $views_data) {
+  public function setViewsData(ViewsData $views_data): void {
     $this->viewsData = $views_data;
   }
 
@@ -811,9 +792,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
         }
       }
 
-      $join = \Drupal::service('plugin.manager.views.join')->createInstance($id, $configuration);
-
-      return $join;
+      return \Drupal::service('plugin.manager.views.join')->createInstance($id, $configuration);
     }
   }
 
@@ -835,9 +814,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
     if (isset($views_data['table']['entity type'])) {
       return $views_data['table']['entity type'];
     }
-    else {
-      throw new \Exception("No entity type for field {$this->options['id']} on view {$this->view->storage->id()}");
-    }
+    throw new \Exception("No entity type for field {$this->options['id']} on view {$this->view->storage->id()}");
   }
 
   /**
@@ -865,7 +842,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
     $value = array_values(FilterArray::removeEmptyStrings($value));
 
     if ($force_int) {
-      $value = array_map('intval', $value);
+      $value = array_map(intval(...), $value);
     }
 
     return (object) ['value' => $value, 'operator' => $operator];
@@ -879,7 +856,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function displayExposedForm($form, FormStateInterface $form_state) {
+  public function displayExposedForm($form, FormStateInterface $form_state): void {
     $item = &$this->options;
     // Flip.
     $item['exposed'] = empty($item['exposed']);
@@ -909,7 +886,7 @@ abstract class HandlerBase extends PluginBase implements ViewsHandlerInterface {
    * A submit handler that is used for storing temporary items when using
    * multi-step changes, such as ajax requests.
    */
-  public function submitTemporaryForm($form, FormStateInterface $form_state) {
+  public function submitTemporaryForm(array $form, FormStateInterface $form_state): void {
     // Run it through the handler's submit function.
     $this->submitOptionsForm($form['options'], $form_state);
     $item = $this->options;

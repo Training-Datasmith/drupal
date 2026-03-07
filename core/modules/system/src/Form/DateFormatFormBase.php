@@ -15,30 +15,15 @@ use Drupal\Core\Entity\EntityForm;
 abstract class DateFormatFormBase extends EntityForm {
 
   /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected $dateFormatter;
-
-  /**
-   * The date format storage.
-   *
-   * @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface
-   */
-  protected $dateFormatStorage;
-
-  /**
    * Constructs a new date format form.
    *
-   * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
+   * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
    *   The date service.
-   * @param \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $date_format_storage
+   * @param \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $dateFormatStorage
    *   The date format storage.
    */
-  public function __construct(DateFormatterInterface $date_formatter, ConfigEntityStorageInterface $date_format_storage) {
-    $this->dateFormatter = $date_formatter;
-    $this->dateFormatStorage = $date_format_storage;
+  public function __construct(protected \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter, protected \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $dateFormatStorage)
+  {
   }
 
   /**
@@ -72,7 +57,7 @@ abstract class DateFormatFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => 'Name',
@@ -87,7 +72,7 @@ abstract class DateFormatFormBase extends EntityForm {
       '#disabled' => !$this->entity->isNew(),
       '#default_value' => $this->entity->id(),
       '#machine_name' => [
-        'exists' => [$this, 'exists'],
+        'exists' => $this->exists(...),
         'replace_pattern' => '([^a-z0-9_]+)|(^custom$)',
         'error' => $this->t('The machine-readable name must be unique, and can only contain lowercase letters, numbers, and underscores. Additionally, it can not be the reserved word "custom".'),
       ],
@@ -118,12 +103,12 @@ abstract class DateFormatFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
 
     // The machine name field should already check to see if the requested
     // machine name is available.
-    $pattern = trim($form_state->getValue('date_format_pattern'));
+    $pattern = trim((string) $form_state->getValue('date_format_pattern'));
     foreach ($this->dateFormatStorage->loadMultiple() as $format) {
       if ($format->getPattern() == $pattern && ($format->id() == $this->entity->id())) {
         $this->messenger()->addStatus($this->t('The existing format/name combination has not been altered.'));
@@ -135,15 +120,15 @@ abstract class DateFormatFormBase extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    $form_state->setValue('pattern', trim($form_state->getValue('date_format_pattern')));
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
+    $form_state->setValue('pattern', trim((string) $form_state->getValue('date_format_pattern')));
     parent::submitForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function save(array $form, FormStateInterface $form_state) {
+  public function save(array $form, FormStateInterface $form_state): void {
     $status = $this->entity->save();
     if ($status == SAVED_UPDATED) {
       $this->messenger()->addStatus($this->t('Custom date format updated.'));

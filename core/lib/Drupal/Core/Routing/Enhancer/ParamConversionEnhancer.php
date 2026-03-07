@@ -19,20 +19,13 @@ use Symfony\Component\HttpKernel\KernelEvents;
 class ParamConversionEnhancer implements EnhancerInterface, EventSubscriberInterface {
 
   /**
-   * The parameter conversion manager.
-   *
-   * @var \Drupal\Core\ParamConverter\ParamConverterManagerInterface
-   */
-  protected $paramConverterManager;
-
-  /**
    * Constructs a new ParamConversionEnhancer.
    *
-   * @param \Drupal\Core\ParamConverter\ParamConverterManagerInterface $param_converter_manager
+   * @param \Drupal\Core\ParamConverter\ParamConverterManagerInterface $paramConverterManager
    *   The parameter conversion manager.
    */
-  public function __construct(ParamConverterManagerInterface $param_converter_manager) {
-    $this->paramConverterManager = $param_converter_manager;
+  public function __construct(protected \Drupal\Core\ParamConverter\ParamConverterManagerInterface $paramConverterManager)
+  {
   }
 
   /**
@@ -70,7 +63,7 @@ class ParamConversionEnhancer implements EnhancerInterface, EventSubscriberInter
     // Route defaults that do not start with a leading "_" are also
     // parameters, even if they are not included in path or host patterns.
     foreach ($route->getDefaults() as $name => $value) {
-      if (!isset($raw_variables[$name]) && !str_starts_with($name, '_')) {
+      if (!isset($raw_variables[$name]) && !str_starts_with((string) $name, '_')) {
         $raw_variables[$name] = $value;
       }
     }
@@ -83,7 +76,7 @@ class ParamConversionEnhancer implements EnhancerInterface, EventSubscriberInter
    * @param \Symfony\Component\HttpKernel\Event\ExceptionEvent $event
    *   The event.
    */
-  public function onException(ExceptionEvent $event) {
+  public function onException(ExceptionEvent $event): void {
     $exception = $event->getThrowable();
     if ($exception instanceof ParamNotConvertedException) {
       $event->setThrowable(new NotFoundHttpException($exception->getMessage(), $exception));

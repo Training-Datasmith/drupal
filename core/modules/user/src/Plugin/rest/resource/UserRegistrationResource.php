@@ -71,7 +71,7 @@ class UserRegistrationResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -96,7 +96,7 @@ class UserRegistrationResource extends ResourceBase {
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
    */
-  public function post(?UserInterface $account = NULL) {
+  public function post(?UserInterface $account = NULL): \Drupal\rest\ModifiedResourceResponse {
     $this->ensureAccountCanRegister($account);
 
     // Only activate new users if visitors are allowed to register.

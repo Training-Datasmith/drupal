@@ -19,20 +19,13 @@ use Symfony\Component\Routing\Route;
 class OptionsRequestSubscriber implements EventSubscriberInterface {
 
   /**
-   * The route provider.
-   *
-   * @var \Drupal\Core\Routing\RouteProviderInterface
-   */
-  protected $routeProvider;
-
-  /**
    * Creates a new OptionsRequestSubscriber instance.
    *
-   * @param \Drupal\Core\Routing\RouteProviderInterface $route_provider
+   * @param \Drupal\Core\Routing\RouteProviderInterface $routeProvider
    *   The route provider.
    */
-  public function __construct(RouteProviderInterface $route_provider) {
-    $this->routeProvider = $route_provider;
+  public function __construct(protected \Drupal\Core\Routing\RouteProviderInterface $routeProvider)
+  {
   }
 
   /**
@@ -41,16 +34,14 @@ class OptionsRequestSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The request event.
    */
-  public function onRequest(RequestEvent $event) {
+  public function onRequest(RequestEvent $event): void {
     if ($event->getRequest()->isMethod('OPTIONS')) {
       $routes = $this->routeProvider->getRouteCollectionForRequest($event->getRequest());
       // In case we don't have any routes, a 403 should be thrown by the normal
       // request handling.
       if (count($routes) > 0) {
         // Flatten and unique the available methods.
-        $methods = array_reduce($routes->all(), function ($methods, Route $route) {
-          return array_merge($methods, $route->getMethods());
-        }, []);
+        $methods = array_reduce($routes->all(), fn(array $methods, Route $route) => array_merge($methods, $route->getMethods()), []);
         $methods = array_unique($methods);
         $response = new Response('', 200, ['Allow' => implode(', ', $methods)]);
         $event->setResponse($response);

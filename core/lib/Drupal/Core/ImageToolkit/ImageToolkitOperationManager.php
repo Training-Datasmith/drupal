@@ -66,7 +66,7 @@ class ImageToolkitOperationManager extends DefaultPluginManager implements Image
       $module_handler,
       ImageToolkitOperationInterface::class,
       ImageToolkitOperation::class,
-      'Drupal\Core\ImageToolkit\Annotation\ImageToolkitOperation',
+      \Drupal\Core\ImageToolkit\Annotation\ImageToolkitOperation::class,
     );
 
     $this->alterInfo('image_toolkit_operation');
@@ -99,14 +99,12 @@ class ImageToolkitOperationManager extends DefaultPluginManager implements Image
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    *   When no plugin is available.
    */
-  protected function getToolkitOperationPluginId(ImageToolkitInterface $toolkit, $operation) {
+  protected function getToolkitOperationPluginId(ImageToolkitInterface $toolkit, string $operation) {
     $toolkit_id = $toolkit->getPluginId();
     $definitions = $this->getDefinitions();
 
     $definitions = array_filter($definitions,
-      function ($definition) use ($toolkit_id, $operation) {
-        return $definition['toolkit'] == $toolkit_id && $definition['operation'] == $operation;
-      }
+      fn(array $definition) => $definition['toolkit'] == $toolkit_id && $definition['operation'] == $operation
     );
 
     if (!$definitions) {
@@ -124,13 +122,11 @@ class ImageToolkitOperationManager extends DefaultPluginManager implements Image
       ]);
       throw new PluginNotFoundException($toolkit_id . '.' . $operation, $message);
     }
-    else {
-      // Pickup the first plugin found.
-      // @todo In https://www.drupal.org/node/2110591 we'll return here the UI
-      //   selected plugin or the first found if missed.
-      $definition = reset($definitions);
-      return $definition['id'];
-    }
+    // Pickup the first plugin found.
+    // @todo In https://www.drupal.org/node/2110591 we'll return here the UI
+    //   selected plugin or the first found if missed.
+    $definition = reset($definitions);
+    return $definition['id'];
   }
 
   /**

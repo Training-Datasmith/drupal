@@ -83,32 +83,30 @@ class HelpTopicSection extends HelpSectionPluginBase implements ContainerFactory
   /**
    * {@inheritdoc}
    */
-  public function getCacheTags() {
+  public function getCacheTags(): array {
     return $this->getCacheMetadata()->getCacheTags();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheContexts() {
+  public function getCacheContexts(): array {
     return $this->getCacheMetadata()->getCacheContexts();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCacheMaxAge() {
+  public function getCacheMaxAge(): int {
     return $this->getCacheMetadata()->getCacheMaxAge();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function listTopics() {
+  public function listTopics(): array {
     // Map the top level help topic plugins to a list of topic links.
-    return array_map(function (HelpTopicPluginInterface $topic) {
-      return $topic->toLink();
-    }, $this->getPlugins());
+    return array_map(fn(HelpTopicPluginInterface $topic) => $topic->toLink(), $this->getPlugins());
   }
 
   /**
@@ -131,7 +129,7 @@ class HelpTopicSection extends HelpSectionPluginBase implements ContainerFactory
 
       // Sort the top level topics by label and, if the labels match, then by
       // plugin ID.
-      usort($this->topLevelPlugins, function (HelpTopicPluginInterface $a, HelpTopicPluginInterface $b) {
+      usort($this->topLevelPlugins, function (HelpTopicPluginInterface $a, HelpTopicPluginInterface $b): int {
         $a_label = (string) $a->getLabel();
         $b_label = (string) $b->getLabel();
         if ($a_label === $b_label) {
@@ -146,7 +144,7 @@ class HelpTopicSection extends HelpSectionPluginBase implements ContainerFactory
   /**
    * {@inheritdoc}
    */
-  public function listSearchableTopics() {
+  public function listSearchableTopics(): array {
     $definitions = $this->pluginManager->getDefinitions();
     return array_column($definitions, 'id');
   }
@@ -154,7 +152,7 @@ class HelpTopicSection extends HelpSectionPluginBase implements ContainerFactory
   /**
    * {@inheritdoc}
    */
-  public function renderTopicForSearch($topic_id, LanguageInterface $language) {
+  public function renderTopicForSearch($topic_id, LanguageInterface $language): array {
     $plugin = $this->pluginManager->createInstance($topic_id);
     if (!$plugin) {
       return [];

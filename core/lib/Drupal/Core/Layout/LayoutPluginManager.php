@@ -24,13 +24,6 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
   use FilteredPluginManagerTrait;
 
   /**
-   * The theme handler.
-   *
-   * @var \Drupal\Core\Extension\ThemeHandlerInterface
-   */
-  protected $themeHandler;
-
-  /**
    * LayoutPluginManager constructor.
    *
    * @param \Traversable $namespaces
@@ -40,12 +33,11 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
    *   Cache backend instance to use.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler to invoke the alter hook with.
-   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler to invoke the alter hook with.
    */
-  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, ThemeHandlerInterface $theme_handler) {
-    parent::__construct('Plugin/Layout', $namespaces, $module_handler, LayoutInterface::class, Layout::class, 'Drupal\Core\Layout\Annotation\Layout');
-    $this->themeHandler = $theme_handler;
+  public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler, protected \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler) {
+    parent::__construct('Plugin/Layout', $namespaces, $module_handler, LayoutInterface::class, Layout::class, \Drupal\Core\Layout\Annotation\Layout::class);
 
     $type = $this->getType();
     $this->setCacheBackend($cache_backend, $type);
@@ -55,15 +47,19 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
   /**
    * {@inheritdoc}
    */
-  protected function getType() {
+  protected function getType(): string {
     return 'layout';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function providerExists($provider) {
-    return $this->moduleHandler->moduleExists($provider) || $this->themeHandler->themeExists($provider);
+  protected function providerExists($provider): bool
+  {
+      if ($this->moduleHandler->moduleExists($provider)) {
+          return true;
+      }
+      return $this->themeHandler->themeExists($provider);
   }
 
   /**
@@ -87,7 +83,7 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
   /**
    * {@inheritdoc}
    */
-  public function processDefinition(&$definition, $plugin_id) {
+  public function processDefinition(&$definition, $plugin_id): void {
     parent::processDefinition($definition, $plugin_id);
 
     if (!$definition instanceof LayoutDefinition) {
@@ -160,7 +156,7 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
       $definition->setDefaultRegion(key($definition->getRegions()));
     }
     // Makes sure region names are translatable.
-    $regions = array_map(function ($region) {
+    $regions = array_map(function (array $region): array {
       if (!$region['label'] instanceof TranslatableMarkup) {
         // Region labels from YAML discovery needs translation.
         // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
@@ -173,8 +169,9 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getThemeImplementations() {
+  public function getThemeImplementations(): array {
     $hooks = [];
     $hooks['layout'] = [
       'render element' => 'content',
@@ -197,12 +194,11 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getCategories() {
+  public function getCategories(): array {
     // Fetch all categories from definitions and remove duplicates.
-    $categories = array_unique(array_values(array_map(function (LayoutDefinition $definition) {
-      return $definition->getCategory();
-    }, $this->getDefinitions())));
+    $categories = array_unique(array_values(array_map(fn(LayoutDefinition $definition) => $definition->getCategory(), $this->getDefinitions())));
     natcasesort($categories);
     return $categories;
   }
@@ -213,10 +209,10 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
    * @return \Drupal\Core\Layout\LayoutDefinition[]
    *   An array of plugin definitions, sorted by category and label.
    */
-  public function getSortedDefinitions(?array $definitions = NULL, string $label_key = 'label') {
+  public function getSortedDefinitions(?array $definitions = NULL, string $label_key = 'label'): ?array {
     // Sort the plugins first by category, then by label.
-    $definitions = $definitions ?? $this->getDefinitions();
-    uasort($definitions, function (LayoutDefinition $a, LayoutDefinition $b) {
+    $definitions ??= $this->getDefinitions();
+    uasort($definitions, function (LayoutDefinition $a, LayoutDefinition $b): int {
       if ($a->getCategory() != $b->getCategory()) {
         return strnatcasecmp($a->getCategory(), $b->getCategory());
       }
@@ -232,7 +228,7 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
    *   Keys are category names, and values are arrays of which the keys are
    *   plugin IDs and the values are plugin definitions.
    */
-  public function getGroupedDefinitions(?array $definitions = NULL, string $label_key = 'label') {
+  public function getGroupedDefinitions(?array $definitions = NULL, string $label_key = 'label'): array {
     $definitions = $this->getSortedDefinitions($definitions ?? $this->getDefinitions(), $label_key);
     $grouped_definitions = [];
     foreach ($definitions as $id => $definition) {
@@ -243,8 +239,9 @@ class LayoutPluginManager extends DefaultPluginManager implements LayoutPluginMa
 
   /**
    * {@inheritdoc}
+   * @return non-empty-array[]
    */
-  public function getLayoutOptions() {
+  public function getLayoutOptions(): array {
     $layout_options = [];
     $filtered_definitions = $this->getFilteredDefinitions($this->getType());
     foreach ($this->getGroupedDefinitions($filtered_definitions) as $category => $layout_definitions) {

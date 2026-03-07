@@ -21,14 +21,14 @@ class SelectLanguageForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'install_select_language_form';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, $install_state = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, $install_state = NULL): array {
     if (count($install_state['translations']) > 1) {
       $files = $install_state['translations'];
     }
@@ -92,7 +92,7 @@ class SelectLanguageForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $build_info = $form_state->getBuildInfo();
     $build_info['args'][0]['parameters']['langcode'] = $form_state->getValue('langcode');
     $form_state->setBuildInfo($build_info);

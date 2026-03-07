@@ -25,7 +25,7 @@ class Node extends FieldPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     // Don't add the additional fields to group by.
@@ -46,7 +46,7 @@ class Node extends FieldPluginBase {
   /**
    * Provide link to node option.
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     $form['link_to_node'] = [
       '#title' => $this->t('Link this field to the original piece of content'),
       '#description' => $this->t("Enable to override this field's links."),

@@ -33,7 +33,7 @@ trait LayoutEntityHelperTrait {
    * @return bool
    *   TRUE if the entity can have a layout otherwise FALSE.
    */
-  protected function isLayoutCompatibleEntity(EntityInterface $entity) {
+  protected function isLayoutCompatibleEntity(EntityInterface $entity): bool {
     return $this->getSectionStorageForEntity($entity) !== NULL;
   }
 
@@ -46,7 +46,7 @@ trait LayoutEntityHelperTrait {
    * @return int[]
    *   The revision IDs.
    */
-  protected function getInlineBlockRevisionIdsInSections(array $sections) {
+  protected function getInlineBlockRevisionIdsInSections(array $sections): array {
     $revision_ids = [];
     foreach ($this->getInlineBlockComponents($sections) as $component) {
       $configuration = $component->getPlugin()->getConfiguration();
@@ -80,7 +80,7 @@ trait LayoutEntityHelperTrait {
    * @return \Drupal\layout_builder\SectionComponent[]
    *   The components that contain Inline Block plugins.
    */
-  protected function getInlineBlockComponents(array $sections) {
+  protected function getInlineBlockComponents(array $sections): array {
     $inline_block_components = [];
     foreach ($sections as $section) {
       foreach ($section->getComponents() as $component) {

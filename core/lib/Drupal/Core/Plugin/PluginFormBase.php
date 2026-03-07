@@ -24,14 +24,14 @@ abstract class PluginFormBase implements PluginFormInterface, PluginAwareInterfa
   /**
    * {@inheritdoc}
    */
-  public function setPlugin(PluginInspectionInterface $plugin) {
+  public function setPlugin(PluginInspectionInterface $plugin): void {
     $this->plugin = $plugin;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function validateConfigurationForm(array &$form, FormStateInterface $form_state): void {
     // Validation is optional.
   }
 

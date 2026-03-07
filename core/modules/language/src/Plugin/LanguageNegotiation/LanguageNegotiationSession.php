@@ -73,7 +73,7 @@ class LanguageNegotiationSession extends LanguageNegotiationMethodBase implement
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $container->get('request_stack')
     );
@@ -98,7 +98,7 @@ class LanguageNegotiationSession extends LanguageNegotiationMethodBase implement
   /**
    * {@inheritdoc}
    */
-  public function persist(LanguageInterface $language) {
+  public function persist(LanguageInterface $language): void {
     // We need to update the session parameter with the request value only if we
     // have an authenticated user.
     $langcode = $language->getId();
@@ -155,8 +155,9 @@ class LanguageNegotiationSession extends LanguageNegotiationMethodBase implement
 
   /**
    * {@inheritdoc}
+   * @return array{url: Drupal\Core\Url, title: mixed, attributes: array{class: non-empty-list<('language-link' | 'session-active')>}, query: array<(int | string), mixed>}[]
    */
-  public function getLanguageSwitchLinks(Request $request, $type, Url $url) {
+  public function getLanguageSwitchLinks(Request $request, $type, Url $url): array {
     $links = [];
     $query = [];
     parse_str($request->getQueryString() ?? '', $query);

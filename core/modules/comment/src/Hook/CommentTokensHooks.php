@@ -30,8 +30,11 @@ class CommentTokensHooks {
     $tokens = [];
     // Provides an integration for each entity type except comment.
     foreach (\Drupal::entityTypeManager()->getDefinitions() as $entity_type_id => $entity_type) {
-      if ($entity_type_id == 'comment' || !$entity_type->entityClassImplements(ContentEntityInterface::class)) {
-        continue;
+      if ($entity_type_id == 'comment') {
+          continue;
+      }
+      if (!$entity_type->entityClassImplements(ContentEntityInterface::class)) {
+          continue;
       }
       if (\Drupal::service('comment.manager')->getFields($entity_type_id)) {
         // Get the correct token type.
@@ -231,7 +234,6 @@ class CommentTokensHooks {
       }
     }
     elseif (!empty($data[$type]) && $data[$type] instanceof FieldableEntityInterface) {
-      /** @var \Drupal\Core\Entity\FieldableEntityInterface $entity */
       $entity = $data[$type];
       foreach ($tokens as $name => $original) {
         switch ($name) {

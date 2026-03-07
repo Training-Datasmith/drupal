@@ -25,26 +25,19 @@ class SwitchShortcutSet extends FormBase {
   protected $user;
 
   /**
-   * The shortcut set storage.
-   *
-   * @var \Drupal\shortcut\ShortcutSetStorageInterface
-   */
-  protected $shortcutSetStorage;
-
-  /**
    * Constructs a SwitchShortcutSet object.
    *
-   * @param \Drupal\shortcut\ShortcutSetStorageInterface $shortcut_set_storage
+   * @param \Drupal\shortcut\ShortcutSetStorageInterface $shortcutSetStorage
    *   The shortcut set storage.
    */
-  public function __construct(ShortcutSetStorageInterface $shortcut_set_storage) {
-    $this->shortcutSetStorage = $shortcut_set_storage;
+  public function __construct(protected \Drupal\shortcut\ShortcutSetStorageInterface $shortcutSetStorage)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('entity_type.manager')->getStorage('shortcut_set')
     );
@@ -53,22 +46,20 @@ class SwitchShortcutSet extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'shortcut_set_switch';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildForm(array $form, FormStateInterface $form_state, ?UserInterface $user = NULL) {
+  public function buildForm(array $form, FormStateInterface $form_state, ?UserInterface $user = NULL): array {
     $account = $this->currentUser();
 
     $this->user = $user;
 
     // Prepare the list of shortcut sets.
-    $options = array_map(function (ShortcutSet $set) {
-      return $set->label();
-    }, $this->shortcutSetStorage->loadMultiple());
+    $options = array_map(fn(ShortcutSet $set) => $set->label(), $this->shortcutSetStorage->loadMultiple());
 
     $current_set = $this->shortcutSetStorage->getDisplayedToUser($this->user);
 
@@ -105,7 +96,7 @@ class SwitchShortcutSet extends FormBase {
         '#type' => 'machine_name',
         '#access' => $add_access,
         '#machine_name' => [
-          'exists' => [$this, 'exists'],
+          'exists' => $this->exists(...),
           'replace_pattern' => '[^a-z0-9-]+',
           'replace' => '-',
         ],
@@ -149,7 +140,7 @@ class SwitchShortcutSet extends FormBase {
    * @return bool
    *   TRUE if the shortcut set exists, FALSE otherwise.
    */
-  public function exists($id) {
+  public function exists($id): bool {
     return (bool) $this->shortcutSetStorage->getQuery()
       ->condition('id', $id)
       ->execute();
@@ -158,10 +149,10 @@ class SwitchShortcutSet extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     if ($form_state->getValue('set') == 'new') {
       // Check to prevent creating a shortcut set with an empty title.
-      if (trim($form_state->getValue('label')) == '') {
+      if (trim((string) $form_state->getValue('label')) == '') {
         $form_state->setErrorByName('label', $this->t('The new set label is required.'));
       }
     }
@@ -170,7 +161,7 @@ class SwitchShortcutSet extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     $account = $this->currentUser();
 
     $account_is_user = $this->user->id() == $account->id();

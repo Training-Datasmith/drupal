@@ -15,9 +15,10 @@ class DisplayModeLocalAction extends LocalActionDefault {
   /**
    * {@inheritdoc}
    */
-  public function getOptions(RouteMatchInterface $route_match) {
+  public function getOptions(RouteMatchInterface $route_match): array {
     $options = parent::getOptions($route_match);
-    $options = NestedArray::mergeDeepArray([[
+
+    return NestedArray::mergeDeepArray([[
       'attributes' => [
         'class' => ['button', 'use-ajax'],
         'data-dialog-type' => 'modal',
@@ -27,8 +28,6 @@ class DisplayModeLocalAction extends LocalActionDefault {
       ],
     ], $options,
     ]);
-
-    return $options;
   }
 
 }

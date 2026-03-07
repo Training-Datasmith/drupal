@@ -23,20 +23,13 @@ use Drupal\Component\Utility\Html;
 class ViewsUIController extends ControllerBase {
 
   /**
-   * Stores the Views data cache object.
-   *
-   * @var \Drupal\views\ViewsData
-   */
-  protected $viewsData;
-
-  /**
    * Constructs a new \Drupal\views_ui\Controller\ViewsUIController object.
    *
-   * @param \Drupal\views\ViewsData $views_data
+   * @param \Drupal\views\ViewsData $viewsData
    *   The Views data cache object.
    */
-  public function __construct(ViewsData $views_data) {
-    $this->viewsData = $views_data;
+  public function __construct(protected \Drupal\views\ViewsData $viewsData)
+  {
   }
 
   /**
@@ -45,7 +38,7 @@ class ViewsUIController extends ControllerBase {
    * @return array
    *   The Views fields report page.
    */
-  public function reportFields() {
+  public function reportFields(): array {
     $views = $this->entityTypeManager()->getStorage('view')->loadMultiple();
 
     // Fetch all fieldapi fields which are used in views
@@ -90,14 +83,13 @@ class ViewsUIController extends ControllerBase {
 
     // Sort rows by field name.
     ksort($rows);
-    $output = [
+
+    return [
       '#type' => 'table',
       '#header' => $header,
       '#rows' => $rows,
       '#empty' => $this->t('No fields have been used in views yet.'),
     ];
-
-    return $output;
   }
 
   /**
@@ -106,7 +98,7 @@ class ViewsUIController extends ControllerBase {
    * @return array
    *   The Views plugins report page.
    */
-  public function reportPlugins() {
+  public function reportPlugins(): array {
     $rows = Views::pluginList();
     foreach ($rows as &$row) {
       $views = [];
@@ -183,7 +175,7 @@ class ViewsUIController extends ControllerBase {
       foreach (Tags::explode($view_tag) as $tag) {
         if ($tag && !in_array($tag, $tags, TRUE)) {
           $tags[] = $tag;
-          if (mb_stripos($tag, $string) !== FALSE) {
+          if (mb_stripos((string) $tag, (string) $string) !== FALSE) {
             $matches[] = ['value' => $tag, 'label' => Html::escape($tag)];
             if (count($matches) >= 10) {
               break 2;

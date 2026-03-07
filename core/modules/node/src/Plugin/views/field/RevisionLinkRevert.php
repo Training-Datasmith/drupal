@@ -17,7 +17,7 @@ class RevisionLinkRevert extends RevisionLink {
   /**
    * {@inheritdoc}
    */
-  protected function getUrlInfo(ResultRow $row) {
+  protected function getUrlInfo(ResultRow $row): ?\Drupal\Core\Url {
     /** @var \Drupal\node\NodeInterface $node */
     $node = $this->getEntity($row);
     if (!$node) {
@@ -32,7 +32,7 @@ class RevisionLinkRevert extends RevisionLink {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultLabel() {
+  protected function getDefaultLabel(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Revert');
   }
 

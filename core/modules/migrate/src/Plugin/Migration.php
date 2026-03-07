@@ -242,42 +242,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
    * @endcode
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected $migration_dependencies = [];
-
-  /**
-   * The migration plugin manager for loading other migration plugins.
-   *
-   * @var \Drupal\migrate\Plugin\MigrationPluginManagerInterface
-   */
-  protected $migrationPluginManager;
-
-  /**
-   * The source plugin manager.
-   *
-   * @var \Drupal\migrate\Plugin\MigratePluginManager
-   */
-  protected $sourcePluginManager;
-
-  /**
-   * The process plugin manager.
-   *
-   * @var \Drupal\migrate\Plugin\MigratePluginManager
-   */
-  protected $processPluginManager;
-
-  /**
-   * The destination plugin manager.
-   *
-   * @var \Drupal\migrate\Plugin\MigrateDestinationPluginManager
-   */
-  protected $destinationPluginManager;
-
-  /**
-   * The ID map plugin manager.
-   *
-   * @var \Drupal\migrate\Plugin\MigratePluginManager
-   */
-  protected $idMapPluginManager;
+  protected array $migration_dependencies = [];
 
   /**
    * Labels corresponding to each defined status.
@@ -301,24 +266,28 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
    *   The plugin ID.
    * @param mixed $plugin_definition
    *   The plugin definition.
-   * @param \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migration_plugin_manager
+   * @param \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migrationPluginManager
    *   The migration plugin manager.
-   * @param \Drupal\migrate\Plugin\MigratePluginManagerInterface $source_plugin_manager
+   * @param \Drupal\migrate\Plugin\MigratePluginManagerInterface $sourcePluginManager
    *   The source migration plugin manager.
-   * @param \Drupal\migrate\Plugin\MigratePluginManagerInterface $process_plugin_manager
+   * @param \Drupal\migrate\Plugin\MigratePluginManagerInterface $processPluginManager
    *   The process migration plugin manager.
-   * @param \Drupal\migrate\Plugin\MigrateDestinationPluginManager $destination_plugin_manager
+   * @param \Drupal\migrate\Plugin\MigrateDestinationPluginManager $destinationPluginManager
    *   The destination migration plugin manager.
-   * @param \Drupal\migrate\Plugin\MigratePluginManagerInterface $id_map_plugin_manager
+   * @param \Drupal\migrate\Plugin\MigratePluginManagerInterface $idMapPluginManager
    *   The ID map migration plugin manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationPluginManagerInterface $migration_plugin_manager, MigratePluginManagerInterface $source_plugin_manager, MigratePluginManagerInterface $process_plugin_manager, MigrateDestinationPluginManager $destination_plugin_manager, MigratePluginManagerInterface $id_map_plugin_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\migrate\Plugin\MigrationPluginManagerInterface $migrationPluginManager, /**
+   * The source plugin manager.
+   */
+  protected \Drupal\migrate\Plugin\MigratePluginManagerInterface $sourcePluginManager, /**
+   * The process plugin manager.
+   */
+  protected \Drupal\migrate\Plugin\MigratePluginManagerInterface $processPluginManager, protected \Drupal\migrate\Plugin\MigrateDestinationPluginManager $destinationPluginManager, /**
+   * The ID map plugin manager.
+   */
+  protected \Drupal\migrate\Plugin\MigratePluginManagerInterface $idMapPluginManager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->migrationPluginManager = $migration_plugin_manager;
-    $this->sourcePluginManager = $source_plugin_manager;
-    $this->processPluginManager = $process_plugin_manager;
-    $this->destinationPluginManager = $destination_plugin_manager;
-    $this->idMapPluginManager = $id_map_plugin_manager;
 
     foreach (NestedArray::mergeDeepArray([$plugin_definition, $configuration], TRUE) as $key => $value) {
       $this->$key = $value;
@@ -333,7 +302,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -417,7 +386,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
    * @return array
    *   The normalized process configuration.
    */
-  protected function getProcessNormalized(array $process) {
+  protected function getProcessNormalized(array $process): array {
     $normalized_configurations = [];
     foreach ($process as $destination => $configuration) {
       if (is_string($configuration)) {
@@ -473,7 +442,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function checkRequirements() {
+  public function checkRequirements(): void {
     // Check whether the current migration source and destination plugin
     // requirements are met or not.
     if ($this->getSourcePlugin() instanceof RequirementsInterface) {
@@ -515,7 +484,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function setStatus($status) {
+  public function setStatus($status): void {
     \Drupal::keyValue('migrate_status')->set($this->id(), $status);
   }
 
@@ -531,12 +500,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
    */
   public function getStatusLabel() {
     $status = $this->getStatus();
-    if (isset($this->statusLabels[$status])) {
-      return $this->statusLabels[$status];
-    }
-    else {
-      return '';
-    }
+    return $this->statusLabels[$status] ?? '';
   }
 
   /**
@@ -549,14 +513,14 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function clearInterruptionResult() {
+  public function clearInterruptionResult(): void {
     \Drupal::keyValue('migrate_interruption_result')->delete($this->id());
   }
 
   /**
    * {@inheritdoc}
    */
-  public function interruptMigration($result) {
+  public function interruptMigration($result): void {
     $this->setStatus(MigrationInterface::STATUS_STOPPING);
     \Drupal::keyValue('migrate_interruption_result')->set($this->id(), $result);
   }
@@ -581,7 +545,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function set($property_name, $value) {
+  public function set($property_name, $value): static {
     if ($property_name == 'source') {
       // Invalidate the source plugin.
       unset($this->sourcePlugin);
@@ -607,7 +571,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function setProcess(array $process) {
+  public function setProcess(array $process): static {
     $this->process = $process;
     return $this;
   }
@@ -615,7 +579,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function setProcessOfProperty($property, $process_of_property) {
+  public function setProcessOfProperty($property, $process_of_property): static {
     $this->process[$property] = $process_of_property;
     return $this;
   }
@@ -651,7 +615,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function mergeProcessOfProperty($property, array $process_of_property) {
+  public function mergeProcessOfProperty($property, array $process_of_property): static {
     // If we already have a process value then merge the incoming process array
     // otherwise simply set it.
     $current_process = $this->getProcess();
@@ -674,7 +638,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
    * @return array
    *   The dependencies for this migration.
    */
-  public function getMigrationDependencies() {
+  public function getMigrationDependencies(): array {
     if (func_num_args() > 0) {
       @trigger_error('Calling ' . __METHOD__ . ' with the $expand parameter is deprecated in drupal:11.0.0 and is removed drupal:12.0.0. See https://www.drupal.org/node/3442785', E_USER_DEPRECATED);
     }
@@ -686,7 +650,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
     $this->migration_dependencies['optional'] = array_unique(array_merge($this->migration_dependencies['optional'], $this->findMigrationDependencies($this->process)));
 
     return array_map(
-      [$this->migrationPluginManager, 'expandPluginIds'],
+      $this->migrationPluginManager->expandPluginIds(...),
       $this->migration_dependencies
     );
   }
@@ -700,7 +664,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
    * @return array
    *   The migration dependencies.
    */
-  protected function findMigrationDependencies($process) {
+  protected function findMigrationDependencies(array $process): array {
     $return = [];
     foreach ($this->getProcessNormalized($process) as $process_pipeline) {
       foreach ($process_pipeline as $plugin_configuration) {
@@ -726,8 +690,9 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getPluginDefinition() {
+  public function getPluginDefinition(): array {
     $definition = [];
     // While normal plugins do not change their definitions on the fly, this
     // one does so accommodate for that.
@@ -768,7 +733,7 @@ class Migration extends PluginBase implements MigrationInterface, RequirementsIn
   /**
    * {@inheritdoc}
    */
-  public function isAuditable() {
+  public function isAuditable(): bool {
     return (bool) $this->audit;
   }
 

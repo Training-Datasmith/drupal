@@ -51,20 +51,18 @@ class Filter {
   const MEMBER_KEY = 'memberOf';
 
   /**
-   * The root condition group.
-   *
-   * @var string
-   */
-  protected $root;
-
-  /**
    * Constructs a new Filter object.
    *
    * @param \Drupal\jsonapi\Query\EntityConditionGroup $root
    *   An entity condition group which can be applied to an entity query.
    */
-  public function __construct(EntityConditionGroup $root) {
-    $this->root = $root;
+  public function __construct(
+      /**
+       * The root condition group.
+       */
+      protected \Drupal\jsonapi\Query\EntityConditionGroup $root
+  )
+  {
   }
 
   /**
@@ -84,8 +82,7 @@ class Filter {
    *   The compiled entity query condition.
    */
   public function queryCondition(QueryInterface $query) {
-    $condition = $this->buildGroup($query, $this->root());
-    return $condition;
+    return $this->buildGroup($query, $this->root());
   }
 
   /**
@@ -147,7 +144,7 @@ class Filter {
    * @return self
    *   A Sort object with defaults.
    */
-  public static function createFromQueryParameter($parameter, ResourceType $resource_type, FieldResolver $field_resolver) {
+  public static function createFromQueryParameter(array $parameter, ResourceType $resource_type, FieldResolver $field_resolver): static {
     $expanded = static::expand($parameter);
     foreach ($expanded as &$filter_item) {
       if (isset($filter_item[static::CONDITION_KEY][EntityCondition::PATH_KEY])) {
@@ -168,7 +165,7 @@ class Filter {
    * @return array
    *   The expanded filter data.
    */
-  protected static function expand(array $original) {
+  protected static function expand(array $original): array {
     $expanded = [];
     foreach ($original as $key => $item) {
       // Allow extreme shorthand filters, f.e. `?filter[promote]=1`.
@@ -272,7 +269,7 @@ class Filter {
    * @return \Drupal\jsonapi\Query\EntityConditionGroup
    *   The entity condition group
    */
-  protected static function buildTree(array $root, array $items) {
+  protected static function buildTree(array $root, array $items): \Drupal\jsonapi\Query\EntityConditionGroup {
     $id = $root['id'];
 
     // Recursively build a tree of denormalized conditions and condition groups.

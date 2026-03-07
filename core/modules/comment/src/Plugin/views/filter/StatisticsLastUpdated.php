@@ -17,12 +17,12 @@ class StatisticsLastUpdated extends Date {
    * The node table.
    */
   // phpcs:ignore Drupal.NamingConventions.ValidVariableName.LowerCamelName
-  protected ?string $node_table;
+  protected ?string $node_table = null;
 
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->ensureMyTable();
     $this->node_table = $this->query->ensureTable('node', $this->relationship);
 

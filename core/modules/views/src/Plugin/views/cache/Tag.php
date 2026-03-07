@@ -21,21 +21,21 @@ class Tag extends CachePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('Tag');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function cacheExpire($type) {
+  protected function cacheExpire($type): bool {
     return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultCacheMaxAge() {
+  protected function getDefaultCacheMaxAge(): int {
     return CacheBackendInterface::CACHE_PERMANENT;
   }
 

@@ -47,129 +47,17 @@ final class IconMimeTypes {
    */
   public static function getGenericMimeType(string $mimeType): string | false {
     // cspell:disable
-    switch ($mimeType) {
-      // Word document types.
-      case 'application/msword':
-      case 'application/vnd.ms-word.document.macroEnabled.12':
-      case 'application/vnd.oasis.opendocument.text':
-      case 'application/vnd.oasis.opendocument.text-template':
-      case 'application/vnd.oasis.opendocument.text-master':
-      case 'application/vnd.oasis.opendocument.text-web':
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-      case 'application/vnd.stardivision.writer':
-      case 'application/vnd.sun.xml.writer':
-      case 'application/vnd.sun.xml.writer.template':
-      case 'application/vnd.sun.xml.writer.global':
-      case 'application/vnd.wordperfect':
-      case 'application/x-abiword':
-      case 'application/x-applix-word':
-      case 'application/x-kword':
-      case 'application/x-kword-crypt':
-        return 'x-office-document';
-
-      // Spreadsheet document types.
-      case 'application/vnd.ms-excel':
-      case 'application/vnd.ms-excel.sheet.macroEnabled.12':
-      case 'application/vnd.oasis.opendocument.spreadsheet':
-      case 'application/vnd.oasis.opendocument.spreadsheet-template':
-      case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-      case 'application/vnd.stardivision.calc':
-      case 'application/vnd.sun.xml.calc':
-      case 'application/vnd.sun.xml.calc.template':
-      case 'application/vnd.lotus-1-2-3':
-      case 'application/x-applix-spreadsheet':
-      case 'application/x-gnumeric':
-      case 'application/x-kspread':
-      case 'application/x-kspread-crypt':
-        return 'x-office-spreadsheet';
-
-      // Presentation document types.
-      case 'application/vnd.ms-powerpoint':
-      case 'application/vnd.ms-powerpoint.presentation.macroEnabled.12':
-      case 'application/vnd.oasis.opendocument.presentation':
-      case 'application/vnd.oasis.opendocument.presentation-template':
-      case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
-      case 'application/vnd.stardivision.impress':
-      case 'application/vnd.sun.xml.impress':
-      case 'application/vnd.sun.xml.impress.template':
-      case 'application/x-kpresenter':
-        return 'x-office-presentation';
-
-      // Compressed archive types.
-      case 'application/zip':
-      case 'application/x-zip':
-      case 'application/stuffit':
-      case 'application/x-stuffit':
-      case 'application/x-7z-compressed':
-      case 'application/x-ace':
-      case 'application/x-arj':
-      case 'application/x-bzip':
-      case 'application/x-bzip-compressed-tar':
-      case 'application/x-compress':
-      case 'application/x-compressed-tar':
-      case 'application/x-cpio-compressed':
-      case 'application/x-deb':
-      case 'application/x-gzip':
-      case 'application/x-java-archive':
-      case 'application/x-lha':
-      case 'application/x-lhz':
-      case 'application/x-lzop':
-      case 'application/x-rar':
-      case 'application/x-rpm':
-      case 'application/x-tzo':
-      case 'application/x-tar':
-      case 'application/x-tarz':
-      case 'application/x-tgz':
-        return 'package-x-generic';
-
-      // Script file types.
-      case 'application/ecmascript':
-      case 'application/javascript':
-      case 'application/mathematica':
-      case 'application/vnd.mozilla.xul+xml':
-      case 'application/x-asp':
-      case 'application/x-awk':
-      case 'application/x-cgi':
-      case 'application/x-csh':
-      case 'application/x-m4':
-      case 'application/x-perl':
-      case 'application/x-php':
-      case 'application/x-ruby':
-      case 'application/x-shellscript':
-      case 'text/javascript':
-      case 'text/vnd.wap.wmlscript':
-      case 'text/x-emacs-lisp':
-      case 'text/x-haskell':
-      case 'text/x-literate-haskell':
-      case 'text/x-lua':
-      case 'text/x-makefile':
-      case 'text/x-matlab':
-      case 'text/x-python':
-      case 'text/x-sql':
-      case 'text/x-tcl':
-        return 'text-x-script';
-
-      // HTML aliases.
-      case 'application/xhtml+xml':
-        return 'text-html';
-
-      // Executable types.
-      case 'application/x-macbinary':
-      case 'application/x-ms-dos-executable':
-      case 'application/x-pef-executable':
-        return 'application-x-executable';
-
-      // Acrobat types.
-      case 'application/pdf':
-      case 'application/x-pdf':
-      case 'applications/vnd.pdf':
-      case 'text/pdf':
-      case 'text/x-pdf':
-        return 'application-pdf';
-
-      default:
-        return FALSE;
-    }
+    return match ($mimeType) {
+        'application/msword', 'application/vnd.ms-word.document.macroEnabled.12', 'application/vnd.oasis.opendocument.text', 'application/vnd.oasis.opendocument.text-template', 'application/vnd.oasis.opendocument.text-master', 'application/vnd.oasis.opendocument.text-web', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.stardivision.writer', 'application/vnd.sun.xml.writer', 'application/vnd.sun.xml.writer.template', 'application/vnd.sun.xml.writer.global', 'application/vnd.wordperfect', 'application/x-abiword', 'application/x-applix-word', 'application/x-kword', 'application/x-kword-crypt' => 'x-office-document',
+        'application/vnd.ms-excel', 'application/vnd.ms-excel.sheet.macroEnabled.12', 'application/vnd.oasis.opendocument.spreadsheet', 'application/vnd.oasis.opendocument.spreadsheet-template', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.stardivision.calc', 'application/vnd.sun.xml.calc', 'application/vnd.sun.xml.calc.template', 'application/vnd.lotus-1-2-3', 'application/x-applix-spreadsheet', 'application/x-gnumeric', 'application/x-kspread', 'application/x-kspread-crypt' => 'x-office-spreadsheet',
+        'application/vnd.ms-powerpoint', 'application/vnd.ms-powerpoint.presentation.macroEnabled.12', 'application/vnd.oasis.opendocument.presentation', 'application/vnd.oasis.opendocument.presentation-template', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.stardivision.impress', 'application/vnd.sun.xml.impress', 'application/vnd.sun.xml.impress.template', 'application/x-kpresenter' => 'x-office-presentation',
+        'application/zip', 'application/x-zip', 'application/stuffit', 'application/x-stuffit', 'application/x-7z-compressed', 'application/x-ace', 'application/x-arj', 'application/x-bzip', 'application/x-bzip-compressed-tar', 'application/x-compress', 'application/x-compressed-tar', 'application/x-cpio-compressed', 'application/x-deb', 'application/x-gzip', 'application/x-java-archive', 'application/x-lha', 'application/x-lhz', 'application/x-lzop', 'application/x-rar', 'application/x-rpm', 'application/x-tzo', 'application/x-tar', 'application/x-tarz', 'application/x-tgz' => 'package-x-generic',
+        'application/ecmascript', 'application/javascript', 'application/mathematica', 'application/vnd.mozilla.xul+xml', 'application/x-asp', 'application/x-awk', 'application/x-cgi', 'application/x-csh', 'application/x-m4', 'application/x-perl', 'application/x-php', 'application/x-ruby', 'application/x-shellscript', 'text/javascript', 'text/vnd.wap.wmlscript', 'text/x-emacs-lisp', 'text/x-haskell', 'text/x-literate-haskell', 'text/x-lua', 'text/x-makefile', 'text/x-matlab', 'text/x-python', 'text/x-sql', 'text/x-tcl' => 'text-x-script',
+        'application/xhtml+xml' => 'text-html',
+        'application/x-macbinary', 'application/x-ms-dos-executable', 'application/x-pef-executable' => 'application-x-executable',
+        'application/pdf', 'application/x-pdf', 'applications/vnd.pdf', 'text/pdf', 'text/x-pdf' => 'application-pdf',
+        default => FALSE,
+    };
     // cspell:enable
   }
 

@@ -51,7 +51,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function setOperation($operation) {
+  public function setOperation($operation): static {
     // If NULL is passed, do not overwrite the operation.
     if ($operation) {
       $this->operation = $operation;
@@ -62,14 +62,14 @@ class EntityForm extends FormBase implements EntityFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function getBaseFormId() {
+  public function getBaseFormId(): ?string {
     // Assign ENTITY_TYPE_form as base form ID to invoke corresponding
     // hook_form_alter(), #validate, #submit, and #theme callbacks, but only if
     // it is different from the actual form ID, since callbacks would be invoked
     // twice otherwise.
     $base_form_id = $this->entity->getEntityTypeId() . '_form';
     if ($base_form_id == $this->getFormId()) {
-      $base_form_id = NULL;
+      return NULL;
     }
     return $base_form_id;
   }
@@ -77,7 +77,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     $form_id = $this->entity->getEntityTypeId();
     if ($this->entity->getEntityType()->hasKey('bundle')) {
       $form_id .= '_' . $this->entity->bundle();
@@ -137,7 +137,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
    * @see \Drupal\Core\Entity\EntityForm::processForm()
    * @see \Drupal\Core\Entity\EntityForm::afterBuild()
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     // Add #process and #after_build callbacks.
     $form['#process'][] = '::processForm';
     $form['#after_build'][] = '::afterBuild';
@@ -165,7 +165,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
    * form is being rebuilt (e.g. submitted via AJAX), so that subsequent
    * processing (e.g. AJAX callbacks) can rely on it.
    */
-  public function afterBuild(array $element, FormStateInterface $form_state) {
+  public function afterBuild(array $element, FormStateInterface $form_state): array {
     // Rebuild the entity if #after_build is being called as part of a form
     // rebuild, i.e. if we are processing input.
     if ($form_state->isProcessingInput()) {
@@ -281,7 +281,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Remove button and internal Form API values from submitted values.
     $form_state->cleanValues();
     $this->entity = $this->buildEntity($form, $form_state);
@@ -297,7 +297,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function buildEntity(array $form, FormStateInterface $form_state) {
+  public function buildEntity(array $form, FormStateInterface $form_state): object {
     $entity = clone $this->entity;
     $this->copyFormValuesToEntity($entity, $form, $form_state);
 
@@ -374,7 +374,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function setEntity(EntityInterface $entity) {
+  public function setEntity(EntityInterface $entity): static {
     $this->entity = $entity;
     return $this;
   }
@@ -384,25 +384,21 @@ class EntityForm extends FormBase implements EntityFormInterface {
    */
   public function getEntityFromRouteMatch(RouteMatchInterface $route_match, $entity_type_id) {
     if ($route_match->getRawParameter($entity_type_id) !== NULL) {
-      $entity = $route_match->getParameter($entity_type_id);
+      return $route_match->getParameter($entity_type_id);
     }
-    else {
-      $values = [];
-      // If the entity has bundles, fetch it from the route match.
-      $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
-      if ($bundle_key = $entity_type->getKey('bundle')) {
-        if (($bundle_entity_type_id = $entity_type->getBundleEntityType()) && $route_match->getRawParameter($bundle_entity_type_id)) {
-          $values[$bundle_key] = $route_match->getParameter($bundle_entity_type_id)->id();
-        }
-        elseif ($route_match->getRawParameter($bundle_key)) {
-          $values[$bundle_key] = $route_match->getParameter($bundle_key);
-        }
+    $values = [];
+    // If the entity has bundles, fetch it from the route match.
+    $entity_type = $this->entityTypeManager->getDefinition($entity_type_id);
+    if ($bundle_key = $entity_type->getKey('bundle')) {
+      if (($bundle_entity_type_id = $entity_type->getBundleEntityType()) && $route_match->getRawParameter($bundle_entity_type_id)) {
+        $values[$bundle_key] = $route_match->getParameter($bundle_entity_type_id)->id();
       }
-
-      $entity = $this->entityTypeManager->getStorage($entity_type_id)->create($values);
+      elseif ($route_match->getRawParameter($bundle_key)) {
+        $values[$bundle_key] = $route_match->getParameter($bundle_key);
+      }
     }
 
-    return $entity;
+    return $this->entityTypeManager->getStorage($entity_type_id)->create($values);
   }
 
   /**
@@ -418,8 +414,8 @@ class EntityForm extends FormBase implements EntityFormInterface {
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  protected function prepareInvokeAll($hook, FormStateInterface $form_state) {
-    $this->moduleHandler->invokeAllWith($hook, function (callable $hook, string $module) use ($form_state) {
+  protected function prepareInvokeAll(string $hook, FormStateInterface $form_state) {
+    $this->moduleHandler->invokeAllWith($hook, function (callable $hook, string $module) use ($form_state): void {
       // Ensure we pass an updated translation object and form display at
       // each invocation, since they depend on form state which is alterable.
       $hook($this->entity, $this->operation, $form_state);
@@ -436,7 +432,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function setModuleHandler(ModuleHandlerInterface $module_handler) {
+  public function setModuleHandler(ModuleHandlerInterface $module_handler): static {
     $this->moduleHandler = $module_handler;
     return $this;
   }
@@ -444,7 +440,7 @@ class EntityForm extends FormBase implements EntityFormInterface {
   /**
    * {@inheritdoc}
    */
-  public function setEntityTypeManager(EntityTypeManagerInterface $entity_type_manager) {
+  public function setEntityTypeManager(EntityTypeManagerInterface $entity_type_manager): static {
     $this->entityTypeManager = $entity_type_manager;
     return $this;
   }

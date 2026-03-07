@@ -15,26 +15,19 @@ use Symfony\Component\HttpFoundation\Request;
 class CategoryAutocompleteController implements ContainerInjectionInterface {
 
   /**
-   * The block manager.
-   *
-   * @var \Drupal\Core\Block\BlockManagerInterface
-   */
-  protected $blockManager;
-
-  /**
    * Constructs a new CategoryAutocompleteController.
    *
-   * @param \Drupal\Core\Block\BlockManagerInterface $block_manager
+   * @param \Drupal\Core\Block\BlockManagerInterface $blockManager
    *   The block manager.
    */
-  public function __construct(BlockManagerInterface $block_manager) {
-    $this->blockManager = $block_manager;
+  public function __construct(protected \Drupal\Core\Block\BlockManagerInterface $blockManager)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('plugin.manager.block')
     );
@@ -53,7 +46,7 @@ class CategoryAutocompleteController implements ContainerInjectionInterface {
     $typed_category = $request->query->get('q');
     $matches = [];
     foreach ($this->blockManager->getCategories() as $category) {
-      if (stripos($category, $typed_category) === 0) {
+      if (stripos($category, (string) $typed_category) === 0) {
         $matches[] = ['value' => $category, 'label' => Html::escape($category)];
       }
     }

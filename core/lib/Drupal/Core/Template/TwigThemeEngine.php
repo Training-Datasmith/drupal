@@ -61,10 +61,10 @@ class TwigThemeEngine implements ThemeEngineInterface {
       }
       // Add debug output for directly called suggestions like
       // '#theme' => 'comment__node__article'.
-      if (str_contains($variables['theme_hook_original'], '__')) {
+      if (str_contains((string) $variables['theme_hook_original'], '__')) {
         $derived_suggestions[] = $hook = $variables['theme_hook_original'];
-        while ($pos = strrpos($hook, '__')) {
-          $hook = substr($hook, 0, $pos);
+        while ($pos = strrpos((string) $hook, '__')) {
+          $hook = substr((string) $hook, 0, $pos);
           $derived_suggestions[] = $hook;
         }
         // Get the value of the base hook (last derived suggestion) and append
@@ -78,15 +78,15 @@ class TwigThemeEngine implements ThemeEngineInterface {
         $suggestions = $variables['theme_hook_suggestions'];
         // Only add the original theme hook if it wasn't a directly called
         // suggestion.
-        if (!str_contains($variables['theme_hook_original'], '__')) {
+        if (!str_contains((string) $variables['theme_hook_original'], '__')) {
           $suggestions[] = $variables['theme_hook_original'];
         }
         $invalid_suggestions = [];
-        $base_hook = $base_hook ?? $variables['theme_hook_original'];
+        $base_hook ??= $variables['theme_hook_original'];
         foreach ($suggestions as $key => &$suggestion) {
           // Valid suggestions are $base_hook, $base_hook__*, and contain no
           // hyphens.
-          if (($suggestion !== $base_hook && !str_starts_with($suggestion, $base_hook . '__')) || str_contains($suggestion, '-')) {
+          if (($suggestion !== $base_hook && !str_starts_with((string) $suggestion, $base_hook . '__')) || str_contains((string) $suggestion, '-')) {
             $invalid_suggestions[] = $suggestion;
             unset($suggestions[$key]);
             continue;
@@ -112,7 +112,7 @@ class TwigThemeEngine implements ThemeEngineInterface {
       // Check if the template_file belongs to a custom theme.
       $template_override_status_output = "BEGIN OUTPUT";
       $template_override_suffix_output = "END OUTPUT";
-      if (str_starts_with($template_file, $variables['directory'])) {
+      if (str_starts_with($template_file, (string) $variables['directory'])) {
         $template_override_status_output = "💡 BEGIN CUSTOM TEMPLATE OUTPUT";
         $template_override_suffix_output = "END CUSTOM TEMPLATE OUTPUT";
       }

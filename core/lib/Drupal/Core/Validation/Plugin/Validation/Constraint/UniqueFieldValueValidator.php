@@ -138,12 +138,10 @@ class UniqueFieldValueValidator extends ConstraintValidator implements Container
    *   capitalization.
    */
   private function caseInsensitiveArrayIntersect(array $orig_values, array $comp_values): array {
-    $lowercase_comp_values = array_map('strtolower', $comp_values);
-    $intersect_map = array_map(fn (string $x) => in_array(strtolower($x), $lowercase_comp_values, TRUE) ? $x : NULL, $orig_values);
+    $lowercase_comp_values = array_map(strtolower(...), $comp_values);
+    $intersect_map = array_map(fn (string $x): ?string => in_array(strtolower($x), $lowercase_comp_values, TRUE) ? $x : NULL, $orig_values);
 
-    return array_filter($intersect_map, function ($x) {
-      return $x !== NULL;
-    });
+    return array_filter($intersect_map, fn(?string $x) => $x !== NULL);
   }
 
   /**
@@ -160,9 +158,7 @@ class UniqueFieldValueValidator extends ConstraintValidator implements Container
 
     // Filter out item values which are not duplicates while preserving deltas.
     $duplicate_values = array_intersect($item_values, array_keys(array_filter(
-      $value_frequency, function ($value) {
-        return $value > 1;
-      })
+      $value_frequency, fn($value) => $value > 1)
     ));
 
     // Exclude the first delta of each duplicate value.

@@ -50,8 +50,7 @@ class LayoutBuilderHooks {
       else {
         $output .= '<p>' . $this->t('To manage other areas of the page, use the block administration page.') . '</p>';
       }
-      $output .= '<p>' . $this->t('Forms and links inside the content of the layout builder tool have been disabled.') . '</p>';
-      return $output;
+      return $output . ('<p>' . $this->t('Forms and links inside the content of the layout builder tool have been disabled.') . '</p>');
     }
     switch ($route_name) {
       case 'help.page.layout_builder':
@@ -81,8 +80,7 @@ class LayoutBuilderHooks {
           ])->toString(),
           ':layout-builder-permissions' => 'https://www.drupal.org/docs/8/core/modules/layout-builder/configuring-layout-builder-permissions',
         ]) . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -106,7 +104,7 @@ class LayoutBuilderHooks {
    * Implements hook_form_FORM_ID_alter() for \Drupal\field_ui\Form\EntityFormDisplayEditForm.
    */
   #[Hook('form_entity_form_display_edit_form_alter')]
-  public function formEntityFormDisplayEditFormAlter(&$form, FormStateInterface $form_state) : void {
+  public function formEntityFormDisplayEditFormAlter(array &$form, FormStateInterface $form_state) : void {
     // Hides the Layout Builder field. It is rendered directly in
     // \Drupal\layout_builder\Entity\LayoutBuilderEntityViewDisplay::buildMultiple().
     unset($form['fields'][OverridesSectionStorage::FIELD_NAME]);
@@ -335,12 +333,14 @@ class LayoutBuilderHooks {
       'layout_threecol_33_34_33',
     ];
     foreach ($duplicate_layouts as $duplicate_layout) {
-      /** @var \Drupal\Core\Layout\LayoutDefinition[] $definitions */
-      if (isset($definitions[$duplicate_layout])) {
-        if ($definitions[$duplicate_layout]->getProvider() === 'layout_discovery') {
-          unset($definitions[$duplicate_layout]);
+        /** @var \Drupal\Core\Layout\LayoutDefinition[] $definitions */
+        if (!isset($definitions[$duplicate_layout])) {
+            continue;
         }
-      }
+        if ($definitions[$duplicate_layout]->getProvider() !== 'layout_discovery') {
+            continue;
+        }
+        unset($definitions[$duplicate_layout]);
     }
     // Move the one column layout to the top.
     if (isset($definitions['layout_onecol']) && $definitions['layout_onecol']->getProvider() === 'layout_discovery') {
@@ -366,7 +366,7 @@ class LayoutBuilderHooks {
   public function systemBreadcrumbAlter(Breadcrumb &$breadcrumb, RouteMatchInterface $route_match, array $context): void {
     // Remove the extra 'Manage display' breadcrumb for Layout Builder defaults.
     if ($route_match->getRouteObject() && $route_match->getRouteObject()->hasOption('_layout_builder') && $route_match->getParameter('section_storage_type') === 'defaults') {
-      $links = array_filter($breadcrumb->getLinks(), function (Link $link) use ($route_match) {
+      $links = array_filter($breadcrumb->getLinks(), function (Link $link) use ($route_match): bool {
           $entity_type_id = $route_match->getParameter('entity_type_id');
         if (!$link->getUrl()->isRouted()) {
                 return TRUE;
@@ -399,7 +399,7 @@ class LayoutBuilderHooks {
    * Implements hook_theme_registry_alter().
    */
   #[Hook('theme_registry_alter')]
-  public function themeRegistryAlter(&$theme_registry): void {
+  public function themeRegistryAlter(array &$theme_registry): void {
     // Move our preprocess to run after
     // content_translation_preprocess_language_content_settings_table().
     if (!empty($theme_registry['language_content_settings_table']['preprocess functions'])) {

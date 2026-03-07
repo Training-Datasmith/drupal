@@ -55,7 +55,7 @@ class Permissions extends PrerenderList {
   /**
    * {@inheritdoc}
    */
-  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL) {
+  public function init(ViewExecutable $view, DisplayPluginBase $display, ?array &$options = NULL): void {
     parent::init($view, $display, $options);
 
     $this->additional_fields['uid'] = ['table' => 'users_field_data', 'field' => 'uid'];
@@ -64,7 +64,7 @@ class Permissions extends PrerenderList {
   /**
    * {@inheritdoc}
    */
-  public function query() {
+  public function query(): void {
     $this->addAdditionalFields();
     $this->field_alias = $this->aliases['uid'];
   }
@@ -72,7 +72,7 @@ class Permissions extends PrerenderList {
   /**
    * {@inheritdoc}
    */
-  public function preRender(&$values) {
+  public function preRender(&$values): void {
     $this->items = [];
 
     $permission_names = \Drupal::service('user.permissions')->getPermissions();

@@ -24,7 +24,7 @@ abstract class PrimitiveBase extends TypedData implements PrimitiveInterface {
   /**
    * {@inheritdoc}
    */
-  public function setValue($value, $notify = TRUE) {
+  public function setValue($value, $notify = TRUE): void {
     $this->value = $value;
     // Notify the parent of any changes.
     if ($notify && isset($this->parent)) {

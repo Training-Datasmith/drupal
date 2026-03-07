@@ -27,17 +27,16 @@ class LayoutBuilderWidget extends WidgetBase {
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $element += [
+    return $element + [
       '#type' => 'layout_builder',
       '#section_storage' => $this->getSectionStorage($form_state),
     ];
-    return $element;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state) {
+  public function extractFormValues(FieldItemListInterface $items, array $form, FormStateInterface $form_state): void {
     // @todo This isn't resilient to being set twice, during validation and
     //   save https://www.drupal.org/project/drupal/issues/2833682.
     if (!$form_state->isValidationComplete()) {

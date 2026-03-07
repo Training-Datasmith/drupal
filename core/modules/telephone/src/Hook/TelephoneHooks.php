@@ -43,8 +43,7 @@ class TelephoneHooks {
         ]) . '</dd>';
         $output .= '<dt>' . $this->t('Displaying telephone numbers as links') . '</dt>';
         $output .= '<dd>' . $this->t('Telephone numbers can be displayed as links with the scheme name <em>tel:</em> by choosing the <em>Telephone</em> display format on the <em>Manage display</em> page. Any spaces will be stripped out of the link text. This semantic markup improves the user experience on mobile and assistive technology devices.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -53,7 +52,7 @@ class TelephoneHooks {
    * Implements hook_field_formatter_info_alter().
    */
   #[Hook('field_formatter_info_alter')]
-  public function fieldFormatterInfoAlter(&$info): void {
+  public function fieldFormatterInfoAlter(array &$info): void {
     $info['string']['field_types'][] = 'telephone';
   }
 
@@ -61,7 +60,7 @@ class TelephoneHooks {
    * Implements hook_field_type_category_info_alter().
    */
   #[Hook('field_type_category_info_alter')]
-  public function fieldTypeCategoryInfoAlter(&$definitions): void {
+  public function fieldTypeCategoryInfoAlter(array &$definitions): void {
     // The `telephone` field type belongs in the `general` category, so the
     // libraries need to be attached using an alter hook.
     $definitions[FieldTypeCategoryManagerInterface::FALLBACK_CATEGORY]['libraries'][] = 'telephone/drupal.telephone-icon';

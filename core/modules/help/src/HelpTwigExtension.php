@@ -43,8 +43,8 @@ class HelpTwigExtension extends AbstractExtension {
    */
   public function getFunctions(): array {
     return [
-      new TwigFunction('help_route_link', [$this, 'getRouteLink']),
-      new TwigFunction('help_topic_link', [$this, 'getTopicLink']),
+      new TwigFunction('help_route_link', $this->getRouteLink(...)),
+      new TwigFunction('help_topic_link', $this->getTopicLink(...)),
     ];
   }
 

@@ -14,20 +14,13 @@ use Psr\Log\LoggerInterface;
 class UserFloodSubscriber implements EventSubscriberInterface {
 
   /**
-   * The default logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a UserFloodSubscriber.
    *
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
    */
-  public function __construct(?LoggerInterface $logger = NULL) {
-    $this->logger = $logger;
+  public function __construct(protected ?\Psr\Log\LoggerInterface $logger = NULL)
+  {
   }
 
   /**
@@ -45,7 +38,7 @@ class UserFloodSubscriber implements EventSubscriberInterface {
    * @param \Drupal\user\Event\UserFloodEvent $floodEvent
    *   The flood event.
    */
-  public function blockedUser(UserFloodEvent $floodEvent) {
+  public function blockedUser(UserFloodEvent $floodEvent): void {
     if (Settings::get('log_user_flood', TRUE)) {
       $uid = $floodEvent->getUid();
       if ($floodEvent->hasIp()) {
@@ -63,7 +56,7 @@ class UserFloodSubscriber implements EventSubscriberInterface {
    * @param \Drupal\user\Event\UserFloodEvent $floodEvent
    *   The flood event.
    */
-  public function blockedIp(UserFloodEvent $floodEvent) {
+  public function blockedIp(UserFloodEvent $floodEvent): void {
     if (Settings::get('log_user_flood', TRUE)) {
       $this->logger->notice('Flood control blocked login attempt from %ip', ['%ip' => $floodEvent->getIp()]);
     }

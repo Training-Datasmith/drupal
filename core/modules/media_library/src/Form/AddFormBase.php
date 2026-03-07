@@ -31,20 +31,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 abstract class AddFormBase extends FormBase implements BaseFormIdInterface, TrustedCallbackInterface, WorkspaceSafeFormInterface {
 
   /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The media library UI builder.
-   *
-   * @var \Drupal\media_library\MediaLibraryUiBuilder
-   */
-  protected $libraryUiBuilder;
-
-  /**
    * The type of media items being created by this form.
    *
    * @var \Drupal\media\MediaTypeInterface
@@ -59,27 +45,17 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
   protected $viewBuilder;
 
   /**
-   * The opener resolver.
-   *
-   * @var \Drupal\media_library\OpenerResolverInterface
-   */
-  protected $openerResolver;
-
-  /**
    * Constructs an AddFormBase object.
    *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
-   * @param \Drupal\media_library\MediaLibraryUiBuilder $library_ui_builder
+   * @param \Drupal\media_library\MediaLibraryUiBuilder $libraryUiBuilder
    *   The media library UI builder.
-   * @param \Drupal\media_library\OpenerResolverInterface $opener_resolver
+   * @param \Drupal\media_library\OpenerResolverInterface $openerResolver
    *   The opener resolver.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, MediaLibraryUiBuilder $library_ui_builder, OpenerResolverInterface $opener_resolver) {
-    $this->entityTypeManager = $entity_type_manager;
-    $this->libraryUiBuilder = $library_ui_builder;
+  public function __construct(protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager, protected \Drupal\media_library\MediaLibraryUiBuilder $libraryUiBuilder, protected \Drupal\media_library\OpenerResolverInterface $openerResolver) {
     $this->viewBuilder = $this->entityTypeManager->getViewBuilder('media');
-    $this->openerResolver = $opener_resolver;
   }
 
   /**
@@ -175,7 +151,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
 
       $form['media'] = [
         '#pre_render' => [
-          [$this, 'preRenderAddedMedia'],
+          $this->preRenderAddedMedia(...),
         ],
         '#attributes' => [
           'class' => [
@@ -500,19 +476,15 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
     $media_type = $this->getMediaType($form_state);
     $media_storage = $this->entityTypeManager->getStorage('media');
     $source_field_name = $this->getSourceFieldName($media_type);
-    $media = array_map(function ($source_field_value) use ($media_type, $media_storage, $source_field_name) {
-      return $this->createMediaFromValue($media_type, $media_storage, $source_field_name, $source_field_value);
-    }, $source_field_values);
+    $media = array_map(fn($source_field_value) => $this->createMediaFromValue($media_type, $media_storage, $source_field_name, $source_field_value), $source_field_values);
     // Re-key the media items before setting them in the form state.
     $form_state->set('media', array_values($media));
     // Save the selected items in the form state so they are remembered when an
     // item is removed.
     $media = $this->entityTypeManager->getStorage('media')
-      ->loadMultiple(explode(',', $form_state->getValue('current_selection')));
+      ->loadMultiple(explode(',', (string) $form_state->getValue('current_selection')));
     // Any ID can be passed to the form, so we have to check access.
-    $form_state->set('current_selection', array_filter($media, function ($media_item) {
-      return $media_item->access('view');
-    }));
+    $form_state->set('current_selection', array_filter($media, fn(\Drupal\Core\Entity\EntityInterface $media_item) => $media_item->access('view')));
     $form_state->setRebuild();
   }
 
@@ -558,7 +530,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
    */
-  public function removeButtonSubmit(array $form, FormStateInterface $form_state) {
+  public function removeButtonSubmit(array $form, FormStateInterface $form_state): void {
     // Retrieve the delta of the media item from the parents of the remove
     // button.
     $triggering_element = $form_state->getTriggeringElement();
@@ -645,7 +617,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     foreach ($this->getAddedMediaItems($form_state) as $delta => $media) {
       $this->validateMediaEntity($media, $form, $form_state, $delta);
     }
@@ -672,7 +644,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     foreach ($this->getAddedMediaItems($form_state) as $delta => $media) {
       EntityFormDisplay::collectRenderDisplay($media, 'media_library')
         ->extractFormValues($media, $form['media'][$delta]['fields'], $form_state);
@@ -698,9 +670,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
       return $form;
     }
 
-    $media_ids = array_map(function (MediaInterface $media) {
-      return $media->id();
-    }, $this->getAddedMediaItems($form_state));
+    $media_ids = array_map(fn(MediaInterface $media) => $media->id(), $this->getAddedMediaItems($form_state));
 
     $selected_count = $this->getSelectedMediaItemCount($media_ids, $form_state);
 
@@ -763,9 +733,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
     // The added media items get an ID when they are saved in ::submitForm().
     // For that reason the added media items are keyed by delta in the form
     // state and we have to do an array map to get each media ID.
-    $media_ids = array_map(function (MediaInterface $media) {
-      return $media->id();
-    }, $this->getCurrentMediaItems($form_state));
+    $media_ids = array_map(fn(MediaInterface $media) => $media->id(), $this->getCurrentMediaItems($form_state));
 
     // Allow the opener service to respond to the selection.
     $state = $this->getMediaLibraryState($form_state);
@@ -796,7 +764,7 @@ abstract class AddFormBase extends FormBase implements BaseFormIdInterface, Trus
   private function getSelectedMediaItemCount(array $media_ids, FormStateInterface $form_state): int {
     $selected_count = count($media_ids);
     if ($current_selection = $form_state->getValue('current_selection')) {
-      $selected_count += count(explode(',', $current_selection));
+      $selected_count += count(explode(',', (string) $current_selection));
     }
     return $selected_count;
   }

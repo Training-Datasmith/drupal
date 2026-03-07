@@ -25,20 +25,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class NodeAccessControlHandler extends EntityAccessControlHandler implements NodeAccessControlHandlerInterface, EntityHandlerInterface {
 
   /**
-   * The node grant storage.
-   *
-   * @var \Drupal\node\NodeGrantDatabaseStorageInterface
-   */
-  protected $grantStorage;
-
-  /**
-   * The entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Map of revision operations.
    *
    * Keys contain revision operations, where values are an array containing the
@@ -63,21 +49,19 @@ class NodeAccessControlHandler extends EntityAccessControlHandler implements Nod
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\node\NodeGrantDatabaseStorageInterface $grant_storage
+   * @param \Drupal\node\NodeGrantDatabaseStorageInterface $grantStorage
    *   The node grant storage.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, NodeGrantDatabaseStorageInterface $grant_storage, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(EntityTypeInterface $entity_type, protected \Drupal\node\NodeGrantDatabaseStorageInterface $grantStorage, protected \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager) {
     parent::__construct($entity_type);
-    $this->grantStorage = $grant_storage;
-    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('node.grant_storage'),
@@ -164,10 +148,10 @@ class NodeAccessControlHandler extends EntityAccessControlHandler implements Nod
       // delete operations.
       $cacheability->addCacheableDependency($node);
       if ($node->isDefaultRevision() && ($operation === 'revert revision' || $operation === 'delete revision')) {
-        return AccessResult::forbidden()->addCacheableDependency($cacheability);
+          return AccessResult::forbidden()->addCacheableDependency($cacheability);
       }
-      elseif ($account->hasPermission('administer nodes')) {
-        return AccessResult::allowed()->addCacheableDependency($cacheability);
+      if ($account->hasPermission('administer nodes')) {
+          return AccessResult::allowed()->addCacheableDependency($cacheability);
       }
 
       // First check the access to the default revision and finally, if the
@@ -297,14 +281,14 @@ class NodeAccessControlHandler extends EntityAccessControlHandler implements Nod
   /**
    * {@inheritdoc}
    */
-  public function writeDefaultGrant() {
+  public function writeDefaultGrant(): void {
     $this->grantStorage->writeDefault();
   }
 
   /**
    * {@inheritdoc}
    */
-  public function deleteGrants() {
+  public function deleteGrants(): void {
     $this->grantStorage->delete();
   }
 

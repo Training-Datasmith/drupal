@@ -34,8 +34,7 @@ class AutomatedCronHooks {
         ]) . '</dd>';
         $output .= '<dt>' . $this->t('Disabling Automated Cron') . '</dt>';
         $output .= '<dd>' . $this->t('To disable automated cron, the recommended method is to uninstall the module, to reduce site overhead. If you only want to disable it temporarily, you can set the frequency to Never on the Cron page, and then change the frequency back when you want to start it up again.') . '</dd>';
-        $output .= '</dl>';
-        return $output;
+        return $output . '</dl>';
     }
     return NULL;
   }
@@ -44,7 +43,7 @@ class AutomatedCronHooks {
    * Implements hook_form_FORM_ID_alter() for the system_cron_settings() form.
    */
   #[Hook('form_system_cron_settings_alter')]
-  public function formSystemCronSettingsAlter(&$form, &$form_state) : void {
+  public function formSystemCronSettingsAlter(array &$form, &$form_state) : void {
     $options = [3600, 10800, 21600, 43200, 86400, 604800];
     $form['cron']['interval'] = [
       '#type' => 'select',

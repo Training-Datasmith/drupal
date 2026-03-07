@@ -28,13 +28,6 @@ class Permissions extends ManyToOne {
   private array $deprecatedProperties = ['moduleHandler' => 'module_handler'];
 
   /**
-   * The permission handler.
-   *
-   * @var \Drupal\user\PermissionHandlerInterface
-   */
-  protected $permissionHandler;
-
-  /**
    * Module extension list.
    */
   protected ModuleExtensionList $moduleExtensionList;
@@ -48,7 +41,7 @@ class Permissions extends ManyToOne {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\user\PermissionHandlerInterface $permission_handler
+   * @param \Drupal\user\PermissionHandlerInterface $permissionHandler
    *   The permission handler.
    * @param \Drupal\Core\Extension\ModuleExtensionList|\Drupal\Core\Extension\ModuleHandlerInterface $module_extension_list
    *   The module extension list.
@@ -57,13 +50,11 @@ class Permissions extends ManyToOne {
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    PermissionHandlerInterface $permission_handler,
+    protected \Drupal\user\PermissionHandlerInterface $permissionHandler,
     #[Autowire(service: 'extension.list.module')]
     ModuleExtensionList|ModuleHandlerInterface $module_extension_list,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-
-    $this->permissionHandler = $permission_handler;
     if ($module_extension_list instanceof ModuleHandlerInterface) {
       @trigger_error('Calling ' . __METHOD__ . '() with the $module_extension_list argument as ModuleHandlerInterface is deprecated in drupal:10.3.0 and will be required in drupal:12.0.0. See https://www.drupal.org/node/3310017', E_USER_DEPRECATED);
       $module_extension_list = \Drupal::service('extension.list.module');
@@ -80,13 +71,11 @@ class Permissions extends ManyToOne {
       foreach ($permissions as $perm => $perm_item) {
         $provider = $perm_item['provider'];
         $display_name = $this->moduleExtensionList->getName($provider);
-        $this->valueOptions[$display_name][$perm] = Html::escape(strip_tags($perm_item['title']));
+        $this->valueOptions[$display_name][$perm] = Html::escape(strip_tags((string) $perm_item['title']));
       }
       return $this->valueOptions;
     }
-    else {
-      return $this->valueOptions;
-    }
+    return $this->valueOptions;
   }
 
   /**
@@ -95,7 +84,7 @@ class Permissions extends ManyToOne {
    * Replace the configured permission with a filter by all roles that have this
    * permission.
    */
-  public function query() {
+  public function query(): void {
     $rids = [];
     $all_roles = Role::loadMultiple();
     // Get all role IDs that have the configured permissions.

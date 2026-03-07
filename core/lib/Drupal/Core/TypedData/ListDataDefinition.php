@@ -8,13 +8,6 @@ namespace Drupal\Core\TypedData;
 class ListDataDefinition extends DataDefinition implements ListDataDefinitionInterface {
 
   /**
-   * The data definition of a list item.
-   *
-   * @var \Drupal\Core\TypedData\DataDefinitionInterface
-   */
-  protected $itemDefinition;
-
-  /**
    * Creates a new list definition.
    *
    * @param string $item_type
@@ -40,29 +33,31 @@ class ListDataDefinition extends DataDefinition implements ListDataDefinitionInt
   /**
    * {@inheritdoc}
    */
-  public static function createFromItemType($item_type) {
+  public static function createFromItemType($item_type): static {
     return new static([], \Drupal::typedDataManager()->createDataDefinition($item_type));
   }
 
   /**
    * {@inheritdoc}
    */
-  public function __construct(array $values = [], ?DataDefinitionInterface $item_definition = NULL) {
+  public function __construct(array $values = [], /**
+   * The data definition of a list item.
+   */
+  protected ?\Drupal\Core\TypedData\DataDefinitionInterface $itemDefinition = NULL) {
     $this->definition = $values;
-    $this->itemDefinition = $item_definition;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataType() {
+  public function getDataType(): string {
     return 'list';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setDataType($type) {
+  public function setDataType($type): void {
     if ($type != 'list') {
       throw new \LogicException('Lists must always be of data type "list".');
     }
@@ -101,7 +96,7 @@ class ListDataDefinition extends DataDefinition implements ListDataDefinitionInt
    *
    * @return $this
    */
-  public function setItemDefinition(DataDefinitionInterface $definition) {
+  public function setItemDefinition(DataDefinitionInterface $definition): static {
     $this->itemDefinition = $definition;
     return $this;
   }

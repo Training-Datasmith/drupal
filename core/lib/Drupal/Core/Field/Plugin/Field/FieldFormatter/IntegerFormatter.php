@@ -34,7 +34,7 @@ class IntegerFormatter extends NumericFormatterBase {
   /**
    * {@inheritdoc}
    */
-  protected function numberFormat($number) {
+  protected function numberFormat($number): string {
     return number_format($number, 0, '', $this->getSetting('thousand_separator'));
   }
 

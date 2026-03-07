@@ -27,20 +27,6 @@ use Drupal\filter\Plugin\FilterInterface;
 class EditorFileReference extends FilterBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The entity repository.
-   *
-   * @var \Drupal\Core\Entity\EntityRepositoryInterface
-   */
-  protected $entityRepository;
-
-  /**
-   * The image factory.
-   *
-   * @var \Drupal\Core\Image\ImageFactory
-   */
-  protected $imageFactory;
-
-  /**
    * Constructs a \Drupal\editor\Plugin\Filter\EditorFileReference object.
    *
    * @param array $configuration
@@ -49,21 +35,19 @@ class EditorFileReference extends FilterBase implements ContainerFactoryPluginIn
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entity_repository
+   * @param \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository
    *   The entity repository.
-   * @param \Drupal\Core\Image\ImageFactory $image_factory
+   * @param \Drupal\Core\Image\ImageFactory $imageFactory
    *   The image factory.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityRepositoryInterface $entity_repository, ImageFactory $image_factory) {
-    $this->entityRepository = $entity_repository;
-    $this->imageFactory = $image_factory;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, protected \Drupal\Core\Entity\EntityRepositoryInterface $entityRepository, protected \Drupal\Core\Image\ImageFactory $imageFactory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function process($text, $langcode) {
+  public function process($text, $langcode): \Drupal\filter\FilterProcessResult {
     $result = new FilterProcessResult($text);
 
     if (stristr($text, 'data-entity-type="file"') !== FALSE) {

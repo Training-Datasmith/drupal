@@ -21,7 +21,7 @@ class Rotate extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function arguments() {
+  protected function arguments(): array {
     return [
       'degrees' => [
         'description' => 'The number of (clockwise) degrees to rotate the image',
@@ -37,7 +37,7 @@ class Rotate extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function validateArguments(array $arguments) {
+  protected function validateArguments(array $arguments): array {
     // PHP 5.5 GD bug: https://bugs.php.net/bug.php?id=65148: To prevent buggy
     // behavior on negative multiples of 90 degrees we convert any negative
     // angle to a positive one between 0 and 360 degrees.
@@ -87,7 +87,7 @@ class Rotate extends GDImageToolkitOperationBase {
   /**
    * {@inheritdoc}
    */
-  protected function execute(array $arguments) {
+  protected function execute(array $arguments): bool {
     // PHP installations using non-bundled GD do not have imagerotate.
     if (!function_exists('imagerotate')) {
       $this->logger->notice('The image %file could not be rotated because the imagerotate() function is not available in this PHP installation.', ['%file' => $this->getToolkit()->getSource()]);

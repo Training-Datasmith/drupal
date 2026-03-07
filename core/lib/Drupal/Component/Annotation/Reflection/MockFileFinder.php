@@ -31,7 +31,7 @@ class MockFileFinder implements ClassFinderInterface {
   /**
    * Creates new mock file finder objects.
    */
-  public static function create($filename) {
+  public static function create($filename): static {
     $object = new static();
     $object->filename = $filename;
     return $object;

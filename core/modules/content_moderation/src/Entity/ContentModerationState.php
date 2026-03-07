@@ -113,7 +113,7 @@ class ContentModerationState extends ContentEntityBase implements ContentModerat
    *   This method should only be called as a result of saving the related
    *   content entity.
    */
-  public static function updateOrCreateFromEntity(ContentModerationState $content_moderation_state) {
+  public static function updateOrCreateFromEntity(ContentModerationState $content_moderation_state): void {
     $content_moderation_state->realSave();
   }
 

@@ -15,7 +15,7 @@ class Truncate extends QueryTruncate {
   /**
    * {@inheritdoc}
    */
-  public function __toString() {
+  public function __toString(): string {
     // Create a sanitized comment string to prepend to the query.
     $comments = $this->connection->makeComment($this->comments);
 

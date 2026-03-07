@@ -20,8 +20,9 @@ class GenericFileFormatter extends DescriptionAwareFileFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#theme': 'file_link', '#file': mixed, '#description': mixed, '#cache': array{tags: mixed}, '#attributes'?: array}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $file) {

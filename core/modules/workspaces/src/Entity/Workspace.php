@@ -145,7 +145,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   /**
    * {@inheritdoc}
    */
-  public function hasParent() {
+  public function hasParent(): bool {
     return !$this->get('parent')->isEmpty();
   }
 
@@ -175,7 +175,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   /**
    * {@inheritdoc}
    */
-  public static function preDelete(EntityStorageInterface $storage, array $entities) {
+  public static function preDelete(EntityStorageInterface $storage, array $entities): void {
     parent::preDelete($storage, $entities);
 
     $workspace_tree = \Drupal::service('workspaces.repository')->loadTree();
@@ -191,7 +191,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+  public static function postDelete(EntityStorageInterface $storage, array $entities): void {
     parent::postDelete($storage, $entities);
 
     /** @var \Drupal\workspaces\WorkspaceManagerInterface $workspace_manager */
@@ -201,7 +201,7 @@ class Workspace extends ContentEntityBase implements WorkspaceInterface {
 
     // Gather the list of deleted workspace IDs, since the passed-in array is
     // not required to be keyed by them.
-    $workspaces_ids = array_map(fn($entity) => $entity->id(), $entities);
+    $workspaces_ids = array_map(fn(\Drupal\Core\Entity\EntityInterface $entity) => $entity->id(), $entities);
 
     // Disable the currently active workspace if it has been deleted.
     if ($workspace_manager->hasActiveWorkspace()

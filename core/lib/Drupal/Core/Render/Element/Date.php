@@ -39,7 +39,7 @@ class Date extends FormElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#input' => TRUE,
       '#theme' => 'input__date',
@@ -70,7 +70,7 @@ class Date extends FormElementBase {
    * @return array
    *   The $element with prepared variables ready for #theme 'input__date'.
    */
-  public static function preRenderDate($element) {
+  public static function preRenderDate(array $element): array {
     if (empty($element['#attributes']['type'])) {
       $element['#attributes']['type'] = 'date';
     }

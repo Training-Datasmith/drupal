@@ -19,10 +19,8 @@ class CurrentRouteMatch implements ResettableStackedRouteMatchInterface {
 
   /**
    * Internal cache of RouteMatch objects.
-   *
-   * @var \SplObjectStorage
    */
-  protected $routeMatches;
+  protected \SplObjectStorage $routeMatches;
 
   /**
    * Constructs a CurrentRouteMatch object.
@@ -120,7 +118,7 @@ class CurrentRouteMatch implements ResettableStackedRouteMatchInterface {
   /**
    * {@inheritdoc}
    */
-  public function resetRouteMatch() {
+  public function resetRouteMatch(): void {
     $this->routeMatches = new \SplObjectStorage();
   }
 

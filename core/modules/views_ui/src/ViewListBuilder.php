@@ -22,16 +22,9 @@ use Symfony\Component\HttpKernel\Exception\NotAcceptableHttpException;
 class ViewListBuilder extends ConfigEntityListBuilder {
 
   /**
-   * The views display plugin manager to use.
-   *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface
-   */
-  protected $displayManager;
-
-  /**
    * {@inheritdoc}
    */
-  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
+  public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type): static {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
@@ -46,13 +39,11 @@ class ViewListBuilder extends ConfigEntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $display_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $displayManager
    *   The views display plugin manager to use.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, PluginManagerInterface $display_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, protected \Drupal\Component\Plugin\PluginManagerInterface $displayManager) {
     parent::__construct($entity_type, $storage);
-
-    $this->displayManager = $display_manager;
     // This list builder uses client-side filters which requires all entities to
     // be listed, disable the pager.
     // @todo https://www.drupal.org/node/2536826 change the filtering to support
@@ -63,7 +54,7 @@ class ViewListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function load() {
+  public function load(): array {
     $entities = [
       'enabled' => [],
       'disabled' => [],
@@ -82,7 +73,7 @@ class ViewListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildRow(EntityInterface $view) {
+  public function buildRow(EntityInterface $view): array {
     $row = parent::buildRow($view);
     return [
       'data' => [
@@ -118,7 +109,7 @@ class ViewListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() {
+  public function buildHeader(): array {
     return [
       'view_name' => [
         'data' => $this->t('View name'),
@@ -156,7 +147,7 @@ class ViewListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */) {
+  protected function getDefaultOperations(EntityInterface $entity/* , ?CacheableMetadata $cacheability = NULL */): array {
     $args = func_get_args();
     $cacheability = $args[1] ?? new CacheableMetadata();
     $operations = parent::getDefaultOperations($entity, $cacheability);
@@ -194,7 +185,7 @@ class ViewListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function render() {
+  public function render(): array {
     $entities = $this->load();
     $list['#type'] = 'container';
     $list['#attributes']['id'] = 'views-entity-list';
@@ -252,7 +243,7 @@ class ViewListBuilder extends ConfigEntityListBuilder {
    * @return array
    *   An array of display types that this view includes.
    */
-  protected function getDisplaysList(EntityInterface $view) {
+  protected function getDisplaysList(EntityInterface $view): array {
     $displays = [];
 
     $executable = $view->getExecutable();
@@ -263,7 +254,7 @@ class ViewListBuilder extends ConfigEntityListBuilder {
       if (!empty($definition['admin'])) {
         if ($display->hasPath()) {
           $path = $display->getPath();
-          if ($view->status() && !str_contains($path, '%')) {
+          if ($view->status() && !str_contains((string) $path, '%')) {
             // Wrap this in a try/catch as trying to generate links to some
             // routes may throw an exception, for example if they do not
             // respond to HTML, such as RESTExports.

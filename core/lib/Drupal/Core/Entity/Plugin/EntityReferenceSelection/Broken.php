@@ -35,21 +35,21 @@ class Broken extends SelectionPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0) {
+  public function getReferenceableEntities($match = NULL, $match_operator = 'CONTAINS', $limit = 0): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS') {
+  public function countReferenceableEntities($match = NULL, $match_operator = 'CONTAINS'): int {
     return 0;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function validateReferenceableEntities(array $ids) {
+  public function validateReferenceableEntities(array $ids): array {
     return [];
   }
 

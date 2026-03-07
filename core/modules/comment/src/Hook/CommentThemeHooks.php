@@ -196,7 +196,7 @@ class CommentThemeHooks {
    * Implements hook_preprocess_HOOK() for block templates.
    */
   #[Hook('preprocess_block')]
-  public function preprocessBlock(&$variables): void {
+  public function preprocessBlock(array &$variables): void {
     if ($variables['configuration']['provider'] == 'comment') {
       $variables['attributes']['role'] = 'navigation';
     }
@@ -218,7 +218,7 @@ class CommentThemeHooks {
    *   https://www.drupal.org/node/3566850 is resolved.
    */
   #[Hook('preprocess_field')]
-  public function preprocessField(&$variables): void {
+  public function preprocessField(array &$variables): void {
     $element = $variables['element'];
     // We need to check for the field type even though we are using the comment
     // theme hook suggestion. This is because there may be a bundle or field

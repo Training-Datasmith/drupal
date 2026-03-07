@@ -56,8 +56,6 @@ class EntityReference extends ManyToOne {
 
   /**
    * The selection handlers available for the target entity ID of the filter.
-   *
-   * @var array|null
    */
   protected ?array $handlerOptions = NULL;
 
@@ -65,8 +63,6 @@ class EntityReference extends ManyToOne {
    * Validated exposed input that will be set as the input value.
    *
    * If the select list widget is chosen.
-   *
-   * @var array
    */
   protected array $validatedExposedInput;
 
@@ -79,7 +75,7 @@ class EntityReference extends ManyToOne {
       $this->definition['field_name'] = $options['field'];
     }
 
-    $this->definition['options callback'] = [$this, 'getValueOptionsCallback'];
+    $this->definition['options callback'] = $this->getValueOptionsCallback(...);
     $this->definition['options arguments'] = [$this->getSelectionHandler($this->options['sub_handler'])];
   }
 
@@ -378,9 +374,7 @@ class EntityReference extends ManyToOne {
 
     $previous_widget = $form_state->getUserInput()[$field_id] ?? NULL;
     if ($previous_widget && $previous_widget !== $this->options['widget']) {
-      $form['value']['#value_callback'] = function ($element) {
-        return $element['#default_value'] ?? '';
-      };
+      $form['value']['#value_callback'] = (fn($element) => $element['#default_value'] ?? '');
     }
   }
 

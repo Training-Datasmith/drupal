@@ -27,7 +27,7 @@ class NullArgument extends ArgumentPluginBase {
   /**
    * {@inheritdoc}
    */
-  public function buildOptionsForm(&$form, FormStateInterface $form_state) {
+  public function buildOptionsForm(&$form, FormStateInterface $form_state): void {
     parent::buildOptionsForm($form, $form_state);
     $form['must_not_be'] = [
       '#type' => 'checkbox',

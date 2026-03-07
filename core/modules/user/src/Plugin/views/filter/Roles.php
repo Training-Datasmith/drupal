@@ -44,7 +44,7 @@ class Roles extends ManyToOne {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
       $configuration,
       $plugin_id,
@@ -83,8 +83,9 @@ class Roles extends ManyToOne {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]|non-empty-list[]
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     $dependencies = [];
 
     if (in_array($this->operator, ['empty', 'not empty'])) {

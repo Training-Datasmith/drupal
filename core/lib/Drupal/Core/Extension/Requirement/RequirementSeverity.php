@@ -80,7 +80,7 @@ enum RequirementSeverity: int {
   public static function maxSeverityFromRequirements(array $requirements): RequirementSeverity {
     return array_reduce(
       $requirements,
-      function (RequirementSeverity $severity, $requirement) {
+      function (RequirementSeverity $severity, array $requirement) {
         $requirementSeverity = $requirement['severity'] ?? RequirementSeverity::OK;
         return RequirementSeverity::from(max($severity->value, $requirementSeverity->value));
       },

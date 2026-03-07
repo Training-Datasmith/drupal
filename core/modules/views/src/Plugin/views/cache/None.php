@@ -20,7 +20,7 @@ class None extends CachePluginBase {
   /**
    * {@inheritdoc}
    */
-  public function summaryTitle() {
+  public function summaryTitle(): \Drupal\Core\StringTranslation\TranslatableMarkup {
     return $this->t('None');
   }
 
@@ -29,7 +29,7 @@ class None extends CachePluginBase {
    *
    * Replace the cache get logic so it does not return a cache item at all.
    */
-  public function cacheGet($type) {
+  public function cacheGet($type): bool {
     return FALSE;
   }
 

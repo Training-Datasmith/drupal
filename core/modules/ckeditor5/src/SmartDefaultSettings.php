@@ -29,50 +29,36 @@ final class SmartDefaultSettings {
   use StringTranslationTrait;
 
   /**
-   * The CKEditor 5 plugin manager.
-   *
-   * @var \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface
-   */
-  protected $pluginManager;
-
-  /**
-   * The module handler.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * A logger instance.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected $logger;
-
-  /**
    * Constructs a SmartDefaultSettings object.
    *
-   * @param \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface $plugin_manager
+   * @param \Drupal\ckeditor5\Plugin\CKEditor5PluginManagerInterface $pluginManager
    *   The CKEditor 5 plugin manager.
    * @param \Psr\Log\LoggerInterface $logger
    *   A logger instance.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Session\AccountInterface $current_user
+   * @param \Drupal\Core\Session\AccountInterface $currentUser
    *   The current user.
    */
-  public function __construct(CKEditor5PluginManagerInterface $plugin_manager, LoggerInterface $logger, ModuleHandlerInterface $module_handler, AccountInterface $current_user) {
-    $this->pluginManager = $plugin_manager;
-    $this->logger = $logger;
-    $this->moduleHandler = $module_handler;
-    $this->currentUser = $current_user;
+  public function __construct(
+      /**
+       * The CKEditor 5 plugin manager.
+       */
+      protected CKEditor5PluginManagerInterface $pluginManager,
+      /**
+       * A logger instance.
+       */
+      protected LoggerInterface $logger,
+      /**
+       * The module handler.
+       */
+      protected ModuleHandlerInterface $moduleHandler,
+      /**
+       * The current user.
+       */
+      protected AccountInterface $currentUser
+  )
+  {
   }
 
   /**
@@ -312,19 +298,15 @@ final class SmartDefaultSettings {
           'The tag %tags;',
           'The tags %tags;',
           [
-            '%tags' => implode(', ', array_map(function ($tag_name) {
-              return "<$tag_name>";
-            }, array_keys($added_tags))),
+            '%tags' => implode(', ', array_map(fn($tag_name) => "<$tag_name>", array_keys($added_tags))),
           ]) : '';
         $added_elements_attributes = !empty($attributes_to_tag) ? $this->formatPlural(
           count($attributes_to_tag),
           'This attribute: %attributes;',
           'These attributes: %attributes;',
           [
-            '%attributes' => rtrim(array_reduce(array_keys($attributes_to_tag), function ($carry, $item) use ($attributes_to_tag) {
-              $for_tags = implode(', ', array_map(function ($item) {
-                return "<$item>";
-              }, $attributes_to_tag[$item]));
+            '%attributes' => rtrim(array_reduce(array_keys($attributes_to_tag), function ($carry, $item) use ($attributes_to_tag): string {
+              $for_tags = implode(', ', array_map(fn($item) => "<$item>", $attributes_to_tag[$item]));
               return "$carry $item ({$this->t('for', [],  ['context' => 'Ckeditor 5 tag list'])} $for_tags),";
             }, ''), " ,"),
           ]
@@ -424,12 +406,12 @@ final class SmartDefaultSettings {
     foreach ($surplus->getAllowedElements() as $tag_name => $attributes_config) {
       // 10^6 per surplus tag.
       if (!isset($needed->getAllowedElements()[$tag_name])) {
-        $surplus_score += pow(10, 6);
+        $surplus_score += 10 ** 6;
       }
 
       // 10^5 per surplus "any attributes allowed".
       if ($attributes_config === TRUE) {
-        $surplus_score += pow(10, 5);
+        $surplus_score += 10 ** 5;
       }
 
       if (!is_array($attributes_config)) {
@@ -438,17 +420,17 @@ final class SmartDefaultSettings {
 
       foreach ($attributes_config as $attribute_name => $attribute_config) {
         // 10^4 per surplus wildcard attribute.
-        if (str_contains($attribute_name, '*')) {
-          $surplus_score += pow(10, 4);
+        if (str_contains((string) $attribute_name, '*')) {
+          $surplus_score += 10 ** 4;
         }
         // 10^3 per surplus attribute.
         else {
-          $surplus_score += pow(10, 3);
+          $surplus_score += 10 ** 3;
         }
 
         // 10^2 per surplus "any attribute values allowed".
         if ($attribute_config === TRUE) {
-          $surplus_score += pow(10, 2);
+          $surplus_score += 10 ** 2;
         }
 
         if (!is_array($attribute_config)) {
@@ -457,12 +439,12 @@ final class SmartDefaultSettings {
 
         foreach ($attribute_config as $allowed_attribute_value => $allowed_attribute_value_config) {
           // 10^1 per surplus wildcard attribute value.
-          if (str_contains($allowed_attribute_value, '*')) {
-            $surplus_score += pow(10, 1);
+          if (str_contains((string) $allowed_attribute_value, '*')) {
+            $surplus_score += 10 ** 1;
           }
           // 10^0 per surplus attribute value.
           else {
-            $surplus_score += pow(10, 0);
+            $surplus_score += 10 ** 0;
           }
         }
       }
@@ -647,17 +629,14 @@ final class SmartDefaultSettings {
           $selected_plugins[$selected_plugin_id][$attribute_name][$tag_name] = $attribute_config;
           continue;
         }
-        else {
-          foreach ($attribute_config as $allowed_attribute_value => $allowed_attribute_value_config) {
-            if (!isset($candidates[$tag_name][$attribute_name][$allowed_attribute_value][$allowed_attribute_value_config])) {
-              // Sadly no plugin found for this tag + attr + value + config.
-              continue;
-            }
-            asort($candidates[$tag_name][$attribute_name][$allowed_attribute_value][$allowed_attribute_value_config]);
-            $selected_plugin_id = array_keys($candidates[$tag_name][$attribute_name][$allowed_attribute_value][$allowed_attribute_value_config])[0];
-            $selected_plugins[$selected_plugin_id][$attribute_name][$tag_name][$allowed_attribute_value] = $allowed_attribute_value_config;
+        foreach ($attribute_config as $allowed_attribute_value => $allowed_attribute_value_config) {
+          if (!isset($candidates[$tag_name][$attribute_name][$allowed_attribute_value][$allowed_attribute_value_config])) {
+            // Sadly no plugin found for this tag + attr + value + config.
             continue;
           }
+          asort($candidates[$tag_name][$attribute_name][$allowed_attribute_value][$allowed_attribute_value_config]);
+          $selected_plugin_id = array_keys($candidates[$tag_name][$attribute_name][$allowed_attribute_value][$allowed_attribute_value_config])[0];
+          $selected_plugins[$selected_plugin_id][$attribute_name][$tag_name][$allowed_attribute_value] = $allowed_attribute_value_config;
         }
       }
 
@@ -802,9 +781,7 @@ final class SmartDefaultSettings {
             foreach ($reason_why_enabled as $attribute_name => $attribute_config) {
               // Plugin was selected for tag.
               if (in_array($attribute_name, ['-attributes-none-', '-attributes-any-'], TRUE)) {
-                $tags = array_reduce(array_keys($net_new->getAllowedElements()), function ($carry, $item) {
-                  return $carry . "<$item>";
-                });
+                $tags = array_reduce(array_keys($net_new->getAllowedElements()), fn($carry, int|string $item) => $carry . "<$item>");
                 $enabled_for_tags_message_content .= "$label (for tags: $tags) ";
                 // This plugin does not add attributes: continue to next plugin.
                 continue;
@@ -833,19 +810,15 @@ final class SmartDefaultSettings {
           $plugins_enabled,
         ];
       }
-      else {
-        // No plugins enabled, maybe some missing tags or attributes.
-        return [
-          NULL,
-          NULL,
-          $still_needed,
-          NULL,
-        ];
-      }
+      // No plugins enabled, maybe some missing tags or attributes.
+      return [
+        NULL,
+        NULL,
+        $still_needed,
+        NULL,
+      ];
     }
-    else {
-      return NULL;
-    }
+    return NULL;
   }
 
   /**
@@ -858,17 +831,18 @@ final class SmartDefaultSettings {
     $settings = $editor->getSettings();
     $update_settings = FALSE;
     $enabled_definitions = $this->pluginManager->getEnabledDefinitions($editor);
-    $configurable_definitions = array_filter($enabled_definitions, function (CKEditor5PluginDefinition $definition): bool {
-      return $definition->isConfigurable();
-    });
+    $configurable_definitions = array_filter($enabled_definitions, fn(CKEditor5PluginDefinition $definition): bool => $definition->isConfigurable());
 
     foreach ($configurable_definitions as $plugin_name => $definition) {
       $default_plugin_configuration = $this->pluginManager->getPlugin($plugin_name, NULL)->defaultConfiguration();
       // Skip plugins with an empty default configuration, the plugin
       // configuration is most likely stored elsewhere. Also skip any plugin
       // that already has configuration data as default values are not needed.
-      if ($default_plugin_configuration === [] || isset($settings['plugins'][$plugin_name])) {
-        continue;
+      if ($default_plugin_configuration === []) {
+          continue;
+      }
+      if (isset($settings['plugins'][$plugin_name])) {
+          continue;
       }
       $update_settings = TRUE;
       $settings['plugins'][$plugin_name] = $default_plugin_configuration;

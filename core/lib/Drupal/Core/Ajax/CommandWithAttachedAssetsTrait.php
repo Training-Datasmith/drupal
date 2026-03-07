@@ -37,9 +37,7 @@ trait CommandWithAttachedAssetsTrait {
       $this->attachedAssets = AttachedAssets::createFromRenderArray($this->content);
       return $html;
     }
-    else {
-      return $this->content;
-    }
+    return $this->content;
   }
 
   /**

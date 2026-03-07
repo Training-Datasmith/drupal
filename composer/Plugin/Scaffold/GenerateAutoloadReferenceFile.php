@@ -38,7 +38,7 @@ final class GenerateAutoloadReferenceFile {
    * @return \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult
    *   The result of the autoload file generation.
    */
-  public static function generateAutoload(IOInterface $io, $package_name, $web_root, $vendor) {
+  public static function generateAutoload(IOInterface $io, $package_name, $web_root, $vendor): \Drupal\Composer\Plugin\Scaffold\Operations\ScaffoldResult {
     $autoload_path = static::autoloadPath($package_name, $web_root);
     // Calculate the relative path from the webroot (location of the project
     // autoload.php) to the vendor directory.
@@ -82,7 +82,7 @@ final class GenerateAutoloadReferenceFile {
    * @return \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath
    *   Object wrapping the relative and absolute path to the destination file.
    */
-  protected static function autoloadPath($package_name, $web_root) {
+  protected static function autoloadPath($package_name, string $web_root): \Drupal\Composer\Plugin\Scaffold\ScaffoldFilePath {
     $rel_path = 'autoload.php';
     $dest_rel_path = '[web-root]/' . $rel_path;
     $dest_full_path = $web_root . '/' . $rel_path;
@@ -98,7 +98,7 @@ final class GenerateAutoloadReferenceFile {
    * @return string
    *   Return the contents for the autoload.php.
    */
-  protected static function autoLoadContents($relative_autoload_path) {
+  protected static function autoLoadContents($relative_autoload_path): string {
     $relative_autoload_path = preg_replace('#^\./#', '', $relative_autoload_path);
     return <<<EOF
 <?php

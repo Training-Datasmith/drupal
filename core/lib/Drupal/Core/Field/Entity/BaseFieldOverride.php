@@ -195,7 +195,7 @@ class BaseFieldOverride extends FieldConfigBase {
    * @throws \Drupal\Core\Field\FieldException
    *   If the bundle is being changed.
    */
-  public function preSave(EntityStorageInterface $storage) {
+  public function preSave(EntityStorageInterface $storage): void {
     // Filter out unknown settings and make sure all settings are present, so
     // that a complete field definition is passed to the various hooks and
     // written to config.
@@ -230,7 +230,7 @@ class BaseFieldOverride extends FieldConfigBase {
   /**
    * {@inheritdoc}
    */
-  public static function postDelete(EntityStorageInterface $storage, array $field_overrides) {
+  public static function postDelete(EntityStorageInterface $storage, array $field_overrides): void {
     $entity_type_manager = \Drupal::entityTypeManager();
     // Clear the cache upfront, to refresh the results of getBundles().
     \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
@@ -259,7 +259,7 @@ class BaseFieldOverride extends FieldConfigBase {
    *   The base field bundle override config entity if one exists for the
    *   provided field name, otherwise NULL.
    */
-  public static function loadByName($entity_type_id, $bundle, $field_name) {
+  public static function loadByName(string $entity_type_id, string $bundle, string $field_name) {
     return \Drupal::entityTypeManager()->getStorage('base_field_override')->load($entity_type_id . '.' . $bundle . '.' . $field_name);
   }
 

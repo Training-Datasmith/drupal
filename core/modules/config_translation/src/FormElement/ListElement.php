@@ -19,33 +19,27 @@ class ListElement implements ElementInterface {
   use StringTranslationTrait;
 
   /**
-   * The schema element this form is for.
-   *
-   * @var \Drupal\Core\TypedData\TraversableTypedDataInterface
-   */
-  protected $element;
-
-  /**
    * Constructs a ListElement.
    *
    * @param \Drupal\Core\TypedData\TraversableTypedDataInterface $element
    *   The schema element this form element is for.
    */
-  public function __construct(TraversableTypedDataInterface $element) {
-    $this->element = $element;
+  public function __construct(protected \Drupal\Core\TypedData\TraversableTypedDataInterface $element)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(TypedDataInterface $schema) {
+  public static function create(TypedDataInterface $schema): static {
     return new static($schema);
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[][]
    */
-  public function getTranslationBuild(LanguageInterface $source_language, LanguageInterface $translation_language, $source_config, $translation_config, array $parents, $base_key = NULL) {
+  public function getTranslationBuild(LanguageInterface $source_language, LanguageInterface $translation_language, $source_config, $translation_config, array $parents, $base_key = NULL): array {
     $build = [];
     foreach ($this->element as $key => $element) {
       $sub_build = [];
@@ -80,7 +74,7 @@ class ListElement implements ElementInterface {
   /**
    * {@inheritdoc}
    */
-  public function setConfig(Config $base_config, LanguageConfigOverride $config_translation, $config_values, $base_key = NULL) {
+  public function setConfig(Config $base_config, LanguageConfigOverride $config_translation, $config_values, $base_key = NULL): void {
     foreach ($this->element as $key => $element) {
       $element_key = isset($base_key) ? "$base_key.$key" : $key;
       if ($form_element = ConfigTranslationFormBase::createFormElement($element)) {
@@ -109,7 +103,7 @@ class ListElement implements ElementInterface {
    * @return string
    *   The title for the group of schema elements.
    */
-  protected function getGroupTitle(DataDefinitionInterface $definition, array $group_build) {
+  protected function getGroupTitle(DataDefinitionInterface $definition, array $group_build): string {
     $title = '';
     if (isset($group_build['title']['source'])) {
       $title = $group_build['title']['source']['#markup'];
@@ -119,14 +113,14 @@ class ListElement implements ElementInterface {
     }
     else {
       foreach (array_keys($group_build) as $title_key) {
-        if (isset($group_build[$title_key]['source']) && (str_contains($title_key, 'title') || str_contains($title_key, 'label'))) {
+        if (isset($group_build[$title_key]['source']) && (str_contains((string) $title_key, 'title') || str_contains((string) $title_key, 'label'))) {
           $title = $group_build[$title_key]['source']['#markup'];
           break;
         }
       }
     }
     // phpcs:ignore Drupal.Semantics.FunctionT.NotLiteralString
-    return (!empty($title) ? (strip_tags($title) . ' ') : '') . $this->t($definition['label']);
+    return (!empty($title) ? (strip_tags((string) $title) . ' ') : '') . $this->t($definition['label']);
   }
 
 }

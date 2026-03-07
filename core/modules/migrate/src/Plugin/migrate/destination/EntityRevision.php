@@ -175,7 +175,7 @@ class EntityRevision extends EntityContentBase {
   /**
    * {@inheritdoc}
    */
-  protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []) {
+  protected function save(ContentEntityInterface $entity, array $old_destination_id_values = []): array {
     $entity->setSyncing(TRUE);
     $entity->save();
     return [$entity->getRevisionId()];
@@ -183,8 +183,9 @@ class EntityRevision extends EntityContentBase {
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function getIds() {
+  public function getIds(): array {
     $ids = [];
 
     $revision_key = $this->getKey('revision');
@@ -207,7 +208,7 @@ class EntityRevision extends EntityContentBase {
   /**
    * {@inheritdoc}
    */
-  public function getHighestId() {
+  public function getHighestId(): int {
     $values = $this->storage->getQuery()
       ->accessCheck(FALSE)
       ->allRevisions()

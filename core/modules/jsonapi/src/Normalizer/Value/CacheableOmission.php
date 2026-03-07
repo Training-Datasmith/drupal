@@ -39,7 +39,7 @@ final class CacheableOmission extends CacheableNormalization {
   /**
    * A CacheableOmission should never have its normalization retrieved.
    */
-  public function getNormalization() {
+  public function getNormalization(): never {
     throw new \LogicException('A CacheableOmission should never have its normalization retrieved.');
   }
 

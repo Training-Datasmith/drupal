@@ -16,7 +16,7 @@ class Toolbar extends RenderElementBase {
   /**
    * {@inheritdoc}
    */
-  public function getInfo() {
+  public function getInfo(): array {
     return [
       '#pre_render' => [
         [static::class, 'preRenderToolbar'],
@@ -59,7 +59,7 @@ class Toolbar extends RenderElementBase {
    *
    * @see toolbar_page_top()
    */
-  public static function preRenderToolbar($element) {
+  public static function preRenderToolbar($element): array {
     // Get the configured breakpoints to switch from vertical to horizontal
     // toolbar presentation.
     $breakpoints = static::breakpointManager()->getBreakpointsByGroup('toolbar');
@@ -78,7 +78,7 @@ class Toolbar extends RenderElementBase {
     // Allow for altering of hook_toolbar().
     $module_handler->alter('toolbar', $items);
     // Sort the children.
-    uasort($items, ['\Drupal\Component\Utility\SortArray', 'sortByWeightProperty']);
+    uasort($items, \Drupal\Component\Utility\SortArray::sortByWeightProperty(...));
 
     // Merge in the original toolbar values.
     $element = array_merge($element, $items);
@@ -97,7 +97,7 @@ class Toolbar extends RenderElementBase {
    * @return \Drupal\breakpoint\BreakpointManagerInterface
    *   The breakpoint manager service.
    */
-  protected static function breakpointManager() {
+  protected static function breakpointManager(): object {
     return \Drupal::service('breakpoint.manager');
   }
 

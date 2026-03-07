@@ -24,8 +24,9 @@ class AuthorFormatter extends EntityReferenceFormatterBase {
 
   /**
    * {@inheritdoc}
+   * @return array{'#theme': 'username', '#account': mixed, '#link_options': array{attributes: array{rel: 'author'}}, '#cache': array{tags: mixed}}[]
    */
-  public function viewElements(FieldItemListInterface $items, $langcode) {
+  public function viewElements(FieldItemListInterface $items, $langcode): array {
     $elements = [];
 
     foreach ($this->getEntitiesToView($items, $langcode) as $delta => $entity) {
@@ -45,7 +46,7 @@ class AuthorFormatter extends EntityReferenceFormatterBase {
   /**
    * {@inheritdoc}
    */
-  public static function isApplicable(FieldDefinitionInterface $field_definition) {
+  public static function isApplicable(FieldDefinitionInterface $field_definition): bool {
     return $field_definition->getFieldStorageDefinition()->getSetting('target_type') == 'user';
   }
 

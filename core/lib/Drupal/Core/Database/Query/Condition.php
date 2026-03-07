@@ -8,7 +8,7 @@ use Drupal\Core\Database\InvalidQueryException;
 /**
  * Generic class for a series of conditions in a query.
  */
-class Condition implements ConditionInterface, \Countable {
+class Condition implements ConditionInterface, \Countable, \Stringable {
 
   /**
    * Provides a map of condition operators to condition operator options.
@@ -99,7 +99,7 @@ class Condition implements ConditionInterface, \Countable {
   /**
    * {@inheritdoc}
    */
-  public function condition($field, $value = NULL, $operator = '=') {
+  public function condition($field, $value = NULL, $operator = '='): static {
     if (empty($operator)) {
       $operator = '=';
     }
@@ -111,9 +111,7 @@ class Condition implements ConditionInterface, \Countable {
         $value = implode(', ', $value);
         throw new InvalidQueryException(sprintf("Query condition '%s %s %s' must have an array compatible operator.", $field, $operator, $value));
       }
-      else {
-        throw new InvalidQueryException('Calling ' . __METHOD__ . '() without an array compatible operator is not supported. See https://www.drupal.org/node/3350985');
-      }
+      throw new InvalidQueryException('Calling ' . __METHOD__ . '() without an array compatible operator is not supported. See https://www.drupal.org/node/3350985');
     }
 
     $this->conditions[] = [
@@ -130,7 +128,7 @@ class Condition implements ConditionInterface, \Countable {
   /**
    * {@inheritdoc}
    */
-  public function where($snippet, $args = []) {
+  public function where($snippet, $args = []): static {
     $this->conditions[] = [
       'field' => $snippet,
       'value' => $args,
@@ -197,7 +195,7 @@ class Condition implements ConditionInterface, \Countable {
   /**
    * {@inheritdoc}
    */
-  public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder) {
+  public function compile(Connection $connection, PlaceholderInterface $queryPlaceholder): void {
     // Re-compile if this condition changed or if we are compiled against a
     // different query placeholder object.
     if ($this->changed || isset($this->queryPlaceholderIdentifier) && ($this->queryPlaceholderIdentifier != $queryPlaceholder->uniqueIdentifier())) {
@@ -251,7 +249,7 @@ class Condition implements ConditionInterface, \Countable {
           // If something passed in an invalid character stop early, so we
           // don't rely on a broken SQL statement when we would just replace
           // those characters.
-          if (stripos($condition['operator'], 'UNION') !== FALSE || strpbrk($condition['operator'], '[-\'"();') !== FALSE) {
+          if (stripos((string) $condition['operator'], 'UNION') !== FALSE || strpbrk((string) $condition['operator'], '[-\'"();') !== FALSE) {
             $this->changed = TRUE;
             $this->arguments = [];
             // Provide a string which will result into an empty query result.
@@ -301,7 +299,7 @@ class Condition implements ConditionInterface, \Countable {
               // Right hand part is a subquery. Compile, put brackets around it
               // and collect any arguments.
               $value->compile($connection, $queryPlaceholder);
-              $value_fragment[] = '(' . (string) $value . ')';
+              $value_fragment[] = '(' . $value . ')';
               $arguments += $value->arguments();
             }
             else {
@@ -321,7 +319,7 @@ class Condition implements ConditionInterface, \Countable {
 
       // Concatenate all conditions using the conjunction and brackets around
       // the individual conditions to assure the proper evaluation order.
-      $this->stringVersion = count($condition_fragments) > 1 ? '(' . implode(") $conjunction (", $condition_fragments) . ')' : implode($condition_fragments);
+      $this->stringVersion = count($condition_fragments) > 1 ? '(' . implode(") $conjunction (", $condition_fragments) . ')' : implode('', $condition_fragments);
       $this->arguments = $arguments;
       $this->changed = FALSE;
     }
@@ -330,7 +328,7 @@ class Condition implements ConditionInterface, \Countable {
   /**
    * {@inheritdoc}
    */
-  public function compiled() {
+  public function compiled(): bool {
     return !$this->changed;
   }
 
@@ -340,7 +338,7 @@ class Condition implements ConditionInterface, \Countable {
    * @return string
    *   A string version of the conditions.
    */
-  public function __toString() {
+  public function __toString(): string {
     // If the caller forgot to call compile() first, refuse to run.
     if ($this->changed) {
       return '';
@@ -395,15 +393,13 @@ class Condition implements ConditionInterface, \Countable {
       $return = static::$conditionOperatorMap[$operator] ?? [];
     }
 
-    $return += ['operator' => $operator];
-
-    return $return;
+    return $return + ['operator' => $operator];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function conditionGroupFactory($conjunction = 'AND') {
+  public function conditionGroupFactory($conjunction = 'AND'): static {
     return new static($conjunction);
   }
 

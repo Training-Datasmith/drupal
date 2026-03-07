@@ -26,7 +26,7 @@ class MonthDate extends Date {
    * {@inheritdoc}
    */
   public function summaryName($data) {
-    $month = str_pad($data->{$this->name_alias}, 2, '0', STR_PAD_LEFT);
+    $month = str_pad((string) $data->{$this->name_alias}, 2, '0', STR_PAD_LEFT);
     try {
       return $this->dateFormatter->format(strtotime("2005" . $month . "15 00:00:00 UTC"), 'custom', $this->format, 'UTC');
     }
@@ -39,7 +39,7 @@ class MonthDate extends Date {
    * {@inheritdoc}
    */
   public function title() {
-    $month = str_pad($this->argument, 2, '0', STR_PAD_LEFT);
+    $month = str_pad((string) $this->argument, 2, '0', STR_PAD_LEFT);
     try {
       return $this->dateFormatter->format(strtotime("2005" . $month . "15 00:00:00 UTC"), 'custom', $this->format, 'UTC');
     }
@@ -51,9 +51,9 @@ class MonthDate extends Date {
   /**
    * {@inheritdoc}
    */
-  public function summaryArgument($data) {
+  public function summaryArgument($data): string {
     // Make sure the argument contains leading zeroes.
-    return str_pad($data->{$this->base_alias}, 2, '0', STR_PAD_LEFT);
+    return str_pad((string) $data->{$this->base_alias}, 2, '0', STR_PAD_LEFT);
   }
 
 }

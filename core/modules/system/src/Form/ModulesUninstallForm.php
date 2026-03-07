@@ -22,44 +22,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class ModulesUninstallForm extends FormBase {
 
   /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected $moduleHandler;
-
-  /**
-   * The module installer service.
-   *
-   * @var \Drupal\Core\Extension\ModuleInstallerInterface
-   */
-  protected $moduleInstaller;
-
-  /**
-   * The expirable key value store.
-   *
-   * @var \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface
-   */
-  protected $keyValueExpirable;
-
-  /**
-   * The module extension list.
-   *
-   * @var \Drupal\Core\Extension\ModuleExtensionList
-   */
-  protected $moduleExtensionList;
-
-  /**
-   * The update registry service.
-   *
-   * @var \Drupal\Core\Update\UpdateHookRegistry
-   */
-  protected $updateRegistry;
-
-  /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('module_handler'),
       $container->get('module_installer'),
@@ -72,44 +37,39 @@ class ModulesUninstallForm extends FormBase {
   /**
    * Constructs a ModulesUninstallForm object.
    *
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler.
-   * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
+   * @param \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller
    *   The module installer.
-   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $key_value_expirable
+   * @param \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable
    *   The key value expirable factory.
-   * @param \Drupal\Core\Extension\ModuleExtensionList $extension_list_module
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
    *   The module extension list.
-   * @param \Drupal\Core\Update\UpdateHookRegistry|null $versioning_update_registry
+   * @param \Drupal\Core\Update\UpdateHookRegistry|null $updateRegistry
    *   Versioning update registry service.
    */
-  public function __construct(ModuleHandlerInterface $module_handler, ModuleInstallerInterface $module_installer, KeyValueStoreExpirableInterface $key_value_expirable, ModuleExtensionList $extension_list_module, UpdateHookRegistry $versioning_update_registry) {
-    $this->moduleExtensionList = $extension_list_module;
-    $this->moduleHandler = $module_handler;
-    $this->moduleInstaller = $module_installer;
-    $this->keyValueExpirable = $key_value_expirable;
-    $this->updateRegistry = $versioning_update_registry;
+  public function __construct(protected \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler, protected \Drupal\Core\Extension\ModuleInstallerInterface $moduleInstaller, protected \Drupal\Core\KeyValueStore\KeyValueStoreExpirableInterface $keyValueExpirable, protected \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList, protected \Drupal\Core\Update\UpdateHookRegistry $updateRegistry)
+  {
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getFormId() {
+  public function getFormId(): string {
     return 'system_modules_uninstall';
   }
 
   /**
    * {@inheritdoc}
+   * @return mixed[]
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state): array {
     // Make sure the install API is available.
     include_once DRUPAL_ROOT . '/core/includes/install.inc';
 
     // Get a list of all available modules that can be uninstalled.
     $modules = $this->moduleExtensionList->getList();
-    $uninstallable = array_filter($modules, function ($module) {
-       return empty($module->info['required']) && $module->status;
-    });
+    $uninstallable = array_filter($modules, fn(\Drupal\Core\Extension\Extension $module) => empty($module->info['required']) && $module->status);
 
     $form['filters'] = [
       '#type' => 'container',
@@ -148,7 +108,7 @@ class ModulesUninstallForm extends FormBase {
     ]);
 
     // Sort all modules by their lifecycle identifier and name.
-    uasort($uninstallable, function ($a, $b) use ($unstable_lifecycle) {
+    uasort($uninstallable, function ($a, $b) use ($unstable_lifecycle): int {
       $lifecycle_a = isset($unstable_lifecycle[$a->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER]]) ? -1 : 1;
       $lifecycle_b = isset($unstable_lifecycle[$b->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER]]) ? -1 : 1;
       if ($lifecycle_a === $lifecycle_b) {
@@ -168,13 +128,13 @@ class ModulesUninstallForm extends FormBase {
 
       $lifecycle = $module->info[ExtensionLifecycle::LIFECYCLE_IDENTIFIER];
       if ($lifecycle !== ExtensionLifecycle::STABLE && !empty($module->info[ExtensionLifecycle::LIFECYCLE_LINK_IDENTIFIER])) {
-        $form['modules'][$module->getName()]['name']['#markup'] .= ' ' . Link::fromTextAndUrl('(' . $this->t('@lifecycle', ['@lifecycle' => ucfirst($lifecycle)]) . ')',
+        $form['modules'][$module->getName()]['name']['#markup'] .= ' ' . Link::fromTextAndUrl('(' . $this->t('@lifecycle', ['@lifecycle' => ucfirst((string) $lifecycle)]) . ')',
             Url::fromUri($module->info[ExtensionLifecycle::LIFECYCLE_LINK_IDENTIFIER], [
               'attributes' =>
                 [
                   'class' => 'module-link--non-stable',
                   'aria-label' => $this->t('View information on the @lifecycle status of the module @module', [
-                    '@lifecycle' => ucfirst($lifecycle),
+                    '@lifecycle' => ucfirst((string) $lifecycle),
                     '@module' => $module->info['name'],
                   ]),
                 ],
@@ -222,7 +182,7 @@ class ModulesUninstallForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
+  public function validateForm(array &$form, FormStateInterface $form_state): void {
     // Form submitted, but no modules selected.
     if (!array_filter($form_state->getValue('uninstall'))) {
       $form_state->setErrorByName('', $this->t('No modules selected.'));
@@ -233,7 +193,7 @@ class ModulesUninstallForm extends FormBase {
   /**
    * {@inheritdoc}
    */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
+  public function submitForm(array &$form, FormStateInterface $form_state): void {
     // Save all the values in an expirable key value store.
     $modules = $form_state->getValue('uninstall');
     $uninstall = array_keys(array_filter($modules));

@@ -47,21 +47,13 @@ class KeyValueFactory implements KeyValueFactoryInterface {
   protected $container;
 
   /**
-   * Collection-specific storage override options.
-   *
-   * @var array
-   */
-  protected $options;
-
-  /**
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
    *   The service container.
    * @param array $options
    *   (optional) Collection-specific storage override options.
    */
-  public function __construct(ContainerInterface $container, array $options = []) {
+  public function __construct(ContainerInterface $container, protected array $options = []) {
     $this->container = $container;
-    $this->options = $options;
   }
 
   /**

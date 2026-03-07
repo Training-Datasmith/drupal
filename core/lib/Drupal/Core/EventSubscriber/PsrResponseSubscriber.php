@@ -37,7 +37,7 @@ class PsrResponseSubscriber implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\ViewEvent $event
    *   The Event to process.
    */
-  public function onKernelView(ViewEvent $event) {
+  public function onKernelView(ViewEvent $event): void {
     $controller_result = $event->getControllerResult();
 
     if ($controller_result instanceof ResponseInterface) {

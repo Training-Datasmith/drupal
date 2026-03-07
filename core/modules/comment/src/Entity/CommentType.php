@@ -96,7 +96,7 @@ class CommentType extends ConfigEntityBundleBase implements CommentTypeInterface
   /**
    * {@inheritdoc}
    */
-  public function setDescription($description) {
+  public function setDescription($description): static {
     $this->description = $description;
     return $this;
   }
